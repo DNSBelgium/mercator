@@ -8,9 +8,6 @@ bootRun {
 	standardInput = System.in
 }
 
-springBoot {
-	mainClass = 'be.dnsbelgium.mercator.work.MercatorCliApplication'
-}
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11.0'
 
