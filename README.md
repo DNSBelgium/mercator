@@ -67,8 +67,7 @@ between temporary, internal module state and stable, consumable data.
 * `smtp-crawler` (Java / Spring Boot): Stores information about SMTP servers.
 * `ssl-crawler` (Python): Gather SSL certificates and extracts data. Use [SSLyze](https://github.com/nabla-c0d3/sslyze).
 * `vat-crawler` (Java / Spring Boot): Try to find VAT number (belgian only for now) on a website.
-* `work-generator` (Java / Spring Boot): Spring bean shell project you can use to put messages on input queues of the
-  different modules
+* `mercator-cli` (Java / Spring Boot): Command-line interface to interact with the SQS queues of the different modules.
 
 ### Data Model
 
