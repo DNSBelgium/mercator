@@ -202,12 +202,10 @@ public class MercatorShell implements PromptProvider {
   public void sendRequest(String domainName,
                           @ShellOption(defaultValue = "RANDOM") String visitId,
                           @ShellOption(defaultValue = "VISIT_REQUEST") RequestType requestType,
-                          @ShellOption(defaultValue = "VAT") CrawlerModule crawlerModule) {
+                          @ShellOption(defaultValue = "") CrawlerModule crawlerModule) {
 
     UUID uuid = ("RANDOM".equals(visitId)) ? UUID.randomUUID() : UUID.fromString(visitId);
     String message = generateRequest(domainName, uuid, requestType, crawlerModule);
-
-    logger.info("crawlerModule = {}", crawlerModule);
 
     logger.info("Sending to queue {} with url {}", destinationQueue, destinationQueueUrl);
     logger.info("Message: {}", message);
