@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "content-crawler.fullname" . }}
+  labels:
+  {{- include "content-crawler.labels" . | nindent 4 }}
+data:
+  SERVER_PORT: "8443"
+  SERVER_SSL_ENABLED: "true"
+  SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.2"
+  SERVER_SSL_KEY_ALIAS: "localhost"
+  SERVER_SSL_KEY_PASSWORD: "changeit"
+  SERVER_SSL_KEY_STORE: "/etc/ssl/certs/keystore.jks"
+  SERVER_SSL_KEY_STORE_PROVIDER: "SUN"
+  SERVER_SSL_KEY_STORE_TYPE: "JKS"
+  SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
+  SPRING_MAIN_BANNER_MODE: "off"
+  AWS_REGION: "{{ .Values.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  MESSAGING_JMS_CONCURRENCY: "1-50"
+  AWS_STS_REGIONAL_ENDPOINTS: "regional"
+  CLOUD_AWS_REGION_STATIC: "{{ .Values.region }}"
+  LOGGING_LEVEL_COM_AMAZONAWS_UTIL: ERROR
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "content-crawler.fullname" . }}-aws
+  labels:
+  {{- include "content-crawler.labels" . | nindent 4 }}
+data:
+{{- if .Values.queue_in }}
+  CONTENT_CRAWLER_INPUT_QUEUE_NAME: "{{ .Values.queue_in }}"
+{{- end }}
+{{- if .Values.queue_ack }}
+  CRAWLER_ACK_QUEUE_NAME: "{{ .Values.queue_ack }}"
+{{- end }}
+{{- range $key, $value := .Values.queue_resolver_requests }}
+  CONTENT_RESOLVING_REQUESTQUEUES_{{ $key | upper }}: "{{ $value }}"
+{{- end }}
+{{- range $key, $value := .Values.queue_resolver_responses }}
+  CONTENT_RESOLVING_RESPONSEQUEUES_{{ $key | upper }}: "{{ $value }}"
+{{- end }}
+  SPRING_DATASOURCE_URL: "{{ .Values.database.url }}"
+  SPRING_DATASOURCE_USERNAME: "{{ .Values.database.username }}"
+  SPRING_FLYWAY_SCHEMAS: "{{ .Values.database.schema }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "content-crawler.fullname" . }}-local
+  labels:
+  {{- include "content-crawler.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: "local"
+  LOCALSTACK_URL: "http://localstack:4566"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/postgres?currentSchema=content_crawler"

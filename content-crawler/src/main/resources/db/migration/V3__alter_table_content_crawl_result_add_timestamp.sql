@@ -1,0 +1,1 @@
+ALTER TABLE content_crawl_result ADD crawl_timestamp timestamp with time zone;

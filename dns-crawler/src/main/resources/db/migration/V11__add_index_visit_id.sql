@@ -1,0 +1,1 @@
+CREATE INDEX ON dns_crawl_result (visit_id);

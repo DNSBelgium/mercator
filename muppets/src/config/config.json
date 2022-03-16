@@ -1,0 +1,8 @@
+{
+  "s3_endpoint": "http://localhost:4566",
+  "s3_bucket_name": "mercator-muppets",
+  "sqs_endpoint": "http://localhost:4566",
+  "sqs_input_queue": "mercator-muppets-input",
+  "sqs_output_queue": "mercator-muppets-output",
+  "server_port": 8085
+}

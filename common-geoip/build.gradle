@@ -1,0 +1,46 @@
+plugins {
+    id 'org.springframework.boot' apply false
+    id 'io.spring.dependency-management'
+    id 'java'
+}
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.maxmind.geoip2:geoip2:2.12.0'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+    implementation 'org.apache.commons:commons-compress:1.21'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

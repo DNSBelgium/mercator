@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-ui.fullname" . }}
+  labels:
+  {{- include "mercator-ui.labels" . | nindent 4 }}
+data:
+  REACT_APP_MUPPETS_HOST: {{ .Values.muppets }}

@@ -1,0 +1,8 @@
+1. Get the application URL by running these commands:
+export SERVICE_NAME={{ include "localstack.fullname" . }}
+{{- range .Values.service.ports }}
+export {{ .name | upper }}_NODE_PORT=$(kubectl get --namespace {{ $.Release.Namespace }} -o jsonpath="{.spec.ports[?(@.name=='{{.name}}')].nodePort}" services $SERVICE_NAME)
+export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+echo http://$NODE_IP:${{ .name | upper }}_NODE_PORT
+aws --endpoint-url=http://$NODE_IP:${{ .name | upper }}_NODE_PORT sqs send-message --queue-url http://localstack:4566/queue/mercator-dispatcher-input --message-body '{"domainName": "dnsbelgium.be"}'
+{{ end }}

@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-api.fullname" . }}
+  labels:
+  {{- include "mercator-api.labels" . | nindent 4 }}
+data:
+  SERVER_PORT: "8443"
+  SERVER_SSL_ENABLED: "true"
+  SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.2"
+  SERVER_SSL_KEY_ALIAS: "localhost"
+  SERVER_SSL_KEY_PASSWORD: "changeit"
+  SERVER_SSL_KEY_STORE: "/etc/ssl/certs/keystore.jks"
+  SERVER_SSL_KEY_STORE_PROVIDER: "SUN"
+  SERVER_SSL_KEY_STORE_TYPE: "JKS"
+  SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
+  SPRING_MAIN_BANNER_MODE: "off"
+  AWS_REGION: "{{ .Values.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_STS_REGIONAL_ENDPOINTS: "regional"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-api.fullname" . }}-aws
+  labels:
+  {{- include "mercator-api.labels" . | nindent 4 }}
+data:
+  SPRING_DATASOURCE_DISPATCHER_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.dispatcher.schema }}"
+  SPRING_DATASOURCE_DISPATCHER_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_CONTENT_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.content_crawler.schema }}"
+  SPRING_DATASOURCE_CONTENT_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_DNS_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.dns_crawler.schema }}"
+  SPRING_DATASOURCE_DNS_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_SMTP_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.smtp_crawler.schema }}"
+  SPRING_DATASOURCE_SMTP_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.feature_extraction.schema }}"
+  SPRING_DATASOURCE_FEATURE_EXTRACTION_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_VAT_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.vat.schema }}"
+  SPRING_DATASOURCE_VAT_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_SSL_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.ssl.schema }}"
+  SPRING_DATASOURCE_SSL_USERNAME: "{{ .Values.database.username }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mercator-api.fullname" . }}-local
+  labels:
+  {{- include "mercator-api.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: "local"

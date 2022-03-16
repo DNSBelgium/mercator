@@ -1,0 +1,109 @@
+# Default values for mercator-api.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: dnsbelgium/mercator/mercator-api
+  pullPolicy: IfNotPresent
+  tag: k8s
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ""
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape_https: "true"
+  prometheus.io/port: "8443"
+  prometheus.io/path: "/actuator/prometheus"
+  prometheus.io/scheme: "https"
+
+podSecurityContext:
+  runAsUser: 10000
+  fsGroup: 10000
+  supplementalGroups:
+    - 10000
+
+securityContext:
+  runAsUser: 10000
+  readOnlyRootFilesystem: true
+  privileged: false
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - all
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 700M
+  limits:
+    cpu: 1000m
+    memory: 700M
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# environment to deploy to, can be "local" or "aws"
+environment: "local"
+region: "eu-west-1"
+
+global:
+  vpc:
+    db_cidr:
+      - "127.0.0.1/32"
+    endpoint_cidr:
+      - "127.0.0.1/32"
+
+database:
+  url: "jdbc:postgresql://localhost:5432/postgres"
+  username: "postgres"
+  password: "password"
+  dispatcher:
+    schema: "dispatcher"
+  content_crawler:
+    schema: "content_crawler"
+  dns_crawler:
+    schema: "dns_crawler"
+  smtp_crawler:
+    schema: "smtp_crawler"
+  feature_extraction:
+    schema: "feature_extraction"
+  vat:
+    schema: "vat_crawler"
+  ssl:
+    schema: "ssl_crawler"
+
+updateStrategy: Recreate

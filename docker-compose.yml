@@ -1,0 +1,257 @@
+services:
+
+  localstack:
+    image: localstack/localstack:0.14.0
+    mem_limit: 500M
+    ports:
+      - "4566:4566" # edge port
+      - "9009:8080" # management web interface
+    environment:
+      - SERVICES=sqs,s3
+      - AWS_ACCESS_KEY_ID=accessKey
+      - AWS_SECRET_ACCESS_KEY=secretKey
+      - HOSTNAME_EXTERNAL=${LOCALSTACK_HOSTNAME:-localstack}
+      - DATA_DIR=/tmp/localstack/data
+    healthcheck:
+      test: curl -f http://localhost:4566/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ${PWD}/localstack/scripts/:/docker-entrypoint-initaws.d
+      - ${PWD}/localstack/container/:/tmp/localstack
+
+  muppets:
+    build:
+      context: ./muppets
+    image: dnsbelgium/mercator/muppets:local
+    ports:
+      - "8085:8080"
+    mem_limit: 500M
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      - S3_ENDPOINT=http://localstack:4566
+      - SQS_ENDPOINT=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=accessKey
+      - AWS_SECRET_ACCESS_KEY=secretKey
+      - AWS_REGION=eu-west-1
+      - SERVER_PORT=8080
+    depends_on:
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always # since the process stops listening for messages on network issues, we need to restart it
+
+  mercator-wappalyzer:
+    build:
+      context: ./mercator-wappalyzer
+    image: dnsbelgium/mercator/mercator-wappalyzer:local
+    ports:
+      - "8087:8080"
+    mem_limit: 500M
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      - AWS_ACCESS_KEY_ID=accessKey
+      - AWS_SECRET_ACCESS_KEY=secretKey
+      - AWS_REGION=eu-west-1
+      - SQS_ENDPOINT=http://localstack:4566
+      - SQS_INPUT_QUEUE=mercator-wappalyzer-input
+      - SQS_OUTPUT_QUEUE=mercator-wappalyzer-output
+      - SERVER_PORT=8087
+    depends_on:
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:8080/health || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: always # since the process stops listening for messages on network issues, we need to restart it
+
+  db:
+    image: postgres:11.10
+    command: "-c max_connections=200"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
+#  prometheus:
+#    image: prom/prometheus:v2.12.0
+#    command: '--config.file=/etc/prometheus/prometheus.yml'
+#    volumes:
+#      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
+#      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
+#    ports:
+#      - "9090:9090"
+
+#  grafana:
+#    environment:
+#      GF_SECURITY_ADMIN_PASSWORD: password
+#    image: grafana/grafana:6.5.2
+#    volumes:
+#      - ${PWD}/observability/grafana/provisioning/:/etc/grafana/provisioning/
+#      - ${PWD}/observability/infra/modules/observability/templates/grafana-dashboards/:/var/lib/grafana/dashboards/
+#      - ${PWD}/observability/grafana/persistence/grafana.db:/etc/grafana/grafana.db
+#    ports:
+#      - "3000:3000"
+
+  dispatcher:
+    image: dnsbelgium/mercator/dispatcher:local
+    mem_limit: 250M
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dispatcher
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+    depends_on:
+      db:
+        condition: service_started
+      localstack:
+        condition: service_healthy
+
+  dns-crawler:
+    image: dnsbelgium/mercator/dns-crawler:local
+    mem_limit: 250M
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+      - GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
+    depends_on:
+      db:
+        condition: service_started
+      localstack:
+          condition: service_healthy
+
+  content-crawler:
+    image: dnsbelgium/mercator/content-crawler:local
+    mem_limit: 300M
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=content_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started
+
+  smtp-crawler:
+    image: dnsbelgium/mercator/smtp-crawler:local
+    mem_limit: 300M
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=smtp_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+      - GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started
+
+  feature-extraction:
+    image: dnsbelgium/mercator/feature-extraction:local
+    mem_limit: 300M
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=feature_extraction
+      - SPRING_DATASOURCE_CONTENT_URL=jdbc:postgresql://db:5432/postgres?currentSchema=content_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+      - S3_ENDPOINT=http://localstack:4566
+      - AWS_REGION=eu-west-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started
+
+  vat-crawler:
+    image: dnsbelgium/mercator/vat-crawler:local
+    mem_limit: 300M
+    ports:
+      - "8091:8091"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=vat_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+      - AWS_REGION=eu-west-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started
+
+  mercator-api:
+    image: dnsbelgium/mercator/mercator-api:local
+    ports:
+      - "8089:8089"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_DATASOURCE_DISPATCHER_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dispatcher
+      - SPRING_DATASOURCE_CONTENT_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=content_crawler
+      - SPRING_DATASOURCE_DNS_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
+      - SPRING_DATASOURCE_SMTP_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=smtp_crawler
+      - SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=feature_extraction
+      - SPRING_DATASOURCE_SSL_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ssl_crawler
+      - SPRING_DATASOURCE_VAT_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=vat_crawler
+    depends_on:
+      db:
+        condition: service_started
+
+  mercator-ui:
+    image: dnsbelgium/mercator/mercator-ui:local
+    build:
+      context: ./mercator-ui
+    ports:
+      - "8090:8080"
+    depends_on:
+      mercator-api:
+        condition: service_started
+
+  ground-truth:
+    image: dnsbelgium/mercator/ground-truth:local
+    ports:
+      - "8092:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ground_truth
+      - SPRING_PROFILES_ACTIVE=local
+    depends_on:
+      db:
+        condition: service_started
+
+  ssl-crawler:
+    image: dnsbelgium/mercator/ssl-crawler:local
+    build:
+      context: ./ssl-crawler
+    ports:
+      - "8093:8443"
+    environment:
+      - SSL_CRAWLER_DB_HOST=db
+      - AWS_ACCESS_KEY_ID=accessKey
+      - AWS_SECRET_ACCESS_KEY=secretKey
+      - SSL_CRAWLER_SQS_ENDPOINT=http://localstack:4566
+      - SSL_CRAWLER_ENV=local
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started

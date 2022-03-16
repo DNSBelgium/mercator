@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "content-crawler.fullname" . }}
+  labels:
+    {{- include "content-crawler.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+    {{- include "content-crawler.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: {{ .Values.updateStrategy }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        {{- include "content-crawler.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "content-crawler.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8443
+              protocol: TCP
+{{/*          livenessProbe:*/}}
+{{/*            httpGet:*/}}
+{{/*              path: /actuator/health*/}}
+{{/*              port: http*/}}
+{{/*              scheme: HTTPS*/}}
+{{/*            failureThreshold: 10*/}}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+              scheme: HTTPS
+            failureThreshold: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "content-crawler.fullname" . }}
+            {{ if eq .Values.environment "local" }}
+            - configMapRef:
+                name: "{{ include "content-crawler.fullname" . }}-local"
+            {{ else }}
+            - configMapRef:
+                name: "{{ include "content-crawler.fullname" . }}-aws"
+            {{ end }}
+            - secretRef:
+                name: "{{ include "content-crawler.fullname" . }}"
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100M

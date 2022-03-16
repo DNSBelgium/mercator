@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ground-truth.fullname" . }}
+  labels:
+  {{- include "ground-truth.labels" . | nindent 4 }}
+data:
+  SERVER_PORT: "8443"
+  SERVER_SSL_ENABLED: "true"
+  SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.2"
+  SERVER_SSL_KEY_ALIAS: "localhost"
+  SERVER_SSL_KEY_PASSWORD: "changeit"
+  SERVER_SSL_KEY_STORE: "/etc/ssl/certs/keystore.jks"
+  SERVER_SSL_KEY_STORE_PROVIDER: "SUN"
+  SERVER_SSL_KEY_STORE_TYPE: "JKS"
+  SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
+  SPRING_MAIN_BANNER_MODE: "off"
+  AWS_REGION: "{{ .Values.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_STS_REGIONAL_ENDPOINTS: "regional"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ground-truth.fullname" . }}-aws
+  labels:
+  {{- include "ground-truth.labels" . | nindent 4 }}
+data:
+  SPRING_DATASOURCE_URL: "{{ .Values.database.url }}"
+  SPRING_DATASOURCE_USERNAME: "{{ .Values.database.username }}"
+  SPRING_FLYWAY_SCHEMAS: "{{ .Values.database.schema }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ground-truth.fullname" . }}-local
+  labels:
+  {{- include "ground-truth.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: "local"
+  LOCALSTACK_URL: "http://localstack:4566"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/postgres?currentSchema=ground_truth"

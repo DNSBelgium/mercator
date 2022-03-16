@@ -1,0 +1,1 @@
+ALTER TABLE smtp_crawler.smtp_crawl_result drop COLUMN ok;

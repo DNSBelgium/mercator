@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ssl-crawler.fullname" . }}
+  labels:
+  {{- include "ssl-crawler.labels" . | nindent 4 }}
+data:
+  # TODO SSL
+  SERVER_PORT: "8443"
+  AWS_REGION: "{{ .Values.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_STS_REGIONAL_ENDPOINTS: "regional"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ssl-crawler.fullname" . }}-aws
+  labels:
+  {{- include "ssl-crawler.labels" . | nindent 4 }}
+data:
+{{- if .Values.queue_in }}
+  SSL_CRAWLER_INPUT_QUEUE: "{{ .Values.queue_in }}"
+{{- end }}
+{{- if .Values.queue_ack }}
+  SSL_CRAWLER_OUTPUT_QUEUE: "{{ .Values.queue_ack }}"
+{{- end }}
+  SSL_CRAWLER_DB_USER: {{ .Values.database.username }}
+  SSL_CRAWLER_DB_HOST: {{ .Values.database.host }}
+  SSL_CRAWLER_DB_SCHEMA: {{ .Values.database.schema }}
+  SSL_CRAWLER_DB_NAME: {{ .Values.database.name }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ssl-crawler.fullname" . }}-local
+  labels:
+  {{- include "ssl-crawler.labels" . | nindent 4 }}
+data:
+  SSL_CRAWLER_SQS_ENDPOINT: "http://localstack:4566"

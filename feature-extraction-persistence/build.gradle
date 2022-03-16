@@ -1,0 +1,31 @@
+plugins {
+  id 'org.springframework.boot' apply false
+  id 'io.spring.dependency-management'
+  id 'java'
+}
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+  // Lombok
+  compileOnly 'org.projectlombok:lombok'
+  annotationProcessor 'org.projectlombok:lombok'
+
+  // JSONB support
+  implementation 'com.vladmihalcea:hibernate-types-52:2.9.7'
+
+  implementation 'org.apache.commons:commons-lang3:3.9'
+}
+
+dependencyManagement {
+  imports {
+    mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+  }
+}

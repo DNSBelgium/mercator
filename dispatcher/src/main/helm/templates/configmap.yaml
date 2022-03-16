@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dispatcher.fullname" . }}
+  labels:
+  {{- include "dispatcher.labels" . | nindent 4 }}
+data:
+  SERVER_PORT: "8443"
+  SERVER_SSL_ENABLED: "true"
+  SERVER_SSL_ENABLED_PROTOCOLS: "TLSv1.2"
+  SERVER_SSL_KEY_ALIAS: "localhost"
+  SERVER_SSL_KEY_PASSWORD: "changeit"
+  SERVER_SSL_KEY_STORE: "/etc/ssl/certs/keystore.jks"
+  SERVER_SSL_KEY_STORE_PROVIDER: "SUN"
+  SERVER_SSL_KEY_STORE_TYPE: "JKS"
+  SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
+  SPRING_MAIN_BANNER_MODE: "off"
+  AWS_REGION: "{{ .Values.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  MESSAGING_JMS_CONCURRENCY: "1-10"
+  AWS_STS_REGIONAL_ENDPOINTS: "regional"
+  CLOUD_AWS_REGION_STATIC: "{{ .Values.region }}"
+  LOGGING_LEVEL_COM_AMAZONAWS_UTIL: ERROR
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dispatcher.fullname" . }}-aws
+  labels:
+    {{- include "dispatcher.labels" . | nindent 4 }}
+data:
+{{- if .Values.queue_in }}
+  DISPATCHER_QUEUE_IN: "{{ .Values.queue_in }}"
+{{- end }}
+{{- if .Values.queue_ack }}
+  DISPATCHER_QUEUE_ACK: "{{ .Values.queue_ack }}"
+{{- end }}
+{{- if .Values.queue_output }}
+  DISPATCHER_QUEUE_OUT: "{{ .Values.queue_output }}"
+{{- end }}
+{{- if .Values.queues_forward }}
+  DISPATCHER_QUEUES_FORWARD: "{{ .Values.queues_forward }}"
+{{- end }}
+  SPRING_DATASOURCE_URL: "{{ .Values.database.url }}"
+  SPRING_DATASOURCE_USERNAME: "{{ .Values.database.username }}"
+  SPRING_FLYWAY_SCHEMAS: "{{ .Values.database.schema }}"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dispatcher.fullname" . }}-local
+  labels:
+  {{- include "dispatcher.labels" . | nindent 4 }}
+data:
+  SPRING_PROFILES_ACTIVE: "local"
+  LOCALSTACK_URL: "http://localstack:4566"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://postgresql:5432/postgres?currentSchema=dispatcher"

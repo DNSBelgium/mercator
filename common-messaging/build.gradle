@@ -1,0 +1,45 @@
+plugins {
+  id 'org.springframework.boot' apply false
+  id 'io.spring.dependency-management'
+  id 'java-library'
+}
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.springframework.boot:spring-boot-starter'
+
+  implementation 'org.springframework.boot:spring-boot-starter-logging'
+  // https://mvnrepository.com/artifact/io.micrometer/micrometer-core
+  implementation 'io.micrometer:micrometer-core'
+
+  // JMS
+  api 'org.springframework:spring-jms'
+  api 'com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8'
+
+  // JSON Messaging conversion
+  implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+  // Lombok
+  compileOnly 'org.projectlombok:lombok'
+  annotationProcessor 'org.projectlombok:lombok'
+
+  testImplementation('org.springframework.boot:spring-boot-starter-test') {
+    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+  }
+}
+
+dependencyManagement {
+  imports {
+    mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+  }
+}
+
+test {
+  useJUnitPlatform()
+}

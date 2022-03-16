@@ -1,0 +1,111 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'com.google.cloud.tools.jib'
+    id 'java'
+    id 'info.solidsoft.pitest' version '1.5.1'
+    id 'org.unbroken-dome.helm'
+}
+
+version = '0.0.1-' + getCommitHash()
+sourceCompatibility = '11'
+
+ext['log4j2.version'] = '2.17.0'
+ext['logback.version'] = '1.2.8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:2.3.2"
+    }
+}
+
+dependencies {
+    // EKS IRSA support
+    implementation 'com.amazonaws:aws-java-sdk-sts'
+    implementation project(':common-messaging')
+    implementation project(':common-geoip')
+
+    implementation project(':smtp-crawler-dto')
+    implementation project(':smtp-crawler-persistence')
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // JSON logging
+    implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
+
+    implementation 'org.springframework.integration:spring-integration-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // explicitly declare a dependency on aws-java-sdk-core
+    // otherwise we could get an older version in our classpath via common-messaging
+    // seems to be an issue only when running from IntelliJ
+    implementation 'com.amazonaws:aws-java-sdk-core'
+
+    // DB
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.postgresql:postgresql:42.3.2'
+    // JSONB support
+    implementation 'com.vladmihalcea:hibernate-types-52:2.9.7'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // https://mvnrepository.com/artifact/com.hubspot/NioSmtpClient
+    implementation 'com.hubspot:NioSmtpClient:1.1.0'
+    implementation 'dnsjava:dnsjava:3.1.0'
+
+    // no idea why we need it, but having it avoids this warning
+    // warning: unknown enum constant ImplementationVisibility.PUBLIC
+    // reason: class file for org.immutables.value.Value$Style$ImplementationVisibility not found
+    implementation 'org.immutables:value:2.8.2'
+
+    // caching
+    implementation 'com.github.ben-manes.caffeine:caffeine:2.8.2'
+    
+    implementation 'com.maxmind.geoip2:geoip2:2.12.0'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
+    implementation 'org.apache.commons:commons-compress:1.21'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    // NioSmtpClient 1.1.0 depends on constants that were removed in guava 26.0
+    // Todo: create pull request for NioSmtpClient
+    implementation 'com.google.guava:guava:25.0-jre'
+
+    // https://mvnrepository.com/artifact/com.github.davidmoten/subethasmtp
+    testImplementation group: 'com.github.davidmoten', name: 'subethasmtp', version: '5.2.2'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation testFixtures(project(':common-testing'))
+}
+
+jib {
+    container {
+        jvmFlags = ['-XX:MaxRAMPercentage=75.0']
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+pitest {
+    targetClasses = ['be.dnsbelgium.mercator.smtp.*']  //by default "${project.group}.*"
+    threads = 4
+    outputFormats = ['XML', 'HTML']
+    timestampedReports = false
+    junit5PluginVersion = '0.12'
+}

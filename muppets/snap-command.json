@@ -1,0 +1,21 @@
+{
+  "saveHar": true,
+  "saveHtml": true,
+  "saveScreenshot": true,
+  "url": "http://${domain}",
+  "referer" : "https://google.com/",
+  "screenshotOptions": {
+    "type": "png",
+    "fullPage": true,
+    "omitBackground": false,
+    "encoding": "binary"
+  },
+  "browserOptions": {
+    "headless": true,
+    "defaultViewport": {
+      "width": 1600,
+      "height": 1200
+    }
+  }
+}
+

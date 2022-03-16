@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "localstack.fullname" . }}
+  labels:
+    {{- include "localstack.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "localstack.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "localstack.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "localstack.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- range .Values.service.ports }}
+          ports:
+            - name: {{ .name }}
+              containerPort: {{ .port }}
+              protocol: TCP
+          {{- end }}
+          readinessProbe:
+            exec:
+              command: ["aws", "--region=eu-west-1", "--endpoint-url=http://localhost:4566", "sqs", "get-queue-url", "--queue-name", "mercator-dispatcher-input"]
+            failureThreshold: 3
+            periodSeconds: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /tmp/localstack
+              name: temp
+            - mountPath: /docker-entrypoint-initaws.d
+              name: scripts
+          envFrom:
+            - configMapRef:
+                name: {{ include "localstack.fullname" . }}
+            - secretRef:
+                name: {{ include "localstack.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 100M
+        - name: temp
+          hostPath:
+            path: {{ .Values.project_dir }}/localstack/container/
+        - name: scripts
+          hostPath:
+            path: {{ .Values.project_dir }}/localstack/scripts/
+
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- Turning down the wiremock logging -->
+    <logger name="com.github.tomakehurst.wiremock" level="WARN"/>
+    <logger name="wiremock.org" level="ERROR"/>
+    <logger name="org.eclipse.jetty" level="ERROR"/>
+    <logger name="WireMock" level="WARN"/>
+
+    <logger name="be.dnsbelgium.mercator.vat" level="DEBUG"/>
+<!--    <logger name="be.dnsbelgium.mercator.vat.domain.PageFetcher" level="INFO"/>-->
+<!--    <logger name="be.dnsbelgium.mercator.vat.domain.VatScraper" level="INFO"/>-->
+<!--    <logger name="be.dnsbelgium.mercator.vat.domain.VatFinder" level="INFO"/>-->
+<!--    <logger name="be.dnsbelgium.mercator.vat.domain.Page" level="INFO"/>-->
+    <logger name="be.dnsbelgium.mercator.vat.domain.ConfigurableDns" level="DEBUG"/>
+
+    <root level="info" >
+    </root>
+
+</configuration>

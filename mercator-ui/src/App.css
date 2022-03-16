@@ -1,0 +1,147 @@
+/* App.tsx */
+.App {
+  margin-left: 50px;
+  margin-right: 50px;
+}
+/*css of "Details of one visit"*/
+/* dispatcher card */
+#visit-id, #labels {
+  font-weight: bold;
+}
+h1 {
+  font-size: 40px !important;
+}
+/* top element of border in all detailsCards */
+.top-element {
+  white-space: nowrap;
+  font-weight: bold;
+  font-size: large;
+}
+/* td and th of all tables in detailsCards */
+td {
+  width: 650px;
+  max-width: 650px;
+}
+th {
+  width: 350px;
+}
+
+.nested-table-header {
+  width: 150px;
+}
+.nested-table-data {
+  line-break: anywhere;
+}
+/* DNSCard categories*/
+.list-categories{
+  margin-top: 8px;
+  margin-bottom: -10px;
+}
+/* text goes over border in HTMLCard and DNSCard */
+.htmlStruct, .dns-records {
+  word-wrap: break-word;
+}
+.dns-records{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+  /* makes red the errors and problems in detailsCards*/
+.problem-content,.problem-dns,.error-wappalyzer, #error-500-html, #error-500-content{
+  color: red;
+  font-weight: bold;
+}
+/* tables of detailsCards */
+.content-table, .smtp-table, .html-table, .dns-table, .vat-table{
+  margin-top: -15px;
+  margin-bottom: -15px;
+}
+/* " Open All" button in Details.jsx */
+.openall-button{
+  margin-top: -15px;
+}
+/*all the buttons of the components of detalsCards*/
+#button-metricsJson , #button-technologies, #button-urls, #button-records, #button-servers, #button-hosts, #button-extensions, #button-htmlStruct, #button-external-hosts, #button-body-text, #button-technologies-items, .toggle-button {
+  padding: 0px !important;
+}
+
+.no-bullet {
+  list-style-type: none;
+}
+
+/*css of "Timeline for one domain name */
+/*input group TimelineDomainName*/
+.input-group{
+  min-width: 100px;
+  max-width: 900px;
+}
+
+.form{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.searchfield{
+  margin-top: 40px;
+ padding: 40px;
+  background-color:#e3f5ff;
+  min-width: 100px;
+
+}
+/*searchbar*/
+#input-domainname{
+  border: 1px solid dodgerblue !important;
+  margin-left: 45px;
+  margin-right: 50px;
+  margin-top: 1px;
+  font-family: "Arial Rounded MT Bold";
+}
+/* button searchbar*/
+#input-button{
+  font-family: "Arial Rounded MT Bold";
+  color: white;
+  background-color:#2a6485;
+  border: 1px #37536e !important;
+  font-size: 16px;
+  width: 100px;
+  height: 37px;
+  margin-top: 1px;
+  border-radius: 0px;
+}
+/*label "Domain name*/
+#input-label{
+  margin-top: 8px;
+  font-family: "Arial Rounded MT Bold";
+  color: #314f6b;
+}
+/* all the th of the table, color*/
+.header-timeline-table{
+  background-color: #e3f5ff;
+  color: #2a6485;
+}
+/* all the th of the table,alignment*/
+.table-timeline th{
+  vertical-align: middle !important;
+  padding-left: 10px !important;
+}
+/*alignment td*/
+.table-timeline td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
+  text-align: center;
+  vertical-align: middle !important;
+  justify-content: center;
+  align-items: center;
+}
+/*alignment td*/
+.table-timeline td:nth-child(1), td:nth-child(2), td:nth-child(3) {
+  vertical-align: middle !important;
+}
+/*width th*/
+.table-timeline th:nth-child(4), th:nth-child(5), th:nth-child(6), th:nth-child(7) ,td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
+  max-width: 220px !important;
+}
+.table-timeline th:nth-child(7) , td:nth-child(7) {
+  max-width: 180px !important;
+}
+
+
+
+

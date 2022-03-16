@@ -1,0 +1,13 @@
+plugins {
+  id 'base'
+  id 'com.palantir.docker' version '0.32.0'
+}
+
+version = 20220315
+
+docker {
+  name "dnsbelgium/mercator/${project.name}:${project.version}"
+  files 'rds-to-keytool.sh'
+}
+
+tasks.findByName('dockerPrepare').dependsOn -= tasks.findByName('dockerClean')

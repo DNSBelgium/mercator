@@ -1,0 +1,33 @@
+<!--suppress HtmlUnknownTarget -->
+<html lang="en">
+<head>
+  <meta name="description" content="description one two three" />
+  <meta name="keywords" content="keyword three four five" />
+  <title>Hello world</title>
+</head>
+<body>
+<p>Hi</p>
+
+<h1> Some internal links</h1>
+
+<a href="links.html">internal link</a>
+<a href="/links.html">internal link</a>
+<a href="../html">internal link</a>
+<a href="..">internal link</a>
+<a href="/">internal link</a>
+<a href="./">internal link</a>
+<a href="./html/xyz">internal link</a>
+
+
+<h1>These should be considered internal when base url == http://www.example.com</h1>
+
+<a href="http://www.example.com">internal  </a>
+<a href="http://www.example.com/">internal </a>
+<a href="http://www.example.com/index.html">internal</a>
+<a href="http://www.example.com/abc/de/x.html"> </a>
+
+<h1>Always external</h1>
+<a href="http://i.am.external/external.html"> external</a>
+
+</body>
+</html>

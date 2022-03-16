@@ -1,0 +1,24 @@
+plugins {
+  id 'org.springframework.boot' apply false
+  id 'io.spring.dependency-management'
+  id 'java-library'
+}
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11.0'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  // Lombok
+  compileOnly 'org.projectlombok:lombok'
+  annotationProcessor 'org.projectlombok:lombok'
+}
+
+dependencyManagement {
+  imports {
+    mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+  }
+}

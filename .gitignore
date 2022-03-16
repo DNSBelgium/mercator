@@ -1,0 +1,11 @@
+.gradle
+build/
+
+.idea
+*.iml
+out/
+
+spring-shell.log
+
+/.env
+/dashboard/dashboard_venv/

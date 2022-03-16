@@ -1,0 +1,1 @@
+CREATE INDEX ON content_crawl_result (visit_id);

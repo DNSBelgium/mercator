@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mercator-ui.fullname" . }}
+  labels:
+  {{- include "mercator-ui.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "mercator-ui.selectorLabels" . | nindent 6 }}
+  ingress:
+    # Ingress
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              namespace: ingress
+          podSelector:
+            matchLabels:
+              app: nginx-ingress
+      ports:
+        - port: 8080
+  egress: []
+  policyTypes:
+    - Ingress
+    - Egress

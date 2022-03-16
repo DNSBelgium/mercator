@@ -1,0 +1,76 @@
+# Default values for wappalyzer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: dnsbelgium/mercator/wappalyzer
+  pullPolicy: IfNotPresent
+  tag: k8s
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: ""
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/actuator/prometheus"
+
+podSecurityContext:
+  runAsUser: 65534
+  fsGroup: 65534
+  supplementalGroups:
+    - 65534
+
+securityContext:
+  runAsUser: 65534
+  readOnlyRootFilesystem: true
+  privileged: false
+  runAsNonRoot: true
+  capabilities:
+    drop:
+      - all
+    add:
+      - SYS_ADMIN
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 1024M
+  limits:
+    cpu: 500m
+    memory: 1024M
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# environment to deploy to, can be "local" or "aws"
+environment: "local"
+region: "eu-west-1"
+sqs_input_queue:
+sqs_output_queue:
+
+global:
+  vpc:
+    endpoint_cidr:
+      - "127.0.0.1/32"
+
+updateStrategy: Recreate
