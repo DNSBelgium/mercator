@@ -37,6 +37,7 @@ spec:
             cidr: {{ . }}
         {{- end }}
     # DNS resolver
+    {{- if .Values.resolver }}
     - ports:
         - port: 53
           protocol: UDP
@@ -45,6 +46,7 @@ spec:
       to:
         - ipBlock:
             cidr: "{{ .Values.resolver }}/32"
+    {{- end }}
     # smtp crawling
     - ports:
         - port: 25
