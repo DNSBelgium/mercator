@@ -238,20 +238,20 @@ services:
       db:
         condition: service_started
 
-  ssl-crawler:
-    image: dnsbelgium/mercator/ssl-crawler:local
-    build:
-      context: ./ssl-crawler
-    ports:
-      - "8093:8443"
-    environment:
-      - SSL_CRAWLER_DB_HOST=db
-      - AWS_ACCESS_KEY_ID=accessKey
-      - AWS_SECRET_ACCESS_KEY=secretKey
-      - SSL_CRAWLER_SQS_ENDPOINT=http://localstack:4566
-      - SSL_CRAWLER_ENV=local
-    depends_on:
-      localstack:
-        condition: service_healthy
-      db:
-        condition: service_started
+#  ssl-crawler:
+#    image: dnsbelgium/mercator/ssl-crawler:local
+#    build:
+#      context: ./ssl-crawler
+#    ports:
+#      - "8093:8443"
+#    environment:
+#      - SSL_CRAWLER_DB_HOST=db
+#      - AWS_ACCESS_KEY_ID=accessKey
+#      - AWS_SECRET_ACCESS_KEY=secretKey
+#      - SSL_CRAWLER_SQS_ENDPOINT=http://localstack:4566
+#      - SSL_CRAWLER_ENV=local
+#    depends_on:
+#      localstack:
+#        condition: service_healthy
+#      db:
+#        condition: service_started
