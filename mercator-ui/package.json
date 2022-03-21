@@ -25,7 +25,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "PORT=8090 REACT_APP_MUPPETS_HOST=https://muppets-dev.crawl042.dc3.be chmod +x ./env.sh && ./env.sh && cp env-config.js ./public/ && react-scripts start",
+    "start": "PORT=8090 REACT_APP_MUPPETS_HOST=https://muppets-dev.crawl042.dc3.be chmod +x ./env.sh && ./env.sh && cp config/env-config.js ./public/ && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
