@@ -106,6 +106,7 @@ const SSLCard = (props) => {
                             </tr>
                             <tr>
                                 <th scope="row">OK</th>
+                                {/* Change this boolean to 'loading...' */}
                                 <td>{crawlResult.ok ? 'true' : 'false'}</td>
                             </tr>
                             <tr>

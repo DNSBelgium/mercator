@@ -89,7 +89,7 @@ th {
 }
 /*searchbar*/
 #input-domainname{
-  border: 1px solid dodgerblue !important;
+  /* border: 1px solid dodgerblue !important; */
   margin-left: 45px;
   margin-right: 50px;
   margin-top: 1px;

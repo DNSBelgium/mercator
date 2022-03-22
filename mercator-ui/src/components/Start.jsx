@@ -1,13 +1,13 @@
-import SearchField from "./timelineCards/SearchField";
-import "../App.css";
+// import SearchField from "./timelineCards/SearchField";
+// import "../App.css";
 
-function Start () {
+// function Start () {
 
-    return (
-        <div>
-             <SearchField/>
-        </div>
-    )
-}
+//     return (
+//         <div>
+//              <SearchField/>
+//         </div>
+//     )
+// }
 
-export default Start;
+// export default Start;

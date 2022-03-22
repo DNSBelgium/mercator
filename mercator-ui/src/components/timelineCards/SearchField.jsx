@@ -1,62 +1,74 @@
-import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
-import React, {useState} from "react";
-import TimelineDomainName from "./TimelineDomainName";
+// import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
+// import React, {useState} from "react";
+// import TimelineDomainName from "./TimelineDomainName";
 
-const SearchField = () => {
-    const [domainName, setDomainName] = useState(undefined);
-    // const [state, setState] = useState({isComponentVisible: false})
+// const SearchField = () => {
+//     const [domainName, setDomainName] = useState(undefined);
+//     const [validated, setValidated] = useState(false); // Hook to validate input field
 
-    // reference to input of user (domain name)
-    let textInput = React.createRef();
+//     // const [state, setState] = useState({isComponentVisible: false})
 
-    // TODO understand what Khava has done here ..
+//     // reference to input of user (domain name)
+//     let textInput = React.createRef();
 
-    // useEffect(() => {
-    //     const blockTime = localStorage.getItem('blockTime')
-    //     if (blockTime !== null) {
-    //         if (+new Date() >= parseInt(blockTime, 0)) {
-    //             localStorage.removeItem('blockTime')
-    //             localStorage.removeItem('SelectedOption')
-    //         } else {
-    //             const oldValue = localStorage.getItem('SelectedOption')
-    //             if (oldValue) {
-    //                 setDomainName(oldValue);
-    //                 setState({isComponentVisible: true});
-    //             }
-    //         }
-    //     }
-    // }, [])
+//     // TODO understand what Khava has done here ..
 
-    // save input after submit in localstorage for +-15 min
-    const search = evt => {
-        evt.preventDefault()
-        setDomainName(textInput.current.value.toLowerCase().trim())
-        // setState({isComponentVisible: !state.isComponentVisible})
+//     // useEffect(() => {
+//     //     const blockTime = localStorage.getItem('blockTime')
+//     //     if (blockTime !== null) {
+//     //         if (+new Date() >= parseInt(blockTime, 0)) {
+//     //             localStorage.removeItem('blockTime')
+//     //             localStorage.removeItem('SelectedOption')
+//     //         } else {
+//     //             const oldValue = localStorage.getItem('SelectedOption')
+//     //             if (oldValue) {
+//     //                 setDomainName(oldValue);
+//     //                 setState({isComponentVisible: true});
+//     //             }
+//     //         }
+//     //     }
+//     // }, [])
 
-        // localStorage.setItem('blockTime', +new Date() + (200 * 5000))
-        // localStorage.setItem('SelectedOption', textInput.current.value.toLowerCase().trim())
+//     // save input after submit in localstorage for +-15 min
+//     async function search(event) {
+//         event.preventDefault()
+//         await setDomainName(textInput.current.value.toLowerCase().trim())
+//         // setState({isComponentVisible: !state.isComponentVisible})
 
-        // setTimeout(() => {
-        //     setState({isComponentVisible: true});
-        // }, 300);
-    }
+//         // localStorage.setItem('blockTime', +new Date() + (200 * 5000))
+//         // localStorage.setItem('SelectedOption', textInput.current.value.toLowerCase().trim())
 
-    return (
-        <>
-            <div className="searchfield">
-                <Form className='form' onSubmit={search}>
-                    <InputGroup className="input-group">
-                        <label id="input-label">Domain name</label>
-                        <FormControl id="input-domainname" ref={textInput}/>
-                        <Button id="input-button" type="submit">Search</Button>
-                    </InputGroup>
-                </Form>
-            </div>
-            <div>
-                <TimelineDomainName domainName={domainName} />
-            </div>
-        </>
-    )
-}
+//         // setTimeout(() => {
+//         //     setState({isComponentVisible: true});
+//         // }, 300);
+        
+//         // handleSearchBorder();
 
-export default SearchField;
+//         setValidated(true);
+//     }
+
+//     return (
+//         <>
+//             <div className="searchfield">
+//                 <Form noValidate validated={validated} className='form' onSubmit={search}>
+//                     <Form.Group className="input-group" controlId="validationForSearch">
+//                         <Form.Label id="input-label">Domain name</Form.Label>
+//                         <FormControl 
+//                             id="input-domainname"
+//                             required
+//                             type="text"
+//                             placeholder="Enter full domain name"
+//                             ref={textInput}
+//                         />
+//                         <Button id="input-button" type="submit">Search</Button>
+//                     </Form.Group>
+//                 </Form>
+//             </div>
+//             <div>
+//                 <TimelineDomainName domainName={domainName} />
+//             </div>
+//         </>
+//     )
+// }
+
+// export default SearchField;
