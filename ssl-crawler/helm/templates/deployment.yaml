@@ -60,7 +60,7 @@ spec:
             - configMapRef:
                 name: "{{ include "ssl-crawler.fullname" . }}-aws"
             {{ end }}
-            {{ if eq .Values.environment "aws" }}
+            {{ if eq .Values.global.environment "aws" }}
             - secretRef:
                 name: "{{ include "ssl-crawler.fullname" . }}"
             {{ end }}
