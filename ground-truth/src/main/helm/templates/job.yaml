@@ -44,7 +44,7 @@ spec:
             - configMapRef:
                 name: "{{ include "ground-truth.fullname" . }}-aws"
             {{ end }}
-            {{ if eq .Values.environment "aws" }}
+            {{ if eq .Values.global.environment "aws" }}
             - secretRef:
                 name: "{{ include "ground-truth.fullname" . }}"
             {{ end }}
