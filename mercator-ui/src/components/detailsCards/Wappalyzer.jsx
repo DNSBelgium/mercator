@@ -1,6 +1,7 @@
 import {Row, Col, Table, Accordion, Button} from "react-bootstrap";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import api from "../../services/api";
+import { renderDataBoolean } from "../../services/Util";
 
 const Wappalyzer = (props) => {
 
@@ -20,7 +21,7 @@ const Wappalyzer = (props) => {
             setData(response === undefined ? null : response.data);
         };
         handlerData();
-    }, [])
+    }, [visitId]);
 
     if (!data) {
         return (
@@ -47,7 +48,7 @@ const Wappalyzer = (props) => {
                                 </tr>
                                 <tr>
                                     <th scope="row">Ok</th>
-                                    <td>{data.ok ? 'true' : 'false'}</td>
+                                    { renderDataBoolean(data.ok) }
                                 </tr>
                                 <tr>
                                     <th scope="row">Technologies</th>
@@ -61,7 +62,7 @@ const Wappalyzer = (props) => {
                                                     <Accordion.Collapse eventKey="3" in={openTechnologies}>
                                                         <div className="technologies-list">
                                                             {data.technologies.map((item, index) => (
-                                                                <Accordion>
+                                                                <Accordion key={index}>
                                                                     <ul className="mb-2 mt-2">
                                                                         <li><Accordion.Toggle as={Button}
                                                                                               id="button-technologies-items"
@@ -71,7 +72,7 @@ const Wappalyzer = (props) => {
                                                                         </li>
                                                                         <Accordion.Collapse eventKey="1">
                                                                             <ul>
-                                                                                <li key={index.toString()}>
+                                                                                <div key={index}>
                                                                                     <span
                                                                                         className="font-weight-bold">slug: </span><span> {item.slug}</span>
                                                                                     <li><span
@@ -111,7 +112,7 @@ const Wappalyzer = (props) => {
                                                                                         </li>
                                                                                     ))}
                                                                                     </ul>
-                                                                                </li>
+                                                                                </div>
                                                                             </ul>
                                                                         </Accordion.Collapse>
                                                                     </ul>

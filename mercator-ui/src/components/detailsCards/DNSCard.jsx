@@ -3,6 +3,7 @@ import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
 import api from "../../services/api";
+import { renderDataBoolean } from "../../services/Util";
 
 const DNSCard = (props) => {
 
@@ -21,7 +22,7 @@ const DNSCard = (props) => {
             setData(response.data);
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
     const {openRecords, setOpenRecords} = props;
     const topElement = <p className='top-element'> DNS crawl </p>
@@ -54,7 +55,7 @@ const DNSCard = (props) => {
                             </tr>
                             <tr>
                                 <th scope="row">Ok</th>
-                                <td>{data.ok ? 'true' : 'false'}</td>
+                                { renderDataBoolean(data.ok) }
                             </tr>
                             <tr>
                                 <th scope="row">All records</th>
@@ -116,8 +117,8 @@ const DNSCard = (props) => {
                             </tbody>
                         </Table>
                         {data.geoIps ? (data.geoIps.map((item, index) => (
-                                <Row>
-                                    <Col key={index.toString()}>
+                                <Row key={index}>
+                                    <Col>
                                         <h5 className="mt-3 text-left">GEO IPs</h5>
                                         <Table size="sm" borderless>
                                             <tbody className="text-md-left">

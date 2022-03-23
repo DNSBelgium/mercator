@@ -18,7 +18,7 @@ function DispatcherCard(props) {
             }
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
     if (!data) {
         return (

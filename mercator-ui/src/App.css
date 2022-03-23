@@ -3,6 +3,7 @@
   margin-left: 50px;
   margin-right: 50px;
 }
+
 /*css of "Details of one visit"*/
 /* dispatcher card */
 #visit-id, #labels {
@@ -68,6 +69,7 @@ th {
   list-style-type: none;
 }
 
+/* TimelineDomainName.jsx */
 /*css of "Timeline for one domain name */
 /*input group TimelineDomainName*/
 .input-group{
@@ -89,7 +91,6 @@ th {
 }
 /*searchbar*/
 #input-domainname{
-  /* border: 1px solid dodgerblue !important; */
   margin-left: 45px;
   margin-right: 50px;
   margin-top: 1px;
@@ -142,6 +143,19 @@ th {
   max-width: 180px !important;
 }
 
+/* ContentCrawlCard.jsx links (Screenshot, HTML, Har) */
+.content-card-link-button {
+  color: #007bff;
+  border: none;
+  background-color: white;
+}
+.content-card-link-button:hover {
+  color: blue;
+  text-decoration: underline;
+}
 
-
-
+/* HandleError.jsx error divs */
+#Error-Case-500-Div {
+  margin-top: 2rem;
+  margin-left: 2rem;
+}

@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import api from "../../services/api";
 import moment from "moment";
+import { renderDataBoolean } from "../../services/Util";
 
 const SSLCard = (props) => {
 
@@ -30,7 +31,7 @@ const SSLCard = (props) => {
             try {
                 trustStoreResponse = await api.get(`/trustStores/search/findRelatedToSslCrawlResult?visitId=${visitId}`);
                 // Convert array of objects to object with id as key: https://stackoverflow.com/a/44325124
-                trustStoreResponse = trustStoreResponse.data._embedded.trustStores.reduce((obj, item) => (obj[item.id] = item, obj), {});
+                trustStoreResponse = trustStoreResponse.data._embedded.trustStores.reduce((obj, item) => (obj[item.id] = item /*, obj*/), {});
             } catch (e) {
                 console.log(e);
             }
@@ -38,7 +39,7 @@ const SSLCard = (props) => {
             try {
                 certificateResponse = await api.get(`/certificates/search/findRelatedToSslCrawlResult?visitId=${visitId}`);
                 // Convert array of objects to object with id as key: https://stackoverflow.com/a/44325124
-                certificateResponse = certificateResponse.data._embedded.certificates.reduce((obj, item) => (obj[item.id] = item, obj), {});
+                certificateResponse = certificateResponse.data._embedded.certificates.reduce((obj, item) => (obj[item.id] = item /*, obj*/), {});
             } catch (e) {
                 console.log(e);
             }
@@ -46,7 +47,7 @@ const SSLCard = (props) => {
             try {
                 countCipherSuitesResponse = await api.get(`/countCipherSuitesResults/search/findNumberOfSupportedCipherSuitesByVisitId?visitId=${visitId}`);
                 // Convert array of objects to object with protocol as key: https://stackoverflow.com/a/44325124
-                countCipherSuitesResponse = countCipherSuitesResponse.data._embedded.countCipherSuitesResults.reduce((obj, item) => (obj[item.protocol] = item, obj), {});
+                countCipherSuitesResponse = countCipherSuitesResponse.data._embedded.countCipherSuitesResults.reduce((obj, item) => (obj[item.protocol] = item /*, obj*/), {});
             } catch (e) {
                 console.log(e);
             }
@@ -62,7 +63,7 @@ const SSLCard = (props) => {
 
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
     // data from props
     const {
@@ -107,7 +108,7 @@ const SSLCard = (props) => {
                             <tr>
                                 <th scope="row">OK</th>
                                 {/* Change this boolean to 'loading...' */}
-                                <td>{crawlResult.ok ? 'true' : 'false'}</td>
+                                { renderDataBoolean(crawlResult.ok) }
                             </tr>
                             <tr>
                                 <th scope="row">Problem</th>

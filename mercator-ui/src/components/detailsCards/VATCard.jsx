@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
@@ -22,7 +22,7 @@ const VATCard = (props) => {
             setData(response === undefined ? null : response.data);
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
     // data from props
     const {
@@ -84,8 +84,8 @@ const VATCard = (props) => {
                                                 values</Accordion.Toggle>
                                             <Accordion.Collapse eventKey="3" in={openVatValues}>
                                                 <ul className="no-bullet mt-1 pl-0">
-                                                    {data.vatValues.map(data => (
-                                                        <li>{data}</li>
+                                                    {data.vatValues.map((data, index) => (
+                                                        <li key={index}>{data}</li>
                                                     ))}
                                                 </ul>
                                             </Accordion.Collapse>
@@ -116,8 +116,8 @@ const VATCard = (props) => {
                                             followed</Accordion.Toggle>
                                         <Accordion.Collapse eventKey="3" in={openVisitedUrlsVat}>
                                             <ul className="mt-2 no-bullet pl-0">
-                                                {data.visitedUrls.map(data => (
-                                                    <li className="mt-1">{data}</li>
+                                                {data.visitedUrls.map((data, index) => (
+                                                    <li className="mt-1" key={index}>{data}</li>
                                                 ))}
                                             </ul>
                                         </Accordion.Collapse>

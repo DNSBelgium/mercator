@@ -1,8 +1,7 @@
-import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
+import {Button, Form, FormControl} from "react-bootstrap";
 import React, {useState} from "react";
 
 import api from "../services/api";
-import TimelineDomainName from "./timelineCards/TimelineDomainName";
 
 function NavigationBar() {
     const [validated, setValidated] = useState(false); // Hook to validate input field

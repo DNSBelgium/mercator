@@ -15,12 +15,10 @@ function App() {
         <NavigationBar />
 
         <Router>
-          <>
-              <Switch>
+            <Switch>
               <Route exact path="/details/:visitId" component={Details}></Route>
               <Route path="/" component={TimelineDomainName}></Route>
-              </Switch>
-          </>
+            </Switch>
         </Router>
       </div>
   );

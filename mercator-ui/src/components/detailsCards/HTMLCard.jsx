@@ -16,7 +16,7 @@ const HTMLCard = (props) => {
             setData(response === undefined ? null :response.data._embedded.htmlFeatureses);
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
 
 //data from props
@@ -58,7 +58,7 @@ const HTMLCard = (props) => {
     return (
         <>
             {data.map(data => (
-                <Row>
+                <Row key={data.id}>
                     <Col className='mt-4'>
                         <BorderWrapper borderWidth="3px" borderRadius="0px" innerPadding="30px"
                                        topElement={topElement}

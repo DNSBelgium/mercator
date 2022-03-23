@@ -1,9 +1,10 @@
 import BorderWrapper from 'react-border-wrapper'
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import {Row, Col, Table, Accordion, Button} from "react-bootstrap";
-import React, {useEffect, useState} from "react";
+import { Row, Col, Table, Accordion, Button } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { renderDataBoolean } from '../../services/Util';
 
 const ContentCard = (props) => {
 
@@ -22,7 +23,7 @@ const ContentCard = (props) => {
             setData(response === undefined ? null : response.data._embedded.contentCrawlResults);
         };
         handlerData();
-    }, [])
+    }, [visitId])
 
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props;
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
@@ -83,7 +84,7 @@ const ContentCard = (props) => {
                                         </tr>
                                         <tr>
                                             <th scope="row">Ok</th>
-                                            <td>{data.ok ? 'true' : 'false'}</td>
+                                            { renderDataBoolean(data.ok) }
                                         </tr>
                                         <tr>
                                             <th scope="row">Problem</th>
@@ -112,12 +113,13 @@ const ContentCard = (props) => {
                                         </tbody>
                                     </Table>
                                     <div className="mb-4 mt-4 ml-4">
-                                        <a href="#" className="mr-5 ml-5"
-                                           onClick={() => window.open(prefix + data.screenshotKey)}>Screenshot</a>
-                                        <a href="#" className="mr-5 ml-5"
-                                           onClick={() => window.open(prefix + data.htmlKey)}>HTML</a>
-                                        <a href="#" className="ml-5"
-                                           onClick={() => window.open(prefix + data.harKey)}>Har</a>
+                                        {/* <Link to={prefix + data.screenshotKey}>Screenshot</Link> */}
+                                        <button className="mr-5 ml-5 content-card-link-button"
+                                           onClick={() => window.open(prefix + data.screenshotKey)}>Screenshot</button>
+                                        <button className="mr-5 ml-5 content-card-link-button"
+                                           onClick={() => window.open(prefix + data.htmlKey)}>HTML</button>
+                                        <button className="ml-5 content-card-link-button"
+                                           onClick={() => window.open(prefix + data.harKey)}>Har</button>
                                     </div>
 
                                     <Wappalyzer visitId={visitId} openTechnologies={openTechnologies}
