@@ -12,14 +12,23 @@ const HTMLCard = (props) => {
 
     useEffect(() => {
         const handlerData = async () => {
-            const response = await api.get(`htmlFeatureses/search/findByVisitId?visitId=${visitId}`);
-            setData(response === undefined ? null :response.data._embedded.htmlFeatureses);
+
+            const url = `htmlFeatureses/search/findByVisitId?visitId=${visitId}`;
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setData(resp === undefined ? null : resp.data._embedded.htmlFeatureses);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex);
+                });
         };
         handlerData();
-    }, [visitId])
+    }, [visitId]);
 
 
-//data from props
+    //data from props
     const {
         openExternalHosts,
         setOpenExternalHosts,

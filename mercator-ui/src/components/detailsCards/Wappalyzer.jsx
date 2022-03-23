@@ -12,13 +12,17 @@ const Wappalyzer = (props) => {
 
     useEffect(() => {
         const handlerData = async () => {
-            let response;
-            try {
-                response = await api.get(`/wappalyzerResults/${visitId}`);
-            } catch (e) {
-                console.log(e)
-            }
-            setData(response === undefined ? null : response.data);
+
+            const url = `/wappalyzerResults/${visitId}`;
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setData(resp === undefined ? null : resp.data);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex);
+                });            
         };
         handlerData();
     }, [visitId]);

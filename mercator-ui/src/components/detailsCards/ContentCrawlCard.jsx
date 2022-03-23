@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { renderDataBoolean } from '../../services/Util';
 
-const ContentCard = (props) => {
+const ContentCrawlCard = (props) => {
 
     const visitId = props.visitId
 
@@ -14,14 +14,19 @@ const ContentCard = (props) => {
 
     useEffect(() => {
         const handlerData = async () => {
-            let response;
-            try {
-                response = await api.get(`/contentCrawlResults/search/findByVisitId?visitId=${visitId}`);
-            } catch (e) {
-                console.log(e)
-            }
-            setData(response === undefined ? null : response.data._embedded.contentCrawlResults);
+
+            const url = `/contentCrawlResults/search/findByVisitId?visitId=${visitId}`;
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setData(resp === undefined ? null : resp.data._embedded.contentCrawlResults);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex);
+                });      
         };
+
         handlerData();
     }, [visitId])
 
@@ -136,4 +141,4 @@ const ContentCard = (props) => {
     }
 }
 
-export default ContentCard;
+export default ContentCrawlCard;

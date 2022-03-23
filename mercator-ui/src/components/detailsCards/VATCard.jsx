@@ -13,14 +13,19 @@ const VATCard = (props) => {
     // api VAT
     useEffect(() => {
         const handlerData = async () => {
-            let response;
-            try {
-                response = await api.get(`/vatCrawlResults/search/findByVisitId?visitId=${visitId}`);
-            } catch (e) {
-                console.log(e)
-            }
-            setData(response === undefined ? null : response.data);
+
+            const url = `/vatCrawlResults/search/findByVisitId?visitId=${visitId}`;
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setData(resp === undefined ? null : resp.data);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex);
+                });
         };
+        
         handlerData();
     }, [visitId])
 

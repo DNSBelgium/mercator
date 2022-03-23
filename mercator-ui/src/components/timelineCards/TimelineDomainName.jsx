@@ -5,9 +5,9 @@ import api from "../../services/api";
 import moment from "moment";
 import { handleExResponse } from "../../services/Util";
 
-const TimelineDomainName = () => { //
+const TimelineDomainName = () => {
 
-    const domainName = localStorage.getItem("search"); // Received from SearchField.jsx textInput Ref hook.
+    const domainName = localStorage.getItem("search"); // Received from NavigationBar.jsx textInput Ref hook.
 
     const [data, setData] = useState([]); // Used to hold data from GET request.
     const [status, setStatus] = useState([]); // Used for statusMap which contains the muppets, dns, smtp and wappalyzer booleans.
@@ -21,7 +21,7 @@ const TimelineDomainName = () => { //
 
     useEffect(() => { // Triggers upon initial render and every time domainName changes.
 
-        // Wrapping the inside of this hook with an async function so we can await the backend data.
+        // Wrapping the inside of this hook with an async function so we can await the backend data with a Promise.
         // The actual useEffect hooks should not be executed asynchronously, but the inside can be whatever.
         async function executeHook() {
             setProcessing(true);
@@ -132,6 +132,12 @@ const TimelineDomainName = () => { //
     const renderHtml = () => {
         if(exception !== null) {
             return( handleExResponse(exception) ); // HandleError.jsx handles the exception.
+        }
+
+        if(domainName === null) {
+            return(
+                <h5 className="ml-3 mt-3">Enter a search to begin.</h5>
+            );
         }
 
         if(processing) {

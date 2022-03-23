@@ -1,12 +1,12 @@
-import React, {useState} from "react";
+import {useState} from "react";
 import {Button} from "react-bootstrap";
 import ScrollableAnchor from 'react-scrollable-anchor';
 import "../App.css";
 import DispatcherCard from "./detailsCards/DispatcherCard";
 import DNSCard from "./detailsCards/DNSCard";
-import ContentCard from "./detailsCards/ContentCrawlCard";
+import ContentCrawlCard from "./detailsCards/ContentCrawlCard";
 import HTMLCard from "./detailsCards/HTMLCard";
-import SMTPCard from "./detailsCards/SMTPcard";
+import SMTPCard from "./detailsCards/SMTPCard";
 import VATCard from "./detailsCards/VATCard";
 import SSLCard from "./detailsCards/SSLCard";
 
@@ -72,7 +72,7 @@ function Details(props) {
                 <Button variant="link" className="openall-button" onClick={toggle}>{allOpen ? "Close All" : "Open All"}</Button>
 
                 <ScrollableAnchor id={'content-card'}>
-                    <div><ContentCard openMetrics={metricsJSONButtonOn} setOpenMetrics={metricsJSONButtonSetOn} openTechnologies={technologiesButtonOn} setOpenTechnologies={technologiesButtonSetOn} openUrls={urlsButtonOn} setOpenUrls={urlsButtonSetOn} visitId={visitId}/></div>
+                    <div><ContentCrawlCard openMetrics={metricsJSONButtonOn} setOpenMetrics={metricsJSONButtonSetOn} openTechnologies={technologiesButtonOn} setOpenTechnologies={technologiesButtonSetOn} openUrls={urlsButtonOn} setOpenUrls={urlsButtonSetOn} visitId={visitId}/></div>
                 </ScrollableAnchor>
 
                 <ScrollableAnchor id={'dns-card'}>
@@ -90,6 +90,7 @@ function Details(props) {
                 <ScrollableAnchor id={'vat-card'}>
                     <div><VATCard openVisitedUrlsVat={visitedUrlsVatButtonOn} setOpenVisitedUrlsVat={visitedUrlsVatButtonSetOn} openVatValues={vatValuesButtonOn} setOpenVatValues={vatValuesButtonSetOn} visitId={visitId}/></div>
                 </ScrollableAnchor>
+
                 <ScrollableAnchor id={'ssl-card'}>
                     <div><SSLCard openLeafCertificate={leafCertificateButtonOn} setOpenLeafCertificate={leafCertificateButtonSetOn} openTrustStores={trustStoresButtonOn} setOpenTrustStores={trustStoresButtonSetOn} visitId={visitId}/></div>
                 </ScrollableAnchor>

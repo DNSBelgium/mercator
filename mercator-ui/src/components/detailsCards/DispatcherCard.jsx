@@ -9,14 +9,20 @@ function DispatcherCard(props) {
 
     useEffect(() => {
         const handlerData = async () => {
-            let response;
-            try {
-                response = await api.get(`/dispatcherEvents/${visitId}`);
-                setData(response === undefined ? null :response.data);
-            } catch (e) {
-                console.log(e)
-            }
+
+            const url = `/dispatcherEvents/${visitId}`;
+
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setData(resp === undefined ? null : resp.data);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex);
+                });
         };
+
         handlerData();
     }, [visitId])
 
