@@ -15,8 +15,8 @@ data:
   SERVER_SSL_KEY_STORE_TYPE: "JKS"
   SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
   SPRING_MAIN_BANNER_MODE: "off"
-  AWS_REGION: "{{ .Values.region }}"
-  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_REGION: "{{ .Values.global.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
 ---
 apiVersion: v1

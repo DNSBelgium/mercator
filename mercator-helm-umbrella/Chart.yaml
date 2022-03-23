@@ -1,0 +1,62 @@
+apiVersion: v2
+name: mercator-helm-umbrella
+description: A Helm chart for Kubernetes
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "1.16.0"
+
+dependencies:
+  - name: dispatcher
+    version: ">=0.0.1"
+    repository: "file://../dispatcher/src/main/helm"
+  - name: content-crawler
+    version: ">=0.0.1"
+    repository: "file://../content-crawler/src/main/helm"
+  - name: dns-crawler
+    version: ">=0.0.1"
+    repository: "file://../dns-crawler/src/main/helm"
+  - name: feature-extraction
+    version: ">=0.0.1"
+    repository: "file://../feature-extraction/src/main/helm"
+  - name: ground-truth
+    version: ">=0.0.1"
+    repository: "file://../ground-truth/src/main/helm"
+  - name: mercator-api
+    version: ">=0.0.1"
+    repository: "file://../mercator-api/src/main/helm"
+  - name: mercator-ui
+    version: ">=0.0.1"
+    repository: "file://../mercator-ui/helm"
+  - name: mercator-wappalyzer
+    version: ">=0.0.1"
+    repository: "file://../mercator-wappalyzer/helm"
+  - name: muppets
+    version: ">=0.0.1"
+    repository: "file://../muppets/helm"
+  - name: smtp-crawler
+    version: ">=0.0.1"
+    repository: "file://../smtp-crawler/src/main/helm"
+  - name: ssl-crawler
+    version: ">=0.0.1"
+    repository: "file://../ssl-crawler/helm"
+  - name: vat-crawler
+    version: ">=0.0.1"
+    repository: "file://../vat-crawler/src/main/helm"

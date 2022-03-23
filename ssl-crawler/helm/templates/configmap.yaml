@@ -7,8 +7,8 @@ metadata:
 data:
   # TODO SSL
   SERVER_PORT: "8443"
-  AWS_REGION: "{{ .Values.region }}"
-  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_REGION: "{{ .Values.global.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
 ---
 apiVersion: v1

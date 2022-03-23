@@ -70,9 +70,6 @@ affinity:
                 - dns-crawler
         topologyKey: kubernetes.io/hostname
 
-# environment to deploy to, can be "local" or "aws"
-environment: "local"
-region: "eu-west-1"
 queue_in:
 queue_ack:
 resolver:
@@ -85,6 +82,9 @@ geoip:
   key:
 
 global:
+  # environment to deploy to, can be "local" or "aws"
+  environment: "local"
+  region: "eu-west-1"
   vpc:
     db_cidr:
       - "127.0.0.1/32"

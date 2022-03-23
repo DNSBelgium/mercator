@@ -15,10 +15,10 @@ data:
   SERVER_SSL_KEY_STORE_TYPE: "JKS"
   SERVER_SSL_KEY_STORE_PASSWORD: "changeit"
   SPRING_MAIN_BANNER_MODE: "off"
-  AWS_REGION: "{{ .Values.region }}"
-  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_REGION: "{{ .Values.global.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
-  CLOUD_AWS_REGION_STATIC: "{{ .Values.region }}"
+  CLOUD_AWS_REGION_STATIC: "{{ .Values.global.region }}"
   LOGGING_LEVEL_COM_AMAZONAWS_UTIL: "ERROR"
   CRAWLER_DNS_GEOIP_ENABLED: "true"
 ---

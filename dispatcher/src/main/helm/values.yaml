@@ -61,10 +61,6 @@ tolerations: []
 
 affinity: {}
 
-# environment to deploy to, can be "local" or "aws"
-environment: "local"
-region: "eu-west-1"
-
 queue_in:
 queue_ack:
 queue_output:
@@ -76,6 +72,9 @@ database:
   password: "password"
 
 global:
+  # environment to deploy to, can be "local" or "aws"
+  environment: "local"
+  region: "eu-west-1"
   vpc:
     db_cidr:
       - "127.0.0.1/32"

@@ -62,13 +62,13 @@ tolerations: []
 
 affinity: {}
 
-# environment to deploy to, can be "local" or "aws"
-environment: "local"
-region: "eu-west-1"
 sqs_input_queue:
 sqs_output_queue:
 
 global:
+  # environment to deploy to, can be "local" or "aws"
+  environment: "local"
+  region: "eu-west-1"
   vpc:
     endpoint_cidr:
       - "127.0.0.1/32"

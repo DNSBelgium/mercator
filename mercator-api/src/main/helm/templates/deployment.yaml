@@ -57,7 +57,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "mercator-api.fullname" . }}
-            {{ if eq .Values.environment "local" }}
+            {{ if eq .Values.global.environment "local" }}
             - configMapRef:
                 name: "{{ include "mercator-api.fullname" . }}-local"
             {{ else }}

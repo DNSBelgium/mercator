@@ -57,9 +57,6 @@ tolerations: []
 
 affinity: {}
 
-# environment to deploy to, can be "local" or "aws"
-environment: "local"
-region: "eu-west-1"
 database:
   url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=ground_truth"
   schema: "ground_truth"
@@ -67,6 +64,9 @@ database:
   password: "password"
 
 global:
+  # environment to deploy to, can be "local" or "aws"
+  environment: "local"
+  region: "eu-west-1"
   vpc:
     db_cidr:
       - "127.0.0.1/32"

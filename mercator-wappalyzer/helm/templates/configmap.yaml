@@ -5,8 +5,8 @@ metadata:
   labels:
   {{- include "wappalyzer.labels" . | nindent 4 }}
 data:
-  AWS_REGION: "{{ .Values.region }}"
-  AWS_DEFAULT_REGION: "{{ .Values.region }}"
+  AWS_REGION: "{{ .Values.global.region }}"
+  AWS_DEFAULT_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
   AWS_EC2_METADATA_DISABLED: "true"
 ---
