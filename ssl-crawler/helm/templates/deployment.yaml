@@ -53,7 +53,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "ssl-crawler.fullname" . }}
-            {{ if eq .Values.environment "local" }}
+            {{ if eq .Values.global.environment "local" }}
             - configMapRef:
                 name: "{{ include "ssl-crawler.fullname" . }}-local"
             {{ else }}

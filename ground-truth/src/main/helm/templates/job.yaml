@@ -37,7 +37,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "ground-truth.fullname" . }}
-            {{ if eq .Values.environment "local" }}
+            {{ if eq .Values.global.environment "local" }}
             - configMapRef:
                 name: "{{ include "ground-truth.fullname" . }}-local"
             {{ else }}

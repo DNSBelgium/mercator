@@ -55,7 +55,7 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "muppets.fullname" . }}
-            {{ if eq .Values.environment "local" }}
+            {{ if eq .Values.global.environment "local" }}
             - configMapRef:
                 name: "{{ include "muppets.fullname" . }}-local"
             {{ else }}
