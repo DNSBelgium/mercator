@@ -64,6 +64,7 @@ affinity: {}
 
 sqs_input_queue:
 sqs_output_queue:
+extraEnv: {}
 
 global:
   # environment to deploy to, can be "local" or "aws"

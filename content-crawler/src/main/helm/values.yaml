@@ -69,6 +69,7 @@ database:
   username: "postgres"
   password: "password"
   schema: "content_crawler"
+extraEnv: {}
 
 global:
   # environment to deploy to, can be "local" or "aws"

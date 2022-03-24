@@ -70,3 +70,4 @@ affinity: {}
 updateStrategy: Recreate
 
 muppets: muppets-dev.crawl042.dc3.be
+extraEnv: {}

@@ -80,6 +80,7 @@ database:
   password: "password"
 geoip:
   key:
+extraEnv: {}
 
 global:
   # environment to deploy to, can be "local" or "aws"

@@ -104,5 +104,6 @@ database:
     schema: "vat_crawler"
   ssl:
     schema: "ssl_crawler"
+extraEnv: {}
 
 updateStrategy: Recreate

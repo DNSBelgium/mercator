@@ -62,6 +62,7 @@ database:
   schema: "ground_truth"
   username: "postgres"
   password: "password"
+extraEnv: {}
 
 global:
   # environment to deploy to, can be "local" or "aws"

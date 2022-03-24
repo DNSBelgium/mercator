@@ -68,6 +68,7 @@ database:
   schema: "vat_crawler"
   username: "postgres"
   password: "password"
+extraEnv: {}
 
 global:
   # environment to deploy to, can be "local" or "aws"
