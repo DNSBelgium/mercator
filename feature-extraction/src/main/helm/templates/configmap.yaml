@@ -31,10 +31,10 @@ data:
 {{- if .Values.queue_in }}
   FEATURE_EXTRACTION_INPUT_QUEUE_NAME: "{{ .Values.queue_in }}"
 {{- end }}
-  SPRING_DATASOURCE_URL: "{{ .Values.database.url }}?&currentSchema={{ .Values.database.schema }}"
+  SPRING_DATASOURCE_URL: "{{ .Values.database.url }}"
   SPRING_DATASOURCE_USERNAME: "{{ .Values.database.username }}"
   SPRING_FLYWAY_SCHEMAS: "{{ .Values.database.schema }}"
-  SPRING_DATASOURCE_CONTENT_URL: "{{ .Values.database.url }}?&currentSchema={{ .Values.database.content_crawler.schema }}"
+  SPRING_DATASOURCE_CONTENT_URL: "{{ .Values.database.content_crawler.url }}"
   SPRING_DATASOURCE_CONTENT_USERNAME: "{{ .Values.database.username }}"
 
 ---

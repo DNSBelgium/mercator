@@ -63,12 +63,12 @@ affinity: {}
 
 queue_in:
 database:
-  url: "jdbc:postgresql://localhost:5432/postgres"
+  url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=feature_extraction"
   schema: "feature_extraction"
   username: "postgres"
   password: "password"
   content_crawler:
-    schema: "content_crawler"
+    url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=content_crawler"
 extraEnv: {}
 
 global:
