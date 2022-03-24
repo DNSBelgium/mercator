@@ -26,19 +26,19 @@ metadata:
   labels:
   {{- include "mercator-api.labels" . | nindent 4 }}
 data:
-  SPRING_DATASOURCE_DISPATCHER_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.dispatcher.schema }}"
+  SPRING_DATASOURCE_DISPATCHER_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.dispatcher.schema }}"
   SPRING_DATASOURCE_DISPATCHER_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_CONTENT_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.content_crawler.schema }}"
+  SPRING_DATASOURCE_CONTENT_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.content_crawler.schema }}"
   SPRING_DATASOURCE_CONTENT_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_DNS_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.dns_crawler.schema }}"
+  SPRING_DATASOURCE_DNS_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.dns_crawler.schema }}"
   SPRING_DATASOURCE_DNS_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_SMTP_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.smtp_crawler.schema }}"
+  SPRING_DATASOURCE_SMTP_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.smtp_crawler.schema }}"
   SPRING_DATASOURCE_SMTP_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.feature_extraction.schema }}"
+  SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.feature_extraction.schema }}"
   SPRING_DATASOURCE_FEATURE_EXTRACTION_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_VAT_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.vat.schema }}"
+  SPRING_DATASOURCE_VAT_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.vat.schema }}"
   SPRING_DATASOURCE_VAT_USERNAME: "{{ .Values.database.username }}"
-  SPRING_DATASOURCE_SSL_JDBC_URL: "{{ .Values.database.url }}&currentSchema={{ .Values.database.ssl.schema }}"
+  SPRING_DATASOURCE_SSL_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.ssl.schema }}"
   SPRING_DATASOURCE_SSL_USERNAME: "{{ .Values.database.username }}"
 ---
 apiVersion: v1

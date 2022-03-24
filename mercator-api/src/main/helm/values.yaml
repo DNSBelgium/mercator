@@ -87,7 +87,7 @@ global:
       - "127.0.0.1/32"
 
 database:
-  url: "jdbc:postgresql://localhost:5432/postgres"
+  url: "jdbc:postgresql://localhost:5432/postgres?currentSchema="
   username: "postgres"
   password: "password"
   dispatcher:
