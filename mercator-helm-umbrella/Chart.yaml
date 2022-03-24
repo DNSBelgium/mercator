@@ -54,9 +54,9 @@ dependencies:
   - name: smtp-crawler
     version: ">=0.0.1"
     repository: "file://../smtp-crawler/src/main/helm"
-  - name: ssl-crawler
-    version: ">=0.0.1"
-    repository: "file://../ssl-crawler/helm"
+#  - name: ssl-crawler
+#    version: ">=0.0.1"
+#    repository: "file://../ssl-crawler/helm"
   - name: vat-crawler
     version: ">=0.0.1"
     repository: "file://../vat-crawler/src/main/helm"
