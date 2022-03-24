@@ -34,6 +34,7 @@ RUN npm ci && npm cache clean --force
 
 ADD tsconfig.json /app
 ADD src /app/src
+ADD .env /app/.env
 
 RUN npm run build
 
