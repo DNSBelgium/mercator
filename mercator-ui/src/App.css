@@ -12,6 +12,24 @@
 h1 {
   font-size: 40px !important;
 }
+
+#Go-to-card-Div {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: space-between;
+  max-width: 70vw;
+}
+#Go-to-card-Div > button, #Go-to-top-Div > button {
+  border: none;
+  background-color: white;
+  color: #007bff;
+}
+#Go-to-card-Div > button:hover, #Go-to-top-Div > button:hover {
+  color: blue;
+  text-decoration: underline;
+}
+
 /* top element of border in all detailsCards */
 .top-element {
   white-space: nowrap;
@@ -63,6 +81,17 @@ th {
 /*all the buttons of the components of detalsCards*/
 #button-metricsJson , #button-technologies, #button-urls, #button-records, #button-servers, #button-hosts, #button-extensions, #button-htmlStruct, #button-external-hosts, #button-body-text, #button-technologies-items, .toggle-button {
   padding: 0px !important;
+}
+#button-metricsJson {
+  border: none;
+  color: #007bff;
+  background-color: white;
+}
+#button-metricsJson:hover {
+  text-decoration: underline;
+}
+#metricsJson-content {
+  overflow: hidden;
 }
 
 .no-bullet {

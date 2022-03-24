@@ -29,7 +29,7 @@ export const handleExResponse = (response) => {
 const caseFiveHundredRange = () => {
     return (
         <div id='Error-Case-500-Div'>
-            <h2>An error has occurred with the server.</h2>
+            <h2>An error has occurred.</h2>
             <p>Please try again later.</p>
         </div>
     );

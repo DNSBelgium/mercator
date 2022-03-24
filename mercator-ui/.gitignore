@@ -15,3 +15,5 @@ yarn-error.log*
 
 /public/env-config.js
 env-config.js
+
+ThrowAway.jsx

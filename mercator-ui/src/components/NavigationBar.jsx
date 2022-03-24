@@ -34,7 +34,7 @@ function NavigationBar() {
 
     return (
         <>
-            <div className="searchfield">
+            <div className="searchfield" id='NavBar-Div'>
                 <Form noValidate validated={validated} className='form' onSubmit={search}>
                     <Form.Group className="input-group">
                         <Form.Label id="input-label">Domain name</Form.Label>

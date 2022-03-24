@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Button} from "react-bootstrap";
-import ScrollableAnchor from 'react-scrollable-anchor';
 import "../App.css";
 import DispatcherCard from "./detailsCards/DispatcherCard";
 import DNSCard from "./detailsCards/DNSCard";
@@ -55,49 +54,128 @@ function Details(props) {
         trustStoresButtonSetOn(!allOpen);
     }
 
+    // Scroll to an element Id.
+    // Original code idea from: https://stackoverflow.com/questions/61196420/react-navigation-that-will-smooth-scroll-to-section-of-the-page
+    const scrollToElement = (elementId) => {
+        let elementToGoTo = document.getElementById(elementId);
+        elementToGoTo && elementToGoTo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
     return (
         <div>
-            <ScrollableAnchor id={'content-top'}>
-                <div className='p-3'>
-                    <a className='mr-3' href='#content-card'>Content crawl</a>
-                    <a className='mr-3' href='#dns-card'>DNS crawl</a>
-                    <a className='mr-3' href='#smtp-card'>SMTP crawl</a>
-                    <a className='mr-3' href='#html-card'>HTML features</a>
-                    <a className='mr-3' href='#vat-card'>VAT crawl</a>
-                    <a className='mr-3' href='#ssl-card'>SSL crawl</a>
-                </div>
-            </ScrollableAnchor>
+
+            <div className='p-3' id='Go-to-card-Div'>
+                <button onClick={() => scrollToElement('content-card')}>
+                    Content crawl
+                </button>
+
+                <button onClick={() => scrollToElement('dns-card')}>
+                    DNS crawl
+                </button>
+
+                <button onClick={() => scrollToElement('smtp-card')}>
+                    SMTP crawl
+                </button>
+
+                <button onClick={() => scrollToElement('html-card')}>
+                    HTML features
+                </button>
+
+                <button onClick={() => scrollToElement('vat-card')}>
+                    VAT crawl
+                </button>
+
+                <button onClick={() => scrollToElement('ssl-card')}>
+                    SSL crawl
+                </button>
+            </div>
+
             <div>
                 <DispatcherCard visitId={visitId} />
-                <Button variant="link" className="openall-button" onClick={toggle}>{allOpen ? "Close All" : "Open All"}</Button>
 
-                <ScrollableAnchor id={'content-card'}>
-                    <div><ContentCrawlCard openMetrics={metricsJSONButtonOn} setOpenMetrics={metricsJSONButtonSetOn} openTechnologies={technologiesButtonOn} setOpenTechnologies={technologiesButtonSetOn} openUrls={urlsButtonOn} setOpenUrls={urlsButtonSetOn} visitId={visitId}/></div>
-                </ScrollableAnchor>
+                <Button 
+                    variant="link" 
+                    className="openall-button" 
+                    onClick={toggle}>
+                        { 
+                            allOpen ? "Close All" : "Open All" // Toggle text
+                        }
+                </Button>
+            
+                <div id={'content-card'}>
+                    <ContentCrawlCard 
+                        openMetrics={metricsJSONButtonOn} 
+                        setOpenMetrics={metricsJSONButtonSetOn} 
+                        openTechnologies={technologiesButtonOn} 
+                        setOpenTechnologies={technologiesButtonSetOn} 
+                        openUrls={urlsButtonOn} setOpenUrls={urlsButtonSetOn} 
+                        visitId={visitId}
+                    />
+                </div>
 
-                <ScrollableAnchor id={'dns-card'}>
-                    <div><DNSCard openRecords={recordsButtonOn} setOpenRecords={recordsButtonSetOn} visitId={visitId}/></div>
-                </ScrollableAnchor>
+                <div id={'dns-card'}>
+                    <DNSCard 
+                        openRecords={recordsButtonOn} 
+                        setOpenRecords={recordsButtonSetOn} 
+                        visitId={visitId}
+                    />
+                </div>
 
-                <ScrollableAnchor id={'smtp-card'}>
-                    <div><SMTPCard openServer={serverButtonOn} setOpenServer={serverButtonSetOn} visitId={visitId}/></div>
-                </ScrollableAnchor>
+                <div id={'smtp-card'}>
+                    <SMTPCard 
+                        openServer={serverButtonOn} 
+                        setOpenServer={serverButtonSetOn} 
+                        visitId={visitId}
+                    />
+                </div>
 
-                <ScrollableAnchor id={'html-card'}>
-                    <div><HTMLCard openBodyTextButton={bodyTextButtonOn} setOpenBodyTextButton={bodyTextButtonSetOn} openHtmlstructButton={htmlstructButtonOn} setOpenHtmlstructButton={htmlstructButtonSetOn}  openExternalHosts={externalHostsButtonOn} setOpenExternalHosts={externalHostsButtonSetOn} openFacebookLinks={facebookLinksButtonOn} setOpenFacebookLinks={facebookLinksButtonSetOn} openTwitterLinks={twitterLinksButtonOn} setOpenTwitterLinks={twitterLinksButtonSetOn} openLinkedinLinks={linkedinLinksButtonOn} setOpenLinkedinLinks={linkedinLinksButtonSetOn} openYoutubeLinks={youtubeLinksButtonOn} setOpenYoutubeLinks={youtubeLinksButtonSetOn} openVimeoLinks={vimeoLinksButtonOn} setOpenVimeoLinks={vimeoLinksButtonSetOn} visitId={visitId} /></div>
-                </ScrollableAnchor>
+                <div id={'html-card'}>
+                    <HTMLCard 
+                        openBodyTextButton={bodyTextButtonOn} 
+                        setOpenBodyTextButton={bodyTextButtonSetOn} 
+                        openHtmlstructButton={htmlstructButtonOn} 
+                        setOpenHtmlstructButton={htmlstructButtonSetOn}  
+                        openExternalHosts={externalHostsButtonOn} 
+                        setOpenExternalHosts={externalHostsButtonSetOn} 
+                        openFacebookLinks={facebookLinksButtonOn} 
+                        setOpenFacebookLinks={facebookLinksButtonSetOn} 
+                        openTwitterLinks={twitterLinksButtonOn} 
+                        setOpenTwitterLinks={twitterLinksButtonSetOn} 
+                        openLinkedinLinks={linkedinLinksButtonOn} 
+                        setOpenLinkedinLinks={linkedinLinksButtonSetOn} 
+                        openYoutubeLinks={youtubeLinksButtonOn} 
+                        setOpenYoutubeLinks={youtubeLinksButtonSetOn} 
+                        openVimeoLinks={vimeoLinksButtonOn} 
+                        setOpenVimeoLinks={vimeoLinksButtonSetOn} 
+                        visitId={visitId} 
+                    />
+                </div>
 
-                <ScrollableAnchor id={'vat-card'}>
-                    <div><VATCard openVisitedUrlsVat={visitedUrlsVatButtonOn} setOpenVisitedUrlsVat={visitedUrlsVatButtonSetOn} openVatValues={vatValuesButtonOn} setOpenVatValues={vatValuesButtonSetOn} visitId={visitId}/></div>
-                </ScrollableAnchor>
+                <div id={'vat-card'}>
+                    <VATCard 
+                        openVisitedUrlsVat={visitedUrlsVatButtonOn} 
+                        setOpenVisitedUrlsVat={visitedUrlsVatButtonSetOn} 
+                        openVatValues={vatValuesButtonOn} 
+                        setOpenVatValues={vatValuesButtonSetOn} 
+                        visitId={visitId}/>
+                </div>
 
-                <ScrollableAnchor id={'ssl-card'}>
-                    <div><SSLCard openLeafCertificate={leafCertificateButtonOn} setOpenLeafCertificate={leafCertificateButtonSetOn} openTrustStores={trustStoresButtonOn} setOpenTrustStores={trustStoresButtonSetOn} visitId={visitId}/></div>
-                </ScrollableAnchor>
+                <div id={'ssl-card'}>
+                    <SSLCard 
+                        openLeafCertificate={leafCertificateButtonOn} 
+                        setOpenLeafCertificate={leafCertificateButtonSetOn} 
+                        openTrustStores={trustStoresButtonOn} 
+                        setOpenTrustStores={trustStoresButtonSetOn} 
+                        visitId={visitId}
+                    />
+                </div>
 
             </div>
-            <div className='p-3'>
-                <a href='#content-top'>Go to Top</a>
+
+            <div className='p-3' id='Go-to-top-Div'>
+                <button onClick={() => scrollToElement('NavBar-Div')} >
+                    Go to top
+                </button>
             </div>
         </div>
     )
