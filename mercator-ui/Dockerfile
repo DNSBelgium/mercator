@@ -27,12 +27,8 @@ RUN apk upgrade --update-cache \
 ## Nginx config
 # Port 8080
 # React router config
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx/nginx.conf /etc/nginx/templates/default.conf.template
 
 WORKDIR /usr/share/nginx/html
 COPY .env .
-COPY ./env.sh .
-RUN apk add --no-cache bash
-RUN chmod +x env.sh
-
-CMD ["/bin/bash", "-c", "/usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""]
+COPY ./env.sh /docker-entrypoint.d/99-env.sh

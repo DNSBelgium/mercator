@@ -1,16 +1,18 @@
-#!/bin/bash
+#!/bin/sh
+
+set -e
 
 # Recreate config file
-mkdir config
-rm -rf ./config/env-config.js
-touch ./config/env-config.js
+mkdir -p /usr/share/nginx/html/config
+rm -rf /usr/share/nginx/html/config/env-config.js
+touch /usr/share/nginx/html/config/env-config.js
 
 # Add assignment
-echo "window._env_ = {" >> ./config/env-config.js
+echo "window._env_ = {" >> /usr/share/nginx/html/config/env-config.js
 
 # Read each line in .env file
 # Each line represents key=value pairs
-while read -r line || [[ -n "$line" ]];
+while read -r line || [ -n "$line" ];
 do
   # Split env variables by character `=`
   if printf '%s\n' "$line" | grep -q -e '='; then
@@ -19,12 +21,12 @@ do
   fi
 
   # Read value of current variable if exists as Environment variable
-  value=$(printf '%s\n' "${!varname}")
+  eval value=\"\$"$varname"\"
   # Otherwise use value from .env file
-  [[ -z $value ]] && value=${varvalue}
+  [ -z "$value" ] && value=${varvalue}
 
   # Append configuration property to JS file
-  echo "  $varname: \"$value\"," >> ./config/env-config.js
+  echo "  $varname: \"$value\"," >> /usr/share/nginx/html/config/env-config.js
 done < .env
 
-echo "}" >> ./config/env-config.js
+echo "}" >> /usr/share/nginx/html/config/env-config.js

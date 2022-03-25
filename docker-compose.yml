@@ -224,6 +224,9 @@ services:
       context: ./mercator-ui
     ports:
       - "8090:8080"
+    environment:
+      - MERCATOR_API_HOST=mercator-api
+      - MERCATOR_API_PORT=8089
     depends_on:
       mercator-api:
         condition: service_started
