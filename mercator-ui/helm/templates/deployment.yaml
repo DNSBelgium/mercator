@@ -56,6 +56,8 @@ spec:
           volumeMounts:
             - mountPath: /usr/share/nginx/html/config
               name: env-config
+            - mountPath: /etc/nginx/conf.d/
+              name: nginx-config
             - mountPath: /var/cache/nginx
               name: cache
             - mountPath: /var/run
@@ -64,6 +66,9 @@ spec:
         - name: env-config
           emptyDir:
             sizeLimit: 1M
+        - name: nginx-config
+          emptyDir:
+            sizeLimit: 10M
         - name: cache
           emptyDir:
             sizeLimit: 100M
