@@ -71,6 +71,7 @@ updateStrategy: Recreate
 
 muppets: muppets-dev.crawl042.dc3.be
 mercator_api:
+  scheme: "https"
   host:
   port:
 extraEnv: {}

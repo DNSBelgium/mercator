@@ -7,4 +7,5 @@ metadata:
 data:
   REACT_APP_MUPPETS_HOST: {{ .Values.muppets }}
   MERCATOR_API_HOST: {{ .Values.mercator_api.host }}
-  MERCATOR_API_PORT: {{ .Values.mercator_api.port | quote }}
+  MERCATOR_API_PORT: "{{ .Values.mercator_api.port }}"
+  MERCATOR_API_SCHEME: {{ .Values.mercator_api.scheme }}
