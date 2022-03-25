@@ -19,7 +19,7 @@ tasks.register('dockerBuild', Exec) {
   }
   if (project.hasProperty("dockerTags")) {
     project.getProperty('dockerTags').split(',').each {
-      tags += " -t dnsbelgium/mercator/${project.name}:$it"
+      tags += " -t ${registry}dnsbelgium/mercator/${project.name}:$it"
     }
   }
 
