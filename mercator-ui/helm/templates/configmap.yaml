@@ -6,3 +6,5 @@ metadata:
   {{- include "mercator-ui.labels" . | nindent 4 }}
 data:
   REACT_APP_MUPPETS_HOST: {{ .Values.muppets }}
+  MERCATOR_API_HOST: {{ .Values.mercator_api.host }}
+  MERCATOR_API_PORT: {{ .Values.mercator_api.port | quote }}
