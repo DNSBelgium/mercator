@@ -33,8 +33,20 @@ tasks.register('dockerPush', Exec) {
     registry = project.getProperty("dockerRegistry")
   }
 
+  def tags = [getCommitHash()]
+  if (project.hasProperty("dockerTags")) {
+    project.getProperty('dockerTags').split(',').each {
+      tags += [it]
+    }
+  }
+
+  def command = "docker push ${registry}dnsbelgium/mercator/${project.name}:${project.version}"
+  tags.each {
+    command += "&& docker push ${registry}dnsbelgium/mercator/${project.name}:${it}"
+  }
+
   executable 'sh'
-  args '-c', "docker push ${registry}dnsbelgium/mercator/${project.name}:${project.version} && docker push ${registry}dnsbelgium/mercator/${project.name}:${getCommitHash()}"
+  args '-c', command
 }
 
 tasks.register('dockerBuildAndPush') {
