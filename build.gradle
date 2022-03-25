@@ -48,6 +48,11 @@ subprojects { subproject ->
     } else {
       tagList += ["local"] // If registry is empty, we had the local tag.
     }
+    if (project.hasProperty("dockerTags")) {
+      project.getProperty('dockerTags').split(',').each {
+        tagList += [it]
+      }
+    }
     jib {
       to {
         image = "${registry}dnsbelgium/mercator/${subproject.name}:${subproject.version}"

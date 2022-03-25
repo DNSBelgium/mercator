@@ -18,6 +18,11 @@ tasks.register('dockerBuild', Exec) {
   if (registry == "") {
     tags += " -t dnsbelgium/mercator/${project.name}:local"
   }
+  if (project.hasProperty("dockerTags")) {
+    project.getProperty('dockerTags').split(',').each {
+      tags += " -t dnsbelgium/mercator/${project.name}:$it"
+    }
+  }
 
   executable 'sh'
   args '-c', "docker build $tags ."
