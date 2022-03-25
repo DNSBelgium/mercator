@@ -79,19 +79,38 @@ th {
   margin-top: -15px;
 }
 /*all the buttons of the components of detalsCards*/
-#button-metricsJson , #button-technologies, #button-urls, #button-records, #button-servers, #button-hosts, #button-extensions, #button-htmlStruct, #button-external-hosts, #button-body-text, #button-technologies-items, .toggle-button {
+#button-metricsJson , #button-technologies, #button-urls, #button-records, #button-servers, #button-hosts, #button-extensions, #button-htmlStruct, #button-external-hosts, #button-body-text, .toggle-button {
   padding: 0px !important;
 }
-#button-metricsJson {
+/* 'More info' buttons */
+.more-info {
+  padding: 0px;
   border: none;
   color: #007bff;
   background-color: white;
 }
-#button-metricsJson:hover {
+.more-info:hover {
   text-decoration: underline;
 }
 #metricsJson-content {
   overflow: hidden;
+}
+/* Within Wappalyzer.jsx */
+#technologies-list {
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+}
+.technologies-names-btns {
+  margin-top: 0.25rem;
+  max-width: 10rem;
+  border: none;
+  background: white;
+  text-align: start;
+  color: #007bff;
+}
+.technologies-names-btns:hover {
+  text-decoration: underline;
 }
 
 .no-bullet {

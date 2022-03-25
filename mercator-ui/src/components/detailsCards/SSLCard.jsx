@@ -3,7 +3,7 @@ import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import api from "../../services/api";
 import moment from "moment";
-import { renderDataBoolean } from "../../services/Util";
+import { checkDataObject, renderDataBoolean } from "../../services/Util";
 
 const SSLCard = (props) => {
 
@@ -74,7 +74,7 @@ const SSLCard = (props) => {
     } = props;
 
     const topElement = <p className='top-element'>SSL Crawl</p>
-    if (!crawlResult || crawlResult === {}) {
+    if (checkDataObject(crawlResult)) {
         return (
             <>
                 <Row>

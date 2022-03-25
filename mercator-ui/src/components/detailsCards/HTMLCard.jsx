@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Accordion, Button, Card, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
@@ -49,7 +49,7 @@ const HTMLCard = (props) => {
     } = props;
 
     const topElement = <p className='top-element'>HTML features</p>
-    if (!data || data.length === 0) {
+    if (!data.length || data.length === 0) {
         return (
             <>
                 <Row>

@@ -26,7 +26,7 @@ function DispatcherCard(props) {
         handlerData();
     }, [visitId])
 
-    if (!data) {
+    if (!data || data === null) {
         return (
             <>
                 <Row className="mb-4">
@@ -48,6 +48,7 @@ function DispatcherCard(props) {
                         <h1 className="navbar-brand">{data.domainName}</h1>
                     </div>
                 </Navbar>
+                
                 <div className="mb-5 mt-2 ml-4">
                     <Row>
                         <Col id='visit-id' md="auto">Visit id:</Col>

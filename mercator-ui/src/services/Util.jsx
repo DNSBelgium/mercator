@@ -1,3 +1,17 @@
+// Check data is not null or an empty object.
+export const checkDataObject = (data) => {
+    // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
+    if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype) {
+        return true;
+    }
+    if (data === null) {
+        return true;
+    }
+    return false;
+}
+
+// Decide whether to render the value of the boolean or "loading".
+// Used for detailsCards when data is being delayed.
 export const renderDataBoolean = (bool) => {
     if(bool === undefined) {
         return (<td>Loading</td>);
@@ -5,8 +19,10 @@ export const renderDataBoolean = (bool) => {
     return (<td>{bool.toString()}</td>);
 }
 
+
+
 /*
-    The following code is for handling errors from backend responses.
+    The following code is for handling errors from backend responses. (WIP)
 */
 
 export const handleExResponse = (response) => {

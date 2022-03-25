@@ -1,8 +1,8 @@
 import BorderWrapper from 'react-border-wrapper'
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import { Row, Col, Table, Accordion, Button } from "react-bootstrap";
-import { useEffect, useState, useRef } from "react";
+import { Row, Col, Table} from "react-bootstrap";
+import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { renderDataBoolean } from '../../services/Util';
 
@@ -11,7 +11,6 @@ const ContentCrawlCard = (props) => {
     const visitId = props.visitId
 
     const [data, setData] = useState([]);
-    const wrapper = useRef();
 
     useEffect(() => {
         const handlerData = async () => {
@@ -36,18 +35,16 @@ const ContentCrawlCard = (props) => {
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
     const topElement = <p className='top-element'>Content crawl</p> // BorderWrapper's "title".
 
-    const metricsJsonDiv = document.getElementById('metricsJson-content');
-
     // Writing HTML on a function base so we can define logic more easily.
-    const renderHTML = () => {
-        if (!data || data.length === 0) {
+    const renderHTML = () => { //TODO: ??? Validity check
+        if (!data.length || data.length === 0) {
             return (
                 <Row>
                     <Col className='mt-4'>
                         <BorderWrapper borderWidth="3px" borderRadius="0px" innerPadding="30px"
                                         topElement={topElement}
                                         topPosition={0.07} topOffset="15px" topGap="15px">
-                            <p>no data for this visit</p>
+                            <p>No data for this visit</p>
                         </BorderWrapper>
                     </Col>
                 </Row>
@@ -89,7 +86,7 @@ const ContentCrawlCard = (props) => {
                                                                 data.metricsJson ? // metricsJson exists? render, else empty string.
                                                                     <>
                                                                         <button 
-                                                                            id="button-metricsJson" 
+                                                                            className='more-info'
                                                                             onClick={() => setOpenMetrics(openMetrics => !openMetrics)} // Toggle openMetrics boolean
                                                                         > 
                                                                             More info
@@ -100,7 +97,7 @@ const ContentCrawlCard = (props) => {
                                                                                 <div id='metricsJson-content'>
                                                                                     <ul className="mb-2 mt-2">
                                                                                         {
-                                                                                            Object.entries(JSON.parse(data.metricsJson)).map((item, index) => { // TODO: Make this more efficient / easier to read?
+                                                                                            Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
                                                                                                 return (
                                                                                                     <li key={index}>
                                                                                                         <span
@@ -158,6 +155,7 @@ const ContentCrawlCard = (props) => {
                                             </Table>
 
                                             <div className="mb-4 mt-4 ml-4">
+
                                                 <button 
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.screenshotKey)}
@@ -178,6 +176,7 @@ const ContentCrawlCard = (props) => {
                                                 >
                                                     Har
                                                 </button>
+
                                             </div>
 
                                             <Wappalyzer 
