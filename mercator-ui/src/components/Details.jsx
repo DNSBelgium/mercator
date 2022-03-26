@@ -176,6 +176,10 @@ function Details(props) {
                 <button onClick={() => scrollToElement('NavBar-Div')} >
                     Go to top
                 </button>
+
+                <button onClick={() => window.location.href = '/'} >
+                    Back to search
+                </button>
             </div>
         </div>
     )

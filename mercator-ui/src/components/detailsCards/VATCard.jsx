@@ -3,7 +3,7 @@ import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
 import api from "../../services/api";
-import { checkDataObject } from "../../services/Util";
+import { checkObjectIsFalsy } from "../../services/Util";
 
 const VATCard = (props) => {
 
@@ -74,7 +74,7 @@ const VATCard = (props) => {
     const renderHTML = () => {
 
         const render = () => {
-            if(checkDataObject(data)) {
+            if(checkObjectIsFalsy(data)) {
                 return (
                     <p>No data for this visit.</p>
                 )
@@ -111,7 +111,7 @@ const VATCard = (props) => {
                                     Crawl duration
                                 </th>
                                 <td>
-                                    { 
+                                    { // Ternary
                                         data.crawlStarted && data.crawlFinished ?
                                             moment.duration(moment(data.crawlFinished).diff(moment(data.crawlStarted))).milliseconds() + ' ms' : 
                                             '' 
@@ -145,30 +145,29 @@ const VATCard = (props) => {
 
         return (
             <>
-            <Row>
-                <Col className='mt-4'>
-                    <BorderWrapper 
-                        borderWidth="3px" 
-                        borderRadius="0px" 
-                        innerPadding="30px" 
-                        topElement={topElement}
-                        topPosition={0.07} 
-                        topOffset="15px" 
-                        topGap="15px"
-                    >
-                        {
-                            render()
-                        }
-                    </BorderWrapper>
-                </Col>
-            </Row>
-        </>
+                <Row>
+                    <Col className='mt-4'>
+                        <BorderWrapper 
+                            borderWidth="3px" 
+                            borderRadius="0px" 
+                            innerPadding="30px" 
+                            topElement={topElement}
+                            topPosition={0.07} 
+                            topOffset="15px" 
+                            topGap="15px"
+                        >
+                            {
+                                render()
+                            }
+                        </BorderWrapper>
+                    </Col>
+                </Row>
+            </>
         );
-
     }
     
     const oldHTML = () => {
-        if (!data || data === {}) {
+        if (checkObjectIsFalsy(data)) {
             return (
                 <>
                     <Row>

@@ -137,7 +137,7 @@ th {
   min-width: 100px;
 
 }
-/*searchbar*/
+/* NavBar */
 #input-domainname{
   margin-left: 45px;
   margin-right: 50px;
@@ -156,6 +156,7 @@ th {
   margin-top: 1px;
   border-radius: 0px;
 }
+
 /*label "Domain name*/
 #input-label{
   margin-top: 8px;

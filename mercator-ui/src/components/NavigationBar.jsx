@@ -1,34 +1,22 @@
 import {Button, Form, FormControl} from "react-bootstrap";
 import {useState, useRef} from "react";
 
-// import api from "../services/api";
-
 function NavigationBar() {
     const [validated, setValidated] = useState(false); // Hook to validate input field
 
     let textInput = useRef();
 
-    async function search(event) {
+    const search = (event) => {
         event.preventDefault();
 
-        setValidated(true);
+        setValidated(true); //TODO: UI Vaidation isn't quite right yet.
 
         if(textInput.current.value.trim().length === 0) {
             return;
         }
 
-        let domainName = textInput.current.value.toLowerCase().trim()
-        // await api.get(`/dispatcherEvents/search/findDispatcherEventByDomainName?domainName=${domainName}`)
-        //     .then((resp) => {
-        //         if (resp.status === 200) {
-        //             localStorage.setItem("search", domainName)
-        //             window.location.href = '/';
-        //         }
-        //     })
-        //     .catch((ex) => {
-        //         console.log(ex);
-        //     })
-        localStorage.setItem("search", domainName)
+        let domainName = textInput.current.value.toLowerCase().trim();
+        localStorage.setItem("search", domainName);
         window.location.href = '/';
     }
 

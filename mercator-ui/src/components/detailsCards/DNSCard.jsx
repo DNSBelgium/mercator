@@ -3,7 +3,7 @@ import {Col, Row, Table} from "react-bootstrap";
 import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
 import api from "../../services/api";
-import { checkDataObject, renderDataBoolean } from "../../services/Util";
+import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
 
 const DNSCard = (props) => {
 
@@ -124,7 +124,7 @@ const DNSCard = (props) => {
     const renderHTML = () => {
 
         const render = () => {
-            if(checkDataObject(data)) {
+            if(checkObjectIsFalsy(data)) {
                 return (<p>No data for this visit.</p>)
             }
 

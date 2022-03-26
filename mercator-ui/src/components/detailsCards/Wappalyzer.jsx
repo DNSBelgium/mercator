@@ -1,7 +1,7 @@
 import {Row, Col, Table} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
-import { checkDataObject, renderDataBoolean } from "../../services/Util";
+import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
 
 const Wappalyzer = (props) => {
 
@@ -201,7 +201,7 @@ const Wappalyzer = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
-        if (checkDataObject(data)) {
+        if (checkObjectIsFalsy(data)) {
             return (
                 <>
                     <Row>

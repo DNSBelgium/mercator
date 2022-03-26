@@ -3,7 +3,7 @@ import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
-import { checkDataObject } from "../../services/Util";
+import { checkObjectIsFalsy } from "../../services/Util";
 
 const SMTPCard = (props) => {
 
@@ -32,7 +32,7 @@ const SMTPCard = (props) => {
 
     const {openServer, setOpenServer} = props;
     const topElement = <p className='top-element'>SMTP crawl</p>
-    if (checkDataObject(data)) {
+    if (checkObjectIsFalsy(data)) {
         return (
             <>
                 <Row>
