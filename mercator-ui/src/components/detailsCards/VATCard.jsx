@@ -49,7 +49,7 @@ const VATCard = (props) => {
         'no vat found'
 
     if(data.vatValues && data.vatValues.length) {
-        if(data.vatValues.length === 1) {
+        if(data.vatValues.length === 1) { //If only one, render one
             data.vatValues
         }
         else {
@@ -64,12 +64,75 @@ const VATCard = (props) => {
     // Test push
 
     // Render data.vatValues
-    const renderVAT = () => {
-        if(!data.vatValues && !data.vatValues.length) { //??
+    const renderVAT = () => { // Inside td element
+        if(!data.vatValues && !data.vatValues.length) { //Works?
             return (
                 <p>No VAT found</p>
             );
         }
+        if(data.vatValues.length === 1) {
+            return (
+                data.vatValues
+            );
+        }
+        return (
+            <>
+                <button 
+                    className='more-info'
+                    onClick={() => setOpenVatValues(openVatValues => !openVatValues)} // Toggle openVatValues boolean
+                > 
+                    More info
+                </button>
+
+                {
+                    openVatValues && ( // if openVatValues === true, render
+                        <ul className="no-bullet mt-1 pl-0">
+                            { 
+                                data.vatValues.map((data, index) => {
+                                    <li key={index}>
+                                        { data }
+                                    </li>
+                                })
+                            }
+                        </ul>
+                    )
+                }
+            </>
+        );
+    }
+
+    // Render data.visitedUrls
+    const renderFollowedUrls = () => { // Inside td element
+        if(!data.visitedUrls && !data.visitedUrls.length) {
+            return (
+                ''
+            );
+        }
+
+        return (
+            <>
+                <button 
+                    className='more-info'
+                    onClick={() => setOpenVisitedUrlsVat(openVisitedUrlsVat => !openVisitedUrlsVat)} // Toggle openVisitedUrlsVat boolean
+                > 
+                    More info
+                </button>      
+
+                {
+                    openVisitedUrlsVat && ( // if openVisitedUrlsVat === true, render
+                        <ul className="mt-2 no-bullet pl-0">
+                            { 
+                                data.visitedUrls.map((data, index) => {
+                                    <li key={index} className="mt-1">
+                                        { data }
+                                    </li>
+                                })
+                            }
+                        </ul>
+                    )
+                }      
+            </>
+        );
     }
 
     // Writing HTML on a function base so we can define logic more easily.
@@ -104,7 +167,11 @@ const VATCard = (props) => {
                                     Crawl timestamp
                                 </th>
                                 <td>
-                                    { data.crawlStarted ? moment(data.crawlStarted).format("DD/MM/YYYY HH:mm:ss") : '' }
+                                    { // Ternary
+                                        data.crawlStarted ? 
+                                            moment(data.crawlStarted).format("DD/MM/YYYY HH:mm:ss") : 
+                                            '' 
+                                    }
                                 </td>
                             </tr>
 
@@ -132,10 +199,37 @@ const VATCard = (props) => {
 
                             <tr>
                                 <th scope="row">
-
+                                    URL
                                 </th>
                                 <td>
-                                    
+                                    { data.startUrl }
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    Matching URL
+                                </th>
+                                <td>
+                                    { data.matchingUrl }
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    # URLs followed
+                                </th>
+                                <td>
+                                    { data.visitedUrls ? data.visitedUrls.length : '' }
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">
+                                    URLs followed
+                                </th>
+                                <td>
+                                    { renderFollowedUrls() }
                                 </td>
                             </tr>
 
