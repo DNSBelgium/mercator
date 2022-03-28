@@ -57,12 +57,14 @@ th {
   margin-bottom: -10px;
 }
 /* text goes over border in HTMLCard and DNSCard */
-.htmlStruct, .dns-records {
+.htmlStruct, .body-text {
+  max-width: 10vw;
   word-wrap: break-word;
 }
 .dns-records{
   margin-top: 10px;
   margin-bottom: 10px;
+  word-wrap: break-word;
 }
   /* makes red the errors and problems in detailsCards*/
 .problem-content,.problem-dns,.error-wappalyzer, #error-500-html, #error-500-content{
@@ -95,6 +97,15 @@ th {
 #metricsJson-content {
   overflow: hidden;
 }
+
+/* Within SMTPCard.jsx */
+#SMTP-Hosts-Card {
+  padding-left: 1.25rem;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid grey;
+}
+
 /* Within Wappalyzer.jsx */
 #technologies-list {
   display: flex;
