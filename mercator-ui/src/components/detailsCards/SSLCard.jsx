@@ -75,39 +75,25 @@ const SSLCard = (props) => {
 
     const topElement = <p className='top-element'>SSL Crawl</p>
     
-    // Render crawlResult.supportSsl_<version number>
-    const renderSslSupport = (ssl) => {
-        if (ssl === null) {
-
+    // Render crawlResult.supportSsl_<version number> / crawlResult.supportTls_<version number>
+    const renderSlSupport = (sl, cipherSuites) => { // Inside td element
+        if (sl === null || sl === '') {
+            return '';
         }
+
+        if (sl) { // supportSsl / supportTsl true or false?
+
+            if (cipherSuites) { // Does it have cipherSuites?
+                return `true (${cipherSuites.count} cipher suites supported)`;
+            }
+
+            return 'true';
+        }
+        return 'false';
     }
 
-
-        // crawlResult.supportSsl_2_0 == null ?
-        //     "" :
-        //     crawlResult.supportSsl_2_0 ?
-        //         ('true' + (countCipherSuites["SSL_2_0"] !== undefined ?
-        //         ' (' + countCipherSuites["SSL_2_0"].count + ' cipher suites supported)' :
-        //             "" )) :
-        //             'false'
-
-        // if(crawlResult.supportSsl_2_0 == null) {
-        //     return '';
-        // }
-        // else if (crawlResult.supportSsl_2_0) {
-        //     let string = 'true';
-        //     if (countCipherSuites["SSL_2_0"] !== undefined) {
-        //         return string + " (" + countCipherSuites["SSL_2_0"].count + ' cipher suites supported)'
-        //     }
-        //     else {
-        //         return string + '';
-        //     }
-        // }
-        // else {
-        //     return 'false'
-        // }
-
     // Writing HTML on a function base so we can define logic more easily.
+    // Rewriting old html (WIP, pauzed)
     const renderHTML = () => {
 
         const render = () => {
@@ -184,7 +170,7 @@ const SSLCard = (props) => {
                                     Support SSL 2.0
                                 </th>
                                 <td>
-                                    { renderSslSupport(crawlResult.SSL_2_0) }
+                                    { renderSlSupport(crawlResult.supportSsl_2_0, countCipherSuites['SSL_2_0']) }
                                 </td>
                             </tr>
                         </tbody>
@@ -216,6 +202,7 @@ const SSLCard = (props) => {
         );
     }
 
+    // Old HTML (rewriting HTML - WIP, pauzed)
     const oldHTML = () => {
         if (checkObjectIsFalsy(crawlResult)) {
             return (
@@ -250,8 +237,9 @@ const SSLCard = (props) => {
                                 </tr>
                                 <tr>
                                     <th scope="row">OK</th>
-                                    {/* Change this boolean to 'loading...' */}
-                                    { renderDataBoolean(crawlResult.ok) }
+                                    { 
+                                        renderDataBoolean(crawlResult.ok) 
+                                    }
                                 </tr>
                                 <tr>
                                     <th scope="row">Problem</th>
@@ -267,39 +255,39 @@ const SSLCard = (props) => {
                                 </tr>
                                 <tr>
                                     <th scope="row">Support SSL 2.0</th>
-                                    <td>{crawlResult.supportSsl_2_0 == null ? '' : crawlResult.supportSsl_2_0 ?
-                                        ('true' + (countCipherSuites["SSL_2_0"] !== undefined ? ' (' + countCipherSuites["SSL_2_0"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportSsl_2_0, countCipherSuites["SSL_2_0"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support SSL 3.0</th>
-                                    <td>{crawlResult.supportSsl_3_0 == null ? '' : crawlResult.supportSsl_3_0 ?
-                                        ('true' + (countCipherSuites["SSL_3_0"] !== undefined ? ' (' + countCipherSuites["SSL_3_0"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportSsl_3_0, countCipherSuites["SSL_3_0"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support TLS 1.0</th>
-                                    <td>{crawlResult.supportTls_1_0 == null ? '' : crawlResult.supportTls_1_0 ?
-                                        ('true' + (countCipherSuites["TLS_1_0"] !== undefined ? ' (' + countCipherSuites["TLS_1_0"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportTls_1_0, countCipherSuites["TLS_1_0"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support TLS 1.1</th>
-                                    <td>{crawlResult.supportTls_1_1 == null ? '' : crawlResult.supportTls_1_1 ?
-                                        ('true' + (countCipherSuites["TLS_1_1"] !== undefined ? ' (' + countCipherSuites["TLS_1_1"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportTls_1_1, countCipherSuites["TLS_1_1"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support TLS 1.2</th>
-                                    <td>{crawlResult.supportTls_1_2 == null ? '' : crawlResult.supportTls_1_2 ?
-                                        ('true' + (countCipherSuites["TLS_1_2"] !== undefined ? ' (' + countCipherSuites["TLS_1_2"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportTls_1_2, countCipherSuites["TLS_1_2"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support TLS 1.3</th>
-                                    <td>{crawlResult.supportTls_1_3 == null ? '' : crawlResult.supportTls_1_3 ?
-                                        ('true' + (countCipherSuites["TLS_1_3"] !== undefined ? ' (' + countCipherSuites["TLS_1_3"].count + ' cipher suites supported)' : ''))
-                                        : 'false'}</td>
+                                    <td>
+                                        { renderSlSupport(crawlResult.supportTls_1_3, countCipherSuites["TLS_1_3"]) }
+                                    </td>
                                 </tr>
                                 <tr>
                                     <th scope="row">Support ECDH key exchange</th>
