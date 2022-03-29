@@ -128,6 +128,44 @@ th {
   list-style-type: none;
 }
 
+/* NavBar */
+#NavBar-Form {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 50vw;
+}
+#NavBar-Input {
+  margin-left: 1rem;
+  margin-right: 1.5rem;
+  margin-top: 1px;
+  font-family: "Arial Rounded MT Bold";
+}
+/* button searchbar*/
+#input-button{
+  font-family: "Arial Rounded MT Bold";
+  color: white;
+  background-color:#2a6485;
+  border: 1px #37536e !important;
+  font-size: 16px;
+  width: 100px;
+  height: 37px;
+  margin-top: 1px;
+  margin-right: 1rem;
+  border-radius: 0px;
+}
+#Url-Or-Id-Btn {
+  margin-left: 8rem;
+}
+/*label "Domain name*/
+#navbar-input-label{
+  min-width: 7rem;
+  text-align: center;
+  margin-top: 8px;
+  font-family: "Arial Rounded MT Bold";
+  color: #314f6b;
+}
+
 /* TimelineDomainName.jsx */
 /*css of "Timeline for one domain name */
 /*input group TimelineDomainName*/
@@ -147,33 +185,6 @@ th {
   background-color:#e3f5ff;
   min-width: 100px;
 
-}
-/* NavBar */
-#input-domainname{
-  margin-left: 45px;
-  margin-right: 50px;
-  margin-top: 1px;
-  font-family: "Arial Rounded MT Bold";
-}
-/* button searchbar*/
-#input-button{
-  font-family: "Arial Rounded MT Bold";
-  color: white;
-  background-color:#2a6485;
-  border: 1px #37536e !important;
-  font-size: 16px;
-  width: 100px;
-  height: 37px;
-  margin-top: 1px;
-  margin-right: 1rem;
-  border-radius: 0px;
-}
-
-/*label "Domain name*/
-#input-label{
-  margin-top: 8px;
-  font-family: "Arial Rounded MT Bold";
-  color: #314f6b;
 }
 /* all the th of the table, color*/
 .header-timeline-table{

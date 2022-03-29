@@ -36,64 +36,73 @@ function NavigationBar() {
         if (!urlOrId) { // false (default) === URL search
             return (
                 <>
-                    <Form.Label id="input-label">
+                    <Form.Label id="navbar-input-label">
                         Domain name
                     </Form.Label>
 
                     <FormControl 
-                        id="input-domainname"
+                        id="NavBar-Input"
                         required
                         type="text"
                         placeholder="Enter full domain name"
                         ref={textInput}
                     />
-                    
                     <Button 
                         id="input-button" 
                         type="submit"
                     >
                         Search
-                    </Button>
-
-                    <Button 
-                        variant="secondary"
-                        size='sm'
-                        onClick={() => setUrlOrId(urlOrId => !urlOrId)}
-                    >
-                        By VisitId
                     </Button>
                 </>
             );
         } // true === VisitId search
         return (
             <>
-                    <Form.Label id="input-label">
-                        Visit Id
-                    </Form.Label>
+                <Form.Label id="navbar-input-label">
+                    Visit Id
+                </Form.Label>
 
-                    <FormControl 
-                        id="input-domainname"
-                        required
-                        type="text"
-                        placeholder="Enter exact visit Id"
-                        ref={textInput}
-                    />
-                    
-                    <Button 
-                        id="input-button" 
-                        type="submit"
-                    >
-                        Search
-                    </Button>
+                <FormControl 
+                    id="NavBar-Input"
+                    required
+                    type="text"
+                    placeholder="Enter exact visit Id"
+                    ref={textInput}
+                />
+                <Button 
+                    id="input-button"
+                    type="submit"
+                >
+                    Go
+                </Button>
+            </>
+        );
+    }
 
-                    <Button 
-                        variant="secondary"
-                        size='sm'
-                        onClick={() => setUrlOrId(urlOrId => !urlOrId)}
-                    >
-                        By URL
-                    </Button>
-                </>
+    // This function changes the button depending on which searchfield is active.
+    // Also handles the boolean that defines which one should be active.
+    const changeBtn = () => {
+        if (!urlOrId) {
+            return (
+                <Button 
+                    id='Url-Or-Id-Btn'
+                    variant="secondary"
+                    size='sm'
+                    onClick={() => setUrlOrId(true)}
+                >
+                    Change to find by visit Id
+                </Button>
+            );
+        }
+        return (
+            <Button 
+                id='Url-Or-Id-Btn'
+                variant="secondary"
+                size='sm'
+                onClick={() => setUrlOrId(false)}
+            >
+                Change to search by URL
+            </Button>
         );
     }
 
@@ -101,12 +110,15 @@ function NavigationBar() {
     return (
         <>
             <div className="searchfield" id='NavBar-Div'>
-                <Form noValidate validated={validated} className='form' onSubmit={search}>
+                <Form noValidate validated={validated} id='NavBar-Form' className='form' onSubmit={search}>
                     <Form.Group className="input-group">
                         {
                             changeSearchField()
                         }
                     </Form.Group>
+                    {
+                        changeBtn()
+                    }
                 </Form>
             </div>
         </>
