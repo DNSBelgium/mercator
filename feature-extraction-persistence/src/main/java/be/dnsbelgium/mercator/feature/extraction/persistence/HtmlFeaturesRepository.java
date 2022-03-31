@@ -20,7 +20,6 @@ public interface HtmlFeaturesRepository extends PagingAndSortingRepository<HtmlF
   @Query("select r.id from HtmlFeatures r where r.visitId = :visitId and r.url = :url")
   Optional<Long> selectIdByVisitIdAndUrl(@Param("visitId")UUID visitId, @Param("url")String url);
 
-
   List<HtmlFeatures> findByVisitId(@Param("visitId") UUID visitId);
 
   /**

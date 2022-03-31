@@ -227,7 +227,7 @@ th {
 }
 
 /* HandleError.jsx error divs */
-#Error-Case-500-Div {
+.error-div {
   margin-top: 2rem;
   margin-left: 2rem;
 }

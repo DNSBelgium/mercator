@@ -47,5 +47,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://mercator-dev.crawl042.dc3.be/"
+  "proxy": "http://localhost:8089/"
 }
