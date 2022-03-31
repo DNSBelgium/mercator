@@ -30,6 +30,9 @@ export const handleExResponse = (response) => {
     switch(response.status) {
         // Add status case as they come up.
 
+        case 404: // Status Code 404 === Not_Found
+            return caseFourOFour(response);
+
         case 500: // Status Code 500+ is for server issues.
         case 501:
         case 502:
@@ -44,9 +47,19 @@ export const handleExResponse = (response) => {
 // Return of case 500-503.
 const caseFiveHundredRange = () => {
     return (
-        <div id='Error-Case-500-Div'>
+        <div className="error-div" id='Error-Case-500-Div'>
             <h2>An error has occurred.</h2>
             <p>Please try again later.</p>
+        </div>
+    );
+}
+
+// Return of case 404.
+const caseFourOFour = (resp) => {
+    return (
+        <div className="error-div" id='Error-Case-404-Div'>
+            <h2>An error has occurred.</h2>
+            <p>{ resp.data }</p>
         </div>
     );
 }
