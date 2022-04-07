@@ -14,13 +14,14 @@ const TimelineDomainName = () => {
     const [processing, setProcessing] = useState(true); // Used for holding HTML rendering if processing === true.
     const [exception, setException] = useState(null); // Used for handling GET request exception responses.
     
-    const [currentPage, setCurrentPage] = useState(0); // Used to request a page. Default page is the first page.
+    const savedPage = localStorage.getItem('saved-page') ? parseInt(localStorage.getItem('saved-page')) : 0;
+    const [currentPage, setCurrentPage] = useState(savedPage); // Used to request a page. Default page is the first page.
     
     // Function to sort rows by crawl date desc
     // function sortVisits(a, b) {
     //     return Date.parse(b.requestTimestamp) - Date.parse(a.requestTimestamp);
     // }
-
+    
     useEffect(() => { // Triggers upon initial render and every time domainName changes.
 
         // Wrapping the inside of this hook with an async function so we can await the backend data with a Promise.
@@ -51,6 +52,7 @@ const TimelineDomainName = () => {
             // setStatus([]); // Clear status state for a new domain
 
             setProcessing(false);
+            localStorage.removeItem('saved-page');
         }
 
         executeHook();
@@ -247,7 +249,12 @@ const TimelineDomainName = () => {
                                     { data.dtos.map((item, index) => (
                                         <tr key={index}>
                                             <td>
-                                                <Link to={{pathname: `/details/${item.visitId}`}}>{item.visitId}</Link>
+                                                <Link 
+                                                    to={{pathname: `/details/${item.visitId}`}}
+                                                    onClick={() => localStorage.setItem('saved-page', currentPage)}
+                                                >
+                                                    { item.visitId }
+                                                </Link>
                                             </td>
                                             <td>
                                                 { item.requestTimeStamp ? moment(item.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") : '' }
