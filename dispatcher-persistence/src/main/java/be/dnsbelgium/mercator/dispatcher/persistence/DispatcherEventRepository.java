@@ -1,5 +1,8 @@
 package be.dnsbelgium.mercator.dispatcher.persistence;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -11,6 +14,9 @@ public interface DispatcherEventRepository extends PagingAndSortingRepository<Di
   // Method is used by the User Interface via Mercator REST API
   @SuppressWarnings("unused")
   List<DispatcherEvent> findDispatcherEventByDomainName(@Param("domainName") String domainName);
+
+  // Returns a Page with DispatcherEvents dependent on the given parameters.
+  Page<DispatcherEvent> findDispatcherEventByDomainName(@Param("domainName") String domainName, Pageable p);
 
   static boolean exceptionContains(Exception exception, String substring) {
     Throwable cause = exception;

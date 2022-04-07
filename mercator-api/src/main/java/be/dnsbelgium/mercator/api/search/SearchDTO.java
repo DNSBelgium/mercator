@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Data
+@Data // Lombok annotation to generate constructor, getters, setters, toString, hashCode & equals methods.
 public class SearchDTO {
 
     private UUID visitId;
