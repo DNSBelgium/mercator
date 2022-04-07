@@ -215,6 +215,22 @@ th {
   max-width: 180px !important;
 }
 
+#Paging-Div {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+}
+.paging-btn {
+  font-size: 1.15rem;
+  color: #007bff;
+  background-color: white;
+  border: none;
+}
+.current-page {
+  text-decoration: underline;
+}
+
 /* ContentCrawlCard.jsx links (Screenshot, HTML, Har) */
 .content-card-link-button {
   color: #007bff;

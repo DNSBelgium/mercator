@@ -2,19 +2,20 @@ package be.dnsbelgium.mercator.api.search;
 
 import be.dnsbelgium.mercator.api.status.CrawlComponentStatus;
 import be.dnsbelgium.mercator.api.status.CrawlComponentStatusController;
-import be.dnsbelgium.mercator.api.status.CrawlComponentStatusService;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
-import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeaturesRepository;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -32,24 +33,29 @@ public class SearchService {
     }
 
     /**
-     * Gets the all the necessary information needed for the frontend.
-     * Frontend calls a search by domain name, gets a list of SearchDTO's as the return.
-     * @param domainName Domain the frontend is searching for. F.ex.: abc.be
-     * @return List of SearchDTO's containing VisitId, FinalURL and ContentCrawler booleans.
-     * @throws NotFoundException When a requested domain is not found in the database.
+     * Gets the all the necessary information needed for the frontend's search result table by pageNr.
+     * Frontend calls a search by domain name, gets a PageDTO as the return.
+     * @param domainName Requested Domain. F.ex.: abc.be
+     * @param pageNumber Requested page within domainName.
+     * @return PageDTO with a List of SearchDTO's (containing VisitId, FinalURL, ContentCrawler booleans),
+     *         int amount of pages,
+     *         hasNext & hasPrevious booleans.
+     * @throws NotFoundException When a requested resource is not found in the database.
      */
-    public List<SearchDTO> getInfoForDomain(String domainName) throws NotFoundException {
+    public PageDTO getPageForDomain(String domainName, int pageNumber) throws NotFoundException {
         logger.info("Searching for " + domainName);
 
-        List<DispatcherEvent> dispatcherEvents = dispatchRepo.findDispatcherEventByDomainName(domainName);
+        // Create page requested by pageNumber.
+        Pageable paging = PageRequest.of(pageNumber, 10, Sort.by("requestTimestamp").descending());
+        Page<DispatcherEvent> dispatcherPage = dispatchRepo.findDispatcherEventByDomainName(domainName, paging);
 
-        if (dispatcherEvents.size() == 0) {
+        if (!dispatcherPage.hasContent()) {
             throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
         }
 
-        // Get list of visitId's for DomainName
+        // Create list of visitId's for DomainName from the requested page.
         List<UUID> visitIds = new ArrayList<>();
-        for (DispatcherEvent event: dispatcherEvents) {
+        for (DispatcherEvent event: dispatcherPage) {
             visitIds.add(event.getVisitId());
         }
 
@@ -71,16 +77,22 @@ public class SearchService {
             statusBools.add(crawlCompController.getCrawlComponentStatus(id));
         }
 
-        // Create a list of SearchDTO's to return.
-        // DTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
-        List<SearchDTO> listToReturn = new ArrayList<>();
+        // Create PageDTO to return.
+        PageDTO pageDTO = new PageDTO();
+        pageDTO.setAmountOfPages(dispatcherPage.getTotalPages());
+        pageDTO.setHasNext(dispatcherPage.hasNext());
+        pageDTO.setHasPrevious(dispatcherPage.hasPrevious());
+
+        // Create a list of SearchDTO's to add to PageDTO.
+        // SearchDTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
+        List<SearchDTO> dtoList = new ArrayList<>();
         for (UUID vId: visitIds) {
 
-            // Create DTO to add to listToReturn.
+            // Create DTO to add to dtoList.
             SearchDTO dto = new SearchDTO();
             dto.setVisitId(vId);
             dto.setFinalUrl(urlMap.get(vId));
-            dto.setRequestTimeStamp(dispatcherEvents
+            dto.setRequestTimeStamp(dispatcherPage
                                     .stream()
                                     .filter(e -> e.getVisitId().equals(vId))
                                     .findFirst().get()
@@ -91,14 +103,15 @@ public class SearchService {
                                 .filter(crawl -> crawl.getVisit_id().equals(vId))
                                 .findFirst().get());
 
-            listToReturn.add(dto);
+            dtoList.add(dto);
         }
 
-        // Return list sorted by requestTimeStamp
-        return listToReturn
-                .stream()
-                .sorted(Comparator.comparing(SearchDTO::getRequestTimeStamp))
-                .collect(Collectors.toList());
+        // Add list of SearchDTO's to PageDTO.
+        pageDTO.setDtos(dtoList);
+
+        logger.debug("Returning PageDTO containing a list of SearchDTO's.");
+
+        return pageDTO;
     }
 
 }

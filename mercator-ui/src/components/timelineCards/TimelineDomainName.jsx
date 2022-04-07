@@ -13,7 +13,9 @@ const TimelineDomainName = () => {
     // const [status, setStatus] = useState([]); // Used for statusMap which contains the muppets, dns, smtp and wappalyzer booleans.
     const [processing, setProcessing] = useState(true); // Used for holding HTML rendering if processing === true.
     const [exception, setException] = useState(null); // Used for handling GET request exception responses.
-
+    
+    const [currentPage, setCurrentPage] = useState(0); // Used to request a page. Default page is the first page.
+    
     // Function to sort rows by crawl date desc
     // function sortVisits(a, b) {
     //     return Date.parse(b.requestTimestamp) - Date.parse(a.requestTimestamp);
@@ -33,13 +35,12 @@ const TimelineDomainName = () => {
             }
 
             // const url = `/dispatcherEvents/search/findDispatcherEventByDomainName?domainName=${domainName}`;
-            const url = `/find-visits/${domainName}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domainName}/${currentPage}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
-                        console.log(resp.data);
-
+                        // console.log(resp.data);
+                        
                         setData(resp.data);
                     }
                 })
@@ -53,7 +54,7 @@ const TimelineDomainName = () => {
         }
 
         executeHook();
-    }, [domainName]);
+    }, [domainName, currentPage]);
 
     // useEffect(() => { // Triggers upon initial render and every time the data hook changes.
     //     data.forEach(async (item, i, arr) => {
@@ -137,6 +138,63 @@ const TimelineDomainName = () => {
             );
     }
 
+    // Render the previous, numberical and next buttons.
+    const renderPagingButtons = () => {
+        let btnArray = [];
+        let btn;
+
+        if(data.hasPrevious) {
+            btn =   <button 
+                        key='prev'
+                        className="paging-btn mr-1"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                        prev
+                    </button>
+
+            btnArray.push(btn);
+        }
+
+        for(let i = 0; i < data.amountOfPages; i++) {
+            let className;
+
+            // The follow if-else is for giving the current page's button an underline.
+            if(currentPage === i) {
+                className = "current-page paging-btn mr-1";
+            }
+            else {
+                className = "paging-btn mr-1";
+            }
+
+            btn =   <button 
+                        key={i} 
+                        className={className}
+                        onClick={() => setCurrentPage(i)}
+                    >
+                        {i + 1}
+                    </button>
+            btnArray.push(btn);
+        }
+
+        if(data.hasNext) {
+            btn =   <button 
+                        key='next'
+                        className="paging-btn"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                        next
+                    </button>
+
+            btnArray.push(btn);
+        }
+
+        return(
+            <>
+                { btnArray }
+            </>
+        );
+    }
+
     // Rendering HTML on a JS Function base, so we can define logic.
     const renderHtml = () => {
         if(exception !== null) {
@@ -186,28 +244,28 @@ const TimelineDomainName = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    { data.map((data, index) => (
+                                    { data.dtos.map((item, index) => (
                                         <tr key={index}>
                                             <td>
-                                                <Link to={{pathname: `/details/${data.visitId}`}}>{data.visitId}</Link>
+                                                <Link to={{pathname: `/details/${item.visitId}`}}>{item.visitId}</Link>
                                             </td>
                                             <td>
-                                                { data.requestTimeStamp ? moment(data.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") : '' }
+                                                { item.requestTimeStamp ? moment(item.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") : '' }
                                             </td>
                                             <td>
-                                                { data.finalUrl }
+                                                { item.finalUrl }
                                             </td>
                                             <td>
-                                                { booleanToCheckmark(data.crawlStatus.muppets) }
+                                                { booleanToCheckmark(item.crawlStatus.muppets) }
                                             </td>
                                             <td>
-                                                { booleanToCheckmark(data.crawlStatus.dns) }
+                                                { booleanToCheckmark(item.crawlStatus.dns) }
                                             </td>
                                             <td>
-                                                { booleanToCheckmark(data.crawlStatus.smtp) }
+                                                { booleanToCheckmark(item.crawlStatus.smtp) }
                                             </td>
                                             <td>
-                                                { booleanToCheckmark(data.crawlStatus.wappalyzer) }
+                                                { booleanToCheckmark(item.crawlStatus.wappalyzer) }
                                             </td>
                                         </tr>
                                     ))}
@@ -216,6 +274,25 @@ const TimelineDomainName = () => {
                         </div>
                     </Col>
                 </Row>
+                <div id="Paging-Div">
+                    <button // First page btn
+                        className="paging-btn mr-1"
+                        onClick={() => setCurrentPage(0)}
+                    >
+                        &#8676;
+                    </button>
+
+                    { // Next, numerical and previous buttons
+                        renderPagingButtons() 
+                    }
+
+                    <button // Last page btn
+                        className="paging-btn ml-1"
+                        onClick={() => setCurrentPage(data.amountOfPages - 1)}
+                    >
+                        &#8677;
+                    </button>
+                </div>
             </div>
         );
     }
