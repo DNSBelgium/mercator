@@ -35,7 +35,7 @@ export interface ScraperParams {
     visitId: string;
 
     screenshotOptions: puppeteer.ScreenshotOptions;
-    browserOptions: puppeteer.LaunchOptions;
+    browserOptions: puppeteer.BrowserConnectOptions;
 
     saveHtml: boolean;
     saveScreenshot: boolean;
@@ -77,7 +77,7 @@ export function isBrowserConnected() {
 }
 
 export async function setup() {
-    const browserOptions: puppeteer.BrowserOptions = {
+    const browserOptions: puppeteer.BrowserConnectOptions = {
         defaultViewport: {
             width: DEFAULT_WIDTH,
             height: DEFAULT_HEIGHT
@@ -155,13 +155,13 @@ export async function setup() {
         })
     ).then(setup);
 
-    browser.process().stderr!.on("data", function(logData) {
+    browser.process()!.stderr!.on("data", function(logData) {
         //this does not properly prefix, as logData chunks can have newlines, but maybe good enough for now
         // (we would be better off to invest in a better logging platform first, anyway)
         console.log("BROWSER | " + logData.toString());
     });
 
-    console.log(`Started Puppeteer with pid ${browser.process().pid}`);
+    console.log(`Started Puppeteer with pid ${browser.process()!.pid}`);
 }
 
 (async () => {
@@ -198,7 +198,7 @@ export async function shutdown() {
         await browser.close();
     }
 
-    await new Promise<void>(resolve => treekill(browser.process().pid, "SIGKILL", () => {
+    await new Promise<void>(resolve => treekill(browser.process()!.pid!, "SIGKILL", () => {
         console.log("Chrome instances killed");
         resolve();
     }));
@@ -320,7 +320,6 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             result.errors.push(e.message);
         } else {
             console.error("Something happened [%s]", e);
-            result.errors.push(e);
         }
         return result;
     } finally {
