@@ -20,8 +20,8 @@ FROM nginx:stable-alpine
 COPY --from=build /app/build/ /usr/share/nginx/html
 
 RUN apk upgrade --update-cache \
-      # CVE-2022-23308 and more
-      curl libxml2 libcrypto1.1 libssl1.1 libxslt \
+      # CVE-2022-1271
+      curl xz-libs \
       --no-cache
 
 ## Nginx config
