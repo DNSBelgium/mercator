@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.ExecutionException;
+
 @BasePathAwareController // TODO: Understand this annotation (AroenvR).
 public class SearchController {
     private final Logger logger = LoggerFactory.getLogger(SearchController.class);
@@ -34,6 +36,9 @@ public class SearchController {
         } catch (NotFoundException ex) {
             logger.debug(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (ExecutionException | InterruptedException ex) {
+            logger.error("Something wrong happened: {}", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
         }
     }
 }

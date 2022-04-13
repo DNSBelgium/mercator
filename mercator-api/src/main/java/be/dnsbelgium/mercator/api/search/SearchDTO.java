@@ -10,7 +10,6 @@ import java.util.UUID;
 public class SearchDTO {
 
     private UUID visitId;
-    private String finalUrl;
     private ZonedDateTime requestTimeStamp;
     private CrawlComponentStatus crawlStatus;
 
