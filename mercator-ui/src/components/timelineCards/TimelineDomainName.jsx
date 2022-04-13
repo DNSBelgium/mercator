@@ -146,7 +146,6 @@ const TimelineDomainName = () => {
                                     <tr>
                                         <th>Visit id</th>
                                         <th>Crawl time</th>
-                                        <th>Final url</th>
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
                                         <th>Status<br/> SMTP crawl</th>
@@ -166,9 +165,6 @@ const TimelineDomainName = () => {
                                             </td>
                                             <td>
                                                 { item.requestTimeStamp ? moment(item.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") : '' }
-                                            </td>
-                                            <td>
-                                                { item.finalUrl }
                                             </td>
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.muppets) }

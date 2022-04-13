@@ -31,7 +31,7 @@ export const handleExResponse = (response) => {
         // Add status case as they come up.
 
         case 404: // Status Code 404 === Not_Found
-            return caseFourOFour(response);
+            return caseFourOFour();
 
         case 500: // Status Code 500+ is for server issues.
         case 501:
@@ -55,11 +55,12 @@ const caseFiveHundredRange = () => {
 }
 
 // Return of case 404.
-const caseFourOFour = (resp) => {
+const caseFourOFour = () => {
+    const domainName = localStorage.getItem('search') ? localStorage.getItem('search') : '';
     return (
         <div className="error-div" id='Error-Case-404-Div'>
             <h2>An error has occurred.</h2>
-            <p>{ resp.data }</p>
+            <p>Domain {domainName} was not yet crawled or does not exist.</p>
         </div>
     );
 }

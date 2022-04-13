@@ -197,7 +197,7 @@ th {
   padding-left: 10px !important;
 }
 /*alignment td*/
-.table-timeline td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
+.table-timeline td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
   text-align: center;
   vertical-align: middle !important;
   justify-content: center;
@@ -208,7 +208,7 @@ th {
   vertical-align: middle !important;
 }
 /*width th*/
-.table-timeline th:nth-child(4), th:nth-child(5), th:nth-child(6), th:nth-child(7) ,td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
+.table-timeline th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6) ,td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
   max-width: 220px !important;
 }
 .table-timeline th:nth-child(7) , td:nth-child(7) {
