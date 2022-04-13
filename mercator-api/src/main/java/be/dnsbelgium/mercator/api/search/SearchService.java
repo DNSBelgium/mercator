@@ -53,55 +53,43 @@ public class SearchService {
             throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
         }
 
-        // Create list of visitId's for DomainName from the requested page.
-        List<UUID> visitIds = new ArrayList<>();
-        for (DispatcherEvent event: dispatcherPage) {
-            visitIds.add(event.getVisitId());
-        }
-
-        // Get the finalUrls for the visitId's
-        // Then get the list of Status booleans for the found visitId's
-        Map<UUID, String> urlMap = new HashMap();
-        List<CrawlComponentStatus> statusBools = new ArrayList<>();
-        for (UUID id: visitIds) {
-
-            // Get optional URL by visitId or else throw NotFoundException.
-            String finalUrl = crawlRepo.getUrlByVisitId(id).orElseThrow(() ->
-                    new NotFoundException(String.format("Something went wrong when trying to find a VisitId for %s.", domainName))
-            );
-
-            // Add the finalUrl to the map with UUID as key.
-            urlMap.put(id, finalUrl);
-
-            // Get the Status Booleans by visitId
-            statusBools.add(crawlCompController.getCrawlComponentStatus(id));
-        }
-
         // Create PageDTO to return.
         PageDTO pageDTO = new PageDTO();
         pageDTO.setAmountOfPages(dispatcherPage.getTotalPages());
         pageDTO.setHasNext(dispatcherPage.hasNext());
         pageDTO.setHasPrevious(dispatcherPage.hasPrevious());
 
+        // Create list of visitId's for DomainName from the requested page.
+        List<UUID> visitIds = new ArrayList<>();
+        for (DispatcherEvent event: dispatcherPage) {
+            visitIds.add(event.getVisitId());
+        }
+
         // Create a list of SearchDTO's to add to PageDTO.
         // SearchDTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
         List<SearchDTO> dtoList = new ArrayList<>();
+
+        // Get the finalUrls for the visitId's
+        // Then get the list of Status booleans for the found visitId's
+        List<CrawlComponentStatus> statusBools = new ArrayList<>();
         for (UUID vId: visitIds) {
+
+            // Get optional URL by visitId or else throw NotFoundException.
+            String finalUrl = crawlRepo.getUrlByVisitId(vId).orElseThrow(() ->
+                    new NotFoundException(String.format("Something went wrong when trying to find a VisitId for %s.", domainName))
+            );
 
             // Create DTO to add to dtoList.
             SearchDTO dto = new SearchDTO();
             dto.setVisitId(vId);
-            dto.setFinalUrl(urlMap.get(vId));
+            dto.setFinalUrl(finalUrl);
             dto.setRequestTimeStamp(dispatcherPage
-                                    .stream()
-                                    .filter(e -> e.getVisitId().equals(vId))
-                                    .findFirst().get()
-                                    .getRequestTimestamp());
-
-            dto.setCrawlStatus(statusBools
-                                .stream()
-                                .filter(crawl -> crawl.getVisit_id().equals(vId))
-                                .findFirst().get());
+                    .stream()
+                    .filter(e -> e.getVisitId().equals(vId))
+                    .findFirst().get()
+                    .getRequestTimestamp());
+            // Get the Status Booleans by visitId
+            dto.setCrawlStatus(crawlCompController.getCrawlComponentStatus(vId));
 
             dtoList.add(dto);
         }
