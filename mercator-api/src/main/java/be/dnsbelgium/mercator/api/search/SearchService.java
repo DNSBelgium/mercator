@@ -1,8 +1,6 @@
 package be.dnsbelgium.mercator.api.search;
 
-import be.dnsbelgium.mercator.api.status.CrawlComponentStatus;
-import be.dnsbelgium.mercator.api.status.CrawlComponentStatusController;
-import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
+import be.dnsbelgium.mercator.api.status.CrawlComponentStatusService;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
 import javassist.NotFoundException;
@@ -16,20 +14,19 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class SearchService {
     private final Logger logger = LoggerFactory.getLogger(SearchService.class); // Removed most loggers. Generally used for debugging.
 
-    private final CrawlComponentStatusController crawlCompController;
-    private final ContentCrawlResultRepository crawlRepo;
-    private final DispatcherEventRepository dispatchRepo;
+    private final CrawlComponentStatusService crawlComponentStatusService;
+    private final DispatcherEventRepository dispatcherEventRepository;
 
     @Autowired
-    public SearchService(CrawlComponentStatusController crawlCompController, ContentCrawlResultRepository crawlRepo, DispatcherEventRepository dispatchRepo) {
-        this.crawlCompController = crawlCompController;
-        this.crawlRepo = crawlRepo;
-        this.dispatchRepo = dispatchRepo;
+    public SearchService(CrawlComponentStatusService crawlComponentStatusService, DispatcherEventRepository dispatcherEventRepository) {
+        this.crawlComponentStatusService = crawlComponentStatusService;
+        this.dispatcherEventRepository = dispatcherEventRepository;
     }
 
     /**
@@ -37,20 +34,21 @@ public class SearchService {
      * Frontend calls a search by domain name, gets a PageDTO as the return.
      * @param domainName Requested Domain. F.ex.: abc.be
      * @param pageNumber Requested page within domainName.
-     * @return PageDTO with a List of SearchDTO's (containing VisitId, FinalURL, ContentCrawler booleans),
+     * @return PageDTO with a List of SearchDTO's (containing VisitId, ContentCrawler booleans),
      *         int amount of pages,
      *         hasNext & hasPrevious booleans.
      * @throws NotFoundException When a requested resource is not found in the database.
      */
-    public PageDTO getPageForDomain(String domainName, int pageNumber) throws NotFoundException {
+    public PageDTO getPageForDomain(String domainName, int pageNumber) throws NotFoundException, ExecutionException, InterruptedException {
         logger.info("Searching for " + domainName);
 
         // Create page requested by pageNumber.
         Pageable paging = PageRequest.of(pageNumber, 10, Sort.by("requestTimestamp").descending());
-        Page<DispatcherEvent> dispatcherPage = dispatchRepo.findDispatcherEventByDomainName(domainName, paging);
+        Page<DispatcherEvent> dispatcherPage = dispatcherEventRepository.findDispatcherEventByDomainName(domainName, paging);
 
         if (!dispatcherPage.hasContent()) {
             throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
+            // TODO: Return a code that the frontend will translate in the correct message
         }
 
         // Create PageDTO to return.
@@ -59,37 +57,20 @@ public class SearchService {
         pageDTO.setHasNext(dispatcherPage.hasNext());
         pageDTO.setHasPrevious(dispatcherPage.hasPrevious());
 
-        // Create list of visitId's for DomainName from the requested page.
-        List<UUID> visitIds = new ArrayList<>();
-        for (DispatcherEvent event: dispatcherPage) {
-            visitIds.add(event.getVisitId());
-        }
-
         // Create a list of SearchDTO's to add to PageDTO.
         // SearchDTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
         List<SearchDTO> dtoList = new ArrayList<>();
 
-        // Get the finalUrls for the visitId's
-        // Then get the list of Status booleans for the found visitId's
-        List<CrawlComponentStatus> statusBools = new ArrayList<>();
-        for (UUID vId: visitIds) {
-
-            // Get optional URL by visitId or else throw NotFoundException.
-            String finalUrl = crawlRepo.getUrlByVisitId(vId).orElseThrow(() ->
-                    new NotFoundException(String.format("Something went wrong when trying to find a VisitId for %s.", domainName))
-            );
+        // Create list of visitId's for DomainName from the requested page.
+        for (DispatcherEvent event: dispatcherPage) {
+            UUID vId = event.getVisitId();
 
             // Create DTO to add to dtoList.
             SearchDTO dto = new SearchDTO();
             dto.setVisitId(vId);
-            dto.setFinalUrl(finalUrl);
-            dto.setRequestTimeStamp(dispatcherPage
-                    .stream()
-                    .filter(e -> e.getVisitId().equals(vId))
-                    .findFirst().get()
-                    .getRequestTimestamp());
+            dto.setRequestTimeStamp(event.getRequestTimestamp());
             // Get the Status Booleans by visitId
-            dto.setCrawlStatus(crawlCompController.getCrawlComponentStatus(vId));
+            dto.setCrawlStatus(crawlComponentStatusService.getCrawlComponentStatus(vId));
 
             dtoList.add(dto);
         }
