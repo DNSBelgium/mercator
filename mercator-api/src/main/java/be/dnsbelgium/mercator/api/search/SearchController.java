@@ -27,8 +27,8 @@ public class SearchController {
      * @param domainName Domain the frontend user is searching for.
      * @return Either: HTTPStatus 200 with a List of SearchDTO's OR HTTPStatus 404 with a message.
      */
-    @GetMapping("/find-visits/{domainName}/{pageNumber}") // Example: find-visits/abc.be/1
-    public ResponseEntity<?> getPageForDomainByName(@PathVariable String domainName, @PathVariable int pageNumber) {
+    @GetMapping("/find-visits/{domainName}") // Example: find-visits/abc.be/?page=1
+    public ResponseEntity<?> getPageForDomainByName(@PathVariable String domainName, @RequestParam(name = "page") int pageNumber) {
         logger.debug(String.format("GET was called for: %s. At page: %d.", domainName, pageNumber));
 
         try {

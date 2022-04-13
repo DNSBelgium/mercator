@@ -47,12 +47,14 @@ public class SearchService {
         Page<DispatcherEvent> dispatcherPage = dispatcherEventRepository.findDispatcherEventByDomainName(domainName, paging);
 
         if (!dispatcherPage.hasContent()) {
+            logger.info("Dispatcher has no content.");
             throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
             // TODO: Return a code that the frontend will translate in the correct message
         }
 
         // Create PageDTO to return.
         PageDTO pageDTO = new PageDTO();
+        pageDTO.setAmountOfRecords(dispatcherPage.getNumberOfElements());
         pageDTO.setAmountOfPages(dispatcherPage.getTotalPages());
         pageDTO.setHasNext(dispatcherPage.hasNext());
         pageDTO.setHasPrevious(dispatcherPage.hasPrevious());

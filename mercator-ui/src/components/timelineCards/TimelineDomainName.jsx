@@ -29,7 +29,7 @@ const TimelineDomainName = () => {
                 return;
             }
 
-            const url = `/find-visits/${domainName}/${currentPage}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domainName}?page=${currentPage}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
@@ -138,7 +138,8 @@ const TimelineDomainName = () => {
                 <Row>
                     <Col className='mt-4'>
                         <div>
-                            <h1 className="mt-5 mb-4">{domainName}</h1>
+                            <h1 className="mb-4">{domainName}</h1>
+                            <p>Number of records: { data.amountOfRecords }</p>
                         </div>
                         <div className="mt-5">
                             <Table className="table-timeline" bordered hover size="sm">
