@@ -16,6 +16,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,9 +70,10 @@ class SmtpCrawlServiceTest {
         VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
         SmtpCrawlResult crawlResult = service.retrieveSmtpInfo(request);
         service.save(crawlResult);
-        Optional<SmtpCrawlResult> find = repository.findByVisitId(uuid);
-        assertThat(find).isPresent();
-        SmtpCrawlResult found = find.get();
+        List<SmtpCrawlResult> find = repository.findByVisitId(uuid);
+        assertThat(find).isNotEmpty();
+        assertThat(find).hasSize(1);
+        SmtpCrawlResult found = find.get(0);
         logger.info("found = {}", found);
         assertThat(found).isNotNull();
         assertThat(found.getDomainName()).isEqualTo(request.getDomainName());

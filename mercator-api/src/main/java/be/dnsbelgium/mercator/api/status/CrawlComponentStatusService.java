@@ -43,13 +43,13 @@ public class CrawlComponentStatusService {
     CompletableFuture.allOf(dnsFuture, smtpFuture, muppetsFuture, wappalyzerFuture).get();
 
     Optional<DnsCrawlResult> dnsResult = dnsFuture.exceptionally((ex -> Optional.empty())).get();
-    Optional<SmtpCrawlResult> smtpResult = smtpFuture.exceptionally((ex -> Optional.empty())).get();
+    List<SmtpCrawlResult> smtpResult = smtpFuture.exceptionally((ex -> Collections.emptyList())).get();
     List<ContentCrawlResult> muppetsResults = muppetsFuture.exceptionally((ex -> Collections.emptyList())).get();
     Optional<WappalyzerResult> wappalyzerResult = wappalyzerFuture.exceptionally((ex -> Optional.empty())).get();
 
     return new CrawlComponentStatus(visitId,
                                     dnsResult.map(DnsCrawlResult::isOk).orElse(false),
-                                    smtpResult.map(result -> result.getCrawlStatus() == CrawlStatus.OK).orElse(false),
+                                    smtpResult.stream().anyMatch(result -> result.getCrawlStatus() == CrawlStatus.OK),
                                     muppetsResults.stream().anyMatch(ContentCrawlResult::isOk),
                                     wappalyzerResult.map(WappalyzerResult::isOk).orElse(false));
   }
