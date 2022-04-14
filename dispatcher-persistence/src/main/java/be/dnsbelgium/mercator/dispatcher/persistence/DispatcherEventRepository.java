@@ -19,9 +19,6 @@ public interface DispatcherEventRepository extends PagingAndSortingRepository<Di
   // Returns a Page with DispatcherEvents dependent on the given parameters.
   Page<DispatcherEvent> findDispatcherEventByDomainName(@Param("domainName") String domainName, Pageable p);
 
-  // Returns a count of all domain records found by domain name.
-  long countAllByDomainName(String domainName);
-
   static boolean exceptionContains(Exception exception, String substring) {
     Throwable cause = exception;
     boolean found = false;

@@ -54,7 +54,7 @@ public class SearchService {
 
         // Create PageDTO to return.
         PageDTO pageDTO = new PageDTO();
-        pageDTO.setAmountOfRecords(dispatcherEventRepository.countAllByDomainName(domainName));
+        pageDTO.setAmountOfRecords(dispatcherPage.getTotalElements());
         pageDTO.setAmountOfPages(dispatcherPage.getTotalPages());
         pageDTO.setHasNext(dispatcherPage.hasNext());
         pageDTO.setHasPrevious(dispatcherPage.hasPrevious());
