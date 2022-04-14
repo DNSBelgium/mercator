@@ -8,7 +8,7 @@ import java.util.List;
 public class PageDTO {
 
     private List<SearchDTO> dtos;
-    private int amountOfRecords;
+    private long amountOfRecords;
     private int amountOfPages;
     private boolean hasNext;
     private boolean hasPrevious;
