@@ -32,8 +32,6 @@ const DNSCard = (props) => {
     const {openRecords, setOpenRecords} = props;
     const topElement = <p className='top-element'> DNS crawl </p> // BorderWrapper title
 
-    console.log(data)
-
     // Render data.records and manage necessary logic.
     const renderRecords = () => {
 

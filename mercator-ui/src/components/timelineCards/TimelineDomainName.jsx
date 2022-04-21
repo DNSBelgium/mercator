@@ -145,7 +145,6 @@ const TimelineDomainName = () => {
                             <Table className="table-timeline" bordered hover size="sm">
                                 <thead className="header-timeline-table">
                                     <tr>
-                                        {/* <th>Visit Id</th> */}
                                         <th>Crawl time</th>
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
@@ -157,14 +156,6 @@ const TimelineDomainName = () => {
                                 <tbody>
                                     { data.dtos.map((item, index) => (
                                         <tr key={index}>
-                                            {/* <td>
-                                                <Link 
-                                                    to={{pathname: `/details/${item.visitId}`}}
-                                                    onClick={() => localStorage.setItem('saved-page', currentPage)}
-                                                >
-                                                    Go to page
-                                                </Link>
-                                            </td> */}
                                             <td>
                                                 <Link 
                                                     to={{pathname: `/details/${item.visitId}`}}
