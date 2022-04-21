@@ -8,6 +8,10 @@ RUN apk add -u --no-cache \
     freetype \
     ttf-freefont \
     font-noto-emoji \
+     # CVE-2021-44648
+    gdk-pixbuf \
+    # CVE-2022-0891
+    tiff-dev \
     && rm -rf /var/cache/* \
     && mkdir /var/cache/apk
 
