@@ -42,9 +42,9 @@ const VATCard = (props) => {
 
     // Render data.vatValues
     const renderVAT = () => { // Inside td element
-        if(!data.vatValues && !data.vatValues.length) { //Works?
+        if(!data.vatValues || !data.vatValues.length) { //Works? No.
             return (
-                <p>No VAT found</p>
+                <p className="mt-1">No VAT found</p>
             );
         }
         if(data.vatValues.length === 1) {
