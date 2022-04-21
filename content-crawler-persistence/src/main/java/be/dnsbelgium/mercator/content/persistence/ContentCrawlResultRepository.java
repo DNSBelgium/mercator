@@ -1,12 +1,10 @@
 package be.dnsbelgium.mercator.content.persistence;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ContentCrawlResultRepository extends PagingAndSortingRepository<ContentCrawlResult, Long> {
@@ -17,6 +15,7 @@ public interface ContentCrawlResultRepository extends PagingAndSortingRepository
 
   /**
    * save given ContentCrawlResult and ignore violations of unique constraint on (visit_id, url)
+   *
    * @param crawlResult the entity to save
    * @return true if save failed because of unique constraint on (visit_id, url)
    * throws DataIntegrityViolationException for other integrity constraint violations

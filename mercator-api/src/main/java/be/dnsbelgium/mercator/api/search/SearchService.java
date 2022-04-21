@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 public class SearchService {
-    private final Logger logger = LoggerFactory.getLogger(SearchService.class); // Removed most loggers. Generally used for debugging.
+    private final Logger logger = LoggerFactory.getLogger(SearchService.class);
 
     private final CrawlComponentStatusService crawlComponentStatusService;
     private final DispatcherEventRepository dispatcherEventRepository;
