@@ -254,7 +254,7 @@ const Wappalyzer = (props) => {
                                         <th scope="row">
                                             Error
                                         </th>
-                                        <td className="error-wappalyzer"> 
+                                        <td className="defined-error"> 
                                             { data.error }
                                         </td>
                                     </tr>

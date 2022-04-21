@@ -129,7 +129,7 @@ const ContentCrawlCard = (props) => {
                                                     </tr>
                                                     <tr>
                                                         <th scope="row">Problem</th>
-                                                        <td className="problem-content">{data.problem}</td>
+                                                        <td className="defined-error">{data.problem}</td>
                                                     </tr>
                                                     <tr>
                                                         <th scope="row">Final Url</th>

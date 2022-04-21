@@ -1,6 +1,5 @@
 import {useState} from "react";
 import {Button} from "react-bootstrap";
-import "../App.css";
 import DispatcherCard from "./detailsCards/DispatcherCard";
 import DNSCard from "./detailsCards/DNSCard";
 import ContentCrawlCard from "./detailsCards/ContentCrawlCard";
@@ -62,7 +61,7 @@ function Details(props) {
     }
 
     return (
-        <div>
+        <div id="Details-Div">
 
             <div className='p-3' id='Go-to-card-Div'>
                 <button onClick={() => scrollToElement('content-card')}>
@@ -91,11 +90,13 @@ function Details(props) {
             </div>
 
             <div>
-                <DispatcherCard visitId={visitId} />
+                <div id='dispatcher-card'>
+                    <DispatcherCard visitId={visitId} />
+                </div>
 
                 <Button 
                     variant="link" 
-                    className="openall-button" 
+                    className="open-all-button" 
                     onClick={toggle}>
                         { 
                             allOpen ? "Close All" : "Open All" // Toggle text

@@ -1,4 +1,4 @@
-import {Col, Row, Table} from "react-bootstrap";
+import {Col, Row, Table, Button} from "react-bootstrap";
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import api from "../../services/api";
@@ -134,7 +134,7 @@ const TimelineDomainName = () => {
         }
 
         return (
-            <div id="Search-Data-Div" alt="Div when search is finished and data has been returned.">
+            <div id="TDN-Div" alt="Div when search is finished and data has been returned.">
                 <Row>
                     <Col className='mt-4'>
                         <div>
@@ -145,27 +145,37 @@ const TimelineDomainName = () => {
                             <Table className="table-timeline" bordered hover size="sm">
                                 <thead className="header-timeline-table">
                                     <tr>
-                                        <th>Visit id</th>
+                                        {/* <th>Visit Id</th> */}
                                         <th>Crawl time</th>
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
                                         <th>Status<br/> SMTP crawl</th>
                                         <th>Status<br/> Wappalyzer</th>
+                                        <th>Visit Id</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     { data.dtos.map((item, index) => (
                                         <tr key={index}>
+                                            {/* <td>
+                                                <Link 
+                                                    to={{pathname: `/details/${item.visitId}`}}
+                                                    onClick={() => localStorage.setItem('saved-page', currentPage)}
+                                                >
+                                                    Go to page
+                                                </Link>
+                                            </td> */}
                                             <td>
                                                 <Link 
                                                     to={{pathname: `/details/${item.visitId}`}}
                                                     onClick={() => localStorage.setItem('saved-page', currentPage)}
                                                 >
-                                                    { item.visitId }
+                                                    { 
+                                                        item.requestTimeStamp ? 
+                                                            moment(item.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") :
+                                                            '' 
+                                                    }
                                                 </Link>
-                                            </td>
-                                            <td>
-                                                { item.requestTimeStamp ? moment(item.requestTimeStamp).format("YYYY/MM/DD HH:mm:ss") : '' }
                                             </td>
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.muppets) }
@@ -178,6 +188,11 @@ const TimelineDomainName = () => {
                                             </td>
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.wappalyzer) }
+                                            </td>
+                                            <td>
+                                                <Button onClick={() => navigator.clipboard.writeText(item.visitId)}>
+                                                    Copy Visit Id
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))}

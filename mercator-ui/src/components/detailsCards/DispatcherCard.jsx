@@ -42,18 +42,15 @@ function DispatcherCard(props) {
             listlabels = data.labels.map((label, index) => <span key={index.toString()}>{label}</span>);
         }
         return (
-            <>
-                <Navbar>
-                    <div>
-                        <h1 className="navbar-brand">{data.domainName}</h1>
-                    </div>
-                </Navbar>
-                
+            <>     
                 <div className="mb-5 mt-2 ml-4">
+                    <h1>{ data.domainName }</h1>
+
                     <Row>
                         <Col id='visit-id' md="auto">Visit id:</Col>
                         <Col md="auto">{data.visitId}</Col>
                     </Row>
+
                     <Row>
                         <Col id='labels' md="auto">Labels:</Col>
                         <Col md="auto">{listlabels}</Col>

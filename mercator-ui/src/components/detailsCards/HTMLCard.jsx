@@ -337,7 +337,7 @@ const HTMLCard = (props) => {
                                                 <th scope='row'>
                                                     Html struct
                                                 </th>
-                                                <td className="htmlStruct">
+                                                <td className="html-struct">
                                                     { renderHtmlStruct(item.htmlstruct) }
                                                 </td>
                                             </tr>

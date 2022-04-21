@@ -20,8 +20,9 @@ const SMTPCard = (props) => {
             const url = `/smtpCrawlResults/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
+                    console.log(resp);
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data);
+                        setData(resp === undefined ? null : resp.data._embedded.smtpCrawlResults);
                     }
                 })
                 .catch((ex) => {
@@ -218,8 +219,8 @@ const SMTPCard = (props) => {
     } 
 
     // Render data.servers
-    const renderDataServers = () => { // Inside td element 
-        if(!data.servers || !data.servers.length) {
+    const renderDataServers = (servers) => { // Inside td element 
+        if(!servers || !servers.length) {
             return (
                 ""
             );
@@ -237,7 +238,7 @@ const SMTPCard = (props) => {
                     openServer && ( // if openServer === true, render
                         <>
                             {
-                                data.servers.map((item, index) => {
+                                servers.map((item, index) => {
                                     return(
                                         <ul className="mt-3" key={index}>
                                             <li>
@@ -283,47 +284,44 @@ const SMTPCard = (props) => {
                 <div className="smtp-table">
                     <Table size='sm' borderless>
                         <tbody className="text-left">
+                            {
+                                data.map((item, index) => {
+                                    return (
+                                        <div className="mb-3">
+                                            <tr key={index}>
+                                                <th>
+                                                    Crawl Timestamp
+                                                </th>
+                                                <td>
+                                                { // Ternary
+                                                    item.crawlTimestamp ? 
+                                                        moment(item.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
+                                                        '' 
+                                                }
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <th scope='row'>
+                                                    Server
+                                                </th>
+                                                <td>
+                                                    { renderDataServers(item.servers) }
+                                                </td>
+                                            </tr>
 
-                            <tr>
-                                <th scope='row'>
-                                    Id
-                                </th>
-                                <td>
-                                    { data.id }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope='row'>
-                                    Crawl timestamp
-                                </th>
-                                <td>
-                                    { // Ternary
-                                        data.crawlTimestamp ? 
-                                            moment(data.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
-                                            '' 
-                                    }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope='row'>
-                                    Server
-                                </th>
-                                <td>
-                                    { renderDataServers() }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Crawl status
-                                </th>
-                                <td>
-                                    { data.crawlStatus }
-                                </td>
-                            </tr>
-
+                                            <tr>
+                                                <th scope="row">
+                                                    Crawl status
+                                                </th>
+                                                <td>
+                                                    { item.crawlStatus }
+                                                </td>
+                                            </tr>
+                                        </div>
+                                    )
+                                })
+                            }
                         </tbody>
                     </Table>
                 </div>

@@ -32,6 +32,8 @@ const DNSCard = (props) => {
     const {openRecords, setOpenRecords} = props;
     const topElement = <p className='top-element'> DNS crawl </p> // BorderWrapper title
 
+    console.log(data)
+
     // Render data.records and manage necessary logic.
     const renderRecords = () => {
 
@@ -158,12 +160,16 @@ const DNSCard = (props) => {
                                     All Records
                                 </th>
                                 <td>
-                                    <button 
-                                        className="more-info"
-                                        onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
-                                    > 
-                                        More info
-                                    </button>
+                                    {
+                                        Object.keys(data.allRecords).length !== 0 && ( // Don't render 'More Info' button if there are no records.
+                                            <button 
+                                                className="more-info"
+                                                onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
+                                            > 
+                                                More info
+                                            </button>
+                                        )
+                                    }
 
                                     {
                                         openRecords && ( // if openRecords === true, render
@@ -181,7 +187,7 @@ const DNSCard = (props) => {
                                 <th scope="row">
                                     Problem
                                 </th>
-                                <td className="problem-dns">
+                                <td className="defined-error">
                                     { data.problem }
                                 </td>
                             </tr>
