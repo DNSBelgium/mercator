@@ -43,7 +43,7 @@ function DispatcherCard(props) {
         }
         return (
             <>     
-                <div className="mb-5 mt-2 ml-4">
+                <div className="mb-4 mt-2 ml-1">
                     <h1>{ data.domainName }</h1>
 
                     <Row>

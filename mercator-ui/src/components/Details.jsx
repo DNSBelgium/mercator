@@ -94,14 +94,13 @@ function Details(props) {
                     <DispatcherCard visitId={visitId} />
                 </div>
 
-                <Button 
-                    variant="link" 
+                <button 
                     className="open-all-button" 
                     onClick={toggle}>
                         { 
                             allOpen ? "Close All" : "Open All" // Toggle text
                         }
-                </Button>
+                </button>
             
                 <div id={'content-card'}>
                     <ContentCrawlCard 

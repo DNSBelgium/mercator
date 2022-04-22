@@ -142,8 +142,8 @@ const TimelineDomainName = () => {
                             <p>Number of records: { data.amountOfRecords }</p>
                         </div>
                         <div className="mt-5">
-                            <Table className="table-timeline" bordered hover size="sm">
-                                <thead className="header-timeline-table">
+                            <Table id="timeline-table" bordered hover size="sm">
+                                <thead>
                                     <tr>
                                         <th>Crawl time</th>
                                         <th>Status<br/> Content crawl</th>
@@ -181,7 +181,10 @@ const TimelineDomainName = () => {
                                                 { booleanToCheckmark(item.crawlStatus.wappalyzer) }
                                             </td>
                                             <td>
-                                                <Button onClick={() => navigator.clipboard.writeText(item.visitId)}>
+                                                <Button 
+                                                    id='Copy-Id-Btn'
+                                                    onClick={() => navigator.clipboard.writeText(item.visitId)}
+                                                >
                                                     Copy Visit Id
                                                 </Button>
                                             </td>

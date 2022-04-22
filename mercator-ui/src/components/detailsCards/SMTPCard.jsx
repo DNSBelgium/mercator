@@ -300,15 +300,6 @@ const SMTPCard = (props) => {
                                                 }
                                                 </td>
                                             </tr>
-                                            
-                                            <tr>
-                                                <th scope='row'>
-                                                    Server
-                                                </th>
-                                                <td>
-                                                    { renderDataServers(item.servers) }
-                                                </td>
-                                            </tr>
 
                                             <tr>
                                                 <th scope="row">
@@ -316,6 +307,15 @@ const SMTPCard = (props) => {
                                                 </th>
                                                 <td>
                                                     { item.crawlStatus }
+                                                </td>
+                                            </tr>
+                                            
+                                            <tr>
+                                                <th scope='row'>
+                                                    Server
+                                                </th>
+                                                <td>
+                                                    { renderDataServers(item.servers) }
                                                 </td>
                                             </tr>
                                         </div>

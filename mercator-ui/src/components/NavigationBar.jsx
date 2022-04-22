@@ -110,7 +110,7 @@ function NavigationBar() {
     return (
         <>
             <div className="searchfield" id='NavBar-Div'>
-                <Form noValidate validated={validated} id='NavBar-Form' className='form' onSubmit={search}>
+                <Form noValidate validated={validated} id='NavBar-Form' onSubmit={search}>
                     <Form.Group className="input-group">
                         {
                             changeSearchField()

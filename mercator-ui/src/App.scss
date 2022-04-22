@@ -1,18 +1,121 @@
+/*
+  Note to future dev: Sass was used to nestle elements.
+  https://sass-lang.com/
+  This prevents accidental overwriting and limits the use of !important.
+*/
+
+$clickables-color: #007bff;
+$clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
+
 /* App.tsx */
 .App {
-  margin-left: 50px;
-  margin-right: 50px;
+  max-width: 85vw;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* 
-  Details.jsx 
-  Parent to all Card components.
-*/
-#Details-Div {
+/* NavigationBar.jsx */
+#NavBar-Div {
+  padding: 40px;
+  background-color:#e3f5ff;
+  min-width: 100px;
 
-  .open-all-button {
-    margin-top: -15px;
+  #NavBar-Form {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 50vw;
   }
+  #NavBar-Input { // Search field
+    margin-left: 1rem;
+    margin-right: 1.5rem;
+    margin-top: 1px;
+    font-family: "Arial Rounded MT Bold";
+  }
+  #navbar-input-label { // Search field label
+    min-width: 7rem;
+    text-align: center;
+    margin-top: 8px;
+    font-family: "Arial Rounded MT Bold";
+    color: #314f6b;
+  }
+  #input-button { // Search or Go button (search submit btn)
+    font-family: "Arial Rounded MT Bold";
+    color: white;
+    background-color:#2a6485;
+    border: 1px #37536e;
+    font-size: 16px;
+    width: 100px;
+    height: 37px;
+    margin-top: 1px;
+    margin-right: 1rem;
+    border-radius: 5px;
+  }
+  #Url-Or-Id-Btn { // 'Change to...' button
+    margin-left: 8rem;
+  }
+}
+
+/* TimelineDomainName.jsx */
+#TDN-Div {
+
+  /* Table css */
+  #timeline-table {
+    thead {
+      background-color: #e3f5ff;
+      color: #2a6485;
+    }
+    th {
+      vertical-align: middle !important; //Overwriting Bootstrap
+      padding-left: 10px !important; //Overwriting Bootstrap
+    }
+    td {
+      padding-top: 0px !important; //Overwriting Bootstrap
+      padding-bottom: 0px !important; //Overwriting Bootstrap
+    }
+    // All Status td's and Visit Id
+    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+    }
+    // Crawl Time td & Visit Id td
+    td:nth-child(1), td:nth-child(6) { 
+      vertical-align: middle !important; //Overwriting Bootstrap
+    }
+    th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+      max-width: 50px;
+    }
+    #Copy-Id-Btn {
+      background-color: #2a6485;
+      border: 0px;
+    }
+  }
+  
+  /* Paging buttons at the bottom of the table */
+  #Paging-Div {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 3rem;
+    display: flex;
+    justify-content: center;
+
+    .paging-btn {
+      font-size: 1.15rem;
+      color: $clickables-color;
+      background-color: white;
+      border: none;
+    }
+    .current-page {
+      color: $clickables-hover-color;
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Details.jsx 
+   Parent to all Card components. */
+#Details-Div {
 
   /* Jump-navigation buttons on top and bottom of Details.jsx */
   #Go-to-card-Div {
@@ -26,12 +129,22 @@
   #Go-to-card-Div > button, #Go-to-top-Div > button {
     border: none;
     background-color: white;
-    color: #007bff;
+    color: $clickables-color;
   }
 
   #Go-to-card-Div > button:hover, #Go-to-top-Div > button:hover {
-    color: blue;
+    color: $clickables-hover-color;
     text-decoration: underline;
+  }
+
+  .open-all-button {
+    background-color: white;
+    color: $clickables-color;
+    border: none;
+  }
+  .open-all-button:hover {
+    color: $clickables-hover-color;
+    text-decoration: none;
   }
 
   /* Top element of card-border in all Details Card components */
@@ -39,6 +152,12 @@
     white-space: nowrap;
     font-weight: bold;
     font-size: large;
+  }
+
+  /* Details Card tables */
+  .content-table, .smtp-table, .html-table, .dns-table, .vat-table{
+    margin-top: -15px;
+    margin-bottom: -15px;
   }
 
   /* All td and th elements in Details Card components */
@@ -50,12 +169,21 @@
     width: 350px;
   }
 
-  /*
-    Set backend defined 'error' text within Details Card components red & bold.
-    ContentCrawlCard.jsx -> 'Problem' element in table.
-    Wappalyzer.jsx -> 'Error' element in table.
-    DNSCard.jsx -> 'Problem' element in table.
-  */
+  /* All 'More info' buttons within Details Cards */
+  .more-info {
+    padding: 0px;
+    border: none;
+    color: $clickables-color;
+    background-color: white;
+  }
+  .more-info:hover {
+    color: $clickables-hover-color;
+  }
+
+  /* Set backend defined 'error' text within Details Card components red & bold.
+     ContentCrawlCard.jsx -> 'Problem' element in table.
+     Wappalyzer.jsx -> 'Error' element in table.
+     DNSCard.jsx -> 'Problem' element in table. */
   .defined-error {
     color: red;
     font-weight: bold;
@@ -69,9 +197,43 @@
   }
   
   /* ContentCrawlCard.jsx */
-  // #content-card {
-    
-  // }
+  #content-card {
+    #metrics-json-content {
+      overflow: hidden;
+    }
+    .content-card-link-button {
+      color: $clickables-color;
+      border: none;
+      background-color: white;
+    }
+    .content-card-link-button:hover {
+      color: $clickables-hover-color;
+      text-decoration: underline;
+    }
+
+    /* Wappalyzer.jsx */
+    #wappalyzer {
+      #technologies-list {
+        display: flex;
+        flex-direction: column;
+        text-align: start;
+      }
+      .technologies-names-btns {
+        margin-top: 0.25rem;
+        max-width: 10rem;
+        border: none;
+        background: white;
+        text-align: start;
+        color: $clickables-color;
+      }
+      .technologies-names-btns:hover {
+        text-decoration: underline;
+      }
+      .no-bullet {
+        list-style-type: none;
+      }
+    }
+  }
 
   /* DNSCard.jsx */
   #dns-card {
@@ -89,11 +251,18 @@
   /* SMTPCard.jsx */
   #smtp-card {
     .smtp-crawl-timestamps {
-      color: #007bff;
+      color: $clickables-color;
     }
     .smtp-crawl-timestamps:hover {
+      color: $clickables-hover-color;
       text-decoration: underline;
       cursor: pointer;
+    }
+    #SMTP-Hosts-Card {
+      padding-left: 1.25rem;
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+      border: 1px solid grey;
     }
   }
 
@@ -107,7 +276,7 @@
 
   /* VATCard.jsx */
   // #vat-card {
-
+    // No css necessary.
   // }
 
   /* SSLCard.jsx */
@@ -119,177 +288,6 @@
       line-break: anywhere;
     }
   }
-
-  /* Details Card tables */
-  .content-table, .smtp-table, .html-table, .dns-table, .vat-table{
-    margin-top: -15px;
-    margin-bottom: -15px;
-  }
-
-}
-
-
-
-
-/*all the buttons of the components of detalsCards*/
-#button-metricsJson , #button-technologies, #button-urls, #button-records, #button-servers, #button-hosts, #button-extensions, #button-htmlStruct, #button-external-hosts, #button-body-text, .toggle-button {
-  padding: 0px !important;
-}
-
-/* 'More info' buttons */
-.more-info {
-  padding: 0px;
-  border: none;
-  color: #007bff;
-  background-color: white;
-}
-.more-info:hover {
-  text-decoration: underline;
-}
-#metricsJson-content {
-  overflow: hidden;
-}
-
-/* Within SMTPCard.jsx */
-#SMTP-Hosts-Card {
-  padding-left: 1.25rem;
-  padding-top: 0.5rem;
-  margin-top: 0.25rem;
-  border: 1px solid grey;
-}
-
-/* Within Wappalyzer.jsx */
-#technologies-list {
-  display: flex;
-  flex-direction: column;
-  text-align: start;
-}
-.technologies-names-btns {
-  margin-top: 0.25rem;
-  max-width: 10rem;
-  border: none;
-  background: white;
-  text-align: start;
-  color: #007bff;
-}
-.technologies-names-btns:hover {
-  text-decoration: underline;
-}
-
-.no-bullet {
-  list-style-type: none;
-}
-
-/* NavBar */
-#NavBar-Form {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 50vw;
-}
-#NavBar-Input {
-  margin-left: 1rem;
-  margin-right: 1.5rem;
-  margin-top: 1px;
-  font-family: "Arial Rounded MT Bold";
-}
-.input-group{
-  min-width: 100px;
-  max-width: 900px;
-}
-/* button searchbar*/
-#input-button{
-  font-family: "Arial Rounded MT Bold";
-  color: white;
-  background-color:#2a6485;
-  border: 1px #37536e !important;
-  font-size: 16px;
-  width: 100px;
-  height: 37px;
-  margin-top: 1px;
-  margin-right: 1rem;
-  border-radius: 0px;
-}
-#Url-Or-Id-Btn {
-  margin-left: 8rem;
-}
-/*label "Domain name*/
-#navbar-input-label{
-  min-width: 7rem;
-  text-align: center;
-  margin-top: 8px;
-  font-family: "Arial Rounded MT Bold";
-  color: #314f6b;
-}
-
-/* TimelineDomainName.jsx */
-/*css of "Timeline for one domain name */
-.form{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.searchfield{
-  padding: 40px;
-  background-color:#e3f5ff;
-  min-width: 100px;
-
-}
-/* all the th of the table, color*/
-.header-timeline-table{
-  background-color: #e3f5ff;
-  color: #2a6485;
-}
-/* all the th of the table,alignment*/
-.table-timeline th {
-  vertical-align: middle !important; //Overwriting Bootstrap
-  padding-left: 10px !important; //Overwriting Bootstrap
-}
-.table-sm td {
-  padding-top: 0px !important; //Overwriting Bootstrap
-  padding-bottom: 0px !important; //Overwriting Bootstrap
-}
-/*alignment td*/
-.table-timeline td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-}
-/*alignment td*/
-.table-timeline td:nth-child(1), td:nth-child(6) {
-  vertical-align: middle !important; //Overwriting Bootstrap
-}
-/*width th*/
-.table-timeline th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
-  max-width: 50px;
-}
-
-#Paging-Div {
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 3rem;
-  display: flex;
-  justify-content: center;
-}
-.paging-btn {
-  font-size: 1.15rem;
-  color: #007bff;
-  background-color: white;
-  border: none;
-}
-.current-page {
-  text-decoration: underline;
-}
-
-/* ContentCrawlCard.jsx links (Screenshot, HTML, Har) */
-.content-card-link-button {
-  color: #007bff;
-  border: none;
-  background-color: white;
-}
-.content-card-link-button:hover {
-  color: blue;
-  text-decoration: underline;
 }
 
 /* HandleError.jsx error divs */

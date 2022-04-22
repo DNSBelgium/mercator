@@ -94,7 +94,7 @@ const ContentCrawlCard = (props) => {
 
                                                                         {   // if openMetrics === true, render
                                                                             openMetrics && (
-                                                                                <div id='metricsJson-content'>
+                                                                                <div id='metrics-json-content'>
                                                                                     <ul className="mb-2 mt-2">
                                                                                         {
                                                                                             Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
@@ -179,13 +179,15 @@ const ContentCrawlCard = (props) => {
 
                                             </div>
 
-                                            <Wappalyzer 
-                                                visitId={visitId} 
-                                                openTechnologies={openTechnologies}
-                                                setOpenTechnologies={setOpenTechnologies} 
-                                                openUrls={openUrls}
-                                                setOpenUrls={setOpenUrls}
-                                            />
+                                            <div id='wappalyzer'>
+                                                <Wappalyzer
+                                                    visitId={visitId} 
+                                                    openTechnologies={openTechnologies}
+                                                    setOpenTechnologies={setOpenTechnologies} 
+                                                    openUrls={openUrls}
+                                                    setOpenUrls={setOpenUrls}
+                                                />
+                                            </div>
 
                                         </div>
                                     </BorderWrapper>

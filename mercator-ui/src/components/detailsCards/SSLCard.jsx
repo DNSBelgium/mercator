@@ -354,8 +354,7 @@ const SSLCard = (props) => {
                                                             {certificates[item.leafCertificateId] !== undefined &&
     
                                                                 <Accordion>
-                                                                    <Accordion.Toggle as={Button} className="toggle-button"
-                                                                                      id="button-vat-values"
+                                                                    <Accordion.Toggle as={Button} className="toggle-button more-info"
                                                                                       variant="link" eventKey="3"
                                                                                       onClick={() => setOpenLeafCertificate(!openLeafCertificate)}>More
                                                                         info
@@ -439,8 +438,7 @@ const SSLCard = (props) => {
     
                                                     <td>
                                                         <Accordion>
-                                                            <Accordion.Toggle as={Button} className="toggle-button"
-                                                                              id="button-vat-values"
+                                                            <Accordion.Toggle as={Button} className="toggle-button more-info"
                                                                               variant="link" eventKey="3"
                                                                               onClick={() => setOpenTrustStores(!openTrustStores)}>More info
                                                             </Accordion.Toggle>
