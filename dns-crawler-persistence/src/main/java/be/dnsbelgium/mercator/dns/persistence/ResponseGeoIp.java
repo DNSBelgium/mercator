@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name = "response")
+@Table(name = "response_geo_ips")
 public class ResponseGeoIp {
 
     @Column(name = "asn")               private String asn;
