@@ -1,4 +1,4 @@
-import {Col, Navbar, Row} from "react-bootstrap";
+import {Col, Row} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
 

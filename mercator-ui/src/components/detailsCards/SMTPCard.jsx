@@ -20,9 +20,8 @@ const SMTPCard = (props) => {
             const url = `/smtpCrawlResults/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data._embedded.smtpCrawlResults);
+                        setData(resp === undefined ? null : resp.data);
                     }
                 })
                 .catch((ex) => {
@@ -284,44 +283,36 @@ const SMTPCard = (props) => {
                 <div className="smtp-table">
                     <Table size='sm' borderless>
                         <tbody className="text-left">
-                            {
-                                data.map((item, index) => {
-                                    return (
-                                        <div className="mb-3">
-                                            <tr key={index}>
-                                                <th>
-                                                    Crawl Timestamp
-                                                </th>
-                                                <td>
-                                                { // Ternary
-                                                    item.crawlTimestamp ? 
-                                                        moment(item.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
-                                                        '' 
-                                                }
-                                                </td>
-                                            </tr>
+                            <tr>
+                                <th>
+                                    Crawl Timestamp
+                                </th>
+                                <td>
+                                { // Ternary
+                                    data.crawlTimestamp ? 
+                                        moment(data.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
+                                        '' 
+                                }
+                                </td>
+                            </tr>
 
-                                            <tr>
-                                                <th scope="row">
-                                                    Crawl status
-                                                </th>
-                                                <td>
-                                                    { item.crawlStatus }
-                                                </td>
-                                            </tr>
-                                            
-                                            <tr>
-                                                <th scope='row'>
-                                                    Server
-                                                </th>
-                                                <td>
-                                                    { renderDataServers(item.servers) }
-                                                </td>
-                                            </tr>
-                                        </div>
-                                    )
-                                })
-                            }
+                            <tr>
+                                <th scope="row">
+                                    Crawl status
+                                </th>
+                                <td>
+                                    { data.crawlStatus }
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <th scope='row'>
+                                    Server
+                                </th>
+                                <td>
+                                    { renderDataServers(data.servers) }
+                                </td>
+                            </tr>
                         </tbody>
                     </Table>
                 </div>
