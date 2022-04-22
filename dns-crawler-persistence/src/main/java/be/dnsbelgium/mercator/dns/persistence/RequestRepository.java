@@ -7,9 +7,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface DnsCrawlResultRepository extends PagingAndSortingRepository<DnsCrawlResult, Long> {
+public interface RequestRepository extends PagingAndSortingRepository<Request, Long> {
 
-  @Query("select r from DnsCrawlResult r where r.visitId = :visitId")
-  Optional<DnsCrawlResult> findByVisitId(@Param("visitId") UUID visitId);
+    @Query("select r from Request r where r.visitId = :visitId")
+    Optional<Request> findByVisitId(@Param("visitId") UUID visitId);
 
 }
