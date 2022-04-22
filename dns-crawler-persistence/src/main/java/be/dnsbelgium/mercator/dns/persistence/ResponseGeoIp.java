@@ -5,10 +5,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@Entity
-@Data
+@Embeddable
 @NoArgsConstructor
-@Table(name = "response_geo_ips")
+@Data
 public class ResponseGeoIp {
 
     @Column(name = "asn")               private String asn;
