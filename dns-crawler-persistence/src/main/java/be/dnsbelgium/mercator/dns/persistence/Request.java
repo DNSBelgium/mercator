@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
@@ -22,7 +23,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     @Column(name = "record_type")       private RecordType record_type;
     @Column(name = "rcode")             private int rcode;
-    @Column(name = "crawl_timestamp")   private int crawlTimestamp;
+    @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp;
     @Column(name = "ok")                private boolean ok;
     @Column(name = "problem")           private String problem;
 
