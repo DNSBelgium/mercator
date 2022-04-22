@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.ExecutionException;
 
-@BasePathAwareController // TODO: Understand this annotation (AroenvR).
+@BasePathAwareController
 public class SearchController {
     private final Logger logger = LoggerFactory.getLogger(SearchController.class);
 

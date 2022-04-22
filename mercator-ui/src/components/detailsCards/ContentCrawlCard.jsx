@@ -36,7 +36,7 @@ const ContentCrawlCard = (props) => {
     const topElement = <p className='top-element'>Content crawl</p> // BorderWrapper's "title".
 
     // Writing HTML on a function base so we can define logic more easily.
-    const renderHTML = () => { //TODO: ??? Validity check
+    const renderHTML = () => {
         if (!data.length || data.length === 0) {
             return (
                 <Row>
