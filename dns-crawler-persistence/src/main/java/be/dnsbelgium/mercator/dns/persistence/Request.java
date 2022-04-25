@@ -32,7 +32,7 @@ public class Request {
         setVisitId(builder.visitId);
         setDomainName(builder.domainName);
         setPrefix(builder.prefix);
-        setRecordType(builder.record_type);
+        setRecordType(builder.recordType);
         setRcode(builder.rcode);
         setCrawlTimestamp(builder.crawlTimestamp);
         setOk(builder.ok);
@@ -44,7 +44,7 @@ public class Request {
         private UUID visitId;
         private String domainName;
         private String prefix;
-        private RecordType record_type;
+        private RecordType recordType;
         private int rcode;
         private ZonedDateTime crawlTimestamp;
         private boolean ok;
@@ -73,8 +73,8 @@ public class Request {
             return this;
         }
 
-        public Builder record_type(RecordType val) {
-            record_type = val;
+        public Builder recordType(RecordType val) {
+            recordType = val;
             return this;
         }
 

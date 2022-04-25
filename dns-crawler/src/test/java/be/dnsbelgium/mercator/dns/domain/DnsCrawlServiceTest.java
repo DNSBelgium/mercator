@@ -6,9 +6,13 @@ import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.*;
+import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
+import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIpRepository;
+import be.dnsbelgium.mercator.dns.persistence.ResponseRepository;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +35,10 @@ class DnsCrawlServiceTest {
 
   @MockBean
   RequestRepository requestRepository;
+  @MockBean
+  ResponseRepository responseRepository;
+  @MockBean
+  ResponseGeoIpRepository responseGeoIpRepository;
 
   @MockBean
   DnsResolver dnsResolver;
@@ -45,7 +53,7 @@ class DnsCrawlServiceTest {
   DnsCrawlService dnsCrawlService;
 
   @Captor
-//  ArgumentCaptor<DnsCrawlResult> argCaptor; TODO: AvR update to Request
+  ArgumentCaptor<Request> argCaptor;
 
   @Value("${crawler.dns.geoIP.enabled}")
   boolean geoIpEnabled;
@@ -56,23 +64,22 @@ class DnsCrawlServiceTest {
   }
 
   @Test
-  void retrieveDnsRecordsDomainNotFound() { // TODO: AvR Update to use Request
+  void retrieveDnsRecordsDomainNotFound() {
     when(dnsResolver.performCheck(any(Name.class))).thenReturn(DnsResolution.nxdomain());
 
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), "dnsbelgium.be");
 
     dnsCrawlService.retrieveDnsRecords(visitRequest);
 
-//    verify(dnsCrawlResultRepository).save(argCaptor.capture());
-//    DnsCrawlResult result = argCaptor.getValue();
-//
-//    assertThat(result.getAllRecords()).isEmpty();
-//    assertThat(result.isOk()).isFalse();
-//    assertThat(result.getProblem()).isEqualTo("nxdomain");
+    verify(requestRepository).save(argCaptor.capture());
+    Request result = argCaptor.getValue();
+
+    assertThat(result.isOk()).isFalse();
+    assertThat(result.getProblem()).isEqualTo("nxdomain");
   }
 
   @Test
-  void retrieveDnsRecords() { // TODO: AvR Update to use Request
+  void retrieveDnsRecords() { // TODO: AvR savedRequest is null. (DnsCrawlService 109)
     when(dnsResolver.performCheck(any(Name.class))).thenReturn(DnsResolutionTest.dnsBelgiumDnsResolution());
     when(dnsResolver.getAllRecords(any(Name.class), anyList())).thenReturn(new Records());
     when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
@@ -85,13 +92,13 @@ class DnsCrawlServiceTest {
 
     dnsCrawlService.retrieveDnsRecords(visitRequest);
 
-//    verify(dnsCrawlResultRepository).save(argCaptor.capture());
-//    verify(geoIPService, times(4)).lookupCountry(anyString());
-//    verify(geoIPService, times(4)).lookupASN(anyString());
-//    DnsCrawlResult result = argCaptor.getValue();
+    verify(requestRepository).save(argCaptor.capture());
+    verify(geoIPService, times(4)).lookupCountry(anyString());
+    verify(geoIPService, times(4)).lookupASN(anyString());
+    Request result = argCaptor.getValue();
 
 //    assertThat(result.getAllRecords()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords());
-//    assertThat(result.isOk()).isTrue();
-//    assertThat(result.getProblem()).isNull();
+    assertThat(result.isOk()).isTrue();
+    assertThat(result.getProblem()).isNull();
   }
 }
