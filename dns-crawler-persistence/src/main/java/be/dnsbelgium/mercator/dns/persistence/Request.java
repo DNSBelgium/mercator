@@ -1,7 +1,5 @@
 package be.dnsbelgium.mercator.dns.persistence;
 
-import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
-import be.dnsbelgium.mercator.dns.dto.DnsResolution;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,7 +21,7 @@ public class Request {
     @Column(name = "domain_name")       private String domainName;
     @Column(name = "prefix")            private String prefix;
     @Enumerated(EnumType.STRING)
-    @Column(name = "record_type")       private RecordType record_type;
+    @Column(name = "record_type")       private RecordType recordType;
     @Column(name = "rcode")             private int rcode;
     @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp;
     @Column(name = "ok")                private boolean ok;
@@ -34,7 +32,7 @@ public class Request {
         setVisitId(builder.visitId);
         setDomainName(builder.domainName);
         setPrefix(builder.prefix);
-        setRecord_type(builder.record_type);
+        setRecordType(builder.record_type);
         setRcode(builder.rcode);
         setCrawlTimestamp(builder.crawlTimestamp);
         setOk(builder.ok);

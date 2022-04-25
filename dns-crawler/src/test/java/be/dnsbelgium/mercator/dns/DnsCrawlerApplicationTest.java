@@ -1,12 +1,13 @@
 package be.dnsbelgium.mercator.dns;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
-import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
+import be.dnsbelgium.mercator.dns.persistence.*;
 import be.dnsbelgium.mercator.dns.ports.DnsCrawler;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,22 +51,39 @@ public class DnsCrawlerApplicationTest {
 
   @MockBean
   RequestRepository requestRepository;
+  @MockBean
+  ResponseRepository responseRepository;
+  @MockBean
+  ResponseGeoIpRepository responseGeoIpRepository;
 
   @Captor
-//  ArgumentCaptor<DnsCrawlResult> eventCaptor; // TODO: AvR update to Request
+  ArgumentCaptor<Request> requestCaptor;
+  @Captor
+  ArgumentCaptor<Response> responseCaptor;
+  @Captor
+  ArgumentCaptor<ResponseGeoIp> responseGeoIpCaptor;
 
   @Autowired
   DnsCrawler dnsCrawler;
 
   @Test
-  public void idn() throws Exception { //TODO: AvR update to Request
+  public void idn() throws Exception {
     // This domain is not under our control, so test might fail in the future
     String domainName = "café.be";
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);
     dnsCrawler.process(visitRequest);
-//    verify(repository).save(eventCaptor.capture());
-//    DnsCrawlResult event = eventCaptor.getValue();
-//    assertThat(event.getProblem()).isNotEqualTo("nxdomain");
+
+//    verify(requestRepository).save(requestCaptor.capture());
+//    verify(responseRepository).save(responseCaptor.capture());
+//    verify(responseGeoIpRepository).save(responseGeoIpCaptor.capture());
+//
+//    Request request = requestCaptor.getValue();
+//    Response response = responseCaptor.getValue();
+//    ResponseGeoIp responseGeoIp = responseGeoIpCaptor.getValue();
+//
+//    assertThat(request.getProblem()).isNotEqualTo("nxdomain");
+//    assertThat(response).isNotEqualTo(null);
+//    assertThat(responseGeoIp).isNotEqualTo(null);
   }
 
 }

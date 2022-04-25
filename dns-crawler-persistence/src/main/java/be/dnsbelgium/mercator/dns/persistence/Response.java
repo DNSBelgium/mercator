@@ -19,4 +19,45 @@ public class Response {
     @ManyToOne
     @JoinColumn (name = "request_id")   private Request request;
 
+    private Response(Builder builder) {
+        setId(builder.id);
+        setRecordData(builder.recordData);
+        setTtl(builder.ttl);
+        setRequest(builder.request);
+    }
+
+
+    public static final class Builder {
+        private Long id;
+        private String recordData;
+        private String ttl;
+        private Request request;
+
+        public Builder() {
+        }
+
+        public Builder id(Long val) {
+            id = val;
+            return this;
+        }
+
+        public Builder recordData(String val) {
+            recordData = val;
+            return this;
+        }
+
+        public Builder ttl(String val) {
+            ttl = val;
+            return this;
+        }
+
+        public Builder request(Request val) {
+            request = val;
+            return this;
+        }
+
+        public Response build() {
+            return new Response(this);
+        }
+    }
 }
