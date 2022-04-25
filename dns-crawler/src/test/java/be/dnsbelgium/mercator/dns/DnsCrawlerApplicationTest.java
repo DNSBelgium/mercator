@@ -67,7 +67,7 @@ public class DnsCrawlerApplicationTest {
   DnsCrawler dnsCrawler;
 
   @Test
-  public void idn() throws Exception {
+  public void idn() throws Exception { // TODO: AvR savedRequest is null. (DnsCrawlService 109)
     // This domain is not under our control, so test might fail in the future
     String domainName = "café.be";
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);

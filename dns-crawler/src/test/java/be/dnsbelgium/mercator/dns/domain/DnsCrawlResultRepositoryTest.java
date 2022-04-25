@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.dns.domain;
 
+import be.dnsbelgium.mercator.dns.dto.RecordType;
+import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.Test;
@@ -11,6 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
@@ -33,15 +36,25 @@ class DnsCrawlResultRepositoryTest {
   RequestRepository requestRepository;
 
   @Test
-  void findByVisitId() { // TODO: AvR Update to use Request
+  void findByVisitId() { // TODO: AvR Update to use Request. Null issue as well.
     UUID uuid = randomUUID();
-//    DnsCrawlResult dnsCrawlResult = new DnsCrawlResult(1L, uuid, "dnsbelgium.be", true, null, Map.of("@", RecordsTest.dnsBelgiumRootRecords()));
-//    dnsCrawlResult.addGeoIp(dnsBelgiumGeoIps());
-//    repository.save(dnsCrawlResult);
-//
-//    DnsCrawlResult crawlResult = repository.findByVisitId(uuid).get();
-//
-//    assertThat(crawlResult).isNotNull();
+    Request request = new Request.Builder()
+            .id(1L)
+            .visitId(uuid)
+            .domainName("dnsbelgium.be")
+            .ok(true)
+            .problem(null)
+            .prefix("@")
+            .recordType(RecordType.A)
+            .rcode(0)
+            .crawlTimestamp(ZonedDateTime.now())
+            .build();
+
+    Request saved = requestRepository.save(request); // Breaks here. Something's wrong with the repositories.
+
+    Request found = requestRepository.findRequestByVisitId(uuid).get();
+
+//    assertThat(found).isNotNull();
 //    assertThat(crawlResult.getAllRecords().get("@")).isEqualTo(RecordsTest.dnsBelgiumRootRecords());
 //    assertThat(crawlResult.getGeoIps()).containsExactlyInAnyOrderElementsOf(dnsBelgiumGeoIps());
   }

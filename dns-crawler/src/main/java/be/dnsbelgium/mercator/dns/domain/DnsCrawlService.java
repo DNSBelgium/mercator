@@ -22,6 +22,7 @@ import java.net.IDN;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -62,14 +63,11 @@ public class DnsCrawlService {
 
     // If dnsResolution is not ok then we save the failed request to the DB, so we know it has been requested.
     if (!dnsResolution.isOk()) {
-      String prefix = prefixes.get(0);
-      RecordType recordType = RecordType.valueOf(dnsResolution.getRecords().get("@").get(RecordType.A).get(0));
-
       Request request = new Request.Builder()
               .visitId(visitRequest.getVisitId())
               .domainName(visitRequest.getDomainName())
-              .prefix(prefix)
-              .record_type(recordType)
+              .prefix("@")
+              .recordType(RecordType.A)
               .rcode(3) // TODO: AvR get actual rcode?
               .crawlTimestamp(ZonedDateTime.now())
               .ok(false)
@@ -95,15 +93,12 @@ public class DnsCrawlService {
       // For each recordType found in resolution we create a new Request.
       // For each recordValue found in recordType we create a new Response.
       // For each RecordType.A or RecordType.AAAA we create a new ResponseGeoIp (enrich method).
-      long count = 0;
       for (RecordType recordType: resolution.getRecords(prefix).getRecords().keySet()) {
-        count++;
         Request request = new Request.Builder()
-                .id(count)
                 .visitId(visitRequest.getVisitId())
                 .domainName(visitRequest.getDomainName())
                 .prefix(prefix)
-                .record_type(recordType)
+                .recordType(recordType)
                 .rcode(0) // TODO: AvR get actual rcode?
                 .crawlTimestamp(ZonedDateTime.now())
                 .ok(true)
@@ -112,6 +107,8 @@ public class DnsCrawlService {
 
         Request savedRequest = requestRepository.save(request); // TODO: AvR add success check?
 
+        if (savedRequest.getId() == null) logger.error("savedRequest does not have an Id.");
+
         for (String recordValue: resolution.getRecords(prefix).get(recordType)) {
           Response response = new Response.Builder()
                   .recordData(recordValue)
@@ -119,7 +116,10 @@ public class DnsCrawlService {
                   .request(savedRequest)
                   .build();
 
-          Response savedResponse = responseRepository.save(response); // TODO: AvR add success check?
+          Optional<Response> optionalResponse = Optional.of(responseRepository.save(response));
+          Response savedResponse = optionalResponse.get();
+
+          if (savedResponse.getId() == null) logger.error("savedResponse does not have an Id.");
 
           if (geoIpEnabled && dnsResolution.isOk()) {
             if (recordType == RecordType.A) {
