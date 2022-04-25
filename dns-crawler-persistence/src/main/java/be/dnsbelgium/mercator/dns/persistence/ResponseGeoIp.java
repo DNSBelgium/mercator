@@ -7,11 +7,15 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.*;
 
-@Embeddable
-@NoArgsConstructor
+@Entity
 @Data
+@NoArgsConstructor
+@Table(name = "response_geo_ips")
 public class ResponseGeoIp {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")                private Long id;
     @Column(name = "asn")               private String asn;
     @Column(name = "country")           private String country;
     @Column(name = "ip")                private String ip;
@@ -20,7 +24,6 @@ public class ResponseGeoIp {
     @ManyToOne
     @JoinColumn (name = "response_id")  private Response response;
 
-    // TODO: AvR check necessity.
     public ResponseGeoIp(int ipVersion, String ip, String country, Pair<Integer, String> asn) {
         this.ipVersion = ipVersion;
         this.ip = ip;
