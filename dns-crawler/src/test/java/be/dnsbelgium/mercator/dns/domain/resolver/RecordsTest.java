@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RecordsTest {
+public class RecordsTest { // TODO: Update. This is currently deprecated.
 
   @Test
   void emptyConstructor() {

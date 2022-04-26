@@ -105,17 +105,20 @@ public class DnsCrawlService {
                 .problem(dnsResolution.getHumanReadableProblem())
                 .build();
 
-        Request savedRequest = requestRepository.save(request); // TODO: AvR add success check?
+        // TODO: AvR Something wrong with repo? Not getting a return.
+        Optional<Request> optionalRequest = Optional.of(requestRepository.save(request));
+        Request savedRequest = optionalRequest.get();
 
         if (savedRequest.getId() == null) logger.error("savedRequest does not have an Id.");
 
         for (String recordValue: resolution.getRecords(prefix).get(recordType)) {
           Response response = new Response.Builder()
                   .recordData(recordValue)
-                  .ttl(null) // TODO: AvR get TTL
+                  .ttl(0) // TODO: AvR get TTL
                   .request(savedRequest)
                   .build();
 
+          // TODO: AvR Something wrong with repo? Not getting a return.
           Optional<Response> optionalResponse = Optional.of(responseRepository.save(response));
           Response savedResponse = optionalResponse.get();
 
@@ -172,6 +175,23 @@ public class DnsCrawlService {
       ResponseGeoIp result = new ResponseGeoIp(ipVersion, response.getRecordData(), country, asn);
       responseGeoIpRepository.save(result);
     }
+
+
+//    List<GeoIp> results = new ArrayList<>();
+//    for (String subdomain : dnsCrawlerConfig.getSubdomains().keySet()) {
+//      // Only enrich A and AAAA records
+//      crawlResult.getAllRecords().get(subdomain).get(List.of(RecordType.A, RecordType.AAAA)).forEach((recordType, records) -> {
+//        for (String aRecord : records) {
+//          String country = geoIPService.lookupCountry(aRecord).orElse(null);
+//          Pair<Integer, String> asn = geoIPService.lookupASN(aRecord).orElse(null);
+//          if (country != null || asn != null) {
+//            GeoIp result = new GeoIp(recordType, aRecord, country, asn);
+//            results.add(result);
+//          }
+//        }
+//      });
+//    }
+//    crawlResult.addGeoIp(results);
   }
 
 }

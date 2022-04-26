@@ -2,11 +2,11 @@ package be.dnsbelgium.mercator.dns.persistence;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 public interface RequestRepository extends PagingAndSortingRepository<Request, Long> {
 
-    Optional<Request> findRequestByVisitId(UUID visitId);
+    List<Request> findRequestsByVisitId(UUID visitId);
 
 }
