@@ -7,8 +7,6 @@ import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -18,10 +16,11 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ActiveProfiles({"local", "test"})
 @SpringBootTest
@@ -49,41 +48,34 @@ public class DnsCrawlerApplicationTest {
   public void loadApplicationContext() {
   }
 
-  @MockBean
-  RequestRepository requestRepository;
-  @MockBean
-  ResponseRepository responseRepository;
-  @MockBean
-  ResponseGeoIpRepository responseGeoIpRepository;
-
-  @Captor
-  ArgumentCaptor<Request> requestCaptor;
-  @Captor
-  ArgumentCaptor<Response> responseCaptor;
-  @Captor
-  ArgumentCaptor<ResponseGeoIp> responseGeoIpCaptor;
-
   @Autowired
   DnsCrawler dnsCrawler;
 
+  @Autowired
+  RequestRepository requestRepository;
+  @Autowired
+  ResponseRepository responseRepository;
+
+  @MockBean
+  ResponseGeoIpRepository responseGeoIpRepository;
+
   @Test
-  public void idn() throws Exception { // TODO: AvR savedRequest is null. (DnsCrawlService 109)
+  public void idn() throws Exception {
     // This domain is not under our control, so test might fail in the future
     String domainName = "café.be";
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);
     dnsCrawler.process(visitRequest);
 
-//    verify(requestRepository).save(requestCaptor.capture());
-//    verify(responseRepository).save(responseCaptor.capture());
-//    verify(responseGeoIpRepository).save(responseGeoIpCaptor.capture());
-//
-//    Request request = requestCaptor.getValue();
-//    Response response = responseCaptor.getValue();
-//    ResponseGeoIp responseGeoIp = responseGeoIpCaptor.getValue();
-//
-//    assertThat(request.getProblem()).isNotEqualTo("nxdomain");
-//    assertThat(response).isNotEqualTo(null);
-//    assertThat(responseGeoIp).isNotEqualTo(null);
+    List<Request> requests = requestRepository.findRequestsByVisitId(visitRequest.getVisitId());
+    assertFalse(requests.isEmpty());
+    assertThat(requests.get(0).getProblem()).isNotEqualTo("nxdomain");
+
+    List<Response> responses = responseRepository.findAllByRequestVisitId(requests.get(0).getVisitId());
+    assertFalse(responses.isEmpty());
+
+    // In theory the following code works, but I cannot set geoIpEnabled to true due to not having a Maxmind license key for testing.
+//    List<ResponseGeoIp> responseGeoIps = responseGeoIpRepository.findAllByResponseRequestVisitId(requests.get(0).getVisitId());
+//    assertFalse(responseGeoIps.isEmpty());
   }
 
 }

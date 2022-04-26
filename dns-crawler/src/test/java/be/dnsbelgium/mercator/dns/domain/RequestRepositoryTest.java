@@ -14,15 +14,19 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles({"local", "test"})
-class DnsCrawlResultRepositoryTest {
+class RequestRepositoryTest {
 
   @Container
   static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
@@ -35,8 +39,8 @@ class DnsCrawlResultRepositoryTest {
   @Autowired
   RequestRepository requestRepository;
 
-  @Test
-  void findByVisitId() { // TODO: AvR Update to use Request. Null issue as well.
+  @Test // Multiple requests have the same VisitId.
+  void findByVisitId() {
     UUID uuid = randomUUID();
     Request request = new Request.Builder()
             .id(1L)
@@ -50,22 +54,11 @@ class DnsCrawlResultRepositoryTest {
             .crawlTimestamp(ZonedDateTime.now())
             .build();
 
-    Request saved = requestRepository.save(request); // Breaks here. Something's wrong with the repositories.
+    requestRepository.save(request);
+    List<Request> requests = requestRepository.findRequestsByVisitId(uuid);
 
-    Request found = requestRepository.findRequestByVisitId(uuid).get();
-
-//    assertThat(found).isNotNull();
-//    assertThat(crawlResult.getAllRecords().get("@")).isEqualTo(RecordsTest.dnsBelgiumRootRecords());
-//    assertThat(crawlResult.getGeoIps()).containsExactlyInAnyOrderElementsOf(dnsBelgiumGeoIps());
+    assertFalse(requests.isEmpty());
+    assertThat(request).isEqualTo(requests.get(0));
   }
-
-  // TODO: AvR Update to new ResponseGeoIp
-  // Object Mother
-//  public static List<GeoIp> dnsBelgiumGeoIps() {
-//    return List.of(
-//      new GeoIp(RecordType.A, "107.154.248.139", "US", Pair.of(19551, "INCAPSULA")),
-//      new GeoIp(RecordType.AAAA, "2a02:e980:53:0:0:0:0:8b", "US", Pair.of(19551, "INCAPSULA"))
-//    );
-//  }
 
 }

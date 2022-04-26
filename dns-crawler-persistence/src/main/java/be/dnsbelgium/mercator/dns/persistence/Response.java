@@ -15,7 +15,7 @@ public class Response {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")                private Long id;
     @Column(name = "record_data")       private String recordData;
-    @Column(name = "ttl")               private String ttl;
+    @Column(name = "ttl")               private int ttl;
     @ManyToOne
     @JoinColumn (name = "request_id")   private Request request;
 
@@ -30,7 +30,7 @@ public class Response {
     public static final class Builder {
         private Long id;
         private String recordData;
-        private String ttl;
+        private int ttl;
         private Request request;
 
         public Builder() {
@@ -46,7 +46,7 @@ public class Response {
             return this;
         }
 
-        public Builder ttl(String val) {
+        public Builder ttl(int val) {
             ttl = val;
             return this;
         }

@@ -80,6 +80,7 @@ class DnsCrawlServiceTest {
 
   @Test
   void retrieveDnsRecords() { // TODO: AvR savedRequest is null. (DnsCrawlService 109)
+    // If mock calls with those arguments, give X.
     when(dnsResolver.performCheck(any(Name.class))).thenReturn(DnsResolutionTest.dnsBelgiumDnsResolution());
     when(dnsResolver.getAllRecords(any(Name.class), anyList())).thenReturn(new Records());
     when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
