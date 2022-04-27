@@ -53,11 +53,6 @@ public class DnsCrawlerApplicationTest {
 
   @Autowired
   RequestRepository requestRepository;
-  @Autowired
-  ResponseRepository responseRepository;
-
-  @MockBean
-  ResponseGeoIpRepository responseGeoIpRepository;
 
   @Test
   public void idn() throws Exception {
@@ -69,13 +64,6 @@ public class DnsCrawlerApplicationTest {
     List<Request> requests = requestRepository.findRequestsByVisitId(visitRequest.getVisitId());
     assertFalse(requests.isEmpty());
     assertThat(requests.get(0).getProblem()).isNotEqualTo("nxdomain");
-
-    List<Response> responses = responseRepository.findAllByRequestVisitId(requests.get(0).getVisitId());
-    assertFalse(responses.isEmpty());
-
-    // In theory the following code works, but I cannot set geoIpEnabled to true due to not having a Maxmind license key for testing.
-//    List<ResponseGeoIp> responseGeoIps = responseGeoIpRepository.findAllByResponseRequestVisitId(requests.get(0).getVisitId());
-//    assertFalse(responseGeoIps.isEmpty());
   }
 
 }

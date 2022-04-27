@@ -27,6 +27,10 @@ public class Request {
     @Column(name = "ok")                private boolean ok;
     @Column(name = "problem")           private String problem;
 
+    public String getRecordType() {
+        return recordType.toString();
+    }
+
     private Request(Builder builder) {
         setId(builder.id);
         setVisitId(builder.visitId);

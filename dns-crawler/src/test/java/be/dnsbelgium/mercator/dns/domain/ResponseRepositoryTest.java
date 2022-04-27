@@ -45,10 +45,10 @@ class ResponseRepositoryTest {
 
     @Test
     void findAllByRequestId() {
-        UUID uuid = randomUUID();
+        UUID visitId = randomUUID();
         Request request = new Request.Builder()
                 .id(1L)
-                .visitId(uuid)
+                .visitId(visitId)
                 .domainName("dnsbelgium.be")
                 .ok(true)
                 .problem(null)
@@ -77,7 +77,7 @@ class ResponseRepositoryTest {
         responseRepository.save(r1);
         responseRepository.save(r2);
 
-        List<Response> responses = responseRepository.findAllByRequestId(savedRequest.getId());
+        List<Response> responses = responseRepository.findAllByRequestVisitId(visitId);
         assertFalse(responses.isEmpty());
 
         assertThat(r1).isEqualTo(responses.get(0));
