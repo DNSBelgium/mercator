@@ -39,12 +39,12 @@ class RequestRepositoryTest {
   @Autowired
   RequestRepository requestRepository;
 
-  @Test // Multiple requests have the same VisitId.
+  @Test // VisitId is not unique.
   void findByVisitId() {
-    UUID uuid = randomUUID();
+    UUID visitId = randomUUID();
     Request request = new Request.Builder()
             .id(1L)
-            .visitId(uuid)
+            .visitId(visitId)
             .domainName("dnsbelgium.be")
             .ok(true)
             .problem(null)
@@ -55,7 +55,7 @@ class RequestRepositoryTest {
             .build();
 
     requestRepository.save(request);
-    List<Request> requests = requestRepository.findRequestsByVisitId(uuid);
+    List<Request> requests = requestRepository.findRequestsByVisitId(visitId);
 
     assertFalse(requests.isEmpty());
     assertThat(request).isEqualTo(requests.get(0));

@@ -24,16 +24,17 @@ public class ResponseGeoIp {
     @ManyToOne
     @JoinColumn (name = "response_id")  private Response response;
 
-    public ResponseGeoIp(int ipVersion, String ip, String country, Pair<Integer, String> asn) {
-        this.ipVersion = ipVersion;
-        this.ip = ip;
-        if (country != null) {
-            this.country = StringUtils.abbreviate(country, 255);
-        }
+    public ResponseGeoIp(Pair<Integer, String> asn, String country, int ipVersion, Response response) {
         if (asn != null) {
             this.asn = String.valueOf(asn.getLeft());
             this.asnOrganisation = StringUtils.abbreviate(asn.getRight(), 128);
         }
+        if (country != null) {
+            this.country = StringUtils.abbreviate(country, 255);
+        }
+        this.ip = response.getRecordData();
+        this.ipVersion = ipVersion;
+        this.response = response;
     }
 
 }

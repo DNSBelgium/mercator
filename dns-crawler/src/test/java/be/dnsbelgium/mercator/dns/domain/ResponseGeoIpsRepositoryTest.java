@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -33,8 +34,6 @@ import static org.mockito.Mockito.when;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles({"local", "test"})
 public class ResponseGeoIpsRepositoryTest {
-    // autocomplete templates
-    private static final Logger logger = LoggerFactory.getLogger(ResponseGeoIpsRepositoryTest.class);
 
     @Container
     static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
@@ -51,15 +50,12 @@ public class ResponseGeoIpsRepositoryTest {
     @Autowired
     private ResponseGeoIpRepository responseGeoIpRepository;
 
-    @MockBean
-    GeoIPService geoIPService;
-
     @Test
     void findAllByResponseId() {
-        UUID uuid = randomUUID();
+        UUID visitId = randomUUID();
         Request request = new Request.Builder()
                 .id(1L)
-                .visitId(uuid)
+                .visitId(visitId)
                 .domainName("dnsbelgium.be")
                 .ok(true)
                 .problem(null)
@@ -80,23 +76,15 @@ public class ResponseGeoIpsRepositoryTest {
 
         Response savedResponse = responseRepository.save(r1);
 
-        logger.info("geoIPService: {}", geoIPService);
-
-        // When geoIpService lookup country, return new Pair.
-        // TODO: Finish this test.
         // 1 Response has N ResponseGeoIps
+        Pair<Integer, String> asn = Pair.of(1, "GROUP");
+        ResponseGeoIp responseGeoIp = new ResponseGeoIp(asn, "BE", 4, savedResponse);
 
+        responseGeoIpRepository.save(responseGeoIp);
 
-//        Optional<Pair<Integer, String>> asn = geoIPService.lookupASN("8.8.8.8"); // Returns Optional.empty();
-//        when(geoIPService.lookupASN("8.8.8.8")).thenReturn(new Pair<Integer, String>(1, "GROUP")); // Cannot instantiate abstract.
-//
-//        // I somehow need an asn to give to responseGeoIp, otherwise I cannot save it to the DB.
-//        ResponseGeoIp responseGeoIp = new ResponseGeoIp(4, savedResponse.getRecordData(), "BE", asn.get());
+        List<ResponseGeoIp> responseGeoIps = responseGeoIpRepository.findAllByResponseRequestVisitId(visitId);
 
-
-//        responseGeoIpRepository.save(responseGeoIp);
-//
-//        List<ResponseGeoIp> responseGeoIps = responseGeoIpRepository.findAllByResponseId(savedResponse.getId());
-//        assertFalse(responseGeoIps.isEmpty());
+        assertFalse(responseGeoIps.isEmpty());
+        assertThat(responseGeoIp).isEqualTo(responseGeoIps.get(0));
     }
 }
