@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.api.dns;
 
+import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
 import lombok.Data;
 
 import java.time.ZonedDateTime;
@@ -7,16 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class DnsCrawlDTO { // WIP
+public class DnsCrawlDTO {
 
     private long id;
-    private List<Integer> rcode;
     private boolean ok;
     private String problem;
     private ZonedDateTime crawlTimestamp;
-    private Map<String, String> prefixAndRecordType;
-    private Map<String, String> recordTypeAndData;
-    private Map<String, Integer> ttl;
-    private List<GeoIpDTO> geoIps;
+    private Map<String, List<RecordWrapper>> prefixAndData;
+    private List<ResponseGeoIp> geoIps;
 
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-public class DnsRepoService { // To Quentin: IGNORE THIS CLASS it is a WIP.
+public class DnsRepoService {
     private final Logger logger = LoggerFactory.getLogger(DnsRepoService.class);
 
     private final RequestRepository requestRepository;
@@ -24,7 +24,13 @@ public class DnsRepoService { // To Quentin: IGNORE THIS CLASS it is a WIP.
         this.responseGeoIpRepository = responseGeoIpRepository;
     }
 
-    // TODO: JAVADOC
+    /**
+     * Gets all info gathered by the DNS Crawler by VisitId.
+     * Info comes from three separate repositories - Request, Response and ResponseGeoIp.
+     * @param visitId to request info for from the DNS Crawler.
+     * @return DTO with all necessary info packaged into one object.
+     * @throws NotFoundException when the requested VisitId is not found in the Request or Response repositories.
+     */
     public DnsCrawlDTO getInfoByVisitId(UUID visitId) throws NotFoundException {
         logger.info("Searching for visitId: {}", visitId);
 
@@ -45,111 +51,43 @@ public class DnsRepoService { // To Quentin: IGNORE THIS CLASS it is a WIP.
         dnsCrawlDTO.setOk(singleRequest.isOk());
         dnsCrawlDTO.setProblem(singleRequest.getProblem());
         dnsCrawlDTO.setCrawlTimestamp(singleRequest.getCrawlTimestamp());
+        dnsCrawlDTO.setGeoIps(responseGeoIps);
 
-        List<Integer> rcodes = new ArrayList<>();
-        // Creating a maps for prefix, recordType and recordData.
-//        Map<String, Map<String, String>> records = new HashMap<>();
+        // Requests have multiple (duplicate) prefixes.
+        // Requests have an rcode and recordType allocated to a prefix.
+        // Responses have multiple recordData allocated to one recordType.
 
-        Map<String, List<RecordWrapper>> prefixAndData = new HashMap<>();
-        List<RecordWrapper> wrappedRecords = new ArrayList<>();
-
-        Map<Long, String> prefixes = new HashMap<>();
-        Map<Long, String> recordTypes = new HashMap<>();
-        for(Request req: requests) {
-            prefixes.put(req.getId(), req.getPrefix());
-            recordTypes.put(req.getId(), req.getRecordType());
-        }
-
-        for(Response resp: responses) {
-
-            long reqId = resp.getRequest().getId();
-
-
-        }
-
-
-
-
-
-
-
-
-//        for(Request req: requests) {
-//            if(!prefixes. .contains(req.getPrefix())) {
-//                prefixes.add(req.getPrefix());
-//            }
-//            if (!recordTypes.contains(req.getRecordType())) {
-//                recordTypes.add(req.getRecordType());
-//            }
-//        }
-
-
-
-
-
-
-        for(Response resp: responses) {
-
-            String recordData = resp.getRecordData();
-
-            for(Request req: requests) {
-                if(resp.getRequest().equals(req)) {
-                    int rcode = req.getRcode();
-                    String recordType = req.getRecordType();
-
-//                    wrappedRecords.add(new RecordWrapper(rcode, recordType, recordData));
-                }
-            }
-        }
-        for(String prefix: distinctPrefixes(requests)) {
-
-        }
-
-        for(Request req: requests) {
-
-            int rcode = req.getRcode();
-            String recordType = req.getRecordType();
-
-            String recordData = responses.stream()
-                    .filter(resp -> resp.getRequest().equals(req))
-                    .map(Response::getRecordData)
-                    .findFirst()
-                    .get();
-        }
-
-
+        // Creating a Map where the key is the prefix, and the value is a List of RecordWrapper.
+        // RecordWrapper has an rcode, recordType and a List of recordData.
+        Map<String, List<RecordWrapper>> prefixAndDataMap = new HashMap<>();
         for (String prefix: distinctPrefixes(requests)) {
 
-            for(Request req: requests) {
-                if (req.getPrefix().equals(prefix)) {
+            List<RecordWrapper> wrappedRecords = new ArrayList<>();
+            for (Request req: requests) {
 
-                }
+                if (!req.getPrefix().equals(prefix)) continue;
+
+                    RecordWrapper wrapper = new RecordWrapper();
+
+                    wrapper.setRcode(req.getRcode());
+                    wrapper.setRecordType(req.getRecordType());
+
+                    Map<String, Integer> recordDataAndTtlMap = new HashMap<>();
+                    for (Response resp: responses) {
+
+                        if (!resp.getRequest().equals(req)) continue;
+
+                        recordDataAndTtlMap.put(resp.getRecordData(), resp.getTtl());
+                    }
+                    wrapper.setRecordDataAndTtl(recordDataAndTtlMap);
+
+                    if (!wrapper.getRecordDataAndTtl().isEmpty()) wrappedRecords.add(wrapper);
             }
+
+            if (!wrappedRecords.isEmpty()) prefixAndDataMap.put(prefix, wrappedRecords);
         }
 
-
-
-        Map<String, String> prefixAndRecordType = new HashMap<>();
-        Map<String, String> recordTypeAndData = new HashMap<>();
-        for(Request req: requests) {
-            rcodes.add(req.getRcode());
-
-            prefixAndRecordType.put(req.getPrefix(), req.getRecordType());
-
-            String type = req.getRecordType();
-
-            for(Response resp: responses) {
-                if (resp.getRequest().equals(req)) {
-                    String data = resp.getRecordData();
-
-                    recordTypeAndData.put(type, data);
-                }
-            }
-        }
-
-        dnsCrawlDTO.setRcode(rcodes);
-        dnsCrawlDTO.setPrefixAndRecordType(prefixAndRecordType);
-        dnsCrawlDTO.setRecordTypeAndData(recordTypeAndData);
+        dnsCrawlDTO.setPrefixAndData(prefixAndDataMap);
 
         return dnsCrawlDTO;
     }
