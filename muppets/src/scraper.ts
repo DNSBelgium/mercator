@@ -11,6 +11,7 @@ const {harFromMessages} = require("chrome-har");
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
+const GOTO_TIMEOUT = 15000;
 
 // event types to observe
 const observe = [
@@ -295,7 +296,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             await registerHarEventListeners(page, events);
         }
 
-        await page.goto(params.url, {waitUntil: "networkidle2", timeout: 15000});
+        await page.goto(params.url, {waitUntil: "networkidle2", timeout: GOTO_TIMEOUT});
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
@@ -317,6 +318,9 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     } catch (e) {
         if (e instanceof Error) {
             console.error("Error catched [%s]", e.message);
+            if (e.message === "Navigation timeout of 15000 ms exceeded") {
+                metrics.getDomainTimeOuts().inc();
+            }
             result.errors.push(e.message);
         } else {
             console.error("Something happened [%s]", e);

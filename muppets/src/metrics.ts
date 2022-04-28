@@ -26,6 +26,13 @@ const urlToProcessGauge = new Prometheus.Gauge({
     help: "Approximative number in the input queue"
 });
 
+const domainTimeOuts = new Prometheus.Counter({
+    name: "muppets_timeout_domains",
+    help: "Amount of timeouts from this server"
+});
+
+export const getDomainTimeOuts = () => domainTimeOuts;
+
 // Helper to compute metrics
 
 function getSqsMetrics(sqs: AWS.SQS, queueUrl: string) {
