@@ -318,8 +318,9 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     } catch (e) {
         if (e instanceof Error) {
             console.error("Error catched [%s]", e.message);
-            if (e.message === "Navigation timeout of 15000 ms exceeded") {
+            if (e.message === `Navigation timeout of ${GOTO_TIMEOUT} ms exceeded`) {
                 metrics.getDomainTimeOuts().inc();
+                console.log("METRIC SHOULD BE INCREASED");
             }
             result.errors.push(e.message);
         } else {
