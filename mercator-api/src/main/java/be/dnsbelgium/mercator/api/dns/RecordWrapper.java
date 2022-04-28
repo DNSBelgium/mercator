@@ -1,19 +1,16 @@
 package be.dnsbelgium.mercator.api.dns;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
-public class RecordWrapper { // To Quentin: IGNORE THIS CLASS it is a WIP.
+@NoArgsConstructor
+public class RecordWrapper {
 
     private int rcode;
     private String recordType;
-    private List<String> recordData;
+    private Map<String, Integer> recordDataAndTtl;
 
-    public RecordWrapper(int rcode, String recordType, List<String> recordData) {
-        this.rcode = rcode;
-        this.recordType = recordType;
-        this.recordData = recordData;
-    }
 }

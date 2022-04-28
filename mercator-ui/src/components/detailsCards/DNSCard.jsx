@@ -14,9 +14,11 @@ const DNSCard = (props) => {
     useEffect(() => {
         const handlerData = async () => {
 
-            const url = `/dnsCrawlResults/search/findByVisitId?visitId=${visitId}`;
+            // const url = `/dnsCrawlResults/search/findByVisitId?visitId=${visitId}`;
+            const url = `dns-crawler?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
+                    console.log(resp);
                     if(resp.status === 200) {
                         setData(resp.data);
                     }
@@ -32,92 +34,60 @@ const DNSCard = (props) => {
     const {openRecords, setOpenRecords} = props;
     const topElement = <p className='top-element'> DNS crawl </p> // BorderWrapper title
 
-    // Render data.records and manage necessary logic.
-    const renderRecords = () => {
-
-        const renderAtRecords = () => { // Entering inside a ul element.
-            if(data.allRecords['@']) {
-                return (
-                    <li>
-                        <span className="font-weight-bold">
-                            @ records:
-                        </span>
-                        {
-                            Object.entries(data.allRecords['@'].records).map(([key, value]) => {
-                                return(
-                                    <ul key={key}>
-                                        <li>
-                                            <span className="font-weight-bold">
-                                                { key }:&nbsp;
-                                            </span>
-                                            { 
-                                                value.map((data, index) => {
-                                                    return(
-                                                        <ul key={index}>
-                                                            <li>
-                                                                { data }
-                                                            </li>
-                                                        </ul>
-                                                    )
-                                                })
-                                            }
-                                        </li>
-                                    </ul>
-                                )
-                            })
-                        }
-                    </li>
-                    
-                );
-            } 
-        }
-
-        const renderWwwRecords = () => {  // Entering inside a ul element.
-            if(data.allRecords.www) {
-                return(
-                    <li className="mt-2">
-                        <span className="font-weight-bold">
-                            www records:
-                        </span>
-                        {
-                            Object.entries(data.allRecords.www.records).map(([key, value]) => {
-                                return (
-                                    <ul key={key}>
-                                        <li>
-                                            <span className="font-weight-bold">
-                                                { key }:&nbsp;
-                                            </span>
-                                            { 
-                                                value.map((data, index) => {
-                                                    return (
-                                                        <ul key={index}>
-                                                            <li>
-                                                                { data }
-                                                            </li>
-                                                        </ul>
-                                                    )
-                                                })
-                                            }
-                                        </li>
-                                    </ul>
-                                );
-                            })
-                        }          
-                    </li>
-                );
-            }
-        }
-
+    // Render 'Record Data' from data.prefixAndData.values.recordDataAndTtl
+    const renderRecordDataAndTtl = (value) => { // Inside li element
         return (
-            <>
-                {
-                    renderAtRecords()
-                }
-                {
-                    renderWwwRecords()
-                }
-            </>
-        )
+            Object.entries(value).map(([ip, ttl]) => {
+                return (
+                    <ul key={ip}>
+                        <li className="mb-2">
+                            { ip }
+                            <br/>
+                            TTL: { ttl }
+                        </li>
+                    </ul>
+                );
+            })
+        );
+    }
+
+    // Render the values of a 'prefix' from data.prefixAndData.values
+    const renderValues = (values) => { // Inside ul element
+        const elementsToReturn = [];
+        
+        for(let i = 0; i < values.length; i++) {
+            let element =   <li key={i}
+                                className="mb-2"
+                            >
+                                <strong>{values[i].recordType}</strong>
+                                <br/>
+                                rcode: {values[i].rcode}
+                                <br/>
+                                Record data: { renderRecordDataAndTtl(values[i].recordDataAndTtl) }
+                            </li>
+                
+            elementsToReturn.push(element);
+        }
+        return elementsToReturn;
+    }
+
+    // Render the prefix and it's corresponding data from data.prefixAndData
+    const renderPrefixAndData = () => { // Inside ul element
+        return (
+            Object.entries(data.prefixAndData).map(([prefix, value]) => {
+                return (
+                    <ul key={prefix}>
+                        <li>
+                            <strong>{ prefix } records:</strong>
+
+                            <ul>
+                                { renderValues(value) }
+                            </ul>
+                        </li>
+                    </ul>
+                );
+            })
+        );
     }
 
     // Writing HTML on a function base so we can define logic more easily.
@@ -154,34 +124,6 @@ const DNSCard = (props) => {
                             </tr>
 
                             <tr>
-                                <th scope='row'>
-                                    All Records
-                                </th>
-                                <td>
-                                    {
-                                        Object.keys(data.allRecords).length !== 0 && ( // Don't render 'More Info' button if there are no records.
-                                            <button 
-                                                className="more-info"
-                                                onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
-                                            > 
-                                                More info
-                                            </button>
-                                        )
-                                    }
-
-                                    {
-                                        openRecords && ( // if openRecords === true, render
-                                            data.allRecords && ( // if data.allRecords exists, continue
-                                                <ul className="dns-records">
-                                                    { renderRecords() }
-                                                </ul>
-                                            )
-                                        )
-                                    }
-                                </td>
-                            </tr>
-
-                            <tr>
                                 <th scope="row">
                                     Problem
                                 </th>
@@ -200,18 +142,35 @@ const DNSCard = (props) => {
                             </tr>
 
                             <tr>
-                                <th scope="row">
-
+                                <th scope='row'>
+                                    All Records
                                 </th>
                                 <td>
+                                    {
+                                        !checkObjectIsFalsy(data.prefixAndData) && ( // Don't render 'More Info' button if there are is no data.
+                                            <button 
+                                                className="more-info"
+                                                onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
+                                            > 
+                                                More info
+                                            </button>
+                                        )
+                                    }
 
+                                    {
+                                        openRecords && ( // if openRecords === true, render
+                                            <ul>
+                                                { renderPrefixAndData() }
+                                            </ul>
+                                        )
+                                    }
                                 </td>
                             </tr>
                         </tbody>
                     </Table>
 
                     {
-                        data.geoIps && ( // if data.allRecords exists, render
+                        data.geoIps && ( // if data.geoIps exists, render
                             <>
                                 {
                                     data.geoIps.map((item, index) => {
@@ -251,10 +210,10 @@ const DNSCard = (props) => {
 
                                                             <tr>
                                                                 <th scope="row">
-                                                                    Record type
+                                                                    IP version
                                                                 </th>
                                                                 <td>
-                                                                    { item.recordType }
+                                                                    { item.ipVersion }
                                                                 </td>
                                                             </tr>
                                                             
