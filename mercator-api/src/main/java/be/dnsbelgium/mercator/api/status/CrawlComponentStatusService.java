@@ -36,7 +36,7 @@ public class CrawlComponentStatusService {
   public CrawlComponentStatus getCrawlComponentStatus(UUID visitId) throws ExecutionException, InterruptedException {
 
     var dnsFuture = CompletableFuture.supplyAsync(() -> dnsRepository.findByVisitId(visitId));
-    var smtpFuture = CompletableFuture.supplyAsync(() -> smtpRepository.findByVisitId(visitId));
+    var smtpFuture = CompletableFuture.supplyAsync(() -> smtpRepository.findFirstByVisitId(visitId));
     var muppetsFuture = CompletableFuture.supplyAsync(() -> mupetsepository.findByVisitId(visitId));
     var wappalyzerFuture = CompletableFuture.supplyAsync(() -> wappalyzerRepository.findByVisitId(visitId));
 
