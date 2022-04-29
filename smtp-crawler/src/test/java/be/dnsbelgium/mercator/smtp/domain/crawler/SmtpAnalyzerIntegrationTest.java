@@ -55,4 +55,24 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result.getServers().get(0).getHosts().get(0).isStartTlsOk()).isTrue();
     assertThat(result.getServers().get(0).getHosts().get(0).getErrorMessage()).isNull();
   }
+
+  @Test
+  public void abc() throws Exception {
+    logger.info("cachingSmtpCrawler = {}", smtpAnalyzer);
+    SmtpCrawlResult result = smtpAnalyzer.analyze("bosteels.eu");
+    logger.info("result = {}", result);
+    assertThat(result).isNotNull();
+    assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+    //assertThat(result.getDomainName()).isEqualTo("abc.be");
+    assertThat(result.getCrawlTimestamp()).isNotNull();
+    assertThat(result.getServers().size()).isGreaterThan(0);
+    assertThat(result.getServers().get(0).getHosts().size()).isGreaterThan(0);
+    assertThat(result.getServers().get(0).getHosts().get(0).getConnectReplyCode()).isEqualTo(220);
+    assertThat(result.getServers().get(0).getHosts().get(0).getConnectReplyCode()).isEqualTo(220);
+    assertThat(result.getServers().get(0).getHosts().get(0).getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(result.getServers().get(0).getHosts().get(0).getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(result.getServers().get(0).getHosts().get(0).isConnectOK()).isTrue();
+    assertThat(result.getServers().get(0).getHosts().get(0).isStartTlsOk()).isTrue();
+    assertThat(result.getServers().get(0).getHosts().get(0).getErrorMessage()).isNull();
+  }
 }

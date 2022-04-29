@@ -69,7 +69,7 @@ class SmtpCrawlServiceTest {
         VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
         SmtpCrawlResult crawlResult = service.retrieveSmtpInfo(request);
         service.save(crawlResult);
-        Optional<SmtpCrawlResult> find = repository.findByVisitId(uuid);
+        Optional<SmtpCrawlResult> find = repository.findFirstByVisitId(uuid);
         assertThat(find).isPresent();
         SmtpCrawlResult found = find.get();
         logger.info("found = {}", found);
