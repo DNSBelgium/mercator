@@ -17,7 +17,7 @@ const SMTPCard = (props) => {
     useEffect(() => {
         const handlerData = async () => {
 
-            const url = `/smtpCrawlResults/search/findByVisitId?visitId=${visitId}`;
+            const url = `/smtpCrawlResults/search/findFirstByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
