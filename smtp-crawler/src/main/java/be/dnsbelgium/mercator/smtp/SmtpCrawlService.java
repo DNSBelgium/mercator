@@ -11,6 +11,9 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -34,6 +37,13 @@ public class SmtpCrawlService {
         SmtpCrawlResult result = analyzer.analyze(fqdn);
         result.setVisitId(visitRequest.getVisitId());
         return result;
+    }
+
+    @Transactional
+    public Optional<SmtpCrawlResult> find(UUID visitId) {
+        Optional<SmtpCrawlResult> crawlResult = repository.findByVisitId(visitId);
+        logger.debug("find by visitId => {}", crawlResult);
+        return crawlResult;
     }
 
     @Transactional
