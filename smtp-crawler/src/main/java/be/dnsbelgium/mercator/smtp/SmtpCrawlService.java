@@ -41,7 +41,7 @@ public class SmtpCrawlService {
 
     @Transactional
     public Optional<SmtpCrawlResult> find(UUID visitId) {
-        Optional<SmtpCrawlResult> crawlResult = repository.findByVisitId(visitId);
+        Optional<SmtpCrawlResult> crawlResult = repository.findFirstByVisitId(visitId);
         logger.debug("find by visitId => {}", crawlResult);
         return crawlResult;
     }
