@@ -336,7 +336,7 @@ public class MercatorShell implements PromptProvider {
   private String muppetsRequest(String domainName, UUID visitId) {
     return MUPPETS_REQUEST_TEMPLATE
         .replace("${visitId}", visitId.toString())
-        .replace("${domain}", domainName);
+        .replace("${domainName}", domainName);
   }
 
   @ShellMethod("Send each line of given file verbatim to the destination queue.")

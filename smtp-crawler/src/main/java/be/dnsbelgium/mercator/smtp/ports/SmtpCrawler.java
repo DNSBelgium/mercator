@@ -13,6 +13,7 @@ import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -43,9 +44,14 @@ public class SmtpCrawler implements Crawler {
         setMDC(visitRequest);
         logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
         try {
-            meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
-            SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
-            crawlService.save(crawlResult);
+            Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
+            if (existingResult.isPresent()) {
+                logger.info("visit {} already exists => skipping", visitRequest);
+            } else {
+                meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
+                SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
+                crawlService.save(crawlResult);
+            }
             ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
             logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
         } catch (Exception e) {

@@ -64,7 +64,7 @@ class SmtpCrawlResultRepositoryTest {
         crawlResult.add(server1);
         crawlResult.add(server2);
         repository.save(crawlResult);
-        Optional<SmtpCrawlResult> found = repository.findByVisitId(uuid);
+        Optional<SmtpCrawlResult> found = repository.findFirstByVisitId(uuid);
         assertThat(found).isPresent();
         SmtpCrawlResult smtpCrawlResult = found.get();
         logger.info("found.servers = {}", smtpCrawlResult.getServers());
