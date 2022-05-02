@@ -11,7 +11,7 @@ const {harFromMessages} = require("chrome-har");
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
-const GOTO_TIMEOUT = 15000;
+const GOTO_TIMEOUT = 30000;
 
 // event types to observe
 const observe = [
