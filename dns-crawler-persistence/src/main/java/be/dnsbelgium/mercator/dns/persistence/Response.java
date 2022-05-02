@@ -1,14 +1,18 @@
 package be.dnsbelgium.mercator.dns.persistence;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Entity
+@Table(name = "response")
 @Data
 @NoArgsConstructor
-@Table(name = "response")
+@AllArgsConstructor
+@Builder
 public class Response {
 
     @Id
@@ -19,45 +23,4 @@ public class Response {
     @ManyToOne
     @JoinColumn (name = "request_id")   private Request request;
 
-    private Response(Builder builder) {
-        setId(builder.id);
-        setRecordData(builder.recordData);
-        setTtl(builder.ttl);
-        setRequest(builder.request);
-    }
-
-
-    public static final class Builder {
-        private Long id;
-        private String recordData;
-        private int ttl;
-        private Request request;
-
-        public Builder() {
-        }
-
-        public Builder id(Long val) {
-            id = val;
-            return this;
-        }
-
-        public Builder recordData(String val) {
-            recordData = val;
-            return this;
-        }
-
-        public Builder ttl(int val) {
-            ttl = val;
-            return this;
-        }
-
-        public Builder request(Request val) {
-            request = val;
-            return this;
-        }
-
-        public Response build() {
-            return new Response(this);
-        }
-    }
 }

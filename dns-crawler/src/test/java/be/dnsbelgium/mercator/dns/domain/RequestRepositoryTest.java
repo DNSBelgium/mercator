@@ -42,7 +42,7 @@ class RequestRepositoryTest {
   @Test // VisitId is not unique.
   void findByVisitId() {
     UUID visitId = randomUUID();
-    Request request = new Request.Builder()
+    Request request = Request.builder()
             .id(1L)
             .visitId(visitId)
             .domainName("dnsbelgium.be")
