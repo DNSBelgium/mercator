@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,8 +29,10 @@ public class Request {
     @Enumerated(EnumType.STRING)
     @Column(name = "record_type")       private RecordType recordType;
     @Column(name = "rcode")             private int rcode;
-    @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp;
+    @Builder.Default
+    @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     @Column(name = "ok")                private boolean ok;
     @Column(name = "problem")           private String problem;
-
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "request")
+    @Builder.Default                    private List<Response> responses = new ArrayList<>();
 }
