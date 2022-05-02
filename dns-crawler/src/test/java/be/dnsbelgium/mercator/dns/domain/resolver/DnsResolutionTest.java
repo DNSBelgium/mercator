@@ -1,8 +1,10 @@
 package be.dnsbelgium.mercator.dns.domain.resolver;
 
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
+import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -28,7 +30,8 @@ public class DnsResolutionTest {
     logger.info("dnsResolution = {}", dnsResolution);
 
     Records records = new Records(Map.of(
-        RecordType.MX, List.of("0 dnsbelgium-be.mail.protection.outlook.com.")));
+        RecordType.MX, List.of(RRecord.of(3600L, "0 dnsbelgium-be.mail.protection.outlook.com."))
+    ));
 
     dnsResolution.getRecords().put("X", records);
     logger.info("dnsResolution = {}", dnsResolution);
@@ -42,7 +45,7 @@ public class DnsResolutionTest {
   @Test
   void addRecords() {
     var dnsResolution = DnsResolution.withRecords("@", RecordsTest.dnsBelgiumRootRecords());
-    dnsResolution.addRecords("@", new Records(Map.of(RecordType.A, List.of("192.168.0.1"))));
+    dnsResolution.addRecords("@", new Records(Map.of(RecordType.A, List.of(RRecord.of(3600L, "192.168.0.1")))));
     assertTrue(dnsResolution.getRecords("@").get(RecordType.A).contains("192.168.0.1"));
 
     assertNull(dnsResolution.getRecords("www"));
@@ -64,7 +67,7 @@ public class DnsResolutionTest {
 
   @Test
   void failed() {
-    var failed = DnsResolution.failed("for whatever reason");
+    var failed = DnsResolution.failed(1000, "for whatever reason");
 
     assertFalse(failed.isOk());
     assertEquals(failed.getHumanReadableProblem(), "for whatever reason");
