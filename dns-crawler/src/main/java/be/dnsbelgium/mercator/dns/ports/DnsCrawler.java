@@ -35,7 +35,7 @@ public class DnsCrawler implements Crawler {
     }
     try {
       meterRegistry.timer(MetricName.RESOLVE_ALL).record(() -> service.retrieveDnsRecords(visitRequest));
-      ackMessageService.sendAck(visitRequest, CrawlerModule.DNS);//
+      ackMessageService.sendAck(visitRequest, CrawlerModule.DNS);
       logger.info("retrieveDnsRecords done for domainName={}", visitRequest.getDomainName());
     } catch (Exception e) {
       logger.error("failed to retrieveDnsRecords for domainName={} because of {}", visitRequest.getDomainName(), e.getMessage(), e);
