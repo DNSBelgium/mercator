@@ -63,7 +63,7 @@ public class DnsCrawlService {
 
     // If dnsResolution is not ok then we save the failed request to the DB, so we know it has been requested.
     if (!dnsResolution.isOk()) {
-      Request request = new Request.Builder()
+      Request request = Request.builder()
               .visitId(visitRequest.getVisitId())
               .domainName(visitRequest.getDomainName())
               .prefix("@")
@@ -94,7 +94,7 @@ public class DnsCrawlService {
       // For each recordValue found in recordType we create a new Response.
       // For each RecordType.A or RecordType.AAAA we create a new ResponseGeoIp (enrich method).
       for (RecordType recordType: resolution.getRecords(prefix).getRecords().keySet()) {
-        Request request = new Request.Builder()
+        Request request = Request.builder()
                 .visitId(visitRequest.getVisitId())
                 .domainName(visitRequest.getDomainName())
                 .prefix(prefix)
@@ -109,7 +109,7 @@ public class DnsCrawlService {
         Request savedRequest = optionalRequest.get(); //TODO: Improve.
 
         for (String recordValue: resolution.getRecords(prefix).get(recordType)) {
-          Response response = new Response.Builder()
+          Response response = Response.builder()
                   .recordData(recordValue)
                   .ttl(0) // TODO: AvR get TTL
                   .request(savedRequest)

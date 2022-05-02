@@ -53,7 +53,7 @@ public class ResponseGeoIpsRepositoryTest {
     @Test
     void findAllByResponseId() {
         UUID visitId = randomUUID();
-        Request request = new Request.Builder()
+        Request request = Request.builder()
                 .id(1L)
                 .visitId(visitId)
                 .domainName("dnsbelgium.be")
@@ -67,7 +67,7 @@ public class ResponseGeoIpsRepositoryTest {
 
         Request savedRequest = requestRepository.save(request);
 
-        Response r1 = new Response.Builder()
+        Response r1 = Response.builder()
                 .id(1L)
                 .recordData("194.35.35.35")
                 .ttl(5000)
