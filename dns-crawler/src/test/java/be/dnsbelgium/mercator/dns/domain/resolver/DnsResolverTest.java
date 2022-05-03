@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.dns.domain.resolver;
 
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
+import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.xbill.DNS.TextParseException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +35,7 @@ class DnsResolverTest {
     assertThat(allRecords.get(RecordType.AAAA)).isNotEmpty();
     assertThat(allRecords.get(RecordType.CAA)).isNotEmpty();
 
-    assertTrue(String.join(", ", allRecords.get(RecordType.SOA)).contains("be-hostmaster.dnsbelgium.be"));
+    assertTrue(allRecords.get(RecordType.SOA).stream().map(RRecord::getData).collect(Collectors.joining(" ")).contains("be-hostmaster.dnsbelgium.be"));
     assertTrue(allRecords.get(RecordType.AAAA).size() > 0);
   }
 
