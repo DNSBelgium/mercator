@@ -16,7 +16,7 @@ CREATE TABLE dns_crawler.response (
     id              SERIAL PRIMARY KEY,
     record_data     TEXT        NOT NULL,   -- 94.126.48.90, s1.named.be., ...
     ttl             INT,                    -- time-to-live
-    request_id      INT         NOT NULL
+    request_id      INT
 );
 
 ALTER TABLE IF EXISTS dns_crawler.response -- Adding foreign key constraint.
@@ -37,8 +37,8 @@ ALTER TABLE IF EXISTS dns_crawler.response_geo_ips
     ADD COLUMN IF NOT EXISTS ip_version INT; -- A == 4, AAAA == 6
 
 -- Altering geo_ips table.
-ALTER TABLE dns_crawler.response_geo_ips
-    ALTER COLUMN response_id SET NOT NULL;
+-- ALTER TABLE dns_crawler.response_geo_ips
+--     ALTER COLUMN response_id SET NOT NULL;
 
 ALTER TABLE dns_crawler.response_geo_ips
     DROP CONSTRAINT IF EXISTS geo_ip_dns_crawl_result_id_fk;

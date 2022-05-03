@@ -33,6 +33,7 @@ public class Request {
     @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     @Column(name = "ok")                private boolean ok;
     @Column(name = "problem")           private String problem;
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "request")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "request_id")
     @Builder.Default                    private List<Response> responses = new ArrayList<>();
 }

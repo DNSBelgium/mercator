@@ -23,11 +23,9 @@ public class Response {
     @Column(name = "record_data")       private String recordData;
     @Column(name = "ttl")               private Long ttl;
 
-    @ManyToOne
-    @JoinColumn(name = "request_id")    private Request request;
-
     @Builder.Default
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "response")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "response_id")
     private List<ResponseGeoIp> responseGeoIps = new ArrayList<>();
 
 }
