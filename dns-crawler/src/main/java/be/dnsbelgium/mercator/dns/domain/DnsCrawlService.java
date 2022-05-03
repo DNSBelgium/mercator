@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
+import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
@@ -19,11 +20,7 @@ import org.xbill.DNS.Name;
 import org.xbill.DNS.TextParseException;
 
 import java.net.IDN;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Component
 public class DnsCrawlService {
@@ -32,22 +29,56 @@ public class DnsCrawlService {
   private final MeterRegistry meterRegistry;
 
   private final RequestRepository requestRepository;
-  private final ResponseRepository responseRepository;
-  private final ResponseGeoIpRepository responseGeoIpRepository;
   private final DnsResolver resolver;
   private final GeoIPService geoIPService;
   private final DnsCrawlerConfigurationProperties dnsCrawlerConfig;
   private final boolean geoIpEnabled;
 
-  public DnsCrawlService(RequestRepository requestRepository, ResponseRepository responseRepository, ResponseGeoIpRepository responseGeoIpRepository, DnsResolver resolver, MeterRegistry meterRegistry, GeoIPService geoIPService, DnsCrawlerConfigurationProperties dnsCrawlerConfig, @Value("${crawler.dns.geoIP.enabled}") boolean geoIpEnabled) {
+  public DnsCrawlService(RequestRepository requestRepository, DnsResolver resolver, MeterRegistry meterRegistry, GeoIPService geoIPService, DnsCrawlerConfigurationProperties dnsCrawlerConfig, @Value("${crawler.dns.geoIP.enabled}") boolean geoIpEnabled) {
     this.requestRepository = requestRepository;
-    this.responseRepository = responseRepository;
-    this.responseGeoIpRepository = responseGeoIpRepository;
     this.resolver = resolver;
     this.geoIPService = geoIPService;
     this.meterRegistry = meterRegistry;
     this.dnsCrawlerConfig = dnsCrawlerConfig;
     this.geoIpEnabled = geoIpEnabled;
+  }
+
+  private List<Request> dnsResolutionToEntity(VisitRequest visitRequest, DnsResolution dnsResolution) {
+    ArrayList<Request> requests = new ArrayList();
+    for (Map.Entry<String, Records> recordsPerRecordType : dnsResolution.getRecords().entrySet()) {
+      for (Map.Entry<RecordType, List<RRecord>> records: recordsPerRecordType.getValue().getRecords().entrySet()) {
+        Request request = Request.builder()
+            .visitId(visitRequest.getVisitId())
+            .domainName(visitRequest.getDomainName())
+            .prefix(recordsPerRecordType.getKey())
+            .recordType(records.getKey())
+            .rcode(dnsResolution.getRcode())
+            .ok(false)
+            .problem(dnsResolution.getHumanReadableProblem())
+            .build();
+
+        // Response
+        for (RRecord recordValue: dnsResolution.getRecords(request.getPrefix()).get(request.getRecordType())) {
+          Response response = Response.builder()
+              .recordData(recordValue.getData())
+              .ttl(recordValue.getTtl())
+              .build();
+          request.getResponses().add(response);
+
+        // Geo IPs
+        if (geoIpEnabled) {
+            if (request.getRecordType() == RecordType.A) {
+              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(response, 4));
+            } else if (request.getRecordType() == RecordType.AAAA) {
+              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(response, 6));
+            }
+          }
+        }
+
+        requests.add(request);
+      }
+    }
+    return requests;
   }
 
   public void retrieveDnsRecords(VisitRequest visitRequest) {
@@ -58,22 +89,11 @@ public class DnsCrawlService {
     DnsResolution dnsResolution = resolver.performCheck(fqdn);
 
     // Creating a List of the prefixes for easier use.
-    Set<String> prefixSet = dnsCrawlerConfig.getSubdomains().keySet();
-    List<String> prefixes = new ArrayList<>(prefixSet);
+    Set<String> prefixes = dnsCrawlerConfig.getSubdomains().keySet();
 
     // If dnsResolution is not ok then we save the failed request to the DB, so we know it has been requested.
     if (!dnsResolution.isOk()) {
-      Request request = Request.builder()
-              .visitId(visitRequest.getVisitId())
-              .domainName(visitRequest.getDomainName())
-              .prefix("@")
-              .recordType(RecordType.A)
-              .rcode(3) // TODO: AvR get actual rcode?
-              .crawlTimestamp(ZonedDateTime.now())
-              .ok(false)
-              .problem(dnsResolution.getHumanReadableProblem())
-              .build();
-      requestRepository.save(request);
+      requestRepository.saveAll(dnsResolutionToEntity(visitRequest, dnsResolution));
       return;
     }
 
@@ -88,46 +108,10 @@ public class DnsCrawlService {
       // TODO Remove exception caused by the recordCallable
 
       Records records = resolver.getAllRecords(name, recordTypes);
-      DnsResolution resolution = dnsResolution.addRecords(prefix, records);
-
-      // For each recordType found in resolution we create a new Request.
-      // For each recordValue found in recordType we create a new Response.
-      // For each RecordType.A or RecordType.AAAA we create a new ResponseGeoIp (enrich method).
-      for (RecordType recordType: resolution.getRecords(prefix).getRecords().keySet()) {
-        Request request = Request.builder()
-                .visitId(visitRequest.getVisitId())
-                .domainName(visitRequest.getDomainName())
-                .prefix(prefix)
-                .recordType(recordType)
-                .rcode(0) // TODO: AvR get actual rcode?
-                .crawlTimestamp(ZonedDateTime.now())
-                .ok(true)
-                .problem(dnsResolution.getHumanReadableProblem())
-                .build();
-
-        Optional<Request> optionalRequest = Optional.of(requestRepository.save(request));
-        Request savedRequest = optionalRequest.get(); //TODO: Improve.
-
-        for (String recordValue: resolution.getRecords(prefix).get(recordType)) {
-          Response response = Response.builder()
-                  .recordData(recordValue)
-                  .ttl(0) // TODO: AvR get TTL
-                  .request(savedRequest)
-                  .build();
-
-          Optional<Response> optionalResponse = Optional.of(responseRepository.save(response));
-          Response savedResponse = optionalResponse.get();
-
-          if (geoIpEnabled && dnsResolution.isOk()) {
-            if (recordType == RecordType.A) {
-              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(savedResponse, 4));
-            } else if (recordType == RecordType.AAAA) {
-              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(savedResponse, 6));
-            }
-          }
-        }
-      }
+      dnsResolution.addRecords(prefix, records);
     }
+
+    requestRepository.saveAll(dnsResolutionToEntity(visitRequest, dnsResolution));
   }
 
   private Name getNameFromSubdomain(Name fqdn, String subdomain) {
@@ -165,11 +149,8 @@ public class DnsCrawlService {
     Pair<Integer, String> asn = geoIPService.lookupASN(response.getRecordData()).orElse(null);
 
     if (country != null || asn != null) {
-      ResponseGeoIp result = new ResponseGeoIp(asn, country, ipVersion, response);
-      responseGeoIpRepository.save(result);
+      ResponseGeoIp result = new ResponseGeoIp(asn, country, ipVersion, response.getRecordData());
+      response.getResponseGeoIps().add(result);
     }
   }
-
-
-
 }
