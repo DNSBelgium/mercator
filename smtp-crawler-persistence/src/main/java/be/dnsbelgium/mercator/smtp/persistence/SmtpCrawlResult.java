@@ -32,6 +32,7 @@ public class SmtpCrawlResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id") private Long id;
 
+    @Column(name = "status") private String status;
     @Column(name = "visit_id") private UUID visitId;
     @Column(name = "domain_name") private String domainName;
     @Column(name = "crawl_status") private int crawlStatus;
@@ -48,9 +49,14 @@ public class SmtpCrawlResult {
         this.visitId = visitId;
         this.domainName = domainName;
         this.crawlTimestamp = ZonedDateTime.now();
+        this.status = "BUSY";
     }
 
     public void add(SmtpServer server) {
         this.servers.add(server);
+    }
+
+    public void setDone() {
+        this.status = "DONE";
     }
 }

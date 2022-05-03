@@ -5,6 +5,7 @@ public interface MetricName {
     String TIMER_SMTP_ANALYSIS = "smtp.analyzer.per.domain";
     String SMTP_DOMAINS_DONE   = "smtp.analyzer.domains.done";
     String SMTP_RESULTS_SAVED  = "smtp.analyzer.results.saved";
+    String COUNTER_DUPLICATE_KEYS  = "smtp.analyzer.duplicate.key.violations.saved";
 
     String COUNTER_CACHE_HITS      = "smtp.analyzer.cache.hits";
     String COUNTER_CACHE_MISSES    = "smtp.analyzer.cache.misses";

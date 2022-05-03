@@ -5,6 +5,8 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResult;
 import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResultRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -33,6 +36,7 @@ class SmtpCrawlResultRepositoryTest {
 
     @Autowired SmtpCrawlResultRepository repository;
     @Autowired ApplicationContext context;
+    @Autowired JdbcTemplate jdbcTemplate;
 
     private static final Logger logger = getLogger(SmtpCrawlResultRepositoryTest.class);
 
@@ -97,6 +101,38 @@ class SmtpCrawlResultRepositoryTest {
     }
 
     @Test
+    public void saveAndIgnoreDuplicateKeys() {
+        UUID uuid = randomUUID();
+        @SuppressWarnings("SqlResolve")
+        int rowsInserted = jdbcTemplate.update("" +
+            " insert into smtp_crawl_result\n" +
+            "        (crawl_status, crawl_timestamp, servers, domain_name, visit_id) \n" +
+            "    values\n" +
+            "        (0, current_timestamp, null, ?, ?)"
+            , "abc.be", uuid
+        );
+        logger.info("rowsInserted = {}", rowsInserted);
+        List<SmtpCrawlResult> found = repository.findByVisitId(uuid);
+        logger.info("found = {}", found.size());
+        assertThat(found).hasSize(1);
+        jdbcTemplate.execute("commit");
+        SmtpCrawlResult crawlResult = crawlResult(uuid);
+        boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult);
+        logger.info("saveFailed = {}", saveFailed);
+        assertThat(saveFailed).isTrue();
+    }
+
+    @Test
+    public void otherDataIntegrityViolationExceptionNotIgnored() {
+        SmtpCrawlResult crawlResult = crawlResult(randomUUID());
+        crawlResult.setDomainName(StringUtils.repeat("a", 130));
+        Assertions.assertThrows(
+            DataIntegrityViolationException.class,
+            () -> repository.saveAndIgnoreDuplicateKeys(crawlResult)
+        );
+    }
+
+        @Test
     public void saveSuccessfulWhenWeCleanBinaryData() {
         SmtpCrawlResult crawlResult = crawlResultWithBinaryData();
         // clean the data before saving
@@ -112,6 +148,23 @@ class SmtpCrawlResultRepositoryTest {
         crawlResult = repository.save(crawlResult);
         logger.info("After save: crawlResult.getId() = {}", crawlResult.getId());
         assertThat(crawlResult.getId()).isNotNull();
+    }
+
+    private SmtpCrawlResult crawlResult(UUID uuid) {
+        SmtpCrawlResult crawlResult = new SmtpCrawlResult(uuid, "jamaica.be");
+        SmtpServer server = new SmtpServer("smtp1.example.com");
+        SmtpHostIp hostIp = new SmtpHostIp("1.2.3.4");
+        hostIp.setConnectReplyCode(220);
+        hostIp.setIpVersion(4);
+        hostIp.setBanner("my binary banner");
+        hostIp.setConnectionTimeMs(123);
+        hostIp.setStartTlsOk(false);
+        hostIp.setCountry("Jamaica");
+        hostIp.setAsnOrganisation("Happy Green grass");
+        hostIp.setAsn(654);
+        server.addHost(hostIp);
+        crawlResult.add(server);
+        return crawlResult;
     }
 
     private SmtpCrawlResult crawlResultWithBinaryData() {

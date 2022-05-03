@@ -51,6 +51,7 @@ class SmtpCrawlerTest {
     @Test
     public void happyPath() throws Exception {
         VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
+        when(service.retrieveSmtpInfo(request)).thenReturn(new SmtpCrawlResult());
         crawler.process(request);
         verify(service, times(1)).retrieveSmtpInfo(request);
     }
@@ -68,13 +69,14 @@ class SmtpCrawlerTest {
         UUID visitId = UUID.randomUUID();
         VisitRequest request = new VisitRequest(visitId, "abc.be");
         SmtpCrawlResult result = new SmtpCrawlResult();
+        when(service.retrieveSmtpInfo(request)).thenReturn(result);
         when(service.find(visitId))
             .thenReturn(Optional.empty())
             .thenReturn(Optional.of(result));
         crawler.process(request);
         crawler.process(request);
-        verify(service, times(1)).retrieveSmtpInfo(any(VisitRequest.class));
-        verify(ackMessageService, times(2)).sendAck(any(VisitRequest.class), any(CrawlerModule.class));
+        verify(service).retrieveSmtpInfo(any(VisitRequest.class));
+        verify(ackMessageService).sendAck(any(VisitRequest.class), any(CrawlerModule.class));
     }
 
 }

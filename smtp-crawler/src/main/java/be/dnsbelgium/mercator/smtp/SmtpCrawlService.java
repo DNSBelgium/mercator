@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
-
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,10 +49,26 @@ public class SmtpCrawlService {
     @Transactional
     public void save(SmtpCrawlResult smtpCrawlResult) {
         logger.debug("About to save SmtpCrawlResult for {}", smtpCrawlResult.getDomainName());
-        repository.save(smtpCrawlResult);
-        meterRegistry.counter(MetricName.SMTP_RESULTS_SAVED).increment();
-        logger.debug("Saved SmtpCrawlResult for {} with visitId={} and id={}",
-            smtpCrawlResult.getDomainName(), smtpCrawlResult.getVisitId(), smtpCrawlResult.getId());
+        boolean wasDuplicate = repository.saveAndIgnoreDuplicateKeys(smtpCrawlResult);
+        if (wasDuplicate) {
+            logger.info("was duplicate: {}", smtpCrawlResult.getVisitId());
+            meterRegistry.counter(MetricName.COUNTER_DUPLICATE_KEYS).increment();
+            // note that transaction will be rolled back by Hibernate
+            logger.info("TransactionSynchronizationManager.isActualTransactionActive() = {}", TransactionSynchronizationManager.isActualTransactionActive());
+            // even though we return here without an exception,
+            // spring will throw an UnexpectedRollbackException ("Transaction silently rolled back because it has been marked as rollback-only")
+            // to the calling code, probably because of the @Transactional
+            // so the distinction made in saveAndIgnoreDuplicateKeys between smtp_crawl_result_visitid_uq and other exceptions
+            // makes no difference: the tx is rolled back and caller if this method gets an exception
+            // Next JMS tries to interfere and calls changeMessageVisibilityBatch which leads to
+            // com.amazonaws.SdkClientException: Unable to unmarshall response (ParseError at [row,col]:[1,157]
+            // Message: The processing instruction target matching "[xX][mM][lL]" is not allowed.). Response Code: 200, Response Text:
+            // Could be related to the use of localstack.
+        } else {
+            meterRegistry.counter(MetricName.SMTP_RESULTS_SAVED).increment();
+            logger.debug("Saved SmtpCrawlResult for {} with visitId={}",
+                smtpCrawlResult.getDomainName(), smtpCrawlResult.getVisitId());
+        }
     }
 
 }

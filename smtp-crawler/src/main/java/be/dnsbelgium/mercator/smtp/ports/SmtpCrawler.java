@@ -13,6 +13,7 @@ import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,13 +48,21 @@ public class SmtpCrawler implements Crawler {
             Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
             if (existingResult.isPresent()) {
                 logger.info("visit {} already exists => skipping", visitRequest);
+                // We do not send an ack in this case since crawl might still be busy
             } else {
                 meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
-                SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
+                // Before crawling create row as BUSY so that duplicate requests don't trigger a simultaneous crawl
+                SmtpCrawlResult crawlResult = new SmtpCrawlResult(visitRequest.getVisitId(), visitRequest.getDomainName());
                 crawlService.save(crawlResult);
+                // now start crawling
+                SmtpCrawlResult result = crawlService.retrieveSmtpInfo(visitRequest);
+                result.setId(crawlResult.getId());
+                result.setDone();
+                // and save again
+                crawlService.save(result);
+                ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
+                logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
             }
-            ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
-            logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
         } catch (Exception e) {
             meterRegistry.counter(MetricName.COUNTER_FAILED_VISITS).increment();
             String errorMessage = String.format("failed to analyze SMTP for domainName=[%s] because of exception [%s]",
