@@ -10,7 +10,6 @@ import java.util.Map;
 @Data
 public class DnsCrawlDTO {
 
-    private long id;
     private boolean ok;
     private String problem;
     private ZonedDateTime crawlTimestamp;

@@ -29,7 +29,6 @@ public class DnsCrawlController {
 
         try {
             return ResponseEntity.status(HttpStatus.OK).body(dnsRepoService.getInfoByVisitId(visitId));
-
         } catch (NotFoundException ex) {
             logger.error(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found message."); // TODO: Decide on a correct error message.
