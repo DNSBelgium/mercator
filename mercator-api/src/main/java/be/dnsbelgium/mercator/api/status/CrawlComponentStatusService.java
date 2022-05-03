@@ -35,20 +35,20 @@ public class CrawlComponentStatusService {
 
   public CrawlComponentStatus getCrawlComponentStatus(UUID visitId) throws ExecutionException, InterruptedException {
 
-    var dnsFuture = CompletableFuture.supplyAsync(() -> dnsRepository.findByVisitId(visitId));
+    var dnsFuture = CompletableFuture.supplyAsync(() -> requestRepository.findRequestsByVisitId(visitId));
     var smtpFuture = CompletableFuture.supplyAsync(() -> smtpRepository.findFirstByVisitId(visitId));
     var muppetsFuture = CompletableFuture.supplyAsync(() -> mupetsepository.findByVisitId(visitId));
     var wappalyzerFuture = CompletableFuture.supplyAsync(() -> wappalyzerRepository.findByVisitId(visitId));
 
     CompletableFuture.allOf(dnsFuture, smtpFuture, muppetsFuture, wappalyzerFuture).get();
 
-    Optional<Request> request = dnsFuture.exceptionally((ex -> Optional.empty())).get();
+    List<Request> request = dnsFuture.exceptionally((ex -> Collections.emptyList())).get();
     Optional<SmtpCrawlResult> smtpResult = smtpFuture.exceptionally((ex -> Optional.empty())).get();
     List<ContentCrawlResult> muppetsResults = muppetsFuture.exceptionally((ex -> Collections.emptyList())).get();
     Optional<WappalyzerResult> wappalyzerResult = wappalyzerFuture.exceptionally((ex -> Optional.empty())).get();
 
     return new CrawlComponentStatus(visitId,
-                                    request.map(Request::isOk).orElse(false),
+                                    request.stream().anyMatch(Request::isOk),
                                     smtpResult.map(result -> result.getCrawlStatus() == CrawlStatus.OK).orElse(false),
                                     muppetsResults.stream().anyMatch(ContentCrawlResult::isOk),
                                     wappalyzerResult.map(WappalyzerResult::isOk).orElse(false));
