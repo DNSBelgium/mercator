@@ -2,12 +2,14 @@ package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
+import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.*;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
+import be.dnsbelgium.mercator.dns.persistence.Response;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -22,8 +24,10 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.xbill.DNS.Name;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -89,21 +93,34 @@ class DnsCrawlServiceTest {
     dnsCrawlService.retrieveDnsRecords(visitRequest);
 
     verify(requestRepository).saveAll(argCaptor.capture());
+
     List<Request> requests = argCaptor.getValue();
     assertThat(requests).hasSize(9);
-    for (Request request : requests) {
-      String prefix = request.getPrefix();
-      RecordType recordType = request.getRecordType();
 
-      System.out.println(request);
-//      assertThat(request.getResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords().get(request.getPrefix()));
+    DnsResolution dnsResolution = DnsResolutionTest.dnsBelgiumDnsResolution();
+
+    for (Map.Entry<String, Records> recordsPerPrefix : dnsResolution.getRecords().entrySet()) {
+      String prefix = recordsPerPrefix.getKey();
+
+      for (Map.Entry<RecordType, List<RRecord>> recordsPerRecordType : recordsPerPrefix.getValue().getRecords().entrySet()) {
+        RecordType recordType = recordsPerRecordType.getKey();
+        List<Request> collect = requests.stream().filter(request -> request.getPrefix().equals(prefix)).filter(request -> request.getRecordType() == recordType).collect(Collectors.toList());
+        assertThat(collect).hasSize(1);
+        Request request = collect.get(0);
+
+        assertThat(request.getVisitId()).isEqualTo(visitRequest.getVisitId());
+        assertThat(request.getDomainName()).isEqualTo("dnsbelgium.be");
+        assertThat(request.getRcode()).isEqualTo(0);
+        assertTrue(request.isOk());
+        assertThat(request.getProblem()).isNull();
+
+        for (Response response : request.getResponses()) {
+          assertThat(new RRecord(response.getTtl(), response.getRecordData())).isIn(recordsPerRecordType.getValue());
+        }
+      }
     }
 
     verify(geoIPService, times(4)).lookupCountry(anyString());
     verify(geoIPService, times(4)).lookupASN(anyString());
-
-//    assertThat(result.getAllRecords()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords());
-//    assertThat(result.isOk()).isTrue();
-//    assertThat(result.getProblem()).isNull();
   }
 }

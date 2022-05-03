@@ -53,7 +53,7 @@ public class DnsCrawlService {
             .prefix(recordsPerRecordType.getKey())
             .recordType(records.getKey())
             .rcode(dnsResolution.getRcode())
-            .ok(false)
+            .ok(dnsResolution.isOk())
             .problem(dnsResolution.getHumanReadableProblem())
             .build();
 
