@@ -46,7 +46,7 @@ public class DnsResolutionTest {
   void addRecords() {
     var dnsResolution = DnsResolution.withRecords("@", RecordsTest.dnsBelgiumRootRecords());
     dnsResolution.addRecords("@", new Records(Map.of(RecordType.A, List.of(RRecord.of(3600L, "192.168.0.1")))));
-    assertTrue(dnsResolution.getRecords("@").get(RecordType.A).contains("192.168.0.1"));
+    assertTrue(dnsResolution.getRecords("@").get(RecordType.A).contains(RRecord.of(3600L, "192.168.0.1")));
 
     assertNull(dnsResolution.getRecords("www"));
     dnsResolution.addRecords("www", RecordsTest.dnsBelgiumWwwRecords());

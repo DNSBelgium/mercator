@@ -107,11 +107,11 @@ class RequestRepositoryTest {
     // 1 Request has N Responses.
     Response r1 = Response.builder()
         .recordData("Some record data")
-        .ttl(5000)
+        .ttl(5000L)
         .build();
     Response r2 = Response.builder()
         .recordData("Some more record data")
-        .ttl(5000)
+        .ttl(5000L)
         .build();
 
     // Geo Ip for r1
