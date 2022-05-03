@@ -99,11 +99,8 @@ class DnsCrawlServiceTest {
 
     DnsResolution dnsResolution = DnsResolutionTest.dnsBelgiumDnsResolution();
 
-    for (Map.Entry<String, Records> recordsPerPrefix : dnsResolution.getRecords().entrySet()) {
-      String prefix = recordsPerPrefix.getKey();
-
-      for (Map.Entry<RecordType, List<RRecord>> recordsPerRecordType : recordsPerPrefix.getValue().getRecords().entrySet()) {
-        RecordType recordType = recordsPerRecordType.getKey();
+    for (String prefix : dnsResolution.getRecords().keySet()) {
+      for (RecordType recordType : dnsResolution.getRecords(prefix).getRecords().keySet()) {
         List<Request> collect = requests.stream().filter(request -> request.getPrefix().equals(prefix)).filter(request -> request.getRecordType() == recordType).collect(Collectors.toList());
         assertThat(collect).hasSize(1);
         Request request = collect.get(0);
@@ -114,8 +111,10 @@ class DnsCrawlServiceTest {
         assertTrue(request.isOk());
         assertThat(request.getProblem()).isNull();
 
+        assertThat(request.getResponses()).hasSize(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).size());
+
         for (Response response : request.getResponses()) {
-          assertThat(new RRecord(response.getTtl(), response.getRecordData())).isIn(recordsPerRecordType.getValue());
+          assertThat(new RRecord(response.getTtl(), response.getRecordData())).isIn(dnsResolution.getRecords(prefix).getRecords().get(recordType));
         }
       }
     }
