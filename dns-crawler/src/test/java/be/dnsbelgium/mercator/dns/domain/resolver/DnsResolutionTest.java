@@ -38,9 +38,7 @@ public class DnsResolutionTest {
 
     dnsResolution.getRecords().clear();
     logger.info("dnsResolution = {}", dnsResolution);
-
   }
-
 
   @Test
   void addRecords() {

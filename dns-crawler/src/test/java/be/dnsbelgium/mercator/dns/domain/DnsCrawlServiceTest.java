@@ -90,14 +90,17 @@ class DnsCrawlServiceTest {
 
     verify(requestRepository).saveAll(argCaptor.capture());
     List<Request> requests = argCaptor.getValue();
+    assertThat(requests).hasSize(9);
     for (Request request : requests) {
+      String prefix = request.getPrefix();
+      RecordType recordType = request.getRecordType();
+
       System.out.println(request);
+//      assertThat(request.getResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords().get(request.getPrefix()));
     }
-//    assertThat(value.getResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords().get(value.getPrefix()));
 
     verify(geoIPService, times(4)).lookupCountry(anyString());
     verify(geoIPService, times(4)).lookupASN(anyString());
-//    Request result = argCaptor.getValue();
 
 //    assertThat(result.getAllRecords()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords());
 //    assertThat(result.isOk()).isTrue();

@@ -22,9 +22,6 @@ public class ResponseGeoIp {
     @Column(name = "asn_organisation")  private String asnOrganisation;
     @Column(name = "ip_version")        private int ipVersion;
 
-    @ManyToOne
-    @JoinColumn(name = "response_id")   private Response response;
-
     public ResponseGeoIp(Pair<Integer, String> asn, String country, int ipVersion, String ip) {
         if (asn != null) {
             this.asn = String.valueOf(asn.getLeft());
