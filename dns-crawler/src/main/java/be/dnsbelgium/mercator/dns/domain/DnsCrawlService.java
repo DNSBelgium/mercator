@@ -43,30 +43,32 @@ public class DnsCrawlService {
     this.geoIpEnabled = geoIpEnabled;
   }
 
+  // TODO Extract that method to a class and test it
   private List<Request> dnsResolutionToEntity(VisitRequest visitRequest, DnsResolution dnsResolution) {
-    ArrayList<Request> requests = new ArrayList();
-    for (Map.Entry<String, Records> recordsPerRecordType : dnsResolution.getRecords().entrySet()) {
-      for (Map.Entry<RecordType, List<RRecord>> records: recordsPerRecordType.getValue().getRecords().entrySet()) {
+    List<Request> requests = new ArrayList<>();
+    for (String prefix : dnsResolution.getRecords().keySet()) {
+      for (RecordType recordType : dnsResolution.getRecords(prefix).getRecords().keySet()) {
         Request request = Request.builder()
             .visitId(visitRequest.getVisitId())
             .domainName(visitRequest.getDomainName())
-            .prefix(recordsPerRecordType.getKey())
-            .recordType(records.getKey())
+            .prefix(prefix)
+            .recordType(recordType)
             .rcode(dnsResolution.getRcode())
             .ok(dnsResolution.isOk())
             .problem(dnsResolution.getHumanReadableProblem())
             .build();
 
         // Response
-        for (RRecord recordValue: dnsResolution.getRecords(request.getPrefix()).get(request.getRecordType())) {
+        for (RRecord recordValue : dnsResolution.getRecords(request.getPrefix()).get(request.getRecordType())) {
           Response response = Response.builder()
               .recordData(recordValue.getData())
               .ttl(recordValue.getTtl())
               .build();
           request.getResponses().add(response);
 
-        // Geo IPs
-        if (geoIpEnabled) {
+          // Geo IPs
+          // TODO Extract and create GeoIpEnricher
+          if (geoIpEnabled) {
             if (request.getRecordType() == RecordType.A) {
               meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(response, 4));
             } else if (request.getRecordType() == RecordType.AAAA) {
@@ -103,9 +105,6 @@ public class DnsCrawlService {
 
       List<RecordType> recordTypes = getRecordTypeToCrawl(prefix, dnsResolution);
       logger.info("Retrieving records {} for domain [{}]", recordTypes, name);
-
-      // TODO move this timer to include all subdomains
-      // TODO Remove exception caused by the recordCallable
 
       Records records = resolver.getAllRecords(name, recordTypes);
       dnsResolution.addRecords(prefix, records);
