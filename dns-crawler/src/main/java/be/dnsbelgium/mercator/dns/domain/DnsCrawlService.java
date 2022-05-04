@@ -1,46 +1,40 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.dns.domain.geoip.GeoIpEnricher;
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
 import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
-import be.dnsbelgium.mercator.dns.metrics.MetricName;
 import be.dnsbelgium.mercator.dns.persistence.*;
-import be.dnsbelgium.mercator.geoip.GeoIPService;
-import io.micrometer.core.instrument.MeterRegistry;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Name;
 import org.xbill.DNS.TextParseException;
 
 import java.net.IDN;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.*;
 
 @Component
 public class DnsCrawlService {
 
   private static final Logger logger = LoggerFactory.getLogger(DnsCrawlService.class);
-  private final MeterRegistry meterRegistry;
 
   private final RequestRepository requestRepository;
   private final DnsResolver resolver;
-  private final GeoIPService geoIPService;
+  private final GeoIpEnricher geoIpEnricher;
   private final DnsCrawlerConfigurationProperties dnsCrawlerConfig;
-  private final boolean geoIpEnabled;
 
-  public DnsCrawlService(RequestRepository requestRepository, DnsResolver resolver, MeterRegistry meterRegistry, GeoIPService geoIPService, DnsCrawlerConfigurationProperties dnsCrawlerConfig, @Value("${crawler.dns.geoIP.enabled}") boolean geoIpEnabled) {
+  public DnsCrawlService(RequestRepository requestRepository, DnsResolver resolver, GeoIpEnricher geoIpEnricher, DnsCrawlerConfigurationProperties dnsCrawlerConfig) {
     this.requestRepository = requestRepository;
     this.resolver = resolver;
-    this.geoIPService = geoIPService;
-    this.meterRegistry = meterRegistry;
+    this.geoIpEnricher = geoIpEnricher;
     this.dnsCrawlerConfig = dnsCrawlerConfig;
-    this.geoIpEnabled = geoIpEnabled;
   }
 
   // TODO Extract that method to a class and test it
@@ -67,12 +61,14 @@ public class DnsCrawlService {
           request.getResponses().add(response);
 
           // Geo IPs
-          // TODO Extract and create GeoIpEnricher
-          if (geoIpEnabled) {
-            if (request.getRecordType() == RecordType.A) {
-              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(response, 4));
-            } else if (request.getRecordType() == RecordType.AAAA) {
-              meterRegistry.timer(MetricName.GEO_ENRICH).record(() -> enrich(response, 6));
+          if (Arrays.asList(RecordType.A, RecordType.AAAA, RecordType.NS).contains(recordType)) {
+            try {
+              InetAddress[] ips = InetAddress.getAllByName(response.getRecordData());
+              for (InetAddress ip : ips) {
+                response.getResponseGeoIps().add(geoIpEnricher.enrich(ip));
+              }
+            } catch (UnknownHostException e) {
+              logger.warn("IP isn't parseable");
             }
           }
         }
@@ -143,13 +139,4 @@ public class DnsCrawlService {
     return recordTypes;
   }
 
-  private void enrich(Response response, int ipVersion) {
-    String country = geoIPService.lookupCountry(response.getRecordData()).orElse(null);
-    Pair<Integer, String> asn = geoIPService.lookupASN(response.getRecordData()).orElse(null);
-
-    if (country != null || asn != null) {
-      ResponseGeoIp result = new ResponseGeoIp(asn, country, ipVersion, response.getRecordData());
-      response.getResponseGeoIps().add(result);
-    }
-  }
 }

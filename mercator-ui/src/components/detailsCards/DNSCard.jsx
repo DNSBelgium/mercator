@@ -14,11 +14,9 @@ const DNSCard = (props) => {
     useEffect(() => {
         const handlerData = async () => {
 
-            // const url = `/dnsCrawlResults/search/findByVisitId?visitId=${visitId}`;
             const url = `dns-crawler?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
                         setData(resp.data);
                     }
