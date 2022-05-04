@@ -1,5 +1,5 @@
 -- New table request will take over dns_crawl_result.
-CREATE TABLE dns_crawler.request
+CREATE TABLE request
 (
     id              SERIAL PRIMARY KEY,
     visit_id        UUID                     NOT NULL,
@@ -12,8 +12,10 @@ CREATE TABLE dns_crawler.request
     problem         TEXT
 );
 
+CREATE INDEX ON request (visit_id);
+
 -- New table response will take over dns_crawl_result's Json data.
-CREATE TABLE dns_crawler.response
+CREATE TABLE response
 (
     id          SERIAL PRIMARY KEY,
     record_data TEXT   NOT NULL, -- 94.126.48.90, s1.named.be., ...
@@ -21,21 +23,23 @@ CREATE TABLE dns_crawler.response
     request_id  INT
 );
 
-ALTER TABLE dns_crawler.response -- Adding foreign key constraint.
-    ADD CONSTRAINT dns_response_request_id_fk FOREIGN KEY (request_id) REFERENCES dns_crawler.request(id);
+CREATE INDEX ON response (request_id);
+
+ALTER TABLE response -- Adding foreign key constraint.
+    ADD CONSTRAINT dns_response_request_id_fk FOREIGN KEY (request_id) REFERENCES request(id);
 
 -- Adjusting dns_crawl_result_geo_ips
-ALTER TABLE dns_crawler.dns_crawl_result_geo_ips
+ALTER TABLE dns_crawl_result_geo_ips
     RENAME TO response_geo_ips;
 
 -- Adding a response_id value to geo ip first.
 -- After data transfer is complete, dns_crawl_result_id (which is currently the FK) will be removed.
 -- Then response_id will be altered to be the new FK.
-ALTER TABLE dns_crawler.response_geo_ips
+ALTER TABLE response_geo_ips
     ADD COLUMN response_id INT;
 
 -- Adding ip_version to response_geo_ips to remove record_type later. (record_type is currently A / AAAA in stead of ip_version 4 / 6)
-ALTER TABLE dns_crawler.response_geo_ips
+ALTER TABLE response_geo_ips
     ADD COLUMN ip_version INT; -- A == 4, AAAA == 6
 
 -- DO
@@ -60,7 +64,7 @@ ALTER TABLE dns_crawler.response_geo_ips
 --         last_response_id    INT;
 --     BEGIN
 --         -- Initial loop, going through all records.
---         FOR rec IN SELECT * FROM dns_crawler.dns_crawl_result
+--         FOR rec IN SELECT * FROM dns_crawl_result
 --             LOOP
 --                 request_id =        rec.id;
 --                 visit_id =          rec.visit_id;
@@ -73,25 +77,25 @@ ALTER TABLE dns_crawler.response_geo_ips
 --
 --                 IF problem = 'no data in Nominet'
 --                 THEN
---                     INSERT INTO dns_crawler.request
+--                     INSERT INTO request
 --                     (VISIT_ID, DOMAIN_NAME, PREFIX, RECORD_TYPE, RCODE, CRAWL_TIMESTAMP, OK, PROBLEM)
 --                     VALUES
 --                         (visit_id, domain_name, '@', 'A', null, crawl_timestamp, ok, problem);
 --                 ELSIF problem = 'nxdomain'
 --                 THEN
---                     INSERT INTO dns_crawler.request
+--                     INSERT INTO request
 --                     (VISIT_ID, DOMAIN_NAME, PREFIX, RECORD_TYPE, RCODE, CRAWL_TIMESTAMP, OK, PROBLEM)
 --                     VALUES
 --                         (visit_id, domain_name, '@', 'A', 3, crawl_timestamp, ok, 'NXDOMAIN');
 --                 ELSIF problem = 'SERVFAIL'
 --                 THEN
---                     INSERT INTO dns_crawler.request
+--                     INSERT INTO request
 --                     (VISIT_ID, DOMAIN_NAME, PREFIX, RECORD_TYPE, RCODE, CRAWL_TIMESTAMP, OK, PROBLEM)
 --                     VALUES
 --                         (visit_id, domain_name, '@', 'A', 2, crawl_timestamp, ok, problem);
 --                 ELSIF problem = 'timed out'
 --                 THEN
---                     INSERT INTO dns_crawler.request
+--                     INSERT INTO request
 --                     (VISIT_ID, DOMAIN_NAME, PREFIX, RECORD_TYPE, RCODE, CRAWL_TIMESTAMP, OK, PROBLEM)
 --                     VALUES
 --                         (visit_id, domain_name, '@', 'A', null, crawl_timestamp, ok, problem);
@@ -104,7 +108,7 @@ ALTER TABLE dns_crawler.response_geo_ips
 --                                 LOOP
 --
 --                                 -- Inserting values from dns_crawler_result into request.
---                                     INSERT INTO dns_crawler.request
+--                                     INSERT INTO request
 --                                     (VISIT_ID, DOMAIN_NAME, PREFIX, RECORD_TYPE, RCODE, CRAWL_TIMESTAMP, OK, PROBLEM)
 --                                     VALUES
 --                                         (visit_id, domain_name, prefix, _record_type, 0, crawl_timestamp, ok, problem)
@@ -121,7 +125,7 @@ ALTER TABLE dns_crawler.response_geo_ips
 --                                             -- Inserting unpacked JSONB into the new table.
 --                                             -- last_request_id is the ID of the last request row that was created.
 --
---                                                 INSERT INTO dns_crawler.response
+--                                                 INSERT INTO response
 --                                                 (record_data, ttl, request_id)
 --                                                 VALUES
 --                                                     (record_type_value, NULL, last_request_id)
@@ -130,7 +134,7 @@ ALTER TABLE dns_crawler.response_geo_ips
 --                                                 IF _record_type = 'A' OR _record_type = 'AAAA'
 --                                                 THEN
 --
---                                                     UPDATE dns_crawler.response_geo_ips ip
+--                                                     UPDATE response_geo_ips ip
 --                                                     SET response_id = last_response_id
 --                                                     WHERE ip.dns_crawl_result_id = request_id AND ip.record_type = _record_type;
 --
@@ -144,25 +148,33 @@ ALTER TABLE dns_crawler.response_geo_ips
 --     END
 -- $BODY$ LANGUAGE plpgsql;
 
-ALTER TABLE dns_crawler.response_geo_ips
-DROP CONSTRAINT geo_ip_dns_crawl_result_id_fk;
+UPDATE response_geo_ips ip
+    SET ip_version = 4
+    WHERE record_type = 'A';
 
-ALTER TABLE dns_crawler.response_geo_ips
-    ADD CONSTRAINT geo_ip_response_id_fk FOREIGN KEY (response_id) REFERENCES dns_crawler.response(id);
+UPDATE response_geo_ips ip
+    SET ip_version = 6
+    WHERE record_type = 'AAAA';
+
+ALTER TABLE response_geo_ips
+    DROP CONSTRAINT geo_ip_dns_crawl_result_id_fk;
+
+ALTER TABLE response_geo_ips
+    ADD CONSTRAINT geo_ip_response_id_fk FOREIGN KEY (response_id) REFERENCES response(id);
 
 -- Removing deprecated columns.
-ALTER TABLE dns_crawler.response_geo_ips
-DROP COLUMN dns_crawl_result_id;
+ALTER TABLE response_geo_ips
+    DROP COLUMN dns_crawl_result_id;
 
-ALTER TABLE dns_crawler.response_geo_ips
+ALTER TABLE response_geo_ips
     ALTER COLUMN ip_version SET NOT NULL;
 
-ALTER TABLE IF EXISTS dns_crawler.response_geo_ips
-DROP COLUMN record_type;
+ALTER TABLE response_geo_ips
+    DROP COLUMN record_type;
 
 -- Add primary key to response_geo_ips
-ALTER TABLE dns_crawler.response_geo_ips
-    ADD COLUMN IF NOT EXISTS id SERIAL PRIMARY KEY;
+ALTER TABLE response_geo_ips
+    ADD COLUMN id SERIAL PRIMARY KEY;
 
 -- Destroy dns_crawl_result table
-DROP TABLE IF EXISTS dns_crawler.dns_crawl_result;
+DROP TABLE dns_crawl_result;
