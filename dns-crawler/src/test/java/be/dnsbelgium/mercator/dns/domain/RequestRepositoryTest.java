@@ -86,8 +86,7 @@ class RequestRepositoryTest {
 
     assertFalse(requests.isEmpty());
     assertThat(requests).hasSize(2);
-    assertThat(requests.get(0)).isEqualTo(request);
-    assertThat(requests.get(1)).isEqualTo(request2);
+    assertThat(requests).containsExactlyInAnyOrder(request, request2);
   }
 
   @Test
