@@ -19,8 +19,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ${PWD}/localstack/scripts/:/docker-entrypoint-initaws.d
-      - ${PWD}/localstack/container/:/tmp/localstack
+      - ${PWD}/localstack/scripts/:/docker-entrypoint-initaws.d:ro
+      #- ${PWD}/localstack/container/:/tmp/localstack
 
   muppets:
     build:
