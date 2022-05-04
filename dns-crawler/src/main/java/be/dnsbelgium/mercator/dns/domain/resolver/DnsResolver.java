@@ -72,7 +72,6 @@ public class DnsResolver {
     Lookup lookup = performLookup(name, recordType);
 
     if (lookup.getResult() != Lookup.SUCCESSFUL) {
-      // TODO: We should return null when it is not successful
       logger.debug("No result for lookup {} for {}, dnsjava told us: {}", recordType, name, lookup.getErrorString());
     }
 
