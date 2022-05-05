@@ -4,9 +4,8 @@ export const checkObjectIsFalsy = (data) => {
     if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype) {
         return true;
     }
-    if (data === null) {
-        return true;
-    }
+    if (data === null) return true;
+    if (data.length === 0) return true;
     return false;
 }
 

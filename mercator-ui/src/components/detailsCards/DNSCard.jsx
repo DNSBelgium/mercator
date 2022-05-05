@@ -14,11 +14,11 @@ const DNSCard = (props) => {
     useEffect(() => {
         const handlerData = async () => {
 
-            const url = `dns-crawler?visitId=${visitId}`;
+            const url = `/requests/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp.data);
+                        setData(resp.data._embedded.requests);
                     }
                 })
                 .catch((ex) => {
@@ -32,57 +32,95 @@ const DNSCard = (props) => {
     const {openRecords, setOpenRecords} = props;
     const topElement = <p className='top-element'> DNS crawl </p> // BorderWrapper title
 
-    // Render 'Record Data' from data.prefixAndData.values.recordDataAndTtl
-    const renderRecordDataAndTtl = (value) => { // Inside li element
-        return (
-            Object.entries(value).map(([ip, ttl]) => {
-                return (
-                    <ul key={ip}>
-                        <li className="mb-2">
-                            { ip }
-                            <br/>
-                            TTL: { ttl }
-                        </li>
-                    </ul>
+    // Handles rendering of data[x].responses[x].responseGeoIps list.
+    const renderGeoIps = (geoIpList) => { // Inside li element.
+        if(geoIpList.length >= 1) {
+            return(
+                <div className="geo-ip-data">
+                    {
+                        geoIpList.map((geoIp, index) => {
+                            return (
+                                <p key={index}>
+                                    IP: { geoIp.ip } <br/>
+                                    IP version: { geoIp.ipVersion } <br/>
+                                    Country: { geoIp.country } <br/>
+                                    ASN: { geoIp.asn } <br/>
+                                    ASN Organisation: { geoIp.asnOrganisation } <br/>
+                                </p>
+                            )
+                        })
+                    }
+                </div>
+            );
+        }
+    }
+
+    // Handles rendering of a prefix and its corresponding recordTypes and recordData from data[x].
+    const renderDataPerPrefix = (prefix) => { // Inside section element.
+        return(
+            data.map((item, index) => {
+                return(
+                    <div key={index}>
+                        {
+                            item.prefix === prefix && item.responses.length >= 1 && (
+                                <div className="prefix-data-div">
+                                    <p>
+                                        { item.recordType }
+                                    </p>
+                                    
+                                    <ul className="mb-3"> 
+                                        {
+                                            item.responses.map((response, index) => { //???
+                                                return(
+                                                    <li key={index} className="mb-1">
+                                                        {   // If the record type is A or AAAA we don't need a title since they'll be rendered as Geo IP's
+                                                            item.recordType !== "A" && item.recordType !== "AAAA" && (
+                                                                <>
+                                                                    { response.recordData }
+                                                                <br/></>
+                                                            )
+                                                        }
+                                                        { renderGeoIps(response.responseGeoIps) }
+                                                    </li>
+                                                )
+                                            })
+                                        }
+                                    </ul>
+                                </div>
+                            )
+                        }
+                    </div>
                 );
             })
         );
     }
 
-    // Render the values of a 'prefix' from data.prefixAndData.values
-    const renderValues = (values) => { // Inside ul element
-        const elementsToReturn = [];
-        
-        for(let i = 0; i < values.length; i++) {
-            let element =   <li key={i}
-                                className="mb-2"
-                            >
-                                <strong>{values[i].recordType}</strong>
-                                <br/>
-                                rcode: {values[i].rcode}
-                                <br/>
-                                Record data: { renderRecordDataAndTtl(values[i].recordDataAndTtl) }
-                            </li>
-                
-            elementsToReturn.push(element);
+    // Handles creating separate divs per unique prefix from data[x].prefix
+    const renderRecords = () => { // Inside div element
+        let distinctPrefixes = [];
+        for(let i = 0; i < data.length; i++) {
+
+            // If a new prefix is found and it has responses then add it to the array.
+            // This is to 'filter out' empty data.
+            if(!distinctPrefixes.includes(data[i].prefix) && data[i].responses.length >= 1) {
+                    distinctPrefixes.push(data[i].prefix);
+            }
         }
-        return elementsToReturn;
-    }
 
-    // Render the prefix and it's corresponding data from data.prefixAndData
-    const renderPrefixAndData = () => { // Inside ul element
-        return (
-            Object.entries(data.prefixAndData).map(([prefix, value]) => {
-                return (
-                    <ul key={prefix}>
-                        <li>
-                            <strong>{ prefix } records:</strong>
+        return(
+            distinctPrefixes.map((prefix, index) => {
+                return(
+                    <div 
+                        key={index} 
+                        className="ml-3"
+                        id="prefix-div"
+                    >
+                        <span>{ prefix }</span>
 
-                            <ul>
-                                { renderValues(value) }
-                            </ul>
-                        </li>
-                    </ul>
+                        <section>
+                            { renderDataPerPrefix(prefix) }
+                        </section>
+                    </div>
                 );
             })
         );
@@ -103,12 +141,13 @@ const DNSCard = (props) => {
                         borderless
                     >
                         <tbody className="text-left">
+                            
                             <tr>
-                                <th scope='row'>
-                                    Id
+                                <th scope="row">
+                                    rcode
                                 </th>
                                 <td>
-                                    { data.id }
+                                    { data[0].rcode }
                                 </td>
                             </tr>
 
@@ -117,16 +156,16 @@ const DNSCard = (props) => {
                                     OK
                                 </th>
                                 {
-                                    renderDataBoolean(data.ok) // td element
+                                    renderDataBoolean(data[0].ok) // td element
                                 }
-                            </tr>
+                            </tr>                            
 
                             <tr>
                                 <th scope="row">
                                     Problem
                                 </th>
                                 <td className="defined-error">
-                                    { data.problem }
+                                    { data[0].problem }
                                 </td>
                             </tr>
 
@@ -135,17 +174,17 @@ const DNSCard = (props) => {
                                     Crawl timestamp
                                 </th>
                                 <td>
-                                    { data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : '' }
+                                    { data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : '' }
                                 </td>
                             </tr>
 
                             <tr>
                                 <th scope='row'>
-                                    All Records
+                                    Record data and Geo IP's
                                 </th>
                                 <td>
                                     {
-                                        !checkObjectIsFalsy(data.prefixAndData) && ( // Don't render 'More Info' button if there are is no data.
+                                        data.length >= 1 && ( // Don't render 'More Info' button if there are is no data.
                                             <button 
                                                 className="more-info"
                                                 onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
@@ -154,83 +193,16 @@ const DNSCard = (props) => {
                                             </button>
                                         )
                                     }
-
-                                    {
-                                        openRecords && ( // if openRecords === true, render
-                                            <ul>
-                                                { renderPrefixAndData() }
-                                            </ul>
-                                        )
-                                    }
                                 </td>
                             </tr>
                         </tbody>
                     </Table>
 
                     {
-                        data.geoIps && ( // if data.geoIps exists, render
-                            <>
-                                {
-                                    data.geoIps.map((item, index) => {
-                                        return(
-                                            <Row key={index}>
-                                                <Col>
-                                                    <h5 className="mt-3 text-left">GEO IPs</h5>
-
-                                                    <Table size="sm" borderless>
-                                                        <tbody className="text-md-left">
-                                                            <tr>
-                                                                <th scope="row">
-                                                                    Asn
-                                                                </th>
-                                                                <td>
-                                                                    { item.asn }
-                                                                </td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <th scope="row">
-                                                                    Country
-                                                                </th>
-                                                                <td>
-                                                                    { item.country }
-                                                                </td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <th scope="row">
-                                                                    Ip
-                                                                </th>
-                                                                <td>
-                                                                    { item.ip }
-                                                                </td>
-                                                            </tr>
-
-                                                            <tr>
-                                                                <th scope="row">
-                                                                    IP version
-                                                                </th>
-                                                                <td>
-                                                                    { item.ipVersion }
-                                                                </td>
-                                                            </tr>
-                                                            
-                                                            <tr>
-                                                                <th scope="row">
-                                                                    Asn organisation
-                                                                </th>
-                                                                <td>
-                                                                    { item.asnOrganisation }
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </Table>
-                                                </Col>
-                                            </Row>
-                                        )
-                                    })
-                                }
-                            </>
+                        openRecords && ( // if openRecords === true, render
+                            <div>
+                                { renderRecords() }
+                            </div>
                         )
                     }
                 </div>

@@ -7,8 +7,8 @@ import SMTPCard from "./detailsCards/SMTPCard";
 import VATCard from "./detailsCards/VATCard";
 import SSLCard from "./detailsCards/SSLCard";
 
-function Details(props) {
-    const visitId = props.match.params.visitId; // Fetch visit_id from url
+function Details() {
+    const visitId = window.location.pathname.slice(9); // Fetch visit_id from url
 
     //used for the "Open all" button
     const [metricsJSONButtonOn, metricsJSONButtonSetOn] = useState(false);
@@ -156,7 +156,8 @@ function Details(props) {
                         setOpenVisitedUrlsVat={visitedUrlsVatButtonSetOn} 
                         openVatValues={vatValuesButtonOn} 
                         setOpenVatValues={vatValuesButtonSetOn} 
-                        visitId={visitId}/>
+                        visitId={visitId}
+                    />
                 </div>
 
                 <div id={'ssl-card'}>

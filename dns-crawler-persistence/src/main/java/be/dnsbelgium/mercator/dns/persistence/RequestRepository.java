@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface RequestRepository extends PagingAndSortingRepository<Request, Long> {
 
-    List<Request> findByVisitId(UUID visitId);
+    List<Request> findByVisitId(@Param("visitId") UUID visitId);
 
 }

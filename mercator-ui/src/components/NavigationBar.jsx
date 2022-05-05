@@ -1,11 +1,16 @@
-import {Button, Form, FormControl} from "react-bootstrap";
 import {useState, useRef} from "react";
+import { useNavigate } from 'react-router-dom';
+import {Button, Form, FormControl} from "react-bootstrap";
 
-function NavigationBar() {
+function NavigationBar(props) {
+    const navigate = useNavigate();
+
     const [validated, setValidated] = useState(false); // Hook to validate input field
     const [urlOrId, setUrlOrId] = useState(false); // Hook to define searching by URL or VisitId
 
     let textInput = useRef(); // Hook to hold the input field's value.
+
+    console.log(props);
 
     // Handle 'search' click.
     const search = (event) => {
@@ -13,7 +18,7 @@ function NavigationBar() {
 
         setValidated(true); //TODO: UI Vaidation isn't quite right yet.
 
-        let domainName = textInput.current.value.toLowerCase().trim();
+        let input = textInput.current.value.toLowerCase().trim();
 
         if (!urlOrId) { // false (default) === URL search
             
@@ -21,12 +26,13 @@ function NavigationBar() {
                 return;
             }
             
-            localStorage.setItem("search", domainName);
-            window.location.href = '/';
+            props.setSearch(input);
+            navigate('/');
         }
 
         else { // true === VisitId search
-            window.location.href = '/details/' + domainName;    
+            navigate('/details/' + input);
+            // window.location.href = '/details/' + domainName;
         }
         
     }
@@ -48,7 +54,7 @@ function NavigationBar() {
                         ref={textInput}
                     />
                     <Button 
-                        id="input-button" 
+                        id="input-button"
                         type="submit"
                     >
                         Search
