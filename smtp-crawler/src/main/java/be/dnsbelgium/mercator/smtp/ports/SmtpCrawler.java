@@ -13,7 +13,6 @@ import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -51,15 +50,8 @@ public class SmtpCrawler implements Crawler {
                 // We do not send an ack in this case since crawl might still be busy
             } else {
                 meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
-                // Before crawling create row as BUSY so that duplicate requests don't trigger a simultaneous crawl
-                SmtpCrawlResult crawlResult = new SmtpCrawlResult(visitRequest.getVisitId(), visitRequest.getDomainName());
+                SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
                 crawlService.save(crawlResult);
-                // now start crawling
-                SmtpCrawlResult result = crawlService.retrieveSmtpInfo(visitRequest);
-                result.setId(crawlResult.getId());
-                result.setDone();
-                // and save again
-                crawlService.save(result);
                 ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
                 logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
             }
