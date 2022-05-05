@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.UnexpectedRollbackException;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +52,19 @@ public class SmtpCrawler implements Crawler {
             } else {
                 meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
                 SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
-                crawlService.save(crawlResult);
+                try {
+                    crawlService.save(crawlResult);
+                } catch (UnexpectedRollbackException e) {
+                    logger.info("UnexpectedRollbackException: {}", e.getMessage());
+                    existingResult = crawlService.find(visitRequest.getVisitId());
+                    if (existingResult.isPresent()) {
+                        logger.info("Save failed because SmtpCrawlResult already existed");
+                        // swallow exception so that message will be removed from SQS queue (and ack will be sent)
+                    } else {
+                        logger.error("Truely UnexpectedRollbackException");
+                        throw e;
+                    }
+                }
                 ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
                 logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
             }
