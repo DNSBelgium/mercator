@@ -62,7 +62,7 @@ public class DnsCrawlerApplicationTest {
     dnsCrawler.process(visitRequest);
 
     List<Request> requests = requestRepository.findByVisitId(visitRequest.getVisitId());
-    assertThat(requests).hasSize(11);
+    assertThat(requests).hasSize(12);
 
     Request soa = requests.stream().filter(request -> request.getRecordType() == RecordType.SOA).findFirst().get();
     Request a = requests.stream().filter(request -> request.getRecordType() == RecordType.A).findFirst().get();

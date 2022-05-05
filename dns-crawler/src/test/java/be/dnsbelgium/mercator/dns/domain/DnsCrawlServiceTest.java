@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.dns.domain.geoip.GeoIpEnricher;
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
 import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
@@ -10,7 +11,6 @@ import be.dnsbelgium.mercator.dns.domain.resolver.*;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
 import be.dnsbelgium.mercator.dns.persistence.Response;
-import be.dnsbelgium.mercator.geoip.GeoIPService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -42,7 +42,7 @@ class DnsCrawlServiceTest {
   DnsResolver dnsResolver;
 
   @MockBean
-  GeoIPService geoIPService;
+  GeoIpEnricher geoIpEnricher;
 
   @MockBean
   DnsCrawlerConfigurationProperties dnsCrawlerConfig;
@@ -119,7 +119,6 @@ class DnsCrawlServiceTest {
       }
     }
 
-    verify(geoIPService, times(4)).lookupCountry(anyString());
-    verify(geoIPService, times(4)).lookupASN(anyString());
+    verify(geoIpEnricher, times(4)).enrich(any());
   }
 }
