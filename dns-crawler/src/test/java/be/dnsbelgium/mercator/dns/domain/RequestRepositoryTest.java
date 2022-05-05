@@ -82,7 +82,7 @@ class RequestRepositoryTest {
     requestRepository.save(request2);
     requestRepository.save(request3);
 
-    List<Request> requests = requestRepository.findRequestsByVisitId(visitId);
+    List<Request> requests = requestRepository.findByVisitId(visitId);
 
     assertFalse(requests.isEmpty());
     assertThat(requests).hasSize(2);
@@ -122,7 +122,7 @@ class RequestRepositoryTest {
 
     requestRepository.save(request);
 
-    List<Request> requests = requestRepository.findRequestsByVisitId(visitId);
+    List<Request> requests = requestRepository.findByVisitId(visitId);
 
     assertThat(requests).hasSize(1);
     assertThat(requests.get(0).getResponses()).hasSize(2);

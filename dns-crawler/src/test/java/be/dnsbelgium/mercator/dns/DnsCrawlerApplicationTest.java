@@ -61,7 +61,7 @@ public class DnsCrawlerApplicationTest {
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);
     dnsCrawler.process(visitRequest);
 
-    List<Request> requests = requestRepository.findRequestsByVisitId(visitRequest.getVisitId());
+    List<Request> requests = requestRepository.findByVisitId(visitRequest.getVisitId());
     assertThat(requests).hasSize(11);
 
     Request soa = requests.stream().filter(request -> request.getRecordType() == RecordType.SOA).findFirst().get();
