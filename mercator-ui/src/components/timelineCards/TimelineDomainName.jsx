@@ -21,14 +21,13 @@ const TimelineDomainName = (props) => {
             setException(null);
 
             if (checkObjectIsFalsy(domainName)) {
-                await setProcessing(false);
+                setProcessing(false);
                 return;
             }
 
             const url = `/find-visits/${domainName}?page=${props.page}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
                         
                         setData(resp.data);
@@ -130,7 +129,9 @@ const TimelineDomainName = (props) => {
         }
 
         if(checkObjectIsFalsy(data)) {
-            <h5 className="ml-3 mt-3">Enter a search to begin?</h5>
+            return (
+                <h5 className="ml-3 mt-3">Apologies, something went wrong.</h5>
+            );
         }
 
         return (

@@ -10,8 +10,6 @@ function NavigationBar(props) {
 
     let textInput = useRef(); // Hook to hold the input field's value.
 
-    console.log(props);
-
     // Handle 'search' click.
     const search = (event) => {
         event.preventDefault();

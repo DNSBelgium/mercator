@@ -18,7 +18,7 @@ function App() {
 
         <Routes>
 
-          <Route path="/*" element={<TimelineDomainName search={search} setSearch={setSearch} page={page} setPage={setPage}/>} />
+          <Route path="/*" element={<TimelineDomainName search={search} page={page} setPage={setPage}/>} />
           <Route path="/details/:visitId" element={<Details />} />
 
         </Routes>

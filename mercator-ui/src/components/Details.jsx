@@ -1,4 +1,5 @@
-import {useState} from "react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import DispatcherCard from "./detailsCards/DispatcherCard";
 import DNSCard from "./detailsCards/DNSCard";
 import ContentCrawlCard from "./detailsCards/ContentCrawlCard";
@@ -8,7 +9,7 @@ import VATCard from "./detailsCards/VATCard";
 import SSLCard from "./detailsCards/SSLCard";
 
 function Details() {
-    const visitId = window.location.pathname.slice(9); // Fetch visit_id from url
+    const { visitId } = useParams(); // Fetch :visitId from url
 
     //used for the "Open all" button
     const [metricsJSONButtonOn, metricsJSONButtonSetOn] = useState(false);
