@@ -42,10 +42,10 @@ const DNSCard = (props) => {
                             return (
                                 <p key={index}>
                                     IP: { geoIp.ip } <br/>
-                                    IP version: { geoIp.ipVersion } <br/>
+                                    IPv: { geoIp.ipVersion } <br/>
                                     Country: { geoIp.country } <br/>
                                     ASN: { geoIp.asn } <br/>
-                                    ASN Organisation: { geoIp.asnOrganisation } <br/>
+                                    ASN Organisation: { geoIp.asnOrganisation }
                                 </p>
                             )
                         })
@@ -55,36 +55,51 @@ const DNSCard = (props) => {
         }
     }
 
+    // Define some logic for incoming data[x]'s response and responseGeoIps data.
+    const renderResponses = (request) => { // Inside ul element.
+        if (request.recordType === "AAAA" || request.recordType === "A") {
+            return ( // Only render 1 list item, as responseGeoIps has all the necessary data.
+                <li className="mb-1">
+                    TTL: { request.responses[0].ttl }
+                    { renderGeoIps(request.responses[0].responseGeoIps) }
+                </li>
+            );
+        }
+
+        return(
+            <>
+                {
+                    request.responses.map((response, index) => {
+                        return(
+                            <li key={index} className="mb-1">
+                                { response.recordData } <br/>
+                                TTL: { response.ttl }
+                                {   //Here for NS geo ip data
+                                    renderGeoIps(response.responseGeoIps) 
+                                } 
+                            </li>
+                        )
+                    })
+                }
+            </>
+        );
+    }
+
     // Handles rendering of a prefix and its corresponding recordTypes and recordData from data[x].
     const renderDataPerPrefix = (prefix) => { // Inside section element.
         return(
-            data.map((item, index) => {
+            data.map((request, index) => {
                 return(
                     <div key={index}>
                         {
-                            item.prefix === prefix && item.responses.length >= 1 && (
+                            request.prefix === prefix && request.responses.length >= 1 && (
                                 <div className="prefix-data-div">
                                     <p>
-                                        { item.recordType }
+                                        { request.recordType }
                                     </p>
                                     
                                     <ul className="mb-3"> 
-                                        {
-                                            item.responses.map((response, index) => { //???
-                                                return(
-                                                    <li key={index} className="mb-1">
-                                                        {   // If the record type is A or AAAA we don't need a title since they'll be rendered as Geo IP's
-                                                            item.recordType !== "A" && item.recordType !== "AAAA" && (
-                                                                <>
-                                                                    { response.recordData }
-                                                                <br/></>
-                                                            )
-                                                        }
-                                                        { renderGeoIps(response.responseGeoIps) }
-                                                    </li>
-                                                )
-                                            })
-                                        }
+                                        { renderResponses(request) }
                                     </ul>
                                 </div>
                             )
