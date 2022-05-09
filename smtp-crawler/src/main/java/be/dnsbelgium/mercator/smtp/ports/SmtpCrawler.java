@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.UnexpectedRollbackException;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,13 +48,26 @@ public class SmtpCrawler implements Crawler {
             Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
             if (existingResult.isPresent()) {
                 logger.info("visit {} already exists => skipping", visitRequest);
+                // We do not send an ack in this case since crawl might still be busy
             } else {
                 meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
                 SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
-                crawlService.save(crawlResult);
+                try {
+                    crawlService.save(crawlResult);
+                } catch (UnexpectedRollbackException e) {
+                    logger.info("UnexpectedRollbackException: {}", e.getMessage());
+                    existingResult = crawlService.find(visitRequest.getVisitId());
+                    if (existingResult.isPresent()) {
+                        logger.info("Save failed because SmtpCrawlResult already existed");
+                        // swallow exception so that message will be removed from SQS queue (and ack will be sent)
+                    } else {
+                        logger.error("Truely UnexpectedRollbackException");
+                        throw e;
+                    }
+                }
+                ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
+                logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
             }
-            ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
-            logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
         } catch (Exception e) {
             meterRegistry.counter(MetricName.COUNTER_FAILED_VISITS).increment();
             String errorMessage = String.format("failed to analyze SMTP for domainName=[%s] because of exception [%s]",

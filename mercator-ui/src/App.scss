@@ -7,7 +7,7 @@
 $clickables-color: #007bff;
 $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
-/* App.tsx */
+/* App.js */
 .App {
   max-width: 85vw;
   margin-left: auto;
@@ -245,6 +245,37 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       margin-top: 10px;
       margin-bottom: 10px;
       word-wrap: break-word;
+    }
+
+    #prefix-div {
+      max-width: 900px;
+      padding-top: 1rem;
+      border-top: 1px solid black;
+      display: flex;
+
+      span {
+        margin-left: 1rem;
+        min-width: 5rem; // Just width doesn't work
+        max-width: 5rem; // Due to dynamic rendering
+        font-weight: bold;
+      }
+
+      .prefix-data-div {
+        display: flex;
+      }
+      .prefix-data-div > :first-child {
+        min-width: 2rem; // Just width doesn't work
+        max-width: 2rem; // Due to dynamic rendering
+      }
+      
+      .geo-ip-data {
+        margin-left: 1rem;
+        // display: flex;
+
+        p {
+          margin-left: -1rem;
+        }
+      }
     }
   }
 

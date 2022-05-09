@@ -3,18 +3,14 @@ import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import api from "../../services/api";
 import moment from "moment";
-import { handleExResponse } from "../../services/Util";
+import { checkObjectIsFalsy, handleExResponse } from "../../services/Util";
 
-const TimelineDomainName = () => {
-
-    const domainName = localStorage.getItem("search"); // Received from NavigationBar.jsx textInput Ref hook.
+const TimelineDomainName = (props) => {
+    const domainName = props.search; // Received from App.jsx search hook.
 
     const [data, setData] = useState([]); // Used to hold data from GET request.
     const [processing, setProcessing] = useState(true); // Used for holding HTML rendering if processing === true.
     const [exception, setException] = useState(null); // Used for handling GET request exception responses.
-    
-    const savedPage = localStorage.getItem('saved-page') ? parseInt(localStorage.getItem('saved-page')) : 0;
-    const [currentPage, setCurrentPage] = useState(savedPage); // Used to request a page. Default page is the first page.
     
     useEffect(() => { // Triggers upon initial render and every time domainName changes.
 
@@ -24,12 +20,12 @@ const TimelineDomainName = () => {
             setProcessing(true);
             setException(null);
 
-            if (!domainName) {
+            if (checkObjectIsFalsy(domainName)) {
                 setProcessing(false);
                 return;
             }
 
-            const url = `/find-visits/${domainName}?page=${currentPage}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domainName}?page=${props.page}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
@@ -42,11 +38,10 @@ const TimelineDomainName = () => {
                 });
 
             setProcessing(false);
-            localStorage.removeItem('saved-page');
         }
 
         executeHook();
-    }, [domainName, currentPage]);
+    }, [domainName, props.page]);
 
     // Returns a boolean as a green V or red X.
     const booleanToCheckmark = (bool) => {
@@ -65,7 +60,7 @@ const TimelineDomainName = () => {
             btn =   <button 
                         key='prev'
                         className="paging-btn mr-1"
-                        onClick={() => setCurrentPage(currentPage - 1)}
+                        onClick={() => props.setPage(props.page - 1)}
                     >
                         prev
                     </button>
@@ -77,7 +72,7 @@ const TimelineDomainName = () => {
             let className;
 
             // The follow if-else is for giving the current page's button an underline.
-            if(currentPage === i) {
+            if(props.page === i) {
                 className = "current-page paging-btn mr-1";
             }
             else {
@@ -87,7 +82,7 @@ const TimelineDomainName = () => {
             btn =   <button 
                         key={i} 
                         className={className}
-                        onClick={() => setCurrentPage(i)}
+                        onClick={() => props.setPage(i)}
                     >
                         {i + 1}
                     </button>
@@ -98,7 +93,7 @@ const TimelineDomainName = () => {
             btn =   <button 
                         key='next'
                         className="paging-btn"
-                        onClick={() => setCurrentPage(currentPage + 1)}
+                        onClick={() => props.setPage(props.page + 1)}
                     >
                         next
                     </button>
@@ -133,6 +128,12 @@ const TimelineDomainName = () => {
             );
         }
 
+        if(checkObjectIsFalsy(data)) {
+            return (
+                <h5 className="ml-3 mt-3">Apologies, something went wrong.</h5>
+            );
+        }
+
         return (
             <div id="TDN-Div" alt="Div when search is finished and data has been returned.">
                 <Row>
@@ -159,7 +160,6 @@ const TimelineDomainName = () => {
                                             <td>
                                                 <Link 
                                                     to={{pathname: `/details/${item.visitId}`}}
-                                                    onClick={() => localStorage.setItem('saved-page', currentPage)}
                                                 >
                                                     { 
                                                         item.requestTimeStamp ? 
@@ -198,7 +198,7 @@ const TimelineDomainName = () => {
                 <div id="Paging-Div">
                     <button // First page btn
                         className="paging-btn mr-1"
-                        onClick={() => setCurrentPage(0)}
+                        onClick={() => props.setPage(0)}
                     >
                         &#8676;
                     </button>
@@ -209,7 +209,7 @@ const TimelineDomainName = () => {
 
                     <button // Last page btn
                         className="paging-btn ml-1"
-                        onClick={() => setCurrentPage(data.amountOfPages - 1)}
+                        onClick={() => props.setPage(data.amountOfPages - 1)}
                     >
                         &#8677;
                     </button>

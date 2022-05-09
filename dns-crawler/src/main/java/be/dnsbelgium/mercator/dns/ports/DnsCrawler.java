@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class DnsCrawler implements Crawler {
 
   private static final Logger logger = LoggerFactory.getLogger(DnsCrawler.class);
+
   private final DnsCrawlService service;
   private final AckMessageService ackMessageService;
   private final MeterRegistry meterRegistry;

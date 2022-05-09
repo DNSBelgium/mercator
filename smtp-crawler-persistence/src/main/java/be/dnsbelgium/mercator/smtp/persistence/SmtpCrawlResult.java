@@ -31,7 +31,6 @@ public class SmtpCrawlResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id") private Long id;
-
     @Column(name = "visit_id") private UUID visitId;
     @Column(name = "domain_name") private String domainName;
     @Column(name = "crawl_status") private int crawlStatus;
@@ -53,4 +52,5 @@ public class SmtpCrawlResult {
     public void add(SmtpServer server) {
         this.servers.add(server);
     }
+
 }

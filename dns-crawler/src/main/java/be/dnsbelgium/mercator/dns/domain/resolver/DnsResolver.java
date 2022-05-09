@@ -1,12 +1,14 @@
 package be.dnsbelgium.mercator.dns.domain.resolver;
 
 import be.dnsbelgium.mercator.dns.dto.DnsResolution;
+import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Records;
 import be.dnsbelgium.mercator.dns.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,19 +72,18 @@ public class DnsResolver {
     Lookup lookup = performLookup(name, recordType);
 
     if (lookup.getResult() != Lookup.SUCCESSFUL) {
-      // TODO: We should return null when it is not successful
       logger.debug("No result for lookup {} for {}, dnsjava told us: {}", recordType, name, lookup.getErrorString());
     }
 
     return new Records(Map.of(recordType, getRecords(lookup)));
   }
 
-  private List<String> getRecords(Lookup lookup) {
+  private List<RRecord> getRecords(Lookup lookup) {
     Record[] records = lookup.getAnswers();
     if (records == null) {
       return Collections.emptyList();
     }
-    return Arrays.stream(records).map(Record::rdataToString).collect(toList());
+    return Arrays.stream(records).map(record -> RRecord.of(record.getTTL(), record.rdataToString())).collect(toList());
   }
 
   private Lookup performLookup(Name name, RecordType recordType) {
@@ -133,13 +134,14 @@ public class DnsResolver {
   public DnsResolution performCheck(Name fqdn) {
     logger.debug("Performing check for {}", fqdn);
     Lookup testLookup = performLookup(fqdn, RecordType.A);
-    if (testLookup.getResult() == Lookup.UNRECOVERABLE || testLookup.getResult() == Lookup.TRY_AGAIN) {
+    int rcode = testLookup.getResult();
+    if (rcode == Lookup.UNRECOVERABLE || rcode == Lookup.TRY_AGAIN) {
       logger.debug("Problem during resolution for {}, dnsjava told us: {}", fqdn, testLookup.getErrorString());
-      return DnsResolution.failed(testLookup.getErrorString());
+      return DnsResolution.failed(rcode, testLookup.getErrorString()).addRecords("@", new Records(Map.of(RecordType.A, getRecords(testLookup))));
     }
-    if (testLookup.getResult() == Lookup.HOST_NOT_FOUND) {
+    if (rcode == Lookup.HOST_NOT_FOUND) {
       logger.debug("Resolution for {} finished, nxdomain", fqdn);
-      return DnsResolution.nxdomain();
+      return DnsResolution.nxdomain().addRecords("@", new Records(Map.of(RecordType.A, getRecords(testLookup))));
     }
     return DnsResolution.withRecords("@", new Records(Map.of(RecordType.A, getRecords(testLookup))));
   }

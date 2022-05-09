@@ -1,0 +1,1 @@
+ALTER TABLE smtp_crawler.smtp_crawl_result add COLUMN status varchar(30);

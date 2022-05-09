@@ -69,7 +69,7 @@ public class GeoIPServiceImpl implements GeoIPService {
   private void initialize() {
     log.info("Using Maxmind database location: {}", config.getFileLocation());
     if (StringUtils.isBlank(config.getLicenseKey())) {
-      throw new RuntimeException("No valid Maxmind license key found, provide key for either the free of paid license.");
+      throw new RuntimeException("No valid Maxmind license key found, provide key for either the free or paid license.");
     }
     File loc = new File(config.getFileLocation());
     if (!loc.exists()) {
