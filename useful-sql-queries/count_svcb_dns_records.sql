@@ -1,5 +1,8 @@
-SELECT count(*), json_array_length(result.all_records::json->'@'->'records'->'SVCB') as number_svcb_record
-FROM dns_crawler.dns_crawl_result result,
-     dispatcher.dispatcher_event_labels labels
-where result.visit_id = labels.visit_id
-group by number_svcb_record
+-- Count amount of SVCB records (per label)
+
+SELECT l.labels, COUNT(DISTINCT r.domain_name) amount
+FROM dns_crawler.request r JOIN dispatcher.dispatcher_event_labels l
+    ON r.visit_id = l.visit_id
+WHERE r.record_type = 'SVCB'
+--     AND l.labels IN ('some_label')
+GROUP BY l.labels;

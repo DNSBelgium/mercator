@@ -1,8 +1,8 @@
--- count all names that have a CAA record
+-- Count amount of CAA records (per label)
 
-select l.labels, count(distinct domain_name) count
-from dns_crawler.dns_crawl_result d
-         join dispatcher.dispatcher_event_labels l on d.visit_id = l.visit_id
-where l.labels in 'todo'
-  and jsonb_array_length(all_records -> '@' -> 'records' -> 'CAA') > 0
-group by l.labels
+SELECT l.labels, COUNT(DISTINCT r.domain_name) amount
+FROM dns_crawler.request r JOIN dispatcher.dispatcher_event_labels l
+    ON r.visit_id = l.visit_id
+WHERE r.record_type = 'CAA'
+--     AND l.labels IN ('some_label')
+GROUP BY l.labels;
