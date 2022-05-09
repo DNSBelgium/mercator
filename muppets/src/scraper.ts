@@ -311,6 +311,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         result.screenshotData = await takeScreenshot(params, page);
 
         console.log("Snap finished");
+        page.close();
 
         if (timeoutId)
             clearTimeout(timeoutId);
