@@ -22,6 +22,8 @@ COPY --from=build /app/build/ /usr/share/nginx/html
 RUN apk upgrade --update-cache \
       # CVE-2022-1271
       curl xz-libs \
+      # CVE-2022-27404 \
+      freetype \
       --no-cache
 
 ## Nginx config
