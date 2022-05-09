@@ -312,9 +312,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
         console.log("Snap finished");
 
-        return {
-            ...result,
-        };
+        if (timeoutId)
+            clearTimeout(timeoutId);
+        return { ...result };        
+
     } catch (e) {
         if (e instanceof Error) {
             console.error("Error catched [%s]", e.message);
@@ -325,10 +326,9 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         } else {
             console.error("Something happened [%s]", e);
         }
-        return result;
-    } finally {
         if (timeoutId)
             clearTimeout(timeoutId);
+        return result;
     }
 }
 
