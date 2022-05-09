@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-RUN apk add -u --no-cache \
+RUN apk add -u --update-cache \
     libstdc++ \
     chromium \
     harfbuzz \
@@ -8,19 +8,14 @@ RUN apk add -u --no-cache \
     freetype \
     ttf-freefont \
     font-noto-emoji \
-     # CVE-2021-44648
+    # CVE-2021-44648
     gdk-pixbuf \
     # CVE-2022-0891
     tiff-dev \
+    # CVE-2022-23308 and more
+    curl libxml2 libcrypto1.1 libssl1.1 libxslt \
     && rm -rf /var/cache/* \
     && mkdir /var/cache/apk
-
-RUN apk upgrade --update-cache \
-      # CVE-2022-23308 and more
-      curl libxml2 libcrypto1.1 libssl1.1 libxslt \
-      # CVE-2022-27404 \
-      freetype \
-    --no-cache
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
