@@ -59,7 +59,6 @@ const TimelineDomainName = (props) => {
     }
 
     // Render the previous, numberical and next buttons.
-    // When browsing to a new page, the images hooks will get reset.
     const renderPagingButtons = () => {
         let btnArray = [];
         let btn;
