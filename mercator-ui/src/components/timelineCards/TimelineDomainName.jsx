@@ -59,6 +59,7 @@ const TimelineDomainName = (props) => {
     }
 
     // Render the previous, numberical and next buttons.
+    // When browsing to a new page, the images hooks will get reset.
     const renderPagingButtons = () => {
         let btnArray = [];
         let btn;
@@ -130,7 +131,7 @@ const TimelineDomainName = (props) => {
     // Get image urls from backend and set them in the imageData hook.
     // 2 URLs below are environment variables for develop and local. Set the used URL in the HTML's img src below.
     const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-    const LOCAL_URL = window._env_.LOCAL_MUPPETS_HOST;
+    const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
     const getAndShowImages = async () => {
         if(!showImages) {
             let screenshotVisitIds = [];
@@ -188,12 +189,13 @@ const TimelineDomainName = (props) => {
                             <h1 className="mb-4">{domainName}</h1>
                             <p>Number of records: { data.amountOfRecords }</p>
                         </div>
-                        <button 
+                        <Button 
+                            id="show-images-btn"
                             className="mt-3"
                             onClick={() => getAndShowImages()}
                         >
                             Show screenshots
-                        </button>
+                        </Button>
                         <div className="mt-3">
                             <Table id="timeline-table" bordered hover size="sm">
                                 <thead>
@@ -251,6 +253,7 @@ const TimelineDomainName = (props) => {
                                                         <img 
                                                             className="timeline-image"
                                                             src={`${LOCAL_URL}/${imageData[index]}`}
+                                                            alt={`Thumbnail of ${item.visitId}`}
                                                         >
                                                         </img>
                                                     </td>

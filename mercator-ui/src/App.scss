@@ -42,7 +42,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
   #input-button { // Search or Go button (search submit btn)
     font-family: "Arial Rounded MT Bold";
     color: white;
-    background-color:#2a6485;
+    background-color: $clickables-hover-color;
     border: 1px #37536e;
     font-size: 16px;
     width: 100px;
@@ -58,6 +58,11 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
 /* TimelineDomainName.jsx */
 #TDN-Div {
+
+  #show-images-btn {
+    border: none;
+    background-color: $clickables-hover-color;
+  }
 
   /* Table css */
   #timeline-table {
@@ -87,7 +92,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       max-width: 50px;
     }
     #Copy-Id-Btn {
-      background-color: #2a6485;
+      background-color: $clickables-hover-color;
       border: 0px;
     }
 
