@@ -342,7 +342,8 @@ export async function websnap(params: ScraperParams): Promise<ScraperResult> {
 
         const endProcessingTimeHist = metrics.getProcessingTimeHist().startTimer();
 
-        page = await browser.newPage();
+        let page = await browser.newPage();
+        await page.setCacheEnabled(false);
 
         // Error handling
         page.once("error", err => {
