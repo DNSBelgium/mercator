@@ -58,12 +58,14 @@ const DNSCard = (props) => {
     // Define some logic for incoming data[x]'s response and responseGeoIps data.
     const renderResponses = (request) => { // Inside ul element.
         if (request.recordType === "AAAA" || request.recordType === "A") {
-            return ( // Only render 1 list item, as responseGeoIps has all the necessary data.
-                <li className="mb-1">
-                    TTL: { request.responses[0].ttl }
-                    { renderGeoIps(request.responses[0].responseGeoIps) }
-                </li>
-            );
+            if (!checkObjectIsFalsy(request.responses[0].responseGeoIps)) { // If responseGeoIp has no data, render IP from the responses object.
+                return ( // Only render 1 list item, as responseGeoIps has all the necessary data.
+                    <li className="mb-1">
+                        TTL: { request.responses[0].ttl }
+                        { renderGeoIps(request.responses[0].responseGeoIps) }
+                    </li>
+                );
+            }
         }
 
         return(
@@ -141,6 +143,13 @@ const DNSCard = (props) => {
         );
     }
 
+    const checkDataHasResponses = (data) => {
+        for(let i = 0; i < data.length; i++) {
+            if (data[i].responses.length >= 1) return true;
+        }
+        return false;
+    }
+
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
 
@@ -199,7 +208,7 @@ const DNSCard = (props) => {
                                 </th>
                                 <td>
                                     {
-                                        data.length >= 1 && ( // Don't render 'More Info' button if there are is no data.
+                                        checkDataHasResponses(data) && ( // Don't render 'More Info' button if there are is no response data.
                                             <button 
                                                 className="more-info"
                                                 onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
