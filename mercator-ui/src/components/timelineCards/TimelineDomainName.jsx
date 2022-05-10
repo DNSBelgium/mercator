@@ -11,7 +11,10 @@ const TimelineDomainName = (props) => {
     const [data, setData] = useState([]); // Used to hold data from GET request.
     const [processing, setProcessing] = useState(true); // Used for holding HTML rendering if processing === true.
     const [exception, setException] = useState(null); // Used for handling GET request exception responses.
-    
+
+    const [showImages, setShowImages] = useState(false); // Hook to decide whether images should be shown in the table.
+    const [imageData, setImageData] = useState([]); // Hook to hold images.
+
     useEffect(() => { // Triggers upon initial render and every time domainName changes.
 
         // Wrapping the inside of this hook with an async function so we can await the backend data with a Promise.
@@ -41,6 +44,10 @@ const TimelineDomainName = (props) => {
         }
 
         executeHook();
+
+        // Reset image hooks for new searches.
+        setImageData([]); 
+        setShowImages(false);
     }, [domainName, props.page]);
 
     // Returns a boolean as a green V or red X.
@@ -52,6 +59,7 @@ const TimelineDomainName = (props) => {
     }
 
     // Render the previous, numberical and next buttons.
+    // When browsing to a new page, the images hooks will get reset.
     const renderPagingButtons = () => {
         let btnArray = [];
         let btn;
@@ -60,7 +68,11 @@ const TimelineDomainName = (props) => {
             btn =   <button 
                         key='prev'
                         className="paging-btn mr-1"
-                        onClick={() => props.setPage(props.page - 1)}
+                        onClick={() => {
+                            setShowImages(false);
+                            setImageData([]);
+                            props.setPage(props.page - 1) 
+                        }}
                     >
                         prev
                     </button>
@@ -82,7 +94,11 @@ const TimelineDomainName = (props) => {
             btn =   <button 
                         key={i} 
                         className={className}
-                        onClick={() => props.setPage(i)}
+                        onClick={() => {
+                            setShowImages(false);
+                            setImageData([]);
+                            props.setPage(i)
+                        }}
                     >
                         {i + 1}
                     </button>
@@ -93,7 +109,11 @@ const TimelineDomainName = (props) => {
             btn =   <button 
                         key='next'
                         className="paging-btn"
-                        onClick={() => props.setPage(props.page + 1)}
+                        onClick={() => {
+                            setShowImages(false);
+                            setImageData([]);
+                            props.setPage(props.page + 1)
+                        }}
                     >
                         next
                     </button>
@@ -106,6 +126,55 @@ const TimelineDomainName = (props) => {
                 { btnArray }
             </>
         );
+    }
+
+    // Get image urls from backend and set them in the imageData hook.
+    // 2 URLs below are environment variables for develop and local. Set the used URL in the HTML's img src below.
+    const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+    const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
+    const getAndShowImages = async () => {
+        if(!showImages) {
+            let screenshotVisitIds = [];
+            for (let i = 0; i < data.dtos.length; i++) {
+                screenshotVisitIds[i] = data.dtos[i].visitId;
+            }
+            
+            const url = `/findScreenshotsByVisitIds?visitIdList=${screenshotVisitIds}`;
+            await api.get(url)
+                .then((resp) => {
+                    if(resp.status === 200) {
+                        setImageData(resp.data);
+                    }
+                })
+                .catch((ex) => {
+                    console.log(ex.response);
+                });
+        }
+
+        await setShowImages(state => !state);
+    }
+
+    // Handle showing / hiding of images when "Show screenshots" is clicked.
+    const handleImages = (imageUrl, visitId) => {
+        if (showImages && imageUrl.includes("undefined")) {
+            return (
+                <td>
+                    <p>No image found</p>
+                </td>
+            );
+        }
+        if (showImages) {
+            return (
+                <td>
+                    <img
+                        className="timeline-image"
+                        src={imageUrl}
+                        alt={`Thumbnail of ${visitId}`}
+                    >
+                    </img>
+                </td>
+            );
+        }
     }
 
     // Rendering HTML on a JS Function base, so we can define logic.
@@ -142,7 +211,14 @@ const TimelineDomainName = (props) => {
                             <h1 className="mb-4">{domainName}</h1>
                             <p>Number of records: { data.amountOfRecords }</p>
                         </div>
-                        <div className="mt-5">
+                        <Button 
+                            id="show-images-btn"
+                            className="mt-3"
+                            onClick={() => getAndShowImages()}
+                        >
+                            Show screenshots
+                        </Button>
+                        <div className="mt-3">
                             <Table id="timeline-table" bordered hover size="sm">
                                 <thead>
                                     <tr>
@@ -152,6 +228,11 @@ const TimelineDomainName = (props) => {
                                         <th>Status<br/> SMTP crawl</th>
                                         <th>Status<br/> Wappalyzer</th>
                                         <th>Visit Id</th>
+                                        {
+                                            showImages && ( // If showImages == true, render
+                                                <th>Image</th>
+                                            )
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -188,6 +269,9 @@ const TimelineDomainName = (props) => {
                                                     Copy Visit Id
                                                 </Button>
                                             </td>
+                                            {
+                                                handleImages(`${DEV_URL}/${imageData[index]}`, item.visitId)
+                                            }
                                         </tr>
                                     ))}
                                 </tbody>
@@ -198,7 +282,11 @@ const TimelineDomainName = (props) => {
                 <div id="Paging-Div">
                     <button // First page btn
                         className="paging-btn mr-1"
-                        onClick={() => props.setPage(0)}
+                        onClick={() => {
+                            setShowImages(false);
+                            setImageData([]);
+                            props.setPage(0);
+                        }}
                     >
                         &#8676;
                     </button>
@@ -209,7 +297,11 @@ const TimelineDomainName = (props) => {
 
                     <button // Last page btn
                         className="paging-btn ml-1"
-                        onClick={() => props.setPage(data.amountOfPages - 1)}
+                        onClick={() => {
+                            setShowImages(false);
+                            setImageData([]);
+                            props.setPage(data.amountOfPages - 1);
+                        }}
                     >
                         &#8677;
                     </button>
