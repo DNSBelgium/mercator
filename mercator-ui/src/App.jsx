@@ -14,7 +14,7 @@ function App() {
 
   return (
       <div className="App">
-        <NavigationBar setSearch={setSearch}/>
+        <NavigationBar setSearch={setSearch} setPage={setPage}/>
 
         <Routes>
 

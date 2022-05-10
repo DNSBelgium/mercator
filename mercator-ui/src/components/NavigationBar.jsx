@@ -24,13 +24,13 @@ function NavigationBar(props) {
                 return;
             }
             
+            props.setPage(0);
             props.setSearch(input);
             navigate('/');
         }
 
         else { // true === VisitId search
             navigate('/details/' + input);
-            // window.location.href = '/details/' + domainName;
         }
         
     }

@@ -1,26 +1,23 @@
-with groups as (
-    select case
-               when (dmarc_txt_record::text ~ 'v=DMARC1') then
-                   case
-                       when (dmarc_txt_record::text ~ 'p=none') then 'none'
-                       when (dmarc_txt_record::text ~ 'p=quarantine') then 'quarantine'
-                       when (dmarc_txt_record::text ~ 'p=reject') then 'reject'
-                       else 'no_policy'
-                       end
-               else 'not_dmarc'
-               end p,
-           labels.labels
-    from dns_crawler.dns_crawl_result result,
-         dispatcher.dispatcher_event_labels labels
-             cross join lateral jsonb_array_elements(all_records -> '_dmarc' ->'records'-> 'TXT') dmarc_txt_record
-where all_records -
-    > '_dmarc' is not null
-  and all_records -
-    > '_dmarc' -
-    >'records'-
-    > 'TXT' != '[]'::jsonb
-  and result.visit_id = labels.visit_id
-    )
-select p, count(*)
-from groups
-group by p
+-- Get count of NOT NULL _dmarc prefixes to see how have a record_data containing 'none', 'quarantine' or 'reject'.
+
+WITH groups AS (
+    SELECT CASE
+        WHEN (req.prefix = '_dmarc' AND res.record_data ~ 'v=DMARC1') THEN
+            CASE
+                WHEN (res.record_data ~ 'p=none') THEN 'none'
+                WHEN (res.record_data ~ 'p=quarantine') THEN 'quarantine'
+                WHEN (res.record_data ~ 'p=reject') THEN 'reject'
+                ELSE 'no_policy'
+                END
+            ELSE 'not_dmarc'
+            END p,
+        l.labels
+    FROM dns_crawler.request req JOIN dns_crawler.response res
+        ON req.id = res.request_id
+        JOIN dispatcher.dispatcher_event_labels l
+            ON req.visit_id = l.visit_id
+    WHERE req.record_type = 'TXT' AND req.visit_id = l.visit_id
+)
+SELECT p, COUNT(*) amount
+FROM groups
+GROUP BY p;

@@ -42,7 +42,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
   #input-button { // Search or Go button (search submit btn)
     font-family: "Arial Rounded MT Bold";
     color: white;
-    background-color:#2a6485;
+    background-color: $clickables-hover-color;
     border: 1px #37536e;
     font-size: 16px;
     width: 100px;
@@ -59,6 +59,11 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 /* TimelineDomainName.jsx */
 #TDN-Div {
 
+  #show-images-btn {
+    border: none;
+    background-color: $clickables-hover-color;
+  }
+
   /* Table css */
   #timeline-table {
     thead {
@@ -74,21 +79,34 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       padding-bottom: 0px !important; //Overwriting Bootstrap
     }
     // All Status td's and Visit Id
-    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       text-align: center;
       justify-content: center;
       align-items: center;
     }
     // Crawl Time td & Visit Id td
-    td:nth-child(1), td:nth-child(6) { 
+    td:nth-child(1), td:nth-child(6) {
       vertical-align: middle !important; //Overwriting Bootstrap
     }
-    th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+    // Image row
+    td:nth-child(7) {
+      vertical-align: middle !important; //Overwriting Bootstrap
+      p {
+        margin: 0;
+        padding: 0;
+      }
+    }
+    th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), th:nth-child(7), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       max-width: 50px;
     }
     #Copy-Id-Btn {
-      background-color: #2a6485;
+      background-color: $clickables-hover-color;
       border: 0px;
+    }
+
+    .timeline-image {
+      max-width: 100%;
+      max-height: 100%;
     }
   }
   

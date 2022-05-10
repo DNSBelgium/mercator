@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.content.persistence;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -39,5 +40,8 @@ public interface ContentCrawlResultRepository extends PagingAndSortingRepository
   default List<ContentCrawlResult> findSucceededCrawlsByVisitId(UUID visitId) {
     return findByVisitIdAndOk(visitId, true);
   }
+
+  @Query("SELECT r.screenshotKey FROM ContentCrawlResult r WHERE r.screenshotKey IS NOT NULL AND r.visitId IN :visitIdList")
+  List<String> findScreenshotsByVisitIds(@Param("visitIdList") List<UUID> visitIdList);
 
 }
