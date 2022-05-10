@@ -44,29 +44,27 @@ public class SmtpCrawler implements Crawler {
         }
         setMDC(visitRequest);
         logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
+        Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
+        if (existingResult.isPresent()) {
+            logger.info("visit {} already exists => skipping", visitRequest);
+            return;
+        }
+
+        meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
         try {
-            Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
-            if (existingResult.isPresent()) {
-                logger.info("visit {} already exists => skipping", visitRequest);
-                // We do not send an ack in this case since crawl might still be busy
-            } else {
-                meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
-                SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
-                try {
-                    crawlService.save(crawlResult);
-                } catch (UnexpectedRollbackException e) {
-                    logger.info("UnexpectedRollbackException: {}", e.getMessage());
-                    existingResult = crawlService.find(visitRequest.getVisitId());
-                    if (existingResult.isPresent()) {
-                        logger.info("Save failed because SmtpCrawlResult already existed");
-                        // swallow exception so that message will be removed from SQS queue (and ack will be sent)
-                    } else {
-                        logger.error("Truely UnexpectedRollbackException");
-                        throw e;
-                    }
+            SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
+            try {
+                crawlService.save(crawlResult);
+            } catch (UnexpectedRollbackException e) {
+                logger.info("UnexpectedRollbackException: {}", e.getMessage());
+                existingResult = crawlService.find(visitRequest.getVisitId());
+                if (existingResult.isPresent()) {
+                    logger.info("Save failed because SmtpCrawlResult already existed");
+                    // swallow exception so that message will be removed from SQS queue (and ack will be sent)
+                } else {
+                    logger.error("True UnexpectedRollbackException");
+                    throw e;
                 }
-                ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
-                logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
             }
         } catch (Exception e) {
             meterRegistry.counter(MetricName.COUNTER_FAILED_VISITS).increment();
@@ -74,12 +72,16 @@ public class SmtpCrawler implements Crawler {
                 visitRequest.getDomainName(), e.getMessage());
             logger.error(errorMessage, e);
             // We do re-throw the exception to not acknowledge the message. The message is therefore put back on the queue.
-            // Since June 2020, we enable DLQ on SQS, allowing us to not care or to not keep a state/counter/ratelimiter to ignore messages that are reprocessed more than x times.
+            // Since June 2020, we enable DLQ on SQS, allowing us to not care or to not keep a state/counter/ratelimiter
+            // to ignore messages that are reprocessed more than x times.
             throw e;
         } finally {
             meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.decrementAndGet());
             clearMDC();
         }
+
+        ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
+        logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
     }
 
     private void setMDC(VisitRequest visitRequest) {
