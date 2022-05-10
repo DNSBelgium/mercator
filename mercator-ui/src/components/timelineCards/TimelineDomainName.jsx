@@ -142,7 +142,6 @@ const TimelineDomainName = (props) => {
             const url = `/findScreenshotsByVisitIds?visitIdList=${screenshotVisitIds}`;
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
                         setImageData(resp.data);
                     }
@@ -250,7 +249,7 @@ const TimelineDomainName = (props) => {
                                             {
                                                 showImages && ( // If showImages == true, render
                                                     <td>
-                                                        <img 
+                                                        <img
                                                             className="timeline-image"
                                                             src={`${LOCAL_URL}/${imageData[index]}`}
                                                             alt={`Thumbnail of ${item.visitId}`}
