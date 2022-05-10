@@ -311,7 +311,6 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         result.screenshotData = await takeScreenshot(params, page);
 
         console.log("Snap finished");
-        page.close();
 
         if (timeoutId)
             clearTimeout(timeoutId);
@@ -327,9 +326,12 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         } else {
             console.error("Something happened [%s]", e);
         }
+        return result;
+    } finally {
         if (timeoutId)
             clearTimeout(timeoutId);
-        return result;
+        // Not awaiting as it is not required for the flow
+        page.close();
     }
 }
 
@@ -356,9 +358,10 @@ export async function websnap(params: ScraperParams): Promise<ScraperResult> {
         const scraperResult = await snap(page, params);
         endProcessingTimeHist();
 
-        return scraperResult;
-    } finally {
-        // if (browser) await browser.close();
         await page.close();
+        return scraperResult;
+    } catch(exception) {
+        console.error(`Error in scraper: ${exception}`);
+        return Promise.reject(exception);
     }
 }
