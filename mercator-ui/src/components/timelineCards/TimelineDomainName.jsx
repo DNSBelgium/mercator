@@ -154,6 +154,29 @@ const TimelineDomainName = (props) => {
         await setShowImages(state => !state);
     }
 
+    // Handle showing / hiding of images when "Show screenshots" is clicked.
+    const handleImages = (imageUrl, visitId) => {
+        if (showImages && imageUrl.includes("undefined")) {
+            return (
+                <td>
+                    <p>No image found</p>
+                </td>
+            );
+        }
+        if (showImages) {
+            return (
+                <td>
+                    <img
+                        className="timeline-image"
+                        src={imageUrl}
+                        alt={`Thumbnail of ${visitId}`}
+                    >
+                    </img>
+                </td>
+            );
+        }
+    }
+
     // Rendering HTML on a JS Function base, so we can define logic.
     const renderHtml = () => {
         if(exception !== null) {
@@ -247,16 +270,7 @@ const TimelineDomainName = (props) => {
                                                 </Button>
                                             </td>
                                             {
-                                                showImages && ( // If showImages == true, render
-                                                    <td>
-                                                        <img
-                                                            className="timeline-image"
-                                                            src={`${LOCAL_URL}/${imageData[index]}`}
-                                                            alt={`Thumbnail of ${item.visitId}`}
-                                                        >
-                                                        </img>
-                                                    </td>
-                                                )
+                                                handleImages(`${DEV_URL}/${imageData[index]}`, item.visitId)
                                             }
                                         </tr>
                                     ))}
