@@ -79,14 +79,22 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       padding-bottom: 0px !important; //Overwriting Bootstrap
     }
     // All Status td's and Visit Id
-    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
+    td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       text-align: center;
       justify-content: center;
       align-items: center;
     }
     // Crawl Time td & Visit Id td
-    td:nth-child(1), td:nth-child(6) { 
+    td:nth-child(1), td:nth-child(6) {
       vertical-align: middle !important; //Overwriting Bootstrap
+    }
+    // Image row
+    td:nth-child(7) {
+      vertical-align: middle !important; //Overwriting Bootstrap
+      p {
+        margin: 0;
+        padding: 0;
+      }
     }
     th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), th:nth-child(7), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       max-width: 50px;

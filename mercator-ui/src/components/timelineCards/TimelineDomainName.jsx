@@ -154,6 +154,29 @@ const TimelineDomainName = (props) => {
         await setShowImages(state => !state);
     }
 
+    const renderScreenshotsButton = () => {
+        if (!showImages) {
+            return (
+                <Button 
+                    id="show-images-btn"
+                    className="mt-3"
+                    onClick={() => getAndShowImages()}
+                >
+                    Show screenshots
+                </Button>
+            );
+        }
+        return (
+            <Button 
+                id="show-images-btn"
+                className="mt-3"
+                onClick={() => getAndShowImages()}
+            >
+                Hide screenshots
+            </Button>
+        );
+    }
+
     // Handle showing / hiding of images when "Show screenshots" is clicked.
     const handleImages = (imageUrl, visitId) => {
         if (showImages && imageUrl.includes("undefined")) {
@@ -211,13 +234,9 @@ const TimelineDomainName = (props) => {
                             <h1 className="mb-4">{domainName}</h1>
                             <p>Number of records: { data.amountOfRecords }</p>
                         </div>
-                        <Button 
-                            id="show-images-btn"
-                            className="mt-3"
-                            onClick={() => getAndShowImages()}
-                        >
-                            Show screenshots
-                        </Button>
+                        {
+                            renderScreenshotsButton()
+                        }
                         <div className="mt-3">
                             <Table id="timeline-table" bordered hover size="sm">
                                 <thead>
