@@ -289,7 +289,7 @@ const TimelineDomainName = (props) => {
                                                 </Button>
                                             </td>
                                             {
-                                                handleImages(`${DEV_URL}/${imageData[index]}`, item.visitId)
+                                                handleImages(`${LOCAL_URL}/${imageData[index]}`, item.visitId)
                                             }
                                         </tr>
                                     ))}

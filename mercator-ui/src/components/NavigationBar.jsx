@@ -123,6 +123,15 @@ function NavigationBar(props) {
                     {
                         changeBtn()
                     }
+                    <Button
+                        className="ml-3"
+                        variant="secondary"
+                        size="sm"
+                    >
+                        <a id="cluster-link" href="/cluster">
+                            Cluster Validation
+                        </a>
+                    </Button>
                 </Form>
             </div>
         </>

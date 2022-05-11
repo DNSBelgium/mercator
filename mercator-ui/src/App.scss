@@ -54,6 +54,12 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
   #Url-Or-Id-Btn { // 'Change to...' button
     margin-left: 8rem;
   }
+  #cluster-link {
+    color: white;
+  }
+  #cluster-link:hover {
+    text-decoration: none;
+  }
 }
 
 /* TimelineDomainName.jsx */

@@ -7,6 +7,7 @@ import NavigationBar from './components/NavigationBar';
 import './App.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import TimelineDomainName from './components/timelineCards/TimelineDomainName';
+import ClusterValidator from './components/ClusterValidator';
 
 function App() {
   const [search, setSearch] = useState(null);
@@ -20,6 +21,7 @@ function App() {
 
           <Route path="/*" element={<TimelineDomainName search={search} page={page} setPage={setPage}/>} />
           <Route path="/details/:visitId" element={<Details />} />
+          <Route path="/cluster" element={<ClusterValidator />} />
 
         </Routes>
       </div>
