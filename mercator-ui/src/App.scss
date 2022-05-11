@@ -137,6 +137,20 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
   }
 }
 
+#cluster-validator-div {
+  textarea {
+    padding-left: 10px;
+    padding-right: 10px;
+    resize: both;
+    width: 100%;
+    min-height: 10rem;
+    max-height: 70vh;
+  }
+  p {
+    margin: 0;
+  }
+}
+
 /* Details.jsx 
    Parent to all Card components. */
 #Details-Div {
