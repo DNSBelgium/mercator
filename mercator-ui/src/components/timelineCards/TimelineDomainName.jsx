@@ -157,7 +157,7 @@ const TimelineDomainName = (props) => {
                 <td>
                     <img
                         className="timeline-image"
-                        src={`${LOCAL_URL}/${item.screenshotKey}`}
+                        src={`${DEV_URL}/${item.screenshotKey}`}
                         alt={`Thumbnail of ${item.visitId}`}
                     >
                     </img>
