@@ -46,22 +46,4 @@ public class SearchController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
         }
     }
-
-    /**
-     * Gets a list of screenshot keys from contentCrawlResults according to the given VisitId's.
-     * @param visitIdList List of UUID VisitId's to check for screenshots.
-     * @return List of screenshot keys.
-     */
-    @GetMapping("/findScreenshotsByVisitIds")
-    public ResponseEntity<?> getScreenshotKeys(@RequestParam("visitIdList") List<UUID> visitIdList) {
-        logger.debug("Getting Screenshot keys.");
-
-        try {
-            logger.debug("Returning keys.");
-            return ResponseEntity.status(HttpStatus.OK).body(contentCrawlResultRepository.findScreenshotsByVisitIds(visitIdList));
-        } catch(Exception ex) {
-            logger.error("Something wrong happened: {}", ex.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
-        }
-    }
 }

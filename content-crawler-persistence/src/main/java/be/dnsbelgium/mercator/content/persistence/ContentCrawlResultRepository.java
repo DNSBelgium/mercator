@@ -41,7 +41,4 @@ public interface ContentCrawlResultRepository extends PagingAndSortingRepository
     return findByVisitIdAndOk(visitId, true);
   }
 
-  @Query("SELECT r.screenshotKey FROM ContentCrawlResult r WHERE r.visitId IN :visitIdList") //r.screenshotKey IS NOT NULL AND
-  List<String> findScreenshotsByVisitIds(@Param("visitIdList") List<UUID> visitIdList);
-
 }
