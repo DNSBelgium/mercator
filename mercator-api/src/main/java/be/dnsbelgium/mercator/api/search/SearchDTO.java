@@ -12,5 +12,7 @@ public class SearchDTO {
     private UUID visitId;
     private ZonedDateTime requestTimeStamp;
     private CrawlComponentStatus crawlStatus;
+    private String domainName;
+    private String screenshotKey;
 
 }

@@ -1,6 +1,8 @@
 package be.dnsbelgium.mercator.api.search;
 
 import be.dnsbelgium.mercator.api.status.CrawlComponentStatusService;
+import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
+import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
 import javassist.NotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -22,11 +25,13 @@ public class SearchService {
 
     private final CrawlComponentStatusService crawlComponentStatusService;
     private final DispatcherEventRepository dispatcherEventRepository;
+    private final ContentCrawlResultRepository contentCrawlResultRepository;
 
     @Autowired
-    public SearchService(CrawlComponentStatusService crawlComponentStatusService, DispatcherEventRepository dispatcherEventRepository) {
+    public SearchService(CrawlComponentStatusService crawlComponentStatusService, DispatcherEventRepository dispatcherEventRepository, ContentCrawlResultRepository contentCrawlResultRepository) {
         this.crawlComponentStatusService = crawlComponentStatusService;
         this.dispatcherEventRepository = dispatcherEventRepository;
+        this.contentCrawlResultRepository = contentCrawlResultRepository;
     }
 
     /**
@@ -61,24 +66,32 @@ public class SearchService {
 
         // Create a list of SearchDTO's to add to PageDTO.
         // SearchDTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
-        List<SearchDTO> dtoList = new ArrayList<>();
+        List<SearchDTO> searchDtoList = new ArrayList<>();
 
         // Create list of visitId's for DomainName from the requested page.
         for (DispatcherEvent event: dispatcherPage) {
             UUID vId = event.getVisitId();
 
-            // Create DTO to add to dtoList.
+            // Create DTO to add to searchDtoList.
             SearchDTO dto = new SearchDTO();
             dto.setVisitId(vId);
+            dto.setDomainName(event.getDomainName());
             dto.setRequestTimeStamp(event.getRequestTimestamp());
-            // Get the Status Booleans by visitId
+            // Get the Status Booleans by visitId.
             dto.setCrawlStatus(crawlComponentStatusService.getCrawlComponentStatus(vId));
 
-            dtoList.add(dto);
+            // Setting screenshotKey.
+            List<ContentCrawlResult> contentResults = contentCrawlResultRepository.findByVisitId(vId);
+            if (!contentResults.isEmpty()) {
+                Optional<ContentCrawlResult> resultWithKey = contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst();
+                resultWithKey.ifPresent(contentCrawlResult -> dto.setScreenshotKey(contentCrawlResult.getScreenshotKey()));
+            }
+
+            searchDtoList.add(dto);
         }
 
         // Add list of SearchDTO's to PageDTO.
-        pageDTO.setDtos(dtoList);
+        pageDTO.setDtos(searchDtoList);
 
         logger.debug("Returning PageDTO containing a list of SearchDTO's.");
 

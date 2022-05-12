@@ -34,14 +34,13 @@ const DNSCard = (props) => {
 
     // Handles rendering of data[x].responses[x].responseGeoIps list.
     const renderGeoIps = (geoIpList) => { // Inside li element.
-        if(geoIpList.length >= 1) {
+        if(!checkObjectIsFalsy(geoIpList)) {
             return(
                 <div className="geo-ip-data">
                     {
                         geoIpList.map((geoIp, index) => {
                             return (
                                 <p key={index}>
-                                    IP: { geoIp.ip } <br/>
                                     IPv: { geoIp.ipVersion } <br/>
                                     Country: { geoIp.country } <br/>
                                     ASN: { geoIp.asn } <br/>
@@ -57,17 +56,6 @@ const DNSCard = (props) => {
 
     // Define some logic for incoming data[x]'s response and responseGeoIps data.
     const renderResponses = (request) => { // Inside ul element.
-        if (request.recordType === "AAAA" || request.recordType === "A") {
-            if (!checkObjectIsFalsy(request.responses[0].responseGeoIps)) { // If responseGeoIp has no data, render IP from the responses object.
-                return ( // Only render 1 list item, as responseGeoIps has all the necessary data.
-                    <li className="mb-1">
-                        TTL: { request.responses[0].ttl }
-                        { renderGeoIps(request.responses[0].responseGeoIps) }
-                    </li>
-                );
-            }
-        }
-
         return(
             <>
                 {
@@ -76,7 +64,7 @@ const DNSCard = (props) => {
                             <li key={index} className="mb-1">
                                 { response.recordData } <br/>
                                 TTL: { response.ttl }
-                                {   //Here for NS geo ip data
+                                {
                                     renderGeoIps(response.responseGeoIps) 
                                 } 
                             </li>
