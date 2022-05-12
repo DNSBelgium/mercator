@@ -146,8 +146,50 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
     min-height: 10rem;
     max-height: 70vh;
   }
-  p {
-    margin: 0;
+
+  h5 {
+    margin-top: 2rem;
+  }
+
+  button {
+    border: none;
+    background-color: $clickables-hover-color;
+    color: white;
+  }
+
+  #flex-div {
+    max-width: 100%;
+    margin-left: -5px; // flex-item has a margin 5px.
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    display: flex;
+    flex-wrap: wrap;
+
+    #flex-item {
+      margin: 5px;
+      padding-bottom: 10px;
+      flex-basis: 19.18%;
+      border: 1px solid;
+      text-align: center;
+  
+      p {
+        margin: 0;
+        color: $clickables-color;
+      }
+  
+      img {
+        max-width: 100%;
+      }
+    }
+
+    #flex-item:hover {
+      cursor: pointer;
+      box-shadow: 5px 5px $clickables-hover-color;
+      
+      p {
+        color: $clickables-hover-color;
+      }
+    }
   }
 }
 

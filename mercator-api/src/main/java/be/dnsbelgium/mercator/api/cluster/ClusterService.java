@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class ClusterService {
@@ -22,20 +21,32 @@ public class ClusterService {
         this.contentCrawlResultRepository = contentCrawlResultRepository;
     }
 
-    public void foo (String visitIds) {
+    public List<SearchDTO> getClusterData(String visitIds) {
         logger.info("Received: {}", visitIds);
 
-        String[] individualIds = visitIds.split(", |,| ");
+        String[] individualIds = visitIds.split(" , | ,|, |,| |(?<=\\G.{" + 36 + "})");
 
-        List<String> screenshotKeys = new ArrayList<>();
+        List<SearchDTO> searchDTOList = new ArrayList<>();
         for (String visitId : individualIds) {
+            System.out.println(visitId);
+
+            SearchDTO dto = new SearchDTO();
+            dto.setVisitId(UUID.fromString(visitId));
 
             List<ContentCrawlResult> contentResults = contentCrawlResultRepository.findByVisitId(UUID.fromString(visitId));
             if (!contentResults.isEmpty()) {
                 Optional<ContentCrawlResult> resultWithKey = contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst();
-                resultWithKey.ifPresent(contentCrawlResult -> screenshotKeys.add(contentCrawlResult.getScreenshotKey()));
+
+                resultWithKey.ifPresent(result -> {
+                    dto.setDomainName(result.getDomainName());
+                    dto.setScreenshotKey(result.getScreenshotKey());
+                });
             }
+
+            searchDTOList.add(dto);
         }
 
+        logger.info("Returning list of SearchDTO's");
+        return searchDTOList;
     }
 }
