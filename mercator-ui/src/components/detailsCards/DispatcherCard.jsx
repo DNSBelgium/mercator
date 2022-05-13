@@ -1,6 +1,7 @@
 import {Col, Row} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
+import { checkObjectIsFalsy } from "../../services/Util";
 
 function DispatcherCard(props) {
 
@@ -24,9 +25,9 @@ function DispatcherCard(props) {
         };
 
         handlerData();
-    }, [visitId])
+    }, [visitId]);
 
-    if (!data || data === null) {
+    if (checkObjectIsFalsy(data)) {
         return (
             <>
                 <Row className="mb-4">
@@ -37,8 +38,8 @@ function DispatcherCard(props) {
             </>
         )
     } else {
-        let listlabels = '';
-        if (data.labels) {
+        let listlabels = 'No labels';
+        if (!checkObjectIsFalsy(data.labels)) {
             listlabels = data.labels.map((label, index) => <span key={index.toString()}>{label}</span>);
         }
         return (
