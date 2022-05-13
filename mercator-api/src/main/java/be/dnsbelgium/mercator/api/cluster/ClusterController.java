@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @BasePathAwareController
 public class ClusterController {
@@ -21,10 +20,10 @@ public class ClusterController {
         this.clusterService = clusterService;
     }
 
-    @GetMapping("/cluster")
-    public ResponseEntity<?> getDataForVisitIdCluster(@RequestParam("visitIds") String visitIds) {
-        logger.debug("getDataForVisitIdCluster was called for: {}", visitIds);
+    @PostMapping("/cluster") // This is a POST mapping to enable more than 200 VisitId's.
+    public ResponseEntity<?> getDataForVisitIdCluster(@RequestBody ClusterDTO clusterDTO) {
+        logger.debug("getDataForVisitIdCluster was called for: {}", clusterDTO.getData());
 
-        return ResponseEntity.status(HttpStatus.OK).body(clusterService.getClusterData(visitIds));
+        return ResponseEntity.status(HttpStatus.OK).body(clusterService.getClusterData(clusterDTO.getData()));
     }
 }

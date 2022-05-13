@@ -161,24 +161,31 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
     max-width: 100%;
     margin-left: -5px; // flex-item has a margin 5px.
     margin-top: 1rem;
-    margin-bottom: 3rem;
     display: flex;
     flex-wrap: wrap;
 
     #flex-item {
       margin: 5px;
-      padding-bottom: 10px;
+      padding-bottom: 5px;
       flex-basis: 19.18%;
       border: 1px solid;
       text-align: center;
   
       p {
-        margin: 0;
+        bottom: 0;
+        // margin-top: 1rem;
+        // margin-top: auto;
+        margin-bottom: 0;
         color: $clickables-color;
       }
   
       img {
         max-width: 100%;
+        max-height: 19vh;
+      }
+
+      .no-image {
+        margin-top: 25%;
       }
     }
 
@@ -189,6 +196,22 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       p {
         color: $clickables-hover-color;
       }
+    }
+  }
+
+  #faulty-visitIds {
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+
+    p {
+      margin: 0px;
+      color: $clickables-color;
+    }
+
+    p:hover {
+      cursor: pointer;
+      text-decoration: underline;
+      color: $clickables-hover-color;
     }
   }
 }
