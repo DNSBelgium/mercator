@@ -5,7 +5,7 @@
 */
 
 $clickables-color: #007bff;
-$clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
+$clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
 /* App.js */
 .App {
@@ -16,49 +16,47 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
 /* NavigationBar.jsx */
 #NavBar-Div {
-  padding: 40px;
+  padding-top: 40px;
   background-color:#e3f5ff;
   min-width: 100px;
 
-  #NavBar-Form {
-    display: block;
+  #form-container {
+    display: flex;
     margin-left: auto;
     margin-right: auto;
     max-width: 50vw;
+
+    #dropdown-btn {
+      font-family: "Arial Rounded MT Bold";
+      background-color: $clickables-secondary-color;
+      color: white;
+    }
+
+    #navbar-input { // Search field
+      margin-left: 1rem;
+      margin-right: 1rem;
+      width: 20rem;
+      font-family: "Arial Rounded MT Bold";
+    }
+
+    #submit-btn { // Search or Go button (search submit btn)
+      font-family: "Arial Rounded MT Bold";
+      color: white;
+      background-color: $clickables-secondary-color;
+      border: 1px #37536e;
+      font-size: 16px;
+      min-width: 100px;
+      max-width: 100px;
+      margin-right: 1rem;
+      border-radius: 5px;
+    }
   }
-  #NavBar-Input { // Search field
-    margin-left: 1rem;
-    margin-right: 1.5rem;
-    margin-top: 1px;
-    font-family: "Arial Rounded MT Bold";
-  }
-  #navbar-input-label { // Search field label
-    min-width: 7rem;
-    text-align: center;
-    margin-top: 8px;
-    font-family: "Arial Rounded MT Bold";
-    color: #314f6b;
-  }
-  #input-button { // Search or Go button (search submit btn)
-    font-family: "Arial Rounded MT Bold";
-    color: white;
-    background-color: $clickables-hover-color;
-    border: 1px #37536e;
-    font-size: 16px;
-    width: 100px;
-    height: 37px;
-    margin-top: 1px;
-    margin-right: 1rem;
-    border-radius: 5px;
-  }
-  #Url-Or-Id-Btn { // 'Change to...' button
-    margin-left: 8rem;
-  }
+
   #cluster-link {
+    margin-left: 3rem;
+    margin-bottom: 2rem;
+    background-color: $clickables-secondary-color;
     color: white;
-  }
-  #cluster-link:hover {
-    text-decoration: none;
   }
 }
 
@@ -67,7 +65,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
   #show-images-btn {
     border: none;
-    background-color: $clickables-hover-color;
+    background-color: $clickables-secondary-color;
   }
 
   /* Table css */
@@ -106,7 +104,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       max-width: 50px;
     }
     #Copy-Id-Btn {
-      background-color: $clickables-hover-color;
+      background-color: $clickables-secondary-color;
       border: 0px;
     }
 
@@ -131,7 +129,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       border: none;
     }
     .current-page {
-      color: $clickables-hover-color;
+      color: $clickables-secondary-color;
       text-decoration: underline;
     }
   }
@@ -153,7 +151,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
   button {
     border: none;
-    background-color: $clickables-hover-color;
+    background-color: $clickables-secondary-color;
     color: white;
   }
 
@@ -191,10 +189,10 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
     #flex-item:hover {
       cursor: pointer;
-      box-shadow: 5px 5px $clickables-hover-color;
+      box-shadow: 5px 5px $clickables-secondary-color;
       
       p {
-        color: $clickables-hover-color;
+        color: $clickables-secondary-color;
       }
     }
   }
@@ -211,7 +209,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
     p:hover {
       cursor: pointer;
       text-decoration: underline;
-      color: $clickables-hover-color;
+      color: $clickables-secondary-color;
     }
   }
 }
@@ -236,7 +234,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
   }
 
   #Go-to-card-Div > button:hover, #Go-to-top-Div > button:hover {
-    color: $clickables-hover-color;
+    color: $clickables-secondary-color;
     text-decoration: underline;
   }
 
@@ -246,7 +244,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
     border: none;
   }
   .open-all-button:hover {
-    color: $clickables-hover-color;
+    color: $clickables-secondary-color;
     text-decoration: none;
   }
 
@@ -280,7 +278,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
     background-color: white;
   }
   .more-info:hover {
-    color: $clickables-hover-color;
+    color: $clickables-secondary-color;
   }
 
   /* Set backend defined 'error' text within Details Card components red & bold.
@@ -310,7 +308,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       background-color: white;
     }
     .content-card-link-button:hover {
-      color: $clickables-hover-color;
+      color: $clickables-secondary-color;
       text-decoration: underline;
     }
 
@@ -388,7 +386,7 @@ $clickables-hover-color: #2a6485;//rgba(86, 86, 255, 0.755);
       color: $clickables-color;
     }
     .smtp-crawl-timestamps:hover {
-      color: $clickables-hover-color;
+      color: $clickables-secondary-color;
       text-decoration: underline;
       cursor: pointer;
     }

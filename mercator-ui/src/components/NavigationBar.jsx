@@ -1,135 +1,128 @@
 import {useState, useRef} from "react";
 import { useNavigate } from 'react-router-dom';
-import {Button, Form, FormControl} from "react-bootstrap";
+import {Button, Dropdown, Form, FormControl} from "react-bootstrap";
 
 function NavigationBar(props) {
     const navigate = useNavigate();
 
-    const [validated, setValidated] = useState(false); // Hook to validate input field
-    const [urlOrId, setUrlOrId] = useState(false); // Hook to define searching by URL or VisitId
+    const [validated, setValidated] = useState(false); // Hook to validate input field.
+    const [searchType, setSearchType] = useState("domain"); // Hook to define searching by URL, visitId, ...
 
     let textInput = useRef(); // Hook to hold the input field's value.
 
     // Handle 'search' click.
     const search = (event) => {
         event.preventDefault();
-
         setValidated(true); //TODO: UI Vaidation isn't quite right yet.
-
         let input = textInput.current.value.toLowerCase().trim();
 
-        if (!urlOrId) { // false (default) === URL search
-            
-            if(textInput.current.value.trim().length === 0) {
-                return;
-            }
-            
-            props.setSearch(input);
-            navigate('/1');
-        }
+        switch (searchType) {
+            case "visitId":
+                navigate('/details/' + input);
+                break;
 
-        else { // true === VisitId search
-            navigate('/details/' + input);
+            case "domain":
+                if(textInput.current.value.trim().length === 0) {
+                    return;
+                }
+                props.setSearch(input);
+                navigate('/1');
+                break;
+
+            default:
+                return;
         }
-        
     }
 
-    // This function changes the input field to search for a URL or navigate directly to a visitId
-    const changeSearchField = () => {
-        if (!urlOrId) { // false (default) === URL search
-            return (
-                <>
-                    <Form.Label id="navbar-input-label">
-                        Domain name
-                    </Form.Label>
+    // This function changes the search functionality depending on which one is selected.
+    const changeSearchField = () => { // Inside Form.Group element
+        let btnText;
+        let searchPlaceholder;
+        let searchBtnText;
 
-                    <FormControl 
-                        id="NavBar-Input"
-                        required
-                        type="text"
-                        placeholder="Enter full domain name"
-                        ref={textInput}
-                    />
-                    <Button 
-                        id="input-button"
-                        type="submit"
-                    >
-                        Search
-                    </Button>
-                </>
-            );
-        } // true === VisitId search
+        switch(searchType) {
+            case "visitId":
+                btnText = "Visit Id";
+                searchPlaceholder = "Enter exact visit Id";
+                searchBtnText = "Go";
+                break;
+
+            case "domain":
+            default:
+                btnText = "Domain Name";
+                searchPlaceholder = "Enter domain name";
+                searchBtnText = "Search";
+                break;
+        }
+
         return (
-            <>
+            <div id="form-container">
+                <Dropdown>
+                    <Dropdown.Toggle id="dropdown-btn">
+                        { btnText }
+                    </Dropdown.Toggle>
+                    
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={() => setSearchType("domain")}>Domain Name</Dropdown.Item>
+                        <Dropdown.Item onClick={() => setSearchType("visitId")}>Visit Id</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+
+                <FormControl 
+                    id="navbar-input"
+                    required
+                    type="text"
+                    placeholder={searchPlaceholder}
+                    ref={textInput}
+                />
+
+                <Button 
+                    id="submit-btn"
+                    type="submit"
+                >
+                    { searchBtnText }
+                </Button>
+            </div>
+        );
+    }
+
+    /*
+     <>
                 <Form.Label id="navbar-input-label">
-                    Visit Id
+                    { btnText }
                 </Form.Label>
 
                 <FormControl 
                     id="NavBar-Input"
                     required
                     type="text"
-                    placeholder="Enter exact visit Id"
+                    placeholder={searchPlaceholder}
                     ref={textInput}
                 />
                 <Button 
                     id="input-button"
                     type="submit"
                 >
-                    Go
+                    { searchBtnText }
                 </Button>
             </>
-        );
-    }
-
-    // This function changes the button depending on which searchfield is active.
-    // Also handles the boolean that defines which one should be active.
-    const changeBtn = () => {
-        if (!urlOrId) {
-            return (
-                <Button 
-                    id='Url-Or-Id-Btn'
-                    variant="secondary"
-                    size='sm'
-                    onClick={() => setUrlOrId(true)}
-                >
-                    Change to find by visit Id
-                </Button>
-            );
-        }
-        return (
-            <Button 
-                id='Url-Or-Id-Btn'
-                variant="secondary"
-                size='sm'
-                onClick={() => setUrlOrId(false)}
-            >
-                Change to search by URL
-            </Button>
-        );
-    }
+    */
 
     // This file's HTML return.
     return (
         <>
             <div className="searchfield" id='NavBar-Div'>
-                <Form noValidate validated={validated} id='NavBar-Form' onSubmit={search}>
+                <Form noValidate validated={validated} onSubmit={search}>
                     <Form.Group className="input-group">
                         {
                             changeSearchField()
                         }
                     </Form.Group>
-                    {
-                        changeBtn()
-                    }
                     <Button
-                        className="ml-3"
-                        variant="secondary"
-                        size="sm"
-                    >
-                        <a id="cluster-link" href="/cluster">
-                            Cluster Validation
-                        </a>
+                        id="cluster-link"
+                        onClick={() => navigate("/cluster")}
+                        >
+                        Cluster Validation
                     </Button>
                 </Form>
             </div>

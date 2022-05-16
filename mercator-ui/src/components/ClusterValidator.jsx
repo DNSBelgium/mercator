@@ -25,7 +25,7 @@ const ClusterValidator = (props) => {
         // if (inputLength > 1800) { // 50 VisitId's
         //     return window.confirm(`${inputLength / 36} VisitId's have been given. Continue any way?`);
         // }
-        if (inputLength > 1800) { // 500 VisitId's
+        if (inputLength > 1800) {
             alert(`${inputLength / 36} VisitId's have been given. Please input 50 or less.`);
             return false;
         }
