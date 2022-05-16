@@ -17,18 +17,24 @@ const ClusterValidator = (props) => {
         let trimmedInput = input.replace(/\n| , | ,|, |,| /g, "");
         let inputLength = trimmedInput.length;
 
-        if (inputLength > 18000) { // 500 VisitId's
-            alert(`${inputLength / 36} VisitId's have been given. Please input 500 or less.`);
+        // Retaining this code in case muppets allows handling of more than 50 visitId's.
+        // if (inputLength > 18000) { // 500 VisitId's
+        //     alert(`${inputLength / 36} VisitId's have been given. Please input 500 or less.`);
+        //     return false;
+        // }
+        // if (inputLength > 1800) { // 50 VisitId's
+        //     return window.confirm(`${inputLength / 36} VisitId's have been given. Continue any way?`);
+        // }
+        if (inputLength > 1800) { // 500 VisitId's
+            alert(`${inputLength / 36} VisitId's have been given. Please input 50 or less.`);
             return false;
-        }
-        if (inputLength > 1800) { // 50 VisitId's
-            return window.confirm(`${inputLength / 36} VisitId's have been given. Continue any way?`);
         }
         return true;
     }
 
     // Handle clicking of the 'Submit' button.
     const handleSubmit = async () => {
+        props.setClusterData([]);
         let input = visitIdRef.current.value.toLowerCase();
 
         if (!checkInput(input)) return;
