@@ -148,7 +148,7 @@ const TimelineDomainName = (props) => {
 
     // Handle showing / hiding of images when "Show / Hide screenshots" is clicked.
     const handleImages = (item) => {
-         // URL for development / local environment.
+        // URL for development / local environment.
         const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
         const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
 
