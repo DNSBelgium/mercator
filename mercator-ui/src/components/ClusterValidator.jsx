@@ -69,7 +69,7 @@ const ClusterValidator = (props) => {
                 <div id="flex-div">
                     {
                         props.clusterData.map((item, index) => {
-                            if(checkObjectIsFalsy(item.screenshotKey)) return;
+                            if(checkObjectIsFalsy(item.screenshotKey)) return null;
                             return (
                                 <div
                                     key={index}
@@ -78,7 +78,7 @@ const ClusterValidator = (props) => {
                                 >
                                     <img
                                         className="timeline-image"
-                                        src={`${LOCAL_URL}/${item.screenshotKey}`}
+                                        src={`${DEV_URL}/${item.screenshotKey}`}
                                         alt={`Thumbnail of ${ item.visitId }`}
                                     >
                                     </img>
@@ -116,6 +116,7 @@ const ClusterValidator = (props) => {
                     </>
                 );
             }
+            return null;
         })
 
         if (!checkObjectIsFalsy(ids)) { // If any faulty visitId's got added, render
