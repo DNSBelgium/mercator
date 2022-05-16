@@ -2,7 +2,7 @@ import {useState, useRef} from "react";
 import { useNavigate } from 'react-router-dom';
 import {Button, Dropdown, Form, FormControl} from "react-bootstrap";
 
-function NavigationBar(props) {
+function NavigationBar() {
     const navigate = useNavigate();
 
     const [validated, setValidated] = useState(false); // Hook to validate input field.
@@ -25,8 +25,7 @@ function NavigationBar(props) {
                 if(textInput.current.value.trim().length === 0) {
                     return;
                 }
-                props.setSearch(input);
-                navigate('/1');
+                navigate(`${input}/1`);
                 break;
 
             default:
@@ -85,28 +84,6 @@ function NavigationBar(props) {
             </div>
         );
     }
-
-    /*
-     <>
-                <Form.Label id="navbar-input-label">
-                    { btnText }
-                </Form.Label>
-
-                <FormControl 
-                    id="NavBar-Input"
-                    required
-                    type="text"
-                    placeholder={searchPlaceholder}
-                    ref={textInput}
-                />
-                <Button 
-                    id="input-button"
-                    type="submit"
-                >
-                    { searchBtnText }
-                </Button>
-            </>
-    */
 
     // This file's HTML return.
     return (

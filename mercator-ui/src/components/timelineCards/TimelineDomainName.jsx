@@ -5,11 +5,10 @@ import api from "../../services/api";
 import moment from "moment";
 import { checkObjectIsFalsy, handleExResponse } from "../../services/Util";
 
-const TimelineDomainName = (props) => {
-    let { id } = useParams(); // Fetch :id from url
-    id = parseInt(id);
-
-    const domainName = props.search; // Received from App.jsx search hook.
+const TimelineDomainName = () => {
+    const { domain } = useParams();
+    let { page } = useParams(); // Fetch :id from url
+    page = parseInt(page);
 
     const navigate = useNavigate();
 
@@ -27,12 +26,12 @@ const TimelineDomainName = (props) => {
             setProcessing(true);
             setException(null);
 
-            if (checkObjectIsFalsy(domainName)) {
+            if (checkObjectIsFalsy(domain)) {
                 setProcessing(false);
                 return;
             }
 
-            const url = `/find-visits/${domainName}?page=${id - 1}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domain}?page=${page - 1}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
@@ -51,7 +50,7 @@ const TimelineDomainName = (props) => {
 
         // Reset image hooks for new searches.
         setShowImages(false);
-    }, [domainName, id]);
+    }, [domain, page]);
 
     // Returns a boolean as a green V or red X.
     const booleanToCheckmark = (bool) => {
@@ -73,7 +72,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn mr-1"
                         onClick={() => {
                             setShowImages(false);
-                            navigate(`/${id - 1}`);
+                            navigate(`/${domain}/${page - 1}`);
                         }}
                     >
                         prev
@@ -86,7 +85,7 @@ const TimelineDomainName = (props) => {
             let className;
 
             // The follow if-else is for giving the current page's button an underline.
-            if(i === id - 1) {
+            if(i === page - 1) {
                 className = "current-page paging-btn mr-1";
             }
             else {
@@ -98,7 +97,7 @@ const TimelineDomainName = (props) => {
                         className={className}
                         onClick={() => {
                             setShowImages(false);
-                            navigate(`/${i + 1}`);
+                            navigate(`/${domain}/${i + 1}`);
                         }}
                     >
                         {i + 1}
@@ -112,7 +111,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn"
                         onClick={() => {
                             setShowImages(false);
-                            navigate(`/${id + 1}`);
+                            navigate(`/${domain}/${page + 1}`);
                         }}
                     >
                         next
@@ -182,7 +181,7 @@ const TimelineDomainName = (props) => {
             return( handleExResponse(exception) ); // HandleError.jsx handles the exception.
         }
 
-        if(domainName === null) {
+        if(domain === null) {
             return(
                 <h5 className="ml-3 mt-3">Enter a search to begin.</h5>
             );
@@ -207,7 +206,7 @@ const TimelineDomainName = (props) => {
                 <Row>
                     <Col className='mt-4'>
                         <div>
-                            <h1 className="mb-4">{domainName}</h1>
+                            <h1 className="mb-4">{domain}</h1>
                             <p>Number of records: { data.amountOfRecords }</p>
                         </div>
                         {
@@ -281,7 +280,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn mr-1"
                         onClick={() => {
                             setShowImages(false);
-                            navigate("/1");
+                            navigate(`/${domain}/1`);
                         }}
                     >
                         &#8676;
@@ -295,7 +294,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn ml-1"
                         onClick={() => {
                             setShowImages(false);
-                            navigate(`/${data.amountOfPages}`);
+                            navigate(`/${domain}/${data.amountOfPages}`);
                         }}
                     >
                         &#8677;

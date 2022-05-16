@@ -14,6 +14,15 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
   margin-right: auto;
 }
 
+#home {
+  margin-top: 3rem;
+  margin-left: 3rem;
+
+  h2 {
+    margin-bottom: 2rem;
+  }
+}
+
 /* NavigationBar.jsx */
 #NavBar-Div {
   padding-top: 40px;
