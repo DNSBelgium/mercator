@@ -31,3 +31,11 @@ function App() {
 }
 
 export default App;
+
+/*
+
+To the future Frontend Developer:
+Read my files from bottom to top, they will probably make more sense.
+- AroenvR
+
+*/

@@ -20,10 +20,18 @@ public class ClusterController {
         this.clusterService = clusterService;
     }
 
-    @PostMapping("/cluster") // This is a POST mapping to enable more than 200 VisitId's.
-    public ResponseEntity<?> getDataForVisitIdCluster(@RequestBody ClusterDTO clusterDTO) {
-        logger.debug("getDataForVisitIdCluster was called for: {}", clusterDTO.getData());
+    /**
+     * Controller function to receive a large String from the frontend for the 'Cluster View'.
+     * The reason this is a POST mapping and not a GET mapping is because
+     * a query param, HTTP header or cookie wouldn't be able to handle so many visitId's.
+     * @param clusterDTO simple object to contain the incoming String value.
+     * @return a List of SearchDTO's.
+     */
+    @PostMapping("/cluster")
+    public ResponseEntity<?> getClusterData(@RequestBody ClusterDTO clusterDTO) {
+        logger.debug("getDataForVisitIdCluster was called.");
 
+        // TODO: Add error handling.
         return ResponseEntity.status(HttpStatus.OK).body(clusterService.getClusterData(clusterDTO.getData()));
     }
 }

@@ -34,6 +34,8 @@ const ClusterValidator = (props) => {
         if (!checkInput(input)) return;
 
         // Replacing new lines with "NEWLINE" for backend's readability.
+        // \n would contain an invalid character for HTTP, and encoding with UTF-8 / 16 creates a whole new array of problems.
+        // Not sure how to improve this.
         input = input.replace(/\n/g, "NEWLINE");
 
         let dataToSend = {
@@ -43,7 +45,6 @@ const ClusterValidator = (props) => {
         const url = `/cluster`;
         await api.post(url, dataToSend)
             .then((resp) => {
-                console.log(resp);
                 if(resp.status === 200) {
                     
                     props.setClusterData(resp.data);
@@ -104,8 +105,8 @@ const ClusterValidator = (props) => {
         // If an item doesn't have a screenshotKey, add it as a 'faulty visitId' to the array.
         props.clusterData.map((item, index) => {
             if (checkObjectIsFalsy(item.screenshotKey)) {
-                ids.push(
-                    <>
+                ids.push( // Adding this object to the array.
+                    <> 
                         <p 
                             key={index}
                             onClick={() => navigate(`/details/${item.receivedVisitId}`)}
@@ -117,7 +118,7 @@ const ClusterValidator = (props) => {
             }
         })
 
-        if (!checkObjectIsFalsy(ids)) {
+        if (!checkObjectIsFalsy(ids)) { // If any faulty visitId's got added, render
             return (
                 <>
                     <h5>Faulty VisitId's:</h5>

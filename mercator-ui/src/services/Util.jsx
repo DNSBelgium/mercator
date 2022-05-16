@@ -1,4 +1,6 @@
 // Check data is not null or an empty object.
+// Returns true if it is falsy and returns false if it is not falsy.
+// I'm sorry for the naming. It could have been better.
 export const checkObjectIsFalsy = (data) => {
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
     if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype) {

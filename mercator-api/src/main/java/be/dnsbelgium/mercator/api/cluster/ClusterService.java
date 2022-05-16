@@ -21,10 +21,21 @@ public class ClusterService {
         this.contentCrawlResultRepository = contentCrawlResultRepository;
     }
 
+    /**
+     * Gathers data necessary for a Cluster View.
+     * SearchDTO's can be returned with the following values: (or nulls)
+     *      Received VisitId -> one of the VisitId's given from the parameter.
+     *      Domain Name, screenshotKey, 'confirmed' visitId.
+     *      A 'confirmed visitId' means a visitId that matches with an existing database UUID.
+     * @param visitIds Single large String of VisitId's.
+     * @return list of SearchDTO's.
+     */
     public List<SearchDTO> getClusterData(String visitIds) {
-        logger.info("Received: {}", visitIds);
+        logger.info("Received a String of visitId's");
 
-        String[] individualIds = visitIds.split(" , | ,|, |,| |NEWLINE"); //|(?<=\\G.{" + 36 + "})
+        // The frontend sends NEWLINE when a visitId was split by \n.
+        // I could not find a UTF-8 / 16 way to fix that, so I used string.replace to set it to "NEWLINE".
+        String[] individualIds = visitIds.split(" , | ,|, |,| |NEWLINE");
 
         List<SearchDTO> searchDTOList = new ArrayList<>();
         for (String visitId : individualIds) {
