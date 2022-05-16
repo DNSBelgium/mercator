@@ -31,7 +31,11 @@ public class ClusterController {
     public ResponseEntity<?> getClusterData(@RequestBody ClusterDTO clusterDTO) {
         logger.debug("getDataForVisitIdCluster was called.");
 
-        // TODO: Add error handling.
-        return ResponseEntity.status(HttpStatus.OK).body(clusterService.getClusterData(clusterDTO.getData()));
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(clusterService.getClusterData(clusterDTO.getData()));
+        } catch (Exception ex) {
+            logger.warn(ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Something went wrong.");
+        }
     }
 }
