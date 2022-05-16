@@ -1,12 +1,17 @@
 import {Col, Row, Table, Button} from "react-bootstrap";
 import {useEffect, useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate, useParams} from 'react-router-dom';
 import api from "../../services/api";
 import moment from "moment";
 import { checkObjectIsFalsy, handleExResponse } from "../../services/Util";
 
 const TimelineDomainName = (props) => {
+    let { id } = useParams(); // Fetch :id from url
+    id = parseInt(id);
+
     const domainName = props.search; // Received from App.jsx search hook.
+
+    const navigate = useNavigate();
 
     const [data, setData] = useState([]); // Used to hold data from GET request.
     const [processing, setProcessing] = useState(true); // Used for holding HTML rendering if processing === true.
@@ -27,7 +32,7 @@ const TimelineDomainName = (props) => {
                 return;
             }
 
-            const url = `/find-visits/${domainName}?page=${props.page}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domainName}?page=${id - 1}` // backend location: mercator-api/.../search/SearchController
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
@@ -46,7 +51,7 @@ const TimelineDomainName = (props) => {
 
         // Reset image hooks for new searches.
         setShowImages(false);
-    }, [domainName, props.page]);
+    }, [domainName, id]);
 
     // Returns a boolean as a green V or red X.
     const booleanToCheckmark = (bool) => {
@@ -68,7 +73,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn mr-1"
                         onClick={() => {
                             setShowImages(false);
-                            props.setPage(props.page - 1) 
+                            navigate(`/${id - 1}`);
                         }}
                     >
                         prev
@@ -81,7 +86,7 @@ const TimelineDomainName = (props) => {
             let className;
 
             // The follow if-else is for giving the current page's button an underline.
-            if(props.page === i) {
+            if(i === id - 1) {
                 className = "current-page paging-btn mr-1";
             }
             else {
@@ -93,7 +98,7 @@ const TimelineDomainName = (props) => {
                         className={className}
                         onClick={() => {
                             setShowImages(false);
-                            props.setPage(i)
+                            navigate(`/${i + 1}`);
                         }}
                     >
                         {i + 1}
@@ -107,7 +112,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn"
                         onClick={() => {
                             setShowImages(false);
-                            props.setPage(props.page + 1)
+                            navigate(`/${id + 1}`);
                         }}
                     >
                         next
@@ -276,7 +281,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn mr-1"
                         onClick={() => {
                             setShowImages(false);
-                            props.setPage(0);
+                            navigate("/1");
                         }}
                     >
                         &#8676;
@@ -290,7 +295,7 @@ const TimelineDomainName = (props) => {
                         className="paging-btn ml-1"
                         onClick={() => {
                             setShowImages(false);
-                            props.setPage(data.amountOfPages - 1);
+                            navigate(`/${data.amountOfPages}`);
                         }}
                     >
                         &#8677;

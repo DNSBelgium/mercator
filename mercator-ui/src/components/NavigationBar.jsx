@@ -24,9 +24,8 @@ function NavigationBar(props) {
                 return;
             }
             
-            props.setPage(0);
             props.setSearch(input);
-            navigate('/');
+            navigate('/1');
         }
 
         else { // true === VisitId search
