@@ -14,6 +14,5 @@ public class SearchDTO {
     private CrawlComponentStatus crawlStatus;
     private String domainName;
     private String screenshotKey;
-    private String receivedVisitId;
 
 }

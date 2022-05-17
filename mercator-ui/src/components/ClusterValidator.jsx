@@ -39,17 +39,17 @@ const ClusterValidator = (props) => {
 
         if (!checkInput(input)) return;
 
-        // Replacing new lines with "NEWLINE" for backend's readability.
-        // \n would contain an invalid character for HTTP, and encoding with UTF-8 / 16 creates a whole new array of problems.
-        // Not sure how to improve this.
-        input = input.replace(/\n/g, "NEWLINE");
-
-        let dataToSend = {
-            data: input
+        // Formatting input to a backend-readable array of VisitId's.
+        input = input.replace(/ , | ,|, |,| /g, "\n");
+        let inputArray = input.split("\n");
+        for (let i = 0; i < inputArray.length; i++) {
+            if (inputArray[i] === "") {
+                inputArray.splice(i, 1)
+            }
         }
 
         const url = `/cluster`;
-        await api.post(url, dataToSend)
+        await api.post(url, inputArray)
             .then((resp) => {
                 if(resp.status === 200) {
                     

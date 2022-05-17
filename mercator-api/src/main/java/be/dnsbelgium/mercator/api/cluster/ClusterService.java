@@ -23,41 +23,28 @@ public class ClusterService {
 
     /**
      * Gathers data necessary for a Cluster View.
-     * SearchDTO's can be returned with the following values: (or nulls)
+     * ClusterDTO's can be returned with the following values: (or nulls)
      *      Received VisitId -> one of the VisitId's given from the parameter.
      *      Domain Name, screenshotKey, 'confirmed' visitId.
      *      A 'confirmed visitId' means a visitId that matches with an existing database UUID.
-     * @param visitIds Single large String of VisitId's.
-     * @return list of SearchDTO's.
+     * @param visitIds List of VisitId's in String representation.
+     * @return list of ClusterDTO's.
      */
-    public List<SearchDTO> getClusterData(String visitIds) {
-        logger.info("Received a String of visitId's");
+    public List<ClusterDTO> getClusterData(List<String> visitIds) {
+        logger.info("Received a list of visitId's. Size: {}", visitIds.size());
 
-        // The frontend sends NEWLINE when a visitId was split by \n.
-        // I could not find a UTF-8 / 16 way to fix that, so I used string.replace to set it to "NEWLINE".
-        String[] individualIds = visitIds.split(" , | ,|, |,| |NEWLINE");
+        List<ClusterDTO> clusterDTOList = new ArrayList<>();
+        for (String visitId : visitIds) {
+            if (visitId.equals("")) continue; // Last check in case the frontend missed one.
 
-        List<SearchDTO> searchDTOList = new ArrayList<>();
-        for (String visitId : individualIds) {
-            if (visitId.equals("")) continue;
-
-            SearchDTO dto = new SearchDTO();
+            ClusterDTO dto = new ClusterDTO();
             dto.setReceivedVisitId(visitId);
 
+            List<ContentCrawlResult> contentResults = new ArrayList<>();
             try {
                 dto.setVisitId(UUID.fromString(visitId));
+                contentResults = contentCrawlResultRepository.findByVisitId(UUID.fromString(visitId));
 
-                List<ContentCrawlResult> contentResults = contentCrawlResultRepository.findByVisitId(UUID.fromString(visitId));
-                if (!contentResults.isEmpty()) {
-                    Optional<ContentCrawlResult> resultWithKey = contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst();
-
-                    resultWithKey.ifPresent(result -> {
-                        dto.setDomainName(result.getDomainName());
-                        dto.setScreenshotKey(result.getScreenshotKey());
-                    });
-                }
-
-            // When a given visitId isn't a valid UUID
             } catch (IllegalArgumentException ex) {
                 logger.debug("VisitId {} wasn't a valid UUID.", visitId);
                 dto.setVisitId(null);
@@ -65,10 +52,19 @@ public class ClusterService {
                 dto.setScreenshotKey(null);
             }
 
-            searchDTOList.add(dto);
+            if (!contentResults.isEmpty()) {
+                Optional<ContentCrawlResult> resultWithKey = contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst();
+
+                resultWithKey.ifPresent(result -> {
+                    dto.setDomainName(result.getDomainName());
+                    dto.setScreenshotKey(result.getScreenshotKey());
+                });
+            }
+
+            clusterDTOList.add(dto);
         }
 
-        logger.info("Returning list of SearchDTO's");
-        return searchDTOList;
+        logger.info("Returning list of ClusterDTO's");
+        return clusterDTOList;
     }
 }

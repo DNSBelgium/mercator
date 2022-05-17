@@ -60,7 +60,7 @@ const caseFourOFour = () => {
     return (
         <div className="error-div" id='Error-Case-404-Div'>
             <h2>An error has occurred.</h2>
-            <p>Domain {domainName} was not yet crawled or does not exist.</p>
+            <p>Domain {domainName} was not yet crawled, domain does not exist or page is out of bounds.</p>
         </div>
     );
 }
