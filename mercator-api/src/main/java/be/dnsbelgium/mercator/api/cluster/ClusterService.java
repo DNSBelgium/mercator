@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.api.cluster;
 
-import be.dnsbelgium.mercator.api.search.SearchDTO;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import org.slf4j.Logger;
@@ -34,37 +33,32 @@ public class ClusterService {
         logger.info("Received a list of visitId's. Size: {}", visitIds.size());
 
         List<ClusterDTO> clusterDTOList = new ArrayList<>();
-        for (String visitId : visitIds) {
-            if (visitId.equals("")) continue; // Last check in case the frontend missed one.
+        for (String receivedVisitId : visitIds) {
+            if (receivedVisitId.equals("")) continue; // Last check in case the frontend missed one.
 
             ClusterDTO dto = new ClusterDTO();
-            dto.setReceivedVisitId(visitId);
+            dto.setReceivedVisitId(receivedVisitId);
 
-            List<ContentCrawlResult> contentResults = new ArrayList<>();
+            UUID visitId;
             try {
-                dto.setVisitId(UUID.fromString(visitId));
-                contentResults = contentCrawlResultRepository.findByVisitId(UUID.fromString(visitId));
-
+                visitId = UUID.fromString(receivedVisitId);
             } catch (IllegalArgumentException ex) {
-                logger.debug("VisitId {} wasn't a valid UUID.", visitId);
-                dto.setVisitId(null);
-                dto.setDomainName(null);
-                dto.setScreenshotKey(null);
+                logger.debug("VisitId {} wasn't a valid UUID.", receivedVisitId);
+                clusterDTOList.add(dto);
+                continue;
             }
 
-            if (!contentResults.isEmpty()) {
-                Optional<ContentCrawlResult> resultWithKey = contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst();
+            dto.setVisitId(visitId);
+            List<ContentCrawlResult> contentResults = contentCrawlResultRepository.findByVisitId(visitId);
 
-                resultWithKey.ifPresent(result -> {
-                    dto.setDomainName(result.getDomainName());
-                    dto.setScreenshotKey(result.getScreenshotKey());
-                });
-            }
+            contentResults.stream().filter(r -> r.getScreenshotKey() != null).findFirst().ifPresent(result -> {
+                dto.setDomainName(result.getDomainName());
+                dto.setScreenshotKey(result.getScreenshotKey());
+            });
 
             clusterDTOList.add(dto);
         }
 
-        logger.info("Returning list of ClusterDTO's");
         return clusterDTOList;
     }
 }
