@@ -73,6 +73,7 @@ public class DnsCrawlService {
           }
         }
 
+        request.setNumOfResponses(request.getResponses().size());
         requests.add(request);
       }
     }

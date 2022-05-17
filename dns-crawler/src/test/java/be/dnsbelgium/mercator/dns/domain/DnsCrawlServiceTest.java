@@ -76,6 +76,7 @@ class DnsCrawlServiceTest {
     assertThat(requests.get(0).isOk()).isFalse();
     assertThat(requests.get(0).getProblem()).isEqualTo("nxdomain");
     assertThat(requests.get(0).getResponses()).isEmpty();
+    assertThat(requests.get(0).getNumOfResponses()).isEqualTo(0);
   }
 
   @Test
@@ -112,6 +113,7 @@ class DnsCrawlServiceTest {
         assertThat(request.getProblem()).isNull();
 
         assertThat(request.getResponses()).hasSize(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).size());
+        assertThat(request.getNumOfResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).size());
 
         for (Response response : request.getResponses()) {
           assertThat(new RRecord(response.getTtl(), response.getRecordData())).isIn(dnsResolution.getRecords(prefix).getRecords().get(recordType));
