@@ -16,15 +16,20 @@ function NavigationBar() {
         setValidated(true); //TODO: UI Vaidation isn't quite right yet.
         let input = textInput.current.value.toLowerCase().trim();
 
+        if(textInput.current.value.trim().length === 0) {
+            return;
+        }
+
         switch (searchType) {
             case "visitId":
                 navigate('/details/' + input);
                 break;
 
+            case "label":
+                navigate('/label/' + input + "/1");
+                break;
+
             case "domain":
-                if(textInput.current.value.trim().length === 0) {
-                    return;
-                }
                 navigate(`${input}/1`);
                 break;
 
@@ -46,6 +51,12 @@ function NavigationBar() {
                 searchBtnText = "Go";
                 break;
 
+            case "label":
+                btnText = "Label";
+                searchPlaceholder = "Enter crawl label";
+                searchBtnText = "Search";
+                break;
+
             case "domain":
             default:
                 btnText = "Domain Name";
@@ -63,6 +74,7 @@ function NavigationBar() {
                     
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={() => setSearchType("domain")}>Domain Name</Dropdown.Item>
+                        {/* <Dropdown.Item onClick={() => setSearchType("label")}>Label</Dropdown.Item> */}
                         <Dropdown.Item onClick={() => setSearchType("visitId")}>Visit Id</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>

@@ -140,117 +140,104 @@ const DNSCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
-
-        const render = () => {
-            if(checkObjectIsFalsy(data)) {
-                return (<p>No data for this visit.</p>)
-            }
-
-            return (
-                <div className="dns-table">
-                    <Table
-                        size="sm"
-                        borderless
-                    >
-                        <tbody className="text-left">
-                            
-                            <tr>
-                                <th scope="row">
-                                    rcode
-                                </th>
-                                <td>
-                                    { data[0].rcode }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    OK
-                                </th>
-                                {
-                                    renderDataBoolean(data[0].ok) // td element
-                                }
-                            </tr>                            
-
-                            <tr>
-                                <th scope="row">
-                                    Problem
-                                </th>
-                                <td className="defined-error">
-                                    { data[0].problem }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Crawl timestamp
-                                </th>
-                                <td>
-                                    { data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : '' }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope='row'>
-                                    Record data and Geo IP's
-                                </th>
-                                <td>
-                                    {
-                                        checkDataHasResponses(data) && ( // Don't render 'More Info' button if there are is no response data.
-                                            <button 
-                                                className="more-info"
-                                                onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
-                                            > 
-                                                More info
-                                            </button>
-                                        )
-                                    }
-                                </td>
-                            </tr>
-                        </tbody>
-                    </Table>
-
-                    {
-                        openRecords && ( // if openRecords === true, render
-                            <div>
-                                { renderRecords() }
-                            </div>
-                        )
-                    }
-                </div>
-            );
+        if(checkObjectIsFalsy(data)) {
+            return (<p>No data for this visit.</p>)
         }
 
-        return(
-            <>
-                <Row>
-                    <Col className='mt-4'>
-                        <BorderWrapper
-                            borderWidth="3px" 
-                            borderRadius="0px"
-                            innerPadding="30px" 
-                            topElement={topElement}
-                            topPosition={0.07} 
-                            topOffset="15px" 
-                            topGap="15px">
+        return (
+            <div className="dns-table">
+                <Table
+                    size="sm"
+                    borderless
+                >
+                    <tbody className="text-left">
+                        
+                        <tr>
+                            <th scope="row">
+                                rcode
+                            </th>
+                            <td>
+                                { data[0].rcode }
+                            </td>
+                        </tr>
 
-                            { 
-                                render() 
+                        <tr>
+                            <th scope="row">
+                                OK
+                            </th>
+                            {
+                                renderDataBoolean(data[0].ok) // td element
                             }
-                        </BorderWrapper>
-                    </Col>
-                </Row>
-            </>
+                        </tr>                            
+
+                        <tr>
+                            <th scope="row">
+                                Problem
+                            </th>
+                            <td className="defined-error">
+                                { data[0].problem }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Crawl timestamp
+                            </th>
+                            <td>
+                                { data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : '' }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope='row'>
+                                Record data and Geo IP's
+                            </th>
+                            <td>
+                                {
+                                    checkDataHasResponses(data) && ( // Don't render 'More Info' button if there are is no response data.
+                                        <button 
+                                            className="more-info"
+                                            onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
+                                        > 
+                                            More info
+                                        </button>
+                                    )
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+
+                {
+                    openRecords && ( // if openRecords === true, render
+                        <div>
+                            { renderRecords() }
+                        </div>
+                    )
+                }
+            </div>
         );
     }
 
     // This file's HTML return.
     return (
-        <>
-            {
-                renderHTML()
-            }
-        </>
+        <Row>
+            <Col className='mt-4'>
+                <BorderWrapper
+                    borderWidth="3px" 
+                    borderRadius="0px"
+                    innerPadding="30px" 
+                    topElement={topElement}
+                    topPosition={0.07} 
+                    topOffset="15px" 
+                    topGap="15px">
+
+                    { 
+                        renderHTML() 
+                    }
+                </BorderWrapper>
+            </Col>
+        </Row>
     );
 }
 

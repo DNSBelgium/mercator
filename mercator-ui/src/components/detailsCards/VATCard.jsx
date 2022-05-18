@@ -118,138 +118,125 @@ const VATCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
-
-        const render = () => {
-            if(checkObjectIsFalsy(data)) {
-                return (
-                    <p>No data for this visit.</p>
-                )
-            }
-
+        if(checkObjectIsFalsy(data)) {
             return (
-                <div className="vat-table">
-                    <Table 
-                        size='sm'
-                        borderless
-                    >
-                        <tbody>
-
-                            <tr>
-                                <th scope="row">
-                                    Id
-                                </th>
-                                <td>
-                                    { data.id }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Crawl timestamp
-                                </th>
-                                <td>
-                                    { // Ternary
-                                        data.crawlStarted ? 
-                                            moment(data.crawlStarted).format("DD/MM/YYYY HH:mm:ss") : 
-                                            '' 
-                                    }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Crawl duration
-                                </th>
-                                <td>
-                                    { // Ternary
-                                        data.crawlStarted && data.crawlFinished ?
-                                            moment.duration(moment(data.crawlFinished).diff(moment(data.crawlStarted))).milliseconds() + ' ms' : 
-                                            '' 
-                                    }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    VAT
-                                </th>
-                                <td>
-                                    { renderVAT() }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    URL
-                                </th>
-                                <td>
-                                    { data.startUrl }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Matching URL
-                                </th>
-                                <td>
-                                    { data.matchingUrl }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    # URLs followed
-                                </th>
-                                <td>
-                                    { data.visitedUrls ? data.visitedUrls.length : '' }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    URLs followed
-                                </th>
-                                <td>
-                                    { renderFollowedUrls() }
-                                </td>
-                            </tr>
-
-                        </tbody>
-                    </Table>
-                </div>
+                <p>No data for this visit.</p>
             )
         }
 
         return (
-            <>
-                <Row>
-                    <Col className='mt-4'>
-                        <BorderWrapper 
-                            borderWidth="3px" 
-                            borderRadius="0px" 
-                            innerPadding="30px" 
-                            topElement={topElement}
-                            topPosition={0.07} 
-                            topOffset="15px" 
-                            topGap="15px"
-                        >
-                            {
-                                render()
-                            }
-                        </BorderWrapper>
-                    </Col>
-                </Row>
-            </>
-        );
+            <div className="vat-table">
+                <Table 
+                    size='sm'
+                    borderless
+                >
+                    <tbody>
+
+                        <tr>
+                            <th scope="row">
+                                Id
+                            </th>
+                            <td>
+                                { data.id }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Crawl timestamp
+                            </th>
+                            <td>
+                                { // Ternary
+                                    data.crawlStarted ? 
+                                        moment(data.crawlStarted).format("DD/MM/YYYY HH:mm:ss") : 
+                                        '' 
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Crawl duration
+                            </th>
+                            <td>
+                                { // Ternary
+                                    data.crawlStarted && data.crawlFinished ?
+                                        moment.duration(moment(data.crawlFinished).diff(moment(data.crawlStarted))).milliseconds() + ' ms' : 
+                                        '' 
+                                }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                VAT
+                            </th>
+                            <td>
+                                { renderVAT() }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                URL
+                            </th>
+                            <td>
+                                { data.startUrl }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Matching URL
+                            </th>
+                            <td>
+                                { data.matchingUrl }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                # URLs followed
+                            </th>
+                            <td>
+                                { data.visitedUrls ? data.visitedUrls.length : '' }
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                URLs followed
+                            </th>
+                            <td>
+                                { renderFollowedUrls() }
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </Table>
+            </div>
+        )
     }
 
     // This file's HTML return.
     return (
-        <>
-            {
-                renderHTML()
-            }
-        </>
+        <Row>
+            <Col className='mt-4'>
+                <BorderWrapper 
+                    borderWidth="3px" 
+                    borderRadius="0px" 
+                    innerPadding="30px" 
+                    topElement={topElement}
+                    topPosition={0.07} 
+                    topOffset="15px" 
+                    topGap="15px"
+                >
+                    {
+                        renderHTML()
+                    }
+                </BorderWrapper>
+            </Col>
+        </Row>
     );
 }
 

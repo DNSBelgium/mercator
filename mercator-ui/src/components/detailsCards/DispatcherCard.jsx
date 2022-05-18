@@ -42,22 +42,20 @@ function DispatcherCard(props) {
         if (!checkObjectIsFalsy(data.labels)) {
             listlabels = data.labels.map((label, index) => <span key={index.toString()}>{label}</span>);
         }
-        return (
-            <>     
-                <div className="mb-4 mt-2 ml-1">
-                    <h1>{ data.domainName }</h1>
+        return ( 
+            <div className="mb-4 mt-2 ml-1">
+                <h1>{ data.domainName }</h1>
 
-                    <Row>
-                        <Col id='visit-id' md="auto">Visit id:</Col>
-                        <Col md="auto">{data.visitId}</Col>
-                    </Row>
+                <Row>
+                    <Col id='visit-id' md="auto">Visit id:</Col>
+                    <Col md="auto">{data.visitId}</Col>
+                </Row>
 
-                    <Row>
-                        <Col id='labels' md="auto">Labels:</Col>
-                        <Col md="auto">{listlabels}</Col>
-                    </Row>
-                </div>
-            </>
+                <Row>
+                    <Col id='labels' md="auto">Labels:</Col>
+                    <Col md="auto">{listlabels}</Col>
+                </Row>
+            </div>
         )
     }
 }

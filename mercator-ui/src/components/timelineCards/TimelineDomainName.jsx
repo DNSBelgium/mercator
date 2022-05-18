@@ -176,15 +176,14 @@ const TimelineDomainName = () => {
     }
 
     // Rendering HTML on a JS Function base, so we can define logic.
-    const renderHtml = () => {
+    const renderHTML = () => {
         if(exception !== null) {
+            if(!domain.includes(".be") && !domain.includes(".vlaanderen") && !domain.includes(".brussels")) {
+                return(
+                    <h5 className="ml-3 mt-3">Please enter a domain name with TLD (.be, .vlaanderen, .brussels).</h5>
+                );
+            }
             return( handleExResponse(exception) ); // HandleError.jsx handles the exception.
-        }
-
-        if(domain === null) {
-            return(
-                <h5 className="ml-3 mt-3">Enter a search to begin.</h5>
-            );
         }
 
         if(processing) {
@@ -196,6 +195,11 @@ const TimelineDomainName = () => {
         }
 
         if(checkObjectIsFalsy(data)) {
+            if(!domain.includes(".be") && !domain.includes(".vlaanderen") && !domain.includes(".brussels")) {
+                return(
+                    <h5 className="ml-3 mt-3">Please enter a domain name with TLD (.be, .vlaanderen, .brussels).</h5>
+                );
+            }
             return (
                 <h5 className="ml-3 mt-3">Apologies, something went wrong.</h5>
             );
@@ -217,6 +221,7 @@ const TimelineDomainName = () => {
                                 <thead>
                                     <tr>
                                         <th>Crawl time</th>
+                                        {/* <th>Crawl label</th> */}
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
                                         <th>Status<br/> SMTP crawl</th>
@@ -243,6 +248,9 @@ const TimelineDomainName = () => {
                                                     }
                                                 </Link>
                                             </td>
+                                            {/* <td> 
+                                                { item.label } 
+                                            </td> */}
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.muppets) }
                                             </td>
@@ -308,7 +316,7 @@ const TimelineDomainName = () => {
     return (
         <>
             {
-                renderHtml()
+                renderHTML()
             }
         </>
     )

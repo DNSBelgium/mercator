@@ -56,11 +56,10 @@ const caseFiveHundredRange = () => {
 
 // Return of case 404.
 const caseFourOFour = () => {
-    const domainName = localStorage.getItem('search') ? localStorage.getItem('search') : '';
     return (
         <div className="error-div" id='Error-Case-404-Div'>
             <h2>An error has occurred.</h2>
-            <p>Domain {domainName} was not yet crawled, domain does not exist or page is out of bounds.</p>
+            <p>Domain was not yet crawled, domain does not exist or page is out of bounds.</p>
         </div>
     );
 }

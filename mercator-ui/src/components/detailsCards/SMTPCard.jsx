@@ -271,84 +271,71 @@ const SMTPCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
-
-        const render = () => {
-            if(checkObjectIsFalsy(data)) {
-                return (
-                    <p>No data for this visit.</p>
-                );
-            }
-
+        if(checkObjectIsFalsy(data)) {
             return (
-                <div className="smtp-table">
-                    <Table size='sm' borderless>
-                        <tbody className="text-left">
-                            <tr>
-                                <th>
-                                    Crawl Timestamp
-                                </th>
-                                <td>
-                                { // Ternary
-                                    data.crawlTimestamp ? 
-                                        moment(data.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
-                                        '' 
-                                }
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <th scope="row">
-                                    Crawl status
-                                </th>
-                                <td>
-                                    { data.crawlStatus }
-                                </td>
-                            </tr>
-                            
-                            <tr>
-                                <th scope='row'>
-                                    Server
-                                </th>
-                                <td>
-                                    { renderDataServers(data.servers) }
-                                </td>
-                            </tr>
-                        </tbody>
-                    </Table>
-                </div>
+                <p>No data for this visit.</p>
             );
         }
 
         return (
-            <>
-                <Row>
-                    <Col className='mt-4'>
-                        <BorderWrapper 
-                            borderWidth="3px" 
-                            borderRadius="0px"
-                            innerPadding="30px" 
-                            topElement={topElement}
-                            topPosition={0.07} 
-                            topOffset="15px" 
-                            topGap="15px"
-                        >
-                            { 
-                                render() 
+            <div className="smtp-table">
+                <Table size='sm' borderless>
+                    <tbody className="text-left">
+                        <tr>
+                            <th>
+                                Crawl Timestamp
+                            </th>
+                            <td>
+                            { // Ternary
+                                data.crawlTimestamp ? 
+                                    moment(data.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
+                                    '' 
                             }
-                        </BorderWrapper>
-                    </Col>
-                </Row>
-            </>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">
+                                Crawl status
+                            </th>
+                            <td>
+                                { data.crawlStatus }
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope='row'>
+                                Server
+                            </th>
+                            <td>
+                                { renderDataServers(data.servers) }
+                            </td>
+                        </tr>
+                    </tbody>
+                </Table>
+            </div>
         );
     }
 
     // This file's HTML return.
     return (
-        <>
-            {
-                renderHTML()
-            }
-        </>
+        <Row>
+            <Col className='mt-4'>
+                <BorderWrapper 
+                    borderWidth="3px" 
+                    borderRadius="0px"
+                    innerPadding="30px" 
+                    topElement={topElement}
+                    topPosition={0.07} 
+                    topOffset="15px" 
+                    topGap="15px"
+                >
+                    { 
+                        renderHTML() 
+                    }
+                </BorderWrapper>
+            </Col>
+        </Row>
     );
 }
 
