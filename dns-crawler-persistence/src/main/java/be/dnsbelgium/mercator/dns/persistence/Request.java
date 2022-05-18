@@ -1,7 +1,5 @@
 package be.dnsbelgium.mercator.dns.persistence;
 
-import be.dnsbelgium.mercator.dns.dto.DnsResolution;
-import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,4 +36,12 @@ public class Request {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "request_id")
     @Builder.Default                    private List<Response> responses = new ArrayList<>();
+                                        private int numOfResponses;
+
+    @Access(AccessType.PROPERTY)
+    @Column(name = "num_of_responses")
+    public int getNumOfResponses() {
+        return this.responses.size();
+    }
+
 }
