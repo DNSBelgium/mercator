@@ -364,18 +364,23 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       display: flex;
 
       span {
-        margin-left: 1rem;
-        min-width: 5rem; // Just width doesn't work
-        max-width: 5rem; // Due to dynamic rendering
+        min-width: 4rem; // Just width doesn't work
+        max-width: 4rem; // Due to dynamic rendering
         font-weight: bold;
       }
 
       .prefix-data-div {
         display: flex;
+        
+        li {
+          margin-bottom: 10px;
+          max-width: 700px;
+          word-wrap: break-word;
+        }
       }
       .prefix-data-div > :first-child {
-        min-width: 2rem; // Just width doesn't work
-        max-width: 2rem; // Due to dynamic rendering
+        min-width: 2.5rem; // Just width doesn't work
+        max-width: 2.5rem; // Due to dynamic rendering
       }
       
       .geo-ip-data {

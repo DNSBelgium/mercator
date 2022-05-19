@@ -5,6 +5,7 @@ public enum RecordType {
   A,
   AAAA,
   CAA,
+  CDS,
   CDNSKEY,
   CNAME,
   DNSKEY,

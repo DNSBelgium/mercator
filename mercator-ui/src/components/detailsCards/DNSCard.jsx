@@ -61,8 +61,9 @@ const DNSCard = (props) => {
                 {
                     request.responses.map((response, index) => {
                         return(
-                            <li key={index} className="mb-1">
-                                { response.recordData } <br/>
+                            <li key={index}>
+                                { response.recordData }
+                                <br/>
                                 TTL: { response.ttl }
                                 {
                                     renderGeoIps(response.responseGeoIps) 
