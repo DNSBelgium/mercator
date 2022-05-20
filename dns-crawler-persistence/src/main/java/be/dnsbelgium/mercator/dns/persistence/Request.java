@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
@@ -33,10 +35,20 @@ public class Request {
     @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     @Column(name = "ok")                private boolean ok;
     @Column(name = "problem")           private String problem;
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+
+    // RESPONSES
+    @OneToMany(cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     @JoinColumn(name = "request_id")
     @Builder.Default                    private List<Response> responses = new ArrayList<>();
                                         private int numOfResponses;
+
+    // SIGNATURES
+    @OneToMany(cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @JoinColumn(name = "request_id")
+    @Builder.Default                    private List<RecordSignature> recordSignatures = new ArrayList<>();
+//                                        private int numOfSignatures;
 
     @Access(AccessType.PROPERTY)
     @Column(name = "num_of_responses")
