@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-RUN apk add --update-cache \
+RUN apk add -u --update-cache \
     libstdc++ \
     chromium \
     harfbuzz \
