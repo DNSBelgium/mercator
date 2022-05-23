@@ -57,7 +57,8 @@ public class DnsCrawlerApplicationTest {
   @Test
   public void idn() throws Exception {
     // This domain is not under our control, so test might fail in the future
-    String domainName = "café.be";
+//    String domainName = "café.be";
+    String domainName = "dnsbelgium.be";
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);
     dnsCrawler.process(visitRequest);
 
@@ -65,8 +66,10 @@ public class DnsCrawlerApplicationTest {
     assertThat(requests).hasSize(16);
 
     Request soa = requests.stream().filter(request -> request.getRecordType() == RecordType.SOA).findFirst().get();
-    Request a = requests.stream().filter(request -> request.getRecordType() == RecordType.A).findFirst().get();
     assertThat(soa.getResponses()).hasSize(1);
+    assertThat(soa.getRecordSignatures()).hasSize(1);
+
+    Request a = requests.stream().filter(request -> request.getRecordType() == RecordType.A).findFirst().get();
     assertThat(a.getResponses()).hasSize(1);
 
     assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.A))).isTrue();

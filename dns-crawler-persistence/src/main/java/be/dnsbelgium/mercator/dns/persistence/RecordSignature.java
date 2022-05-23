@@ -19,9 +19,9 @@ public class RecordSignature {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")                private Long id;
-    @Column(name = "key_tag")           private Long keyTag;
-    @Column(name = "algorithm")         private Long algorithm;
-    @Column(name = "labels")            private Long labels;
+    @Column(name = "key_tag")           private Integer keyTag; // footprint
+    @Column(name = "algorithm")         private Integer algorithm;
+    @Column(name = "labels")            private Integer labels;
     @Column(name = "ttl")               private Long ttl;
     @Column(name = "inception_date")    private ZonedDateTime inceptionDate;
     @Column(name = "expiration_date")   private ZonedDateTime expirationDate;
