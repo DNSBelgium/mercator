@@ -74,13 +74,13 @@ public class DnsCrawlService {
               logger.warn("IP isn't parseable");
             }
           }
+        }
 
-//          if (recordType == RecordType.SOA) {
-            List<RecordSignature> signatures = requestSignature(visitRequest.getDomainName(), recordType);
-            if (!signatures.isEmpty()) {
-              request.getRecordSignatures().addAll(signatures);
-            }
-//          }
+        if (recordType == RecordType.SOA) {
+          List<RecordSignature> signatures = requestSignature(visitRequest.getDomainName(), recordType);
+          if (!signatures.isEmpty()) {
+            request.getRecordSignatures().addAll(signatures);
+          }
         }
 
         requests.add(request);
@@ -90,31 +90,45 @@ public class DnsCrawlService {
   }
 
   // Template code to test DB and frontend for RRSIG data. To be refactored.
-  public List<RecordSignature> requestSignature(String domainName, RecordType recordType) {
+  private List<RecordSignature> requestSignature(String domainName, RecordType recordType) {
     RRset[] answer = new RRset[0];
     try {
       final Name fqdn = Name.concatenate(Name.fromString(domainName), Name.root);
-      final Resolver res = newResolver();
+
+      Optional<Resolver> res = newResolver();
+      if (res.isEmpty()) return Collections.emptyList();
+
       final Record question = Record.newRecord(fqdn, Type.value(recordType.toString()), DClass.IN);
       final Message query = Message.newQuery(question);
-      final Message response = res.send(query);
+      final Message response = res.get().send(query);
       answer = response.getSectionRRsets(Section.ANSWER).toArray(new RRset[0]);
     } catch (IOException ex) {
      logger.error(ex.getMessage());
     }
 
-    if (answer.length == 0) return Collections.emptyList();
+    if (answer.length == 0)  {
+      logger.info("Returning empty list of signatures.");
+      return Collections.emptyList();
+    }
 
     return createSignatures(answer);
   }
-  // To be removed.
-  private static Resolver newResolver() {
-    final Resolver res = new ExtendedResolver();
-    res.setEDNS(0, 0, ExtendedFlags.DO, (List<EDNSOption>) null);
-    res.setIgnoreTruncation(false);
-    return res;
+
+  private static Optional<Resolver> newResolver() {
+    String[] hosts = new String[] { "8.8.8.8" };
+
+    try {
+      final Resolver res = new ExtendedResolver(hosts);
+      res.setEDNS(0, 0, ExtendedFlags.DO, (List<EDNSOption>) null);
+      res.setIgnoreTruncation(false);
+      return Optional.of(res);
+    } catch (UnknownHostException ex) {
+      logger.error(ex.getMessage());
+    }
+    return Optional.empty();
   }
-  public List<RecordSignature> createSignatures(RRset[] answer) {
+
+  private List<RecordSignature> createSignatures(RRset[] answer) {
     List<RecordSignature> recordSignatures = new ArrayList<>();
     for (RRset record : answer) {
       for (RRSIGRecord sig : record.sigs()) {
