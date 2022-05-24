@@ -1,8 +1,6 @@
 -- Count amount of domain_names having HTTPS records per label.
 
-SELECT coalesce(l.labels, 'no_label'), domain_name, count(*) AS number_of_records
+SELECT coalesce(l.labels, 'no_label'), prefix, domain_name, num_of_responses
 FROM dns_crawler.request req
     LEFT OUTER JOIN dispatcher.dispatcher_event_labels l ON l.visit_id = req.visit_id
-    JOIN dns_crawler.response resp ON resp.request_id = req.id
 WHERE req.record_type = 'HTTPS'
-GROUP BY domain_name, coalesce(l.labels, 'no_label')
