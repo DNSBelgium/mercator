@@ -17,6 +17,7 @@ const DNSCard = (props) => {
             const url = `/requests/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
+                    console.log(resp)
                     if(resp.status === 200) {
                         setData(resp.data._embedded.requests);
                     }
@@ -67,12 +68,36 @@ const DNSCard = (props) => {
                                 TTL: { response.ttl }
                                 {
                                     renderGeoIps(response.responseGeoIps) 
-                                } 
+                                }
+                                {
+                                    renderSignatures(response.recordSignatures)
+                                }
                             </li>
                         )
                     })
                 }
             </>
+        );
+    }
+
+    // Renders the signatures of a request. data[x].request[x]
+    const renderSignatures = (request) => { // Inside ul element.
+        if (checkObjectIsFalsy(request)) return; // In theory this should be unnecessary but.. JS doing JS things.
+        if (checkObjectIsFalsy(request.recordSignatures)) return;
+        return (
+            request.recordSignatures.map((sig, index) => {
+                return (
+                    <li key={index}>
+                        Record signature: <br/>
+                        Key tag: {sig.keyTag} <br/>
+                        Algorithm: {sig.algorithm} <br/>
+                        Labels: {sig.labels} <br/>
+                        Inception: {moment(sig.inceptionDate).format("DD/MM/YYYY HH:mm:ss")} <br/>
+                        Expiration: {moment(sig.expirationDate).format("DD/MM/YYYY HH:mm:ss")} <br/>
+                        Signer: {sig.signer}
+                    </li>
+                );
+            })
         );
     }
 
@@ -91,6 +116,7 @@ const DNSCard = (props) => {
                                     
                                     <ul className="mb-3"> 
                                         { renderResponses(request) }
+                                        { renderSignatures(request) }
                                     </ul>
                                 </div>
                             )

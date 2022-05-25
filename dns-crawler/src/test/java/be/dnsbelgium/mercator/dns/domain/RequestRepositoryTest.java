@@ -1,10 +1,7 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
-import be.dnsbelgium.mercator.dns.persistence.Response;
-import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.dns.persistence.*;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
@@ -135,6 +132,55 @@ class RequestRepositoryTest {
     assertThat(requests.get(0).getResponses().get(0).getResponseGeoIps().get(0).getCountry()).isEqualTo("BE");
 
     assertThat(requests.get(0).getResponses().get(1).getResponseGeoIps()).hasSize(0);
+
+  }
+
+  @Test
+  public void findByVisitId_with_signature() {
+    UUID visitId = randomUUID();
+    Request request = Request.builder()
+            .visitId(visitId)
+            .domainName("dnsbelgium.be")
+            .ok(true)
+            .problem(null)
+            .prefix("@")
+            .recordType(RecordType.A)
+            .rcode(0)
+            .crawlTimestamp(ZonedDateTime.now())
+            .build();
+
+    // 1 Request has N RecordSignatures.
+    RecordSignature rs1 = RecordSignature.builder()
+            .keyTag(8)
+            .algorithm(2)
+            .labels(1)
+            .ttl(3000L)
+            .inceptionDate(ZonedDateTime.now())
+            .expirationDate(ZonedDateTime.now())
+            .signer("dnsbelgium.be.")
+            .build();
+
+    RecordSignature rs2 = RecordSignature.builder()
+            .keyTag(8)
+            .algorithm(2)
+            .labels(1)
+            .ttl(3000L)
+            .inceptionDate(ZonedDateTime.now())
+            .expirationDate(ZonedDateTime.now())
+            .signer("dnsbelgium.be.")
+            .build();
+
+    request.setRecordSignatures(List.of(rs1, rs2));
+
+    requestRepository.save(request);
+
+    List<Request> requests = requestRepository.findByVisitId(visitId);
+
+    assertThat(requests).hasSize(1);
+    assertThat(requests.get(0).getRecordSignatures()).hasSize(2);
+
+    assertThat(requests.get(0).getRecordSignatures().get(0)).isEqualTo(rs1);
+    assertThat(requests.get(0).getRecordSignatures().get(1)).isEqualTo(rs2);
 
   }
 }

@@ -78,9 +78,7 @@ public class DnsCrawlService {
 
         if (recordType == RecordType.SOA) {
           List<RecordSignature> signatures = requestSignature(visitRequest.getDomainName(), recordType);
-          if (!signatures.isEmpty()) {
-            request.getRecordSignatures().addAll(signatures);
-          }
+          if (!signatures.isEmpty()) request.getRecordSignatures().addAll(signatures);
         }
 
         requests.add(request);
@@ -91,7 +89,6 @@ public class DnsCrawlService {
 
   // Template code to test DB and frontend for RRSIG data. To be refactored.
   private List<RecordSignature> requestSignature(String domainName, RecordType recordType) {
-    RRset[] answer = new RRset[0];
     try {
       final Name fqdn = Name.concatenate(Name.fromString(domainName), Name.root);
 
@@ -101,17 +98,14 @@ public class DnsCrawlService {
       final Record question = Record.newRecord(fqdn, Type.value(recordType.toString()), DClass.IN);
       final Message query = Message.newQuery(question);
       final Message response = res.get().send(query);
-      answer = response.getSectionRRsets(Section.ANSWER).toArray(new RRset[0]);
-    } catch (IOException ex) {
-     logger.error(ex.getMessage());
-    }
+      RRset[] answer = response.getSectionRRsets(Section.ANSWER).toArray(new RRset[0]);
+      return createSignatures(answer);
 
-    if (answer.length == 0)  {
-      logger.info("Returning empty list of signatures.");
+    } catch (IOException ex) {
+      logger.error(ex.getMessage());
       return Collections.emptyList();
     }
 
-    return createSignatures(answer);
   }
 
   private static Optional<Resolver> newResolver() {
@@ -124,8 +118,8 @@ public class DnsCrawlService {
       return Optional.of(res);
     } catch (UnknownHostException ex) {
       logger.error(ex.getMessage());
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   private List<RecordSignature> createSignatures(RRset[] answer) {
