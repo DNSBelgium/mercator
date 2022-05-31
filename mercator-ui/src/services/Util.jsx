@@ -54,7 +54,7 @@ export const handleExResponse = (response) => {
 // Return of case 500-503.
 const caseFiveHundredRange = () => {
     return (
-        <div className="error-div" id='Error-Case-500-Div' data-testid="error-500">
+        <div className="error-div" id='Error-Case-500-Div'>
             <h2>An error has occurred.</h2>
             <p>Please try again later.</p>
         </div>
