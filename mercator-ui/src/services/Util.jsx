@@ -1,12 +1,19 @@
 // Check data is not null or an empty object.
 // Returns true if it is falsy and returns false if it is not falsy.
 // I'm sorry for the naming. It could have been better.
+// Check util.test.js for examples.
 export const checkObjectIsFalsy = (data) => {
+    // Checking for falsy Json data.
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
     if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype) {
         return true;
     }
-    if (data === null || data.length === 0) return true;
+
+    // Checking for falsy vanilla JS data.
+    if (Array.isArray(data) || typeof(data) === 'string') {
+        if (data.length === 0) return true;
+    }
+    if (typeof(data) === 'undefined' || data === null) return true;
     return false;
 }
 
@@ -47,7 +54,7 @@ export const handleExResponse = (response) => {
 // Return of case 500-503.
 const caseFiveHundredRange = () => {
     return (
-        <div className="error-div" id='Error-Case-500-Div'>
+        <div className="error-div" id='Error-Case-500-Div' data-testid="error-500">
             <h2>An error has occurred.</h2>
             <p>Please try again later.</p>
         </div>

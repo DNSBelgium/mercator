@@ -266,6 +266,7 @@ const TimelineDomainName = () => {
                                             <td>
                                                 <Button 
                                                     id='Copy-Id-Btn'
+                                                    data-id={item.visitId}
                                                     onClick={() => navigator.clipboard.writeText(item.visitId)}
                                                 >
                                                     Copy Visit Id

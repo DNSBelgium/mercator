@@ -1,7 +1,7 @@
 const Home = () => {
 
     return (
-        <div id="home">
+        <div id="home" data-testid="home">
             <h2>Enter a search to begin.</h2>
             <p>Searches can be done by domain name or by an exact visit id.</p>
             <p>Select your search type with the dropdown menu next to the search bar.</p>

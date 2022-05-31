@@ -28,7 +28,8 @@
     "start": "PORT=8090 REACT_APP_MUPPETS_HOST=https://muppets-dev.crawl042.dc3.be chmod +x ./env.sh && ./env.sh ./public/ && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "e2e": "cypress open"
   },
   "eslintConfig": {
     "extends": [
@@ -48,5 +49,9 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8089/"
+  "proxy": "http://localhost:8089/",
+  "devDependencies": {
+    "@testing-library/cypress": "^8.0.2",
+    "cypress": "^9.7.0"
+  }
 }
