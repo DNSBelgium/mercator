@@ -1,7 +1,7 @@
 // Check data is not null or an empty object.
 // Returns true if it is falsy and returns false if it is not falsy.
 // I'm sorry for the naming. It could have been better.
-// Check util.test.js for examples.
+// Check out src/__unit-tests__/Util.test.js for examples.
 export const checkObjectIsFalsy = (data) => {
     // Checking for falsy Json data.
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object

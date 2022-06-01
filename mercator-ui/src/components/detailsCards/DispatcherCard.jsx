@@ -9,10 +9,10 @@ function DispatcherCard(props) {
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        const handlerData = async () => {
+
+        const fetchData = async () => {
 
             const url = `/dispatcherEvents/${visitId}`;
-
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
@@ -24,7 +24,7 @@ function DispatcherCard(props) {
                 });
         };
 
-        handlerData();
+        fetchData();
     }, [visitId]);
 
     if (checkObjectIsFalsy(data)) {

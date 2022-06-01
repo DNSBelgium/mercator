@@ -1,15 +1,13 @@
 import { cleanup } from '@testing-library/react'; 
 import '@testing-library/jest-dom';
 
-import { checkObjectIsFalsy } from './Util';
+import { checkObjectIsFalsy } from '../services/Util';
 
 afterEach(cleanup);
 
 // When given bad data, checkObjectIsFalsy returns true as in "The object IS FALSY".
 // When given usable data, checkObjectIsFalsy returns false as in "The object IS NOT falsy".
 // The boolean 'false' is not checked due to redundancy.
-
-// Execute with "npm run test".
 
 test("Assert checkObjectIsFalsy acts correctly with falsy data", () => {
   expect(checkObjectIsFalsy([])).toBe(true);
