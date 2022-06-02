@@ -4,23 +4,22 @@ import api from "../../services/api";
 import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
 
 const Wappalyzer = (props) => {
-
     const visitId = props.visitId
     const {openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props;
 
-    const [data, setData] = useState({});
-    const [technologies, setTechnologies] = useState([]);
-    const [renderTech, setRenderTech] = useState([]);
+    const [data, setData] = useState(null);
+    const [technologies, setTechnologies] = useState(null);
+    const [renderTech, setRenderTech] = useState(null);
 
     useEffect(() => {
-        const handlerData = async () => {
 
+        const fetchData = async () => {
             const url = `/wappalyzerResults/${visitId}`;
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data);
-                        setTechnologies(resp === undefined ? [] : resp.data.technologies);
+                        setData(resp.data);
+                        setTechnologies(resp.data.technologies);
 
                         // Set renderTech array with the same length as technologies array and initialize all with value: false.
                         // Used for showing / not showing technologies in the renderTechonlogies function.
@@ -31,7 +30,8 @@ const Wappalyzer = (props) => {
                     console.log(ex);
                 });            
         };
-        handlerData();
+
+        fetchData();
     }, [visitId]);
 
     // Set the current renderTech[index] boolean to the opposite value of its current value.

@@ -6,20 +6,18 @@ import api from "../../services/api";
 import { checkObjectIsFalsy } from "../../services/Util";
 
 const VATCard = (props) => {
-
     const visitId = props.visitId
 
-    const [data, setData] = useState({});
+    const [data, setData] = useState(null);
 
-    // api VAT
     useEffect(() => {
-        const handlerData = async () => {
 
+        const fetchData = async () => {
             const url = `/vatCrawlResults/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data);
+                        setData(resp.data);
                     }
                 })
                 .catch((ex) => {
@@ -27,7 +25,7 @@ const VATCard = (props) => {
                 });
         };
         
-        handlerData();
+        fetchData();
     }, [visitId])    
 
     // data from props
@@ -38,11 +36,11 @@ const VATCard = (props) => {
         setOpenVatValues,
     } = props;
 
-    const topElement = <p className='top-element'>VAT Crawl</p>
+    const topElement = <p className='top-element'>VAT crawl</p>
 
     // Render data.vatValues
     const renderVAT = () => { // Inside td element
-        if(!data.vatValues || !data.vatValues.length) {
+        if(checkObjectIsFalsy(data.vatValues)) {
             return (
                 <p className="mt-1">No VAT found</p>
             );
@@ -82,7 +80,7 @@ const VATCard = (props) => {
 
     // Render data.visitedUrls
     const renderFollowedUrls = () => { // Inside td element
-        if(!data.visitedUrls && !data.visitedUrls.length) {
+        if(checkObjectIsFalsy(data.visitedUrls)) {
             return (
                 ''
             );

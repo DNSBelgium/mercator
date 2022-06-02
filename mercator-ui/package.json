@@ -14,7 +14,6 @@
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "moment": "^2.29.1",
-    "msw": "^0.42.0",
     "react": "^17.0.1",
     "react-bootstrap": "^1.4.3",
     "react-border-wrapper": "^1.0.3",

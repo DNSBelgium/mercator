@@ -6,14 +6,13 @@ import api from "../../services/api";
 import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
 
 const DNSCard = (props) => {
-
     const visitId = props.visitId
 
     const [data, setData] = useState({});
 
     useEffect(() => {
-        const handlerData = async () => {
 
+        const fetchData = async () => {
             const url = `/requests/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
@@ -26,7 +25,7 @@ const DNSCard = (props) => {
                 })            
         };
         
-        handlerData();
+        fetchData();
     }, [visitId]);
 
     const {openRecords, setOpenRecords} = props;
@@ -196,7 +195,7 @@ const DNSCard = (props) => {
                             <td>
                                 {
                                     checkDataHasResponses(data) && ( // Don't render 'More Info' button if there are is no response data.
-                                        <button 
+                                        <button
                                             className="more-info"
                                             onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
                                         > 

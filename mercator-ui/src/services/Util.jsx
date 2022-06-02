@@ -33,6 +33,7 @@ export const renderDataBoolean = (bool) => {
 */
 
 export const handleExResponse = (response) => {
+    console.log(response);
 
     switch(response.status) {
         // Add status case as they come up.
