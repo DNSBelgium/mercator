@@ -21,6 +21,11 @@ dependencyCheck {
   }
 }
 
+// This fixes https://github.com/assertj/assertj-core/issues/2448
+// can be remove once Spring upgraded the lib
+// failing test is AcknowledgeListenerTest
+ext['assertj.version']="3.22.0"
+
 ext {
   getCommitHash = { ->
     def stdout = new ByteArrayOutputStream()
