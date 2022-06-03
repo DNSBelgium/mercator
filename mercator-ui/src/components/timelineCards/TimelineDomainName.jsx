@@ -34,7 +34,6 @@ const TimelineDomainName = () => {
             const url = `/find-visits/${domain}?page=${page - 1}`
             await api.get(url)
                 .then((resp) => {
-                    console.log(resp);
                     if(resp.status === 200) {
                         setData(resp.data);
                     }

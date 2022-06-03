@@ -45,7 +45,7 @@ class ClusterServiceTest {
         List<String> visitIds = Arrays.asList(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString());
         List<ClusterDTO> clusterData = clusterService.getClusterData(visitIds);
 
-        Assertions.assertThat(clusterData).hasSize(3);
+        assertThat(clusterData).hasSize(3);
         assertThat(clusterData.get(0).getScreenshotKey()).isEqualTo("foo");
         assertThat(clusterData.get(1).getScreenshotKey()).isEqualTo("bar");
         assertThat(clusterData.get(2).getScreenshotKey()).isNull();
@@ -55,7 +55,7 @@ class ClusterServiceTest {
     void getClusterDataWrongVisitId() {
         List<ClusterDTO> clusterData = clusterService.getClusterData(List.of("wrong visit id"));
 
-        Assertions.assertThat(clusterData).hasSize(1);
+        assertThat(clusterData).hasSize(1);
         assertThat(clusterData.get(0).getReceivedVisitId()).isEqualTo("wrong visit id");
         assertThat(clusterData.get(0).getVisitId()).isNull();
         assertThat(clusterData.get(0).getDomainName()).isNull();
