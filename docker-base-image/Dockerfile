@@ -5,8 +5,3 @@ RUN keytool -genkey -keyalg RSA -alias localhost -validity 3650 -keysize 2048 -k
 
 FROM eclipse-temurin:11-jre
 COPY --from=build /etc/ssl/certs /etc/ssl/certs
-
-RUN apt-get update && apt-get install -y \
-  libssl1.1 \
-  openssl \
-  && rm -rf /var/lib/apt/lists/*
