@@ -5,7 +5,6 @@ import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
-import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -42,9 +40,9 @@ public class SearchService {
      * @return PageDTO with a List of SearchDTO's (containing VisitId, ContentCrawler booleans),
      *         int amount of pages,
      *         hasNext & hasPrevious booleans.
-     * @throws NotFoundException When a requested resource is not found in the database.
+     * @throws NoSuchElementException When a requested resource is not found in the database.
      */
-    public PageDTO getPageForDomain(String domainName, int pageNumber) throws NotFoundException, ExecutionException, InterruptedException {
+    public PageDTO getPageForDomain(String domainName, int pageNumber) throws NoSuchElementException, ExecutionException, InterruptedException {
         logger.info("Searching for " + domainName);
 
         // Create page requested by pageNumber.
@@ -53,7 +51,7 @@ public class SearchService {
 
         if (!dispatcherPage.hasContent()) {
             logger.info("Dispatcher has no content.");
-            throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
+            throw new NoSuchElementException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
             // TODO: Return a code that the frontend will translate in the correct message
         }
 
