@@ -6,8 +6,8 @@ import moment from "moment";
 import { checkObjectIsFalsy, handleExResponse } from "../../services/Util";
 
 const TimelineDomainName = () => {
-    const { domain } = useParams();
-    let { page } = useParams(); // Fetch :pageNumber from url
+    const { domain } = useParams(); // Fetch :domain from url
+    let { page } = useParams(); // Fetch :page from url
     page = parseInt(page);
 
     const navigate = useNavigate();
@@ -34,6 +34,7 @@ const TimelineDomainName = () => {
             const url = `/find-visits/${domain}?page=${page - 1}`
             await api.get(url)
                 .then((resp) => {
+                    console.log(resp);
                     if(resp.status === 200) {
                         setData(resp.data);
                     }
@@ -221,7 +222,6 @@ const TimelineDomainName = () => {
                                 <thead>
                                     <tr>
                                         <th>Crawl time</th>
-                                        {/* <th>Crawl label</th> */}
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
                                         <th>Status<br/> SMTP crawl</th>
@@ -248,9 +248,6 @@ const TimelineDomainName = () => {
                                                     }
                                                 </Link>
                                             </td>
-                                            {/* <td> 
-                                                { item.label } 
-                                            </td> */}
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.muppets) }
                                             </td>

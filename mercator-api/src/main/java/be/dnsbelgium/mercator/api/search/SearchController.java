@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.api.search;
 
-import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import javassist.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @BasePathAwareController
@@ -19,12 +16,10 @@ public class SearchController {
     private final Logger logger = LoggerFactory.getLogger(SearchController.class);
 
     private final SearchService searchService;
-    private final ContentCrawlResultRepository contentCrawlResultRepository;
 
     @Autowired
-    public SearchController(SearchService searchService, ContentCrawlResultRepository contentCrawlResultRepository) {
+    public SearchController(SearchService searchService) {
         this.searchService = searchService;
-        this.contentCrawlResultRepository = contentCrawlResultRepository;
     }
 
     /**

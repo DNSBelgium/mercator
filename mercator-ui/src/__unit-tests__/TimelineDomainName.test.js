@@ -66,7 +66,7 @@ describe("Testing Timeline table's rendering with and without correct data", () 
         const records = await waitFor(() => screen.findByText("Number of records: 1"));
         expect(records).toBeInTheDocument();
 
-        // Note: Actual crawl timestamp is a Bootstrap Link element, so we can't test it here.
+        // Note: Actual crawl timestamp is (currently) a Bootstrap Link element.
 
         // Check for "Copy Visit Id" button to assert at least 1 row is rendered.
         const copyVisitIdButton = await waitFor(() => screen.findByText("Copy Visit Id"));

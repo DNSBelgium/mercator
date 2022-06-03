@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -35,17 +34,16 @@ public class SearchService {
     }
 
     /**
-     * Gets the all the necessary information needed for the frontend's search result table by pageNr.
-     * Frontend calls a search by domain name, gets a PageDTO as the return.
-     * @param domainName Requested Domain. F.ex.: abc.be
-     * @param pageNumber Requested page within domainName.
+     * Gets information by domain name and page number.
+     * @param domainName Requested domain name to search for. F.ex.: abc.be
+     * @param pageNumber Requested page number within the search.
      * @return PageDTO with a List of SearchDTO's (containing VisitId, ContentCrawler booleans),
      *         int amount of pages,
      *         hasNext & hasPrevious booleans.
      * @throws NotFoundException When a requested resource is not found in the database.
      */
     public PageDTO getPageForDomain(String domainName, int pageNumber) throws NotFoundException, ExecutionException, InterruptedException {
-        logger.info("Searching for " + domainName);
+        logger.info("Searching for domain name: {}", domainName);
 
         // Create page requested by pageNumber.
         Pageable paging = PageRequest.of(pageNumber, 10, Sort.by("requestTimestamp").descending());
@@ -53,10 +51,19 @@ public class SearchService {
 
         if (!dispatcherPage.hasContent()) {
             logger.info("Dispatcher has no content.");
-            throw new NotFoundException(String.format("Domain %s was not yet crawled or does not exist.", domainName));
+            throw new NotFoundException(String.format("Domain: %s was not yet crawled or does not exist.", domainName));
             // TODO: Return a code that the frontend will translate in the correct message
         }
 
+        return pageToPageDTO(dispatcherPage);
+    }
+
+    /**
+     * Transforms a Page<DispatcherEvent> to a PageDTO.
+     * @param dispatcherPage to transform to DTO.
+     * @return PageDTO containing a list of SearchDTO's.
+     */
+    private PageDTO pageToPageDTO(Page<DispatcherEvent> dispatcherPage) throws ExecutionException, InterruptedException {
         // Create PageDTO to return.
         PageDTO pageDTO = new PageDTO();
         pageDTO.setAmountOfRecords(dispatcherPage.getTotalElements());
@@ -66,7 +73,7 @@ public class SearchService {
 
         // Create a list of SearchDTO's to add to PageDTO.
         // SearchDTO's contain: VisitId, StatusBooleans (CrawlComponentStatus), FinalUrl.
-        List<SearchDTO> searchDtoList = new ArrayList<>();
+        List<SearchDTO> searchDTOList = new ArrayList<>();
 
         // Create list of visitId's for DomainName from the requested page.
         for (DispatcherEvent event: dispatcherPage) {
@@ -87,14 +94,10 @@ public class SearchService {
                 resultWithKey.ifPresent(contentCrawlResult -> dto.setScreenshotKey(contentCrawlResult.getScreenshotKey()));
             }
 
-            searchDtoList.add(dto);
+            searchDTOList.add(dto);
         }
 
-        // Add list of SearchDTO's to PageDTO.
-        pageDTO.setDtos(searchDtoList);
-
-        logger.debug("Returning PageDTO containing a list of SearchDTO's.");
-
+        pageDTO.setDtos(searchDTOList);
         return pageDTO;
     }
 

@@ -1,7 +1,7 @@
 /**
  * Start all Docker containers (ui & ground-truth can be turned off).
  * Start up the frontend. Execute: npm start
- * Execute: npm start e2e
+ * Execute: npm run e2e
  * 
  * You can start with an empty database as these tests will execute the necessary crawls.
  */
@@ -48,7 +48,7 @@ describe("Happy flow of visiting a crawl's details card", () => {
 
     it("Renders Details cards with data", () => {
 
-        // Setting an intercepts for the Details cards' GET requests.
+        // Setting intercepts for the Details cards' GET requests.
         // (visitId is being taken from the data-id tag of the Visit Id button in the Timeline table).
         cy.get(':nth-child(1) > :nth-child(6) > #Copy-Id-Btn').invoke('data', 'id').then(visitId => {
             cy.intercept(`http://localhost:3000/api/contentCrawlResults/search/findByVisitId?visitId=${visitId}`).as('ContentCrawlResults');

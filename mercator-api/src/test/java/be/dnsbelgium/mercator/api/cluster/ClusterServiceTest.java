@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.api.cluster;
 
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,7 +45,7 @@ class ClusterServiceTest {
         List<String> visitIds = Arrays.asList(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString());
         List<ClusterDTO> clusterData = clusterService.getClusterData(visitIds);
 
-        assertThat(clusterData).hasSize(3);
+        Assertions.assertThat(clusterData).hasSize(3);
         assertThat(clusterData.get(0).getScreenshotKey()).isEqualTo("foo");
         assertThat(clusterData.get(1).getScreenshotKey()).isEqualTo("bar");
         assertThat(clusterData.get(2).getScreenshotKey()).isNull();
@@ -54,7 +55,7 @@ class ClusterServiceTest {
     void getClusterDataWrongVisitId() {
         List<ClusterDTO> clusterData = clusterService.getClusterData(List.of("wrong visit id"));
 
-        assertThat(clusterData).hasSize(1);
+        Assertions.assertThat(clusterData).hasSize(1);
         assertThat(clusterData.get(0).getReceivedVisitId()).isEqualTo("wrong visit id");
         assertThat(clusterData.get(0).getVisitId()).isNull();
         assertThat(clusterData.get(0).getDomainName()).isNull();
