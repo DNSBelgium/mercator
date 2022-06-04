@@ -3,7 +3,7 @@
 [Mercator](https://en.wikipedia.org/wiki/Gerardus_Mercator) was a Belgian geographer, but it is also DNS Belgium's
 crawler project.
 
-Given a domain name, Mercator gathers public information from different sources: HTML, DNS records, SSL Certificates,
+Given a domain name, Mercator gathers public information from different sources: HTML, DNS records, SMTP servers, SSL Certificates,
 etc.
 
 ## Architecture
