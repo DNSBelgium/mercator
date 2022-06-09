@@ -30,6 +30,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    // https://mvnrepository.com/artifact/io.netty/netty-transport
+    implementation group: 'io.netty', name: 'netty-transport', version: '4.1.77.Final'
+    implementation group: 'io.netty', name: 'netty-codec', version: '4.1.77.Final'
+
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    //  we only use it for encoding byte arrays to Hexadecimal strings
+    // (use this instead of bouncycastle which is 15x bigger)
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+
     // JSON logging
     implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
 
