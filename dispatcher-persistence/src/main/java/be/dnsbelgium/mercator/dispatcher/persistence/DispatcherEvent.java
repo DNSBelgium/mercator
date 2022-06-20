@@ -32,6 +32,7 @@ public class DispatcherEvent implements Persistable<UUID> {
 
   @ElementCollection
   @CollectionTable(name = "dispatcher_event_labels", joinColumns = @JoinColumn(name = "visit_id"))
+  @Column(name = "labels")
   List<String> labels;
 
   @Column(name = "request_timestamp")
@@ -40,6 +41,7 @@ public class DispatcherEvent implements Persistable<UUID> {
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "dispatcher_event_acks", joinColumns = @JoinColumn(name = "visit_id"))
   @MapKeyEnumerated(EnumType.STRING)
+  @Column(name = "acks")
   Map<CrawlerModule, ZonedDateTime> acks;
 
   public static DispatcherEvent from(UUID visitId, DispatcherRequest dispatcherRequest) {

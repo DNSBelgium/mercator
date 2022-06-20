@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.api.search;
 
-import javassist.NotFoundException;
+import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 @BasePathAwareController
@@ -33,7 +34,7 @@ public class SearchController {
 
         try {
             return ResponseEntity.status(HttpStatus.OK).body(searchService.getPageForDomain(domainName, pageNumber));
-        } catch (NotFoundException ex) {
+        } catch (NoSuchElementException ex) {
             logger.debug(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         } catch (ExecutionException | InterruptedException ex) {

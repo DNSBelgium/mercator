@@ -3,65 +3,53 @@
 Gathers DNS records. Which records from which subdomain can be easily configured. `@` represent the apex (`[]` is used here to escape the character `@`, see [documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/features.html#features.external-config.typesafe-configuration-properties.relaxed-binding.maps))
 
 ```shell
-crawler.dns.subdomains.[@]=A, AAAA, MX, SOA, TXT, CAA, HTTPS, SVCB
+crawler.dns.subdomains.[@]=A, AAAA, MX, SOA, TXT, CAA, HTTPS, SVCB, NS, DS, DNSKEY, CDNSKEY, CDS
 crawler.dns.subdomains.www=A, AAAA
 crawler.dns.subdomains._dmarc=TXT
 ```
 
-Result is stored in json, for example
+DNS Records are split into two separate tables, Requests and Responses.
+Requests represents a DNS Record request.
+It stores:
+ - Visit Id
+ - Domain Name
+ - Prefix
+ - Record Type (see crawler.dns.subdomains above for supported types)
+ - rcode
+ - Crawl's timestamp
+ - Ok
+ - Problem
+ - Number of Responses
 
-```json
-{
-    "@": {
-        "records": {
-            "A": [
-                "45.60.74.42"
-            ],
-            "MX": [
-                "0 dnsbelgium-be.mail.protection.outlook.com."
-            ],
-            "CAA": [
-                "0 issue \"amazon.com\"",
-                "0 issue \"letsencrypt.org\"",
-                "0 iodef \"mailto:cert-abuse@dnsbelgium.be\"",
-                "0 issue \"globalsign.com\""
-            ],
-            "SOA": [
-                "ns1.dns.be. be-hostmaster.dnsbelgium.be. 2022094375 10800 1800 3600000 3600"
-            ],
-            "TXT": [
-                "\"spf2.0/mfrom,pra include:spf.protection.outlook.com include:qlan.eu include:servers.mcsv.net include:spf.flexmail.eu ip4:52.17.217.28 ip4:52.214.17.58 ip4:84.199.48.136 -all\"",
-                "\"apple-domain-verification=1bO1oU8ux8xGmGqT\"",
-                "\"QHW9u39wLyjqPCFmoNpDsDJHubOneJ2Eecw5Xt+DljI=\"",
-                "\"_globalsign-domain-verification=aGlGYgHuFYu0D2FqVnKKkORIcIB2uvzfp8u9aXdQ9m\"",
-                "\"v=spf1 include:spf.protection.outlook.com include:qlan.eu include:_spf.elasticemail.com include:servers.mcsv.net include:spf.flexmail.eu ip4:52.17.217.28 ip4:52.214.17.58 ip4:84.199.48.136 -all\"",
-                "\"miro-verification=0025c3eb22c1eef7625c0a52e3c262ccb937b6fa\""
-            ],
-            "AAAA": [
-                "2a02:e980:8f:0:0:0:0:2a"
-            ],
-            "SVCB": [],
-            "HTTPS": []
-        }
-    },
-    "www": {
-        "records": {
-            "A": [
-                "45.60.74.42"
-            ],
-            "AAAA": [
-                "2a02:e980:8f:0:0:0:0:2a"
-            ]
-        }
-    },
-    "_dmarc": {
-        "records": {
-            "TXT": [
-                "\"v=DMARC1; p=quarantine; pct=10; fo=0; rua=mailto:dmarc@dnsbelgium.be; ruf=mailto:dmarc@dnsbelgium.be\""
-            ]
-        }
-    }
-}
-```
+A Request would hold the following data as an example:
 
-It also add information about GeoIP on A and AAAA IPs such as AS number, AS organisation and country.
+| id  | visit_id | domain_name | prefix | record_type   | rcode   | crawl_timestamp | ok      | problem    | num_of_responses |
+|-----|----------|-------------|--------|---------------|---------|-----------------|---------|------------|------------------|
+| 1   | [UUID]   | test000.be  |    @   | A             | 3       |    [timestamp]  | false   | nxdomain   | 0                |
+| 2   | [UUID]   | realdom.be  |    @   | A             | 0       |    [timestamp]  | true    | <null>     | 2                |
+| 3   | [UUID]   | realdom.be  |    @   | AAAA          | 0       |    [timestamp]  | true    | <null>     | 0                |
+| 4   | [UUID]   | realdom.be  |    @   | SOA           | 0       |    [timestamp]  | true    | <null>     | 1                |
+
+Id #3 did not get a Response while #2 and #4 did.
+num_of_responses represents the amount of records found for a specific record_type.
+
+A Response consists of:
+ - Record Data
+ - Time-To-Live
+
+Request #2 has 2 Responses which could hold the following data as an example:
+
+| id  | record_data | ttl  | request_id |
+|-----|-------------|------|------------|
+| 1   | 12.23.34.45 | 3600 | 2          |
+| 2   | 45.34.23.12 | 3600 | 2          |
+
+
+RRSIG data for (currently only) the SOA record type is saved in the record_signature table.
+
+The following GeoIP information for the A and AAAA record types' Responses is also stored:
+ - Asn
+ - Country
+ - Ip
+ - Asn Organisation
+ - Ip Version
