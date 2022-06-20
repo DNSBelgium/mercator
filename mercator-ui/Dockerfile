@@ -24,6 +24,8 @@ RUN apk upgrade --update-cache \
       curl xz-libs \
       # CVE-2022-27404 \
       freetype \
+      # CVE-2022-1586
+      pcre2 \
       --no-cache
 
 ## Nginx config
