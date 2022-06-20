@@ -4,12 +4,8 @@ import be.dnsbelgium.mercator.api.status.CrawlComponentStatus;
 import be.dnsbelgium.mercator.api.status.CrawlComponentStatusService;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
-import be.dnsbelgium.mercator.content.persistence.WappalyzerResult;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.smtp.persistence.CrawlStatus;
-import javassist.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +17,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,7 +75,7 @@ class SearchServiceTest {
     }
 
     @Test
-    void getPageForDomain() throws NotFoundException, ExecutionException, InterruptedException {
+    void getPageForDomain() throws Exception {
         when(dispatcherEventRepository.findDispatcherEventByDomainName(any(String.class), any(PageRequest.class))).thenReturn(
                 dispatcherPage
         );
