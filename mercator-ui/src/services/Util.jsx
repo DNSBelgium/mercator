@@ -1,12 +1,19 @@
 // Check data is not null or an empty object.
 // Returns true if it is falsy and returns false if it is not falsy.
 // I'm sorry for the naming. It could have been better.
+// Check out src/__unit-tests__/Util.test.js for examples.
 export const checkObjectIsFalsy = (data) => {
+    // Checking for falsy Json data.
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
     if (data && Object.keys(data).length === 0 && Object.getPrototypeOf(data) === Object.prototype) {
         return true;
     }
-    if (data === null || data.length === 0) return true;
+
+    // Checking for falsy vanilla JS data.
+    if (Array.isArray(data) || typeof(data) === 'string') {
+        if (data.length === 0) return true;
+    }
+    if (typeof(data) === 'undefined' || data === null) return true;
     return false;
 }
 
@@ -26,6 +33,7 @@ export const renderDataBoolean = (bool) => {
 */
 
 export const handleExResponse = (response) => {
+    console.log(response);
 
     switch(response.status) {
         // Add status case as they come up.

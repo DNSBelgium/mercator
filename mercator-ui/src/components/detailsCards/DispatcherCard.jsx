@@ -4,19 +4,18 @@ import api from "../../services/api";
 import { checkObjectIsFalsy } from "../../services/Util";
 
 function DispatcherCard(props) {
-
     const visitId = props.visitId
+
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        const handlerData = async () => {
 
+        const fetchData = async () => {
             const url = `/dispatcherEvents/${visitId}`;
-
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data);
+                        setData(resp.data);
                     }
                 })
                 .catch((ex) => {
@@ -24,7 +23,7 @@ function DispatcherCard(props) {
                 });
         };
 
-        handlerData();
+        fetchData();
     }, [visitId]);
 
     if (checkObjectIsFalsy(data)) {

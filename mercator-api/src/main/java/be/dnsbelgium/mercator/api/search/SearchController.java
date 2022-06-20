@@ -17,12 +17,10 @@ public class SearchController {
     private final Logger logger = LoggerFactory.getLogger(SearchController.class);
 
     private final SearchService searchService;
-    private final ContentCrawlResultRepository contentCrawlResultRepository;
 
     @Autowired
-    public SearchController(SearchService searchService, ContentCrawlResultRepository contentCrawlResultRepository) {
+    public SearchController(SearchService searchService) {
         this.searchService = searchService;
-        this.contentCrawlResultRepository = contentCrawlResultRepository;
     }
 
     /**

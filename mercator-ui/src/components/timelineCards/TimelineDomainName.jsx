@@ -6,8 +6,8 @@ import moment from "moment";
 import { checkObjectIsFalsy, handleExResponse } from "../../services/Util";
 
 const TimelineDomainName = () => {
-    const { domain } = useParams();
-    let { page } = useParams(); // Fetch :id from url
+    const { domain } = useParams(); // Fetch :domain from url
+    let { page } = useParams(); // Fetch :page from url
     page = parseInt(page);
 
     const navigate = useNavigate();
@@ -31,16 +31,15 @@ const TimelineDomainName = () => {
                 return;
             }
 
-            const url = `/find-visits/${domain}?page=${page - 1}` // backend location: mercator-api/.../search/SearchController
+            const url = `/find-visits/${domain}?page=${page - 1}`
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        
                         setData(resp.data);
                     }
                 })
                 .catch((ex) => {
-                    setException(ex.response); // TODO: Add 400 / 404?
+                    setException(ex.response); // TODO: Add 400?
                 });
 
             setProcessing(false);
@@ -177,7 +176,7 @@ const TimelineDomainName = () => {
 
     // Rendering HTML on a JS Function base, so we can define logic.
     const renderHTML = () => {
-        if(exception !== null) {
+        if(!checkObjectIsFalsy(exception)) {
             if(!domain.includes(".be") && !domain.includes(".vlaanderen") && !domain.includes(".brussels")) {
                 return(
                     <h5 className="ml-3 mt-3">Please enter a domain name with TLD (.be, .vlaanderen, .brussels).</h5>
@@ -194,6 +193,7 @@ const TimelineDomainName = () => {
             );
         }
 
+        // Double check in case handleExResponse didn't catch the issue.
         if(checkObjectIsFalsy(data)) {
             if(!domain.includes(".be") && !domain.includes(".vlaanderen") && !domain.includes(".brussels")) {
                 return(
@@ -221,7 +221,6 @@ const TimelineDomainName = () => {
                                 <thead>
                                     <tr>
                                         <th>Crawl time</th>
-                                        {/* <th>Crawl label</th> */}
                                         <th>Status<br/> Content crawl</th>
                                         <th>Status<br/> DNS crawl</th>
                                         <th>Status<br/> SMTP crawl</th>
@@ -248,9 +247,6 @@ const TimelineDomainName = () => {
                                                     }
                                                 </Link>
                                             </td>
-                                            {/* <td> 
-                                                { item.label } 
-                                            </td> */}
                                             <td>
                                                 { booleanToCheckmark(item.crawlStatus.muppets) }
                                             </td>
@@ -266,6 +262,7 @@ const TimelineDomainName = () => {
                                             <td>
                                                 <Button 
                                                     id='Copy-Id-Btn'
+                                                    data-testid={item.visitId}
                                                     onClick={() => navigator.clipboard.writeText(item.visitId)}
                                                 >
                                                     Copy Visit Id

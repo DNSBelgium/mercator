@@ -73,7 +73,7 @@ const SSLCard = (props) => {
         setOpenTrustStores,
     } = props;
 
-    const topElement = <p className='top-element'>SSL Crawl</p>
+    const topElement = <p className='top-element'>SSL crawl</p>
     
     // Render crawlResult.supportSsl_<version number> / crawlResult.supportTls_<version number>
     const renderSlSupport = (sl, cipherSuites) => { // Inside td element
