@@ -13,10 +13,12 @@ sourceCompatibility = '11.0'
 
 repositories {
 	mavenCentral()
+	maven {
+		url 'https://repo.spring.io/milestone'
+	}
 }
 
 dependencies {
-	implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
+	implementation 'org.springframework.shell:spring-shell-starter:2.1.0-M5'
 	implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.167'
 }
-
