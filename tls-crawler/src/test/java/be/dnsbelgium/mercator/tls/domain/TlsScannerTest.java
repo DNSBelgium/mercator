@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ class TlsScannerTest {
   // (-Djava.security.properties=/path/to/custom/security.properties)
   static {
     Security.setProperty("jdk.tls.disabledAlgorithms", "NULL");
-    Security.setProperty("jdk.tls.legacyAlgorithms", "TLSv1,SSLv3,SSLv2");
+    Security.setProperty("jdk.tls.legacyAlgorithms", "");
 
   }
 
@@ -63,8 +64,38 @@ class TlsScannerTest {
     assertThat(result.getScanDuration()).isGreaterThan(Duration.ofNanos(1));
   }
 
+  // TODO: start TLS server instead of relying on google and others
+  // Do it in a separate test class ??
+  //
 
   @Test
+  public void google_be_tls12() {
+    ProtocolScanResult result = tlsScanner.scan(TLS_1_2, "google.be");
+    logger.info("result = {}", result);
+  }
+
+  @Test
+  public void cll_be_certificate() {
+    ProtocolScanResult result = tlsScanner.scan(TLS_1_2, "cll.be");
+    CertificateInfo peerCertificate = result.getPeerCertificate();
+    logger.info("peerCertificate = {}", peerCertificate);
+    // matches with what python based ssl-crawler found.
+    // Todo get cert from file to be independent from current cll.be config
+    assertThat(peerCertificate.getVersion()).isEqualTo(3);
+    assertThat(peerCertificate.getSerialNumber()).isEqualTo("118877526832461658454248843048988289064");
+    assertThat(peerCertificate.getPublicKeySchema()).isEqualTo("RSA");
+    assertThat(peerCertificate.getPublicKeyLength()).isEqualTo(2048);
+    assertThat(peerCertificate.getNotBefore()).isEqualTo("2022-01-26T00:00:00Z");
+    assertThat(peerCertificate.getNotAfter()) .isEqualTo("2023-01-26T23:59:59Z");
+    assertThat(peerCertificate.getIssuer()) .isEqualTo("CN=Gandi Standard SSL CA 2,O=Gandi,L=Paris,ST=Paris,C=FR");
+    assertThat(peerCertificate.getSubject()).isEqualTo("CN=www.cll.be");
+    assertThat(peerCertificate.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
+    assertThat(peerCertificate.getSha256Fingerprint()).isEqualTo("402514abe77794fc7c1d1b86b00e4f89a343c9755862fc050b27ed0488086af1");
+    assertThat(peerCertificate.getSignedBy().getSha256Fingerprint()).isEqualTo("b9f2164323638dce0b92218b43c41c1b2b2696389329db19f5cf7ad49b5cb372");
+    assertThat(peerCertificate.getSubjectAlternativeNames()).containsExactly("www.cll.be", "cll.be");
+  }
+
+    @Test
   public void google_be() {
     for (TlsProtocolVersion version : List.of(TLS_1_0, TLS_1_1, TLS_1_2, TLS_1_3)) {
       ProtocolScanResult result = tlsScanner.scan(version, "google.be");
@@ -105,7 +136,7 @@ class TlsScannerTest {
   }
 
   @Test
-  public void localhost_tls12() {
+  public void connection_refused() {
     ProtocolScanResult result = tlsScanner.scan(TLS_1_2, "localhost");
     logger.info("result = {}", result);
     assertThat(result.isConnectOK()).isFalse();
@@ -161,7 +192,7 @@ class TlsScannerTest {
   }
 
   @Test
-  public void checkInetSocketAddress() {
+  public void isUnresolved_InetSocketAddress() {
     InetSocketAddress address = new InetSocketAddress("x", 443);
     logger.info("address = {}", address);
     logger.info("address.isUnresolved = {}", address.isUnresolved());

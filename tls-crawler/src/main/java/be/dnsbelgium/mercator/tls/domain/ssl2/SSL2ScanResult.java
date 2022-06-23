@@ -16,9 +16,12 @@ public class SSL2ScanResult extends ProtocolScanResult {
   @Getter
   private ServerHello serverHello;
 
+  public SSL2ScanResult() {
+    super(TlsProtocolVersion.SSL_2);
+  }
+
   public static SSL2ScanResult failed(InetSocketAddress socketAddress, String errorMessage) {
     SSL2ScanResult scanResult = new SSL2ScanResult();
-    scanResult.setProtocolVersion(TlsProtocolVersion.SSL_2);
     scanResult.setAddress(socketAddress);
     scanResult.setConnectOK(false);
     scanResult.setHandshakeOK(false);

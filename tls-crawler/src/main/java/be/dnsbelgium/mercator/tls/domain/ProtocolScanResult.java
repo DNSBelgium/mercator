@@ -1,10 +1,15 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
 import lombok.Data;
 import lombok.ToString;
+import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.List;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Represents the result of scanning a host name for one specific <code>{@link TlsProtocolVersion}</code>
@@ -13,28 +18,7 @@ import java.time.Duration;
 @ToString
 public class ProtocolScanResult {
 
-  public final static String CONNECTION_TIMED_OUT = "Connection timed out";
-  public final static String CONNECTION_REFUSED   = "Connection refused";
-  public final static String CONNECTION_RESET     = "Connection reset";
-
-  public static ProtocolScanResult of(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
-    ProtocolScanResult protocolScanResult = new ProtocolScanResult();
-    protocolScanResult.setProtocolVersion(protocolVersion);
-    protocolScanResult.setAddress(socketAddress);
-    return protocolScanResult;
-  }
-
-  public void setAddress(InetSocketAddress socketAddress) {
-    this.serverName = socketAddress.getHostString();
-    if (socketAddress.isUnresolved()) {
-      this.ipAddress = null;
-    } else {
-      this.ipAddress = socketAddress.getAddress().getHostAddress();
-    }
-  }
-
-
-  private TlsProtocolVersion protocolVersion;
+  private final TlsProtocolVersion protocolVersion;
 
   private boolean peerVerified;
 
@@ -49,11 +33,43 @@ public class ProtocolScanResult {
   private String errorMessage;
   private String peerPrincipal;
 
+  private CertificateInfo peerCertificate;
+  private List<CertificateInfo> certificateChain;
+
   // TODO set certificate properties
-  boolean selfSignedCertificate;
-  boolean certificateExpired;
-  boolean certificateTooEarly;
+  //  boolean selfSignedCertificate;
+  //  boolean certificateExpired;
+  //  boolean certificateTooEarly;
 
   private Duration scanDuration;
 
+  public final static String CONNECTION_TIMED_OUT = "Connection timed out";
+  public final static String CONNECTION_REFUSED   = "Connection refused";
+  public final static String CONNECTION_RESET     = "Connection reset";
+
+  private static final Logger logger = getLogger(ProtocolScanResult.class);
+
+  protected ProtocolScanResult(TlsProtocolVersion protocolVersion) {
+    this.protocolVersion = protocolVersion;
+  }
+
+  public static ProtocolScanResult of(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+    ProtocolScanResult protocolScanResult = new ProtocolScanResult(protocolVersion);
+    protocolScanResult.setAddress(socketAddress);
+    return protocolScanResult;
+  }
+
+  public void setAddress(InetSocketAddress socketAddress) {
+    this.serverName = socketAddress.getHostString();
+    if (socketAddress.isUnresolved()) {
+      this.ipAddress = null;
+    } else {
+      this.ipAddress = socketAddress.getAddress().getHostAddress();
+    }
+  }
+
+
+  public boolean hasCertificateChain() {
+    return certificateChain != null && !certificateChain.isEmpty();
+  }
 }

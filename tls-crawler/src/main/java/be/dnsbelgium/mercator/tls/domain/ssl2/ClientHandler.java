@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain.ssl2;
 
-import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 
@@ -73,7 +73,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
   public SSL2ScanResult scanResult() {
     SSL2ScanResult scanResult = new SSL2ScanResult();
     scanResult.setAddress(socketAddress);
-    scanResult.setProtocolVersion(TlsProtocolVersion.SSL_2);
     scanResult.setConnectOK(this.connectOK);
     scanResult.setPeerVerified(false);
     scanResult.setServerHello(serverHello);

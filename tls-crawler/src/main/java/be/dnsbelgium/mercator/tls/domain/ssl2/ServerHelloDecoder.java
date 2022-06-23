@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+// MUST NOT be annotated with @Sharable.
 public class ServerHelloDecoder extends ByteToMessageDecoder {
 
   private static final Logger logger = getLogger(ServerHelloDecoder.class);

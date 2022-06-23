@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2ScanResult;
 import lombok.SneakyThrows;
@@ -9,17 +10,20 @@ import org.springframework.stereotype.Service;
 
 import javax.net.ssl.*;
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -77,6 +81,28 @@ public class TlsScanner {
     return scanResult;
   }
 
+  // TODO: -- TODO: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+
+  public TlsCrawlResult scan(String hostname) {
+    InetSocketAddress address = new InetSocketAddress(hostname, destinationPort);
+    ProtocolScanResult scanResult_1_3  = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
+    if (!scanResult_1_3.isConnectOK()) {
+      logger.debug("Could not connect to port {}, no need to check other TLS versions", destinationPort);
+      return TlsCrawlResult.connectFailed(address, scanResult_1_3.getErrorMessage());
+    }
+    logger.info("address.isUnresolved() = {}", address.isUnresolved());
+    TlsCrawlResult crawlResult = new TlsCrawlResult(true);
+    crawlResult.add(scanResult_1_3);
+    crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_2, address));
+    crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_1, address));
+    crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_0, address));
+    crawlResult.add(scanForProtocol(TlsProtocolVersion.SSL_3, address));
+    crawlResult.add(scanForProtocol(TlsProtocolVersion.SSL_2, address));
+    return crawlResult;
+  }
+
+
+
   public ProtocolScanResult scanForSSL2(InetSocketAddress socketAddress) {
     if (socketAddress.getAddress() instanceof Inet6Address && !ipv6Enabled) {
       return SSL2ScanResult.failed(socketAddress, "Scanning IPv6 not enabled");
@@ -127,9 +153,6 @@ public class TlsScanner {
         socket.setEnabledProtocols(protocols);
         //socket.setEnabledCipherSuites(socketFactory.getSupportedCipherSuites());
         // preferLocalCipherSuites
-
-
-
       } catch (IllegalArgumentException e) {
         logger.warn("Test of {} on {}:{} => IllegalArgumentException: {}",
             protocolVersion, scanResult.getServerName(), destinationPort, e.getMessage());
@@ -180,18 +203,7 @@ public class TlsScanner {
       scanResult.setSelectedCipherSuite(sslSession.getCipherSuite());
       scanResult.setSelectedProtocol(sslSession.getProtocol());
 
-      try {
-        logger.info("sslSession.peerPrincipal = {}", sslSession.getPeerPrincipal());
-        scanResult.setPeerVerified(true);
-        scanResult.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
-      } catch (SSLPeerUnverifiedException e) {
-        scanResult.setPeerVerified(false);
-        // TODO: check which messages are common and consider using an enum
-        scanResult.setErrorMessage(e.getMessage());
-        logger.info("{} => SSLPeerUnverifiedException: {}", protocolVersion, e.getMessage());
-      }
-
-      log("sslSession.valueNames    = {}", Arrays.toString(sslSession.getValueNames()));
+      processCertificate(socket, scanResult);
 
     } catch (SSLHandshakeException e) {
       // // TODO: is there a good reason to have three separate catch clauses ?
@@ -211,6 +223,56 @@ public class TlsScanner {
       logger.info("{} => IOException: {}", protocolVersion, e.getMessage());
     }
   }
+
+  private void processCertificate(SSLSocket socket, ProtocolScanResult scanResult) {
+    SSLSession sslSession = socket.getSession();
+    try {
+      logger.info("sslSession.peerPrincipal = {}", sslSession.getPeerPrincipal());
+      scanResult.setPeerVerified(true);
+      scanResult.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
+      // an ordered array of peer certificates, with the peer's own certificate first followed by any certificate authorities.
+      Certificate[] certificates = sslSession.getPeerCertificates();
+      log("Found {} certificates", certificates.length);
+      List<CertificateInfo> certificateChain = new ArrayList<>();
+      boolean ok = true;
+      int index = 0;
+      CertificateInfo previous = null;
+      for (Certificate certificate : certificates) {
+        if (certificate instanceof X509Certificate) {
+          X509Certificate x509Certificate = (X509Certificate) certificate;
+          CertificateInfo certificateInfo = CertificateInfo.from(x509Certificate);
+          // here we assume that the certificates we got from sslSession.getPeerCertificates()
+          // form a chain (1st entry is signed by 2nd entry etc)
+          // This might not be the case ?
+          // TODO: should we call java.security.cert.Certificate.verify(java.security.PublicKey) ??
+          if (previous != null) {
+            previous.setSignedBy(certificateInfo);
+          }
+          previous = certificateInfo;
+          certificateChain.add(certificateInfo);
+          if (index == 0) {
+            scanResult.setPeerCertificate(certificateInfo);
+          }
+          index++;
+        } else {
+          logger.warn("Found certificate of type {}, class={}", certificate.getType(), certificate.getClass());
+          ok = false;
+        }
+        if (ok) {
+          scanResult.setCertificateChain(certificateChain);
+        }
+      }
+    } catch (SSLPeerUnverifiedException e) {
+      scanResult.setPeerVerified(false);
+      scanResult.setErrorMessage(e.getMessage());
+      logger.info("{} => SSLPeerUnverifiedException: {}", scanResult.getServerName(), e.getMessage());
+    } catch (CertificateParsingException e) {
+      scanResult.setPeerVerified(false);
+      scanResult.setErrorMessage(e.getMessage());
+      logger.info("{} => CertificateParsingException: {}", scanResult.getServerName(), e.getMessage());
+    }
+  }
+
 
   public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
     return factory(tlsProtocolVersion, false);

@@ -21,7 +21,6 @@ public class SSL2Client {
   private static final Logger logger = getLogger(SSL2Client.class);
 
   private final ClientHelloEncoder clientHelloEncoder;
-  private final ServerHelloDecoder serverHelloDecoder;
 
   private final List<SSL2CipherSuite> cipherSuites;
 
@@ -36,7 +35,6 @@ public class SSL2Client {
   private SSL2Client(List<SSL2CipherSuite> cipherSuites) {
     this.cipherSuites = cipherSuites;
     this.clientHelloEncoder = new ClientHelloEncoder();
-    this.serverHelloDecoder = new ServerHelloDecoder();
   }
 
   public SSL2ScanResult connect(String host) throws InterruptedException {
@@ -63,7 +61,7 @@ public class SSL2Client {
         @SuppressWarnings("NullableProblems")
         @Override
         public void initChannel(SocketChannel ch) {
-          ch.pipeline().addLast(serverHelloDecoder);
+          ch.pipeline().addLast(new ServerHelloDecoder());
           ch.pipeline().addLast(clientHelloEncoder);
           ch.pipeline().addLast(clientHandler);
         }

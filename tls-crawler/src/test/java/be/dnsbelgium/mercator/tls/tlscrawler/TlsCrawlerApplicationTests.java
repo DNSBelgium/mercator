@@ -1,18 +1,37 @@
 package be.dnsbelgium.mercator.tls.tlscrawler;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.test.LocalstackContainer;
+import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.util.UUID;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@ActiveProfiles({"test", "local"})
 class TlsCrawlerApplicationTests {
 
   @Autowired
   TlsCrawler tlsCrawler;
+
+  @Container
+  static PostgreSqlContainer pgsql = PostgreSqlContainer.getInstance();
+
+  @Container
+  static LocalstackContainer localstack = new LocalstackContainer();
+
+  @DynamicPropertySource
+  static void datasourceProperties(DynamicPropertyRegistry registry) {
+    pgsql.setDatasourceProperties(registry, "tls_crawler");
+    localstack.setDynamicPropertySource(registry);
+  }
 
   @Test
   void contextLoads() {

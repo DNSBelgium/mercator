@@ -6,3 +6,4 @@ helm install content-crawler content-crawler/src/main/helm
 helm install muppets muppets/src/main/helm/
 helm install smtp-crawler smtp-crawler/src/main/helm
 helm install vat-crawler vat-crawler/src/main/helm
+helm install tls-crawler tls-crawler/src/main/helm
