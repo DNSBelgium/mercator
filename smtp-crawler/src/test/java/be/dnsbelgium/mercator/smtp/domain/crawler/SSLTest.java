@@ -32,9 +32,7 @@ public class SSLTest {
         printSSLContext("TLSv1");
         printSSLContext("TLSv1.1");
         printSSLContext("TLSv1.2");
-        printSSLContext("DTLS");
-        printSSLContext("DTLSv1.0");
-        printSSLContext("DTLSv1.2");
+        printSSLContext("TLSv1.3");
     }
 
     private void printSSLContext(String protocol) {
