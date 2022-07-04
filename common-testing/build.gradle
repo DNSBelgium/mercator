@@ -5,7 +5,6 @@ plugins {
   id 'java-test-fixtures'
 }
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11.0'
 
 dependencyManagement {
   imports {
@@ -21,7 +20,7 @@ repositories {
 dependencies {
   testFixturesImplementation 'io.awspring.cloud:spring-cloud-aws-context' // needed by localstack
   testFixturesImplementation 'org.springframework.boot:spring-boot-starter-test'
-  testFixturesApi 'org.testcontainers:postgresql:1.16.0'
-  testFixturesApi 'org.testcontainers:localstack:1.16.0'
-  testFixturesApi 'org.testcontainers:junit-jupiter:1.16.0'
+  testFixturesApi 'org.testcontainers:postgresql:1.17.2'
+  testFixturesApi 'org.testcontainers:localstack:1.17.2'
+  testFixturesApi 'org.testcontainers:junit-jupiter:1.17.2'
 }

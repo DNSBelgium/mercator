@@ -45,6 +45,10 @@ subprojects { subproject ->
     reproducibleFileOrder = true
   }
 
+  pluginManager.withPlugin("java") {
+    sourceCompatibility = 17
+  }
+
   pluginManager.withPlugin("com.google.cloud.tools.jib") {
     def registry = ""
     def tagList = [getCommitHash()]

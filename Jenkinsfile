@@ -5,7 +5,7 @@ pipeline {
     label "master"
   }
   tools {
-    jdk "OpenJDK 11"
+    jdk "OpenJDK 17"
     nodejs "NodeJS 16.13.2"
   }
   options {
