@@ -13,7 +13,7 @@ ADD tsconfig.json /app
 ADD src /app/src
 ADD public /app/public
 
-RUN npm run build
+RUN npm run build --force
 
 FROM nginx:stable-alpine
 
