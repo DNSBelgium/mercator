@@ -7,7 +7,7 @@ FROM node:lts-alpine as build
 WORKDIR /app
 
 COPY package.json package-lock.json /app/
-RUN npm ci && npm cache clean --force
+RUN npm ci --force && npm cache clean --force
 
 ADD tsconfig.json /app
 ADD src /app/src
