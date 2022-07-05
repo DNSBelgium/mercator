@@ -7,7 +7,6 @@
 * bootstrap
 * react-bootstrap
 * react-scrollable-anchor
-* react-border-wrapper
 * typescript
 * axios
 * moment
