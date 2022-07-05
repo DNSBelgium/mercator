@@ -21,6 +21,8 @@ dependencyCheck {
   }
 }
 
+ext['springCloudAwsVersion']="2.4.1"
+
 ext {
   getCommitHash = { ->
     def stdout = new ByteArrayOutputStream()
