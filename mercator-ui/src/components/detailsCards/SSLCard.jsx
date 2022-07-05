@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
-import {Accordion, Button, Col, Row, Table} from "react-bootstrap";
-import BorderWrapper from "react-border-wrapper";
+import {Accordion, Button, Card, Col, Row, Table} from "react-bootstrap";
 import api from "../../services/api";
 import moment from "moment";
 import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
@@ -73,7 +72,7 @@ const SSLCard = (props) => {
         setOpenTrustStores,
     } = props;
 
-    const topElement = <p className='top-element'>SSL crawl</p>
+    const topElement = <Card.Header>SSL crawl</Card.Header>
     
     // Render crawlResult.supportSsl_<version number> / crawlResult.supportTls_<version number>
     const renderSlSupport = (sl, cipherSuites) => { // Inside td element
@@ -183,19 +182,12 @@ const SSLCard = (props) => {
             <>
                 <Row>
                     <Col className='mt-4'>
-                        <BorderWrapper 
-                            borderWidth="3px" 
-                            borderRadius="0px" 
-                            innerPadding="30px" 
-                            topElement={topElement}
-                            topPosition={0.07} 
-                            topOffset="15px" 
-                            topGap="15px"
-                        >
+                        <Card>
+                            <Card.Header></Card.Header>
                             {
                                 render()
                             }
-                        </BorderWrapper>
+                        </Card>
                     </Col>
                 </Row>
             </>
@@ -209,10 +201,10 @@ const SSLCard = (props) => {
                 <>
                     <Row>
                         <Col className='mt-4'>
-                            <BorderWrapper borderWidth="3px" borderRadius="0px" innerPadding="30px" topElement={topElement}
-                                           topPosition={0.07} topOffset="15px" topGap="15px">
-                                <p> no data for this visit</p>
-                            </BorderWrapper>
+                            <Card>
+                                <Card.Header as="h2" className="h5">SSL crawler</Card.Header>
+                                <Card.Body>no data for this visit</Card.Body>
+                            </Card>
                         </Col>
                     </Row>
                 </>
@@ -222,7 +214,7 @@ const SSLCard = (props) => {
         return (
             <Row>
                 <Col className='mt-4'>
-                    <BorderWrapper borderWidth="3px" borderRadius="0px" innerPadding="30px" topElement={topElement}
+                    <Card borderWidth="3px" borderRadius="0px" innerPadding="30px" topElement={topElement}
                                    topPosition={0.07} topOffset="15px" topGap="15px">
                         <div className="vat-table">
                             <Table size="sm" borderless>
@@ -461,20 +453,15 @@ const SSLCard = (props) => {
                                                             </Accordion.Collapse>
                                                         </Accordion>
                                                     </td>
-    
-    
                                                 </tr>
-    
-    
                                                 </tbody>
                                             </Table>
                                         </Col>
                                     </Row>
                                 ))
                             ) : ""}
-    
                         </div>
-                    </BorderWrapper>
+                    </Card>
                 </Col>
             </Row>
         )
