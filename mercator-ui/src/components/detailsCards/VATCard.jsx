@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
-import {Col, Row, Table} from "react-bootstrap";
-import BorderWrapper from "react-border-wrapper";
+import {Card, Col, Row, Table} from "react-bootstrap";
 import moment from "moment";
 import api from "../../services/api";
 import { checkObjectIsFalsy } from "../../services/Util";
@@ -41,9 +40,7 @@ const VATCard = (props) => {
     // Render data.vatValues
     const renderVAT = () => { // Inside td element
         if(checkObjectIsFalsy(data.vatValues)) {
-            return (
-                <p className="mt-1">No VAT found</p>
-            );
+            return <>No VAT found</>;
         }
         if(data.vatValues.length === 1) {
             return (
@@ -220,19 +217,14 @@ const VATCard = (props) => {
     return (
         <Row>
             <Col className='mt-4'>
-                <BorderWrapper 
-                    borderWidth="3px" 
-                    borderRadius="0px" 
-                    innerPadding="30px" 
-                    topElement={topElement}
-                    topPosition={0.07} 
-                    topOffset="15px" 
-                    topGap="15px"
-                >
+                <Card>
+                    <Card.Header as="h2" className="h5">VAT crawl</Card.Header>
+                    <Card.Body>
                     {
                         renderHTML()
                     }
-                </BorderWrapper>
+                    </Card.Body>
+                </Card>
             </Col>
         </Row>
     );
