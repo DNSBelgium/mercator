@@ -1,5 +1,4 @@
-import {Col, Row, Table} from "react-bootstrap";
-import BorderWrapper from "react-border-wrapper";
+import {Card, Col, Row, Table} from "react-bootstrap";
 import moment from "moment";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
@@ -33,7 +32,6 @@ const SMTPCard = (props) => {
     }, [visitId])
 
     const {openServer, setOpenServer} = props;
-    const topElement = <p className='top-element'>SMTP crawl</p>
 
     // Handle open/close 'Extensions' click.
     const handleOpenExtension = (index) => {
@@ -273,7 +271,7 @@ const SMTPCard = (props) => {
     const renderHTML = () => {
         if(checkObjectIsFalsy(data)) {
             return (
-                <p>No data for this visit.</p>
+                <Card.Body>No data for this visit.</Card.Body>
             );
         }
 
@@ -321,19 +319,10 @@ const SMTPCard = (props) => {
     return (
         <Row>
             <Col className='mt-4'>
-                <BorderWrapper 
-                    borderWidth="3px" 
-                    borderRadius="0px"
-                    innerPadding="30px" 
-                    topElement={topElement}
-                    topPosition={0.07} 
-                    topOffset="15px" 
-                    topGap="15px"
-                >
-                    { 
-                        renderHTML() 
-                    }
-                </BorderWrapper>
+                <Card>
+                    <Card.Header as="h2" className="h5">Email crawl</Card.Header>
+                    { renderHTML() }
+                </Card>
             </Col>
         </Row>
     );

@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
-import {Col, Row, Table} from "react-bootstrap";
-import BorderWrapper from "react-border-wrapper";
+import {Card, Col, Row, Table} from "react-bootstrap";
 import moment from "moment";
 import api from "../../services/api";
 import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
@@ -29,7 +28,6 @@ const DNSCard = (props) => {
     }, [visitId]);
 
     const {openRecords, setOpenRecords} = props;
-    const topElement = <p className='top-element'> DNS crawl </p> // BorderWrapper title
 
     // Handles rendering of data[x].responses[x].responseGeoIps list.
     const renderGeoIps = (geoIpList) => { // Inside li element.
@@ -141,11 +139,11 @@ const DNSCard = (props) => {
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
         if(checkObjectIsFalsy(data)) {
-            return (<p>No data for this visit.</p>)
+            return (<Card.Body>No data for this visit.</Card.Body>)
         }
 
         return (
-            <div className="dns-table">
+            <Card.Body className="dns-table">
                 <Table
                     size="sm"
                     borderless
@@ -194,13 +192,15 @@ const DNSCard = (props) => {
                             </th>
                             <td>
                                 {
-                                    checkDataHasResponses(data) && ( // Don't render 'More Info' button if there are is no response data.
+                                    checkDataHasResponses(data) ? ( // Don't render 'More Info' button if there are is no response data.
                                         <button
                                             className="more-info"
                                             onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
                                         > 
                                             More info
                                         </button>
+                                    ) : (
+                                        <></>
                                     )
                                 }
                             </td>
@@ -215,7 +215,7 @@ const DNSCard = (props) => {
                         </div>
                     )
                 }
-            </div>
+            </Card.Body>
         );
     }
 
@@ -223,19 +223,12 @@ const DNSCard = (props) => {
     return (
         <Row>
             <Col className='mt-4'>
-                <BorderWrapper
-                    borderWidth="3px" 
-                    borderRadius="0px"
-                    innerPadding="30px" 
-                    topElement={topElement}
-                    topPosition={0.07} 
-                    topOffset="15px" 
-                    topGap="15px">
-
-                    { 
-                        renderHTML() 
+                <Card className="card">
+                    <Card.Header as="h2" className="h5">DNS crawl</Card.Header>
+                    {
+                        renderHTML()
                     }
-                </BorderWrapper>
+                </Card>
             </Col>
         </Row>
     );

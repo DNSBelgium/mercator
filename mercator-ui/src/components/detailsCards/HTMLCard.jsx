@@ -1,6 +1,5 @@
 import {useEffect, useState} from "react";
 import {Card, Col, Row, Table} from "react-bootstrap";
-import BorderWrapper from "react-border-wrapper";
 import moment from "moment";
 import api from "../../services/api";
 import { renderDataBoolean } from "../../services/Util";
@@ -15,7 +14,7 @@ const HTMLCard = (props) => {
         const handlerData = async () => {
 
             const url = `htmlFeatureses/search/findByVisitId?visitId=${visitId}`;
-            await api.get(url)
+            await api.get(url)  
                 .then((resp) => {
                     if(resp.status === 200) {
                         setData(resp.data === undefined ? null : resp.data._embedded.htmlFeatureses);
@@ -47,8 +46,6 @@ const HTMLCard = (props) => {
         openHtmlstructButton,
         setOpenHtmlstructButton
     } = props;
-
-    const topElement = <p className='top-element'>HTML features</p> // Used for BorderWrapper title
 
     // Render data[index].<media>_links
     const renderLinks = (links, setBool, bool) => { // Inside td element
@@ -184,7 +181,7 @@ const HTMLCard = (props) => {
     const renderHTML = () => {
         if(!data.length || data.length === 0) {
             return (
-                <p>No data for this visit.</p>
+                <Card.Body>No data for this visit.</Card.Body>
             );
         }
 
@@ -551,19 +548,12 @@ const HTMLCard = (props) => {
     return (
         <Row>
             <Col className='mt-4'>
-                <BorderWrapper 
-                    borderWidth="3px" 
-                    borderRadius="0px" 
-                    innerPadding="30px"
-                    topElement={topElement}
-                    topPosition={0.07} 
-                    topOffset="15px" 
-                    topGap="15px"
-                >
+                <Card>
+                    <Card.Header as="h2" className="h5">HTML Features</Card.Header>
                     {
                         renderHTML()
                     }
-                </BorderWrapper>
+                </Card>
             </Col>
         </Row>
     );
