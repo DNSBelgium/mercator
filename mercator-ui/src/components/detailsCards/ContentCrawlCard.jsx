@@ -42,7 +42,7 @@ const ContentCrawlCard = (props) => {
                     <Col className='mt-4'>
                         <Card>
                             {title}
-                            <p>No data for this visit</p>
+                            <Card.Body>No data for this visit</Card.Body>
                         </Card>
                     </Col>
                 </Row>
