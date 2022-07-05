@@ -1,7 +1,7 @@
 plugins {
     id 'org.springframework.boot' apply false
     id 'io.spring.dependency-management'
-    id 'java'
+    id 'java-library'
 }
 
 group = 'be.dnsbelgium.mercator.vat.crawler.persistence'

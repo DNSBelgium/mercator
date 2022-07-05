@@ -1,7 +1,7 @@
 plugins {
   id 'org.springframework.boot' apply false
   id 'io.spring.dependency-management'
-  id 'java'
+  id 'java-library'
   id 'java-test-fixtures'
 }
 version = '0.0.1-SNAPSHOT'
@@ -9,7 +9,6 @@ version = '0.0.1-SNAPSHOT'
 dependencyManagement {
   imports {
     mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-    mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:2.3.2"
   }
 }
 
@@ -18,7 +17,6 @@ repositories {
 }
 
 dependencies {
-  testFixturesImplementation 'io.awspring.cloud:spring-cloud-aws-context' // needed by localstack
   testFixturesImplementation 'org.springframework.boot:spring-boot-starter-test'
   testFixturesApi 'org.testcontainers:postgresql:1.17.2'
   testFixturesApi 'org.testcontainers:localstack:1.17.2'
