@@ -42,9 +42,7 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     implementation 'com.amazonaws:aws-java-sdk-core'
-
-    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.775'
+    implementation 'com.amazonaws:aws-java-sdk-s3'
 
     implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure'
     implementation 'io.awspring.cloud:spring-cloud-aws-core'
@@ -54,9 +52,14 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.14.2'
 
     implementation 'org.apache.commons:commons-lang3:3.9'
+    implementation 'org.apache.commons:commons-text:1.9'
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.2'
+
+    implementation 'com.github.pemistahl:lingua:1.1.0'
+
+    implementation 'org.apache.poi:poi:5.1.0'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -64,11 +67,6 @@ dependencies {
     testImplementation testFixtures(project(':common-testing'))
 
     testImplementation 'commons-io:commons-io:2.8.0'
-
-    implementation 'com.github.pemistahl:lingua:1.1.0'
-
-    implementation 'org.apache.commons:commons-text:1.9'
-    implementation 'org.apache.poi:poi:5.1.0'
 }
 
 jib {
