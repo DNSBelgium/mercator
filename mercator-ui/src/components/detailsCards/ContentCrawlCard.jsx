@@ -1,7 +1,6 @@
-import BorderWrapper from 'react-border-wrapper'
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import { Row, Col, Table} from "react-bootstrap";
+import { Row, Col, Table, Card } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { renderDataBoolean } from '../../services/Util';
@@ -33,7 +32,7 @@ const ContentCrawlCard = (props) => {
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
-    const topElement = <p className='top-element'>Content crawl</p> // BorderWrapper's "title".
+    const title = <Card.Title className="card-header">Content crawl</Card.Title>;
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
@@ -41,11 +40,10 @@ const ContentCrawlCard = (props) => {
             return (
                 <Row>
                     <Col className='mt-4'>
-                        <BorderWrapper borderWidth="3px" borderRadius="0px" innerPadding="30px"
-                                        topElement={topElement}
-                                        topPosition={0.07} topOffset="15px" topGap="15px">
+                        <Card>
+                            {title}
                             <p>No data for this visit</p>
-                        </BorderWrapper>
+                        </Card>
                     </Col>
                 </Row>
             )
@@ -58,12 +56,9 @@ const ContentCrawlCard = (props) => {
                         return (
                             <Row key={data.visitId}>
                                 <Col className='mt-4'>
-                                    <BorderWrapper
-                                        borderWidth="3px" borderRadius="0px" innerPadding="30px"
-                                        topElement={topElement}
-                                        topPosition={0.07} topOffset="15px" topGap="15px"
-                                    >
-                                        <div className='content-table'>
+                                    <Card>
+                                        {title}
+                                        <Card.Body className='content-table'>
 
                                             <Table size='sm' borderless>
                                                 <tbody className='text-left'>
@@ -189,8 +184,8 @@ const ContentCrawlCard = (props) => {
                                                 />
                                             </div>
 
-                                        </div>
-                                    </BorderWrapper>
+                                        </Card.Body>
+                                    </Card>
                                 </Col>
                             </Row>
                         );
