@@ -32,7 +32,7 @@ const ContentCrawlCard = (props) => {
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
-    const title = <Card.Title className="card-header">Content crawl</Card.Title>;
+    const title = <Card.Header as="h2" className="h5">Content crawl</Card.Header>;
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
