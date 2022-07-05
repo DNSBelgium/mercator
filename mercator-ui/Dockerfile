@@ -6,7 +6,7 @@ FROM node:lts-alpine as build
 
 WORKDIR /app
 
-COPY package.json package-lock.json /app/
+COPY package.json npm-shrinkwrap.json /app/
 RUN npm ci --force && npm cache clean --force
 
 ADD tsconfig.json /app
