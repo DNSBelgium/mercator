@@ -35,8 +35,6 @@ const VATCard = (props) => {
         setOpenVatValues,
     } = props;
 
-    const topElement = <p className='top-element'>VAT crawl</p>
-
     // Render data.vatValues
     const renderVAT = () => { // Inside td element
         if(checkObjectIsFalsy(data.vatValues)) {

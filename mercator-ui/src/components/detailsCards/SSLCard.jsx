@@ -51,7 +51,7 @@ const SSLCard = (props) => {
                 console.log(e);
             }
 
-            setCrawlResult(crawlResultResponse === undefined ? null : crawlResultResponse.data);
+            
 
             setTrustStores(trustStoreResponse === undefined ? null : trustStoreResponse);
 
@@ -72,8 +72,6 @@ const SSLCard = (props) => {
         setOpenTrustStores,
     } = props;
 
-    const topElement = <Card.Header>SSL crawl</Card.Header>
-    
     // Render crawlResult.supportSsl_<version number> / crawlResult.supportTls_<version number>
     const renderSlSupport = (sl, cipherSuites) => { // Inside td element
         if (sl === null || sl === '') {
@@ -214,8 +212,9 @@ const SSLCard = (props) => {
         return (
             <Row>
                 <Col className='mt-4'>
-                    <Card borderWidth="3px" borderRadius="0px" innerPadding="30px" topElement={topElement}
-                                   topPosition={0.07} topOffset="15px" topGap="15px">
+                    <Card>
+                        <Card.Header as="h2" className="h5">SSL crawler</Card.Header>
+                        <Card.Body>
                         <div className="vat-table">
                             <Table size="sm" borderless>
                                 <tbody className="text-left">
@@ -461,6 +460,7 @@ const SSLCard = (props) => {
                                 ))
                             ) : ""}
                         </div>
+                        </Card.Body>
                     </Card>
                 </Col>
             </Row>
