@@ -15,7 +15,7 @@
     "express": "^4.17.1",
     "fs-extra": "^9.0.0",
     "prom-client": "^12.0.0",
-    "public-ip": "^4.0.1",
+    "public-ip": "^6.0.1",
     "puppeteer": "^13.4.0",
     "sqs-consumer": "^5.4.0",
     "sqs-producer": "^1.6.3",

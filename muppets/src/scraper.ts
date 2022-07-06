@@ -1,13 +1,13 @@
 import puppeteer from "puppeteer";
 import * as path from "path";
-import {URL} from "url";
-import {v4 as uuid} from "uuid";
+import { URL } from "url";
+import { v4 as uuid } from "uuid";
 import treekill from "tree-kill";
 import publicIp from "public-ip";
 
 import * as metrics from "./metrics";
 
-const {harFromMessages} = require("chrome-har");
+const { harFromMessages } = require("chrome-har");
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
@@ -156,7 +156,7 @@ export async function setup() {
         })
     ).then(setup);
 
-    browser.process()!.stderr!.on("data", function(logData) {
+    browser.process()!.stderr!.on("data", function (logData) {
         //this does not properly prefix, as logData chunks can have newlines, but maybe good enough for now
         // (we would be better off to invest in a better logging platform first, anyway)
         console.log("BROWSER | " + logData.toString());
@@ -167,12 +167,12 @@ export async function setup() {
 
 (async () => {
     await Promise.all([
-        publicIp.v4({onlyHttps: true}).then(result => {
+        publicIp.publicIpv4({ onlyHttps: true }).then(result => {
             ipv4 = result;
             console.log("IPv4: [%s]", ipv4);
         }).catch(err => console.log("Cannot determine IPv4 : %s", err)),
 
-        publicIp.v6({onlyHttps: true}).then(result => {
+        publicIp.publicIpv6({ onlyHttps: true }).then(result => {
             ipv6 = result;
             console.log("IPv6: [%s]", ipv6);
         }).catch(err => console.log("Cannot determine IPv6 : %s", err))
@@ -256,7 +256,7 @@ async function registerHarEventListeners(page: puppeteer.Page, events: any[]) {
         await client.send("Network.enable");
         observe.forEach(method => {
             client.on(method, params => {
-                events.push({method, params});
+                events.push({ method, params });
             });
         });
     } catch (e) {
@@ -280,7 +280,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         console.log("url = [%s]", url);
 
         // Setup a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
-        new Promise((resolve) => {timeoutId = setTimeout(resolve, 60000);})
+        new Promise((resolve) => { timeoutId = setTimeout(resolve, 60000); })
             .then(() => console.error(`[${url}] timed out!`))
             .then(() => page.close())
             .then(() => browser.close());
@@ -296,7 +296,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             await registerHarEventListeners(page, events);
         }
 
-        await page.goto(params.url, {waitUntil: "networkidle2", timeout: GOTO_TIMEOUT});
+        await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
@@ -314,7 +314,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
         if (timeoutId)
             clearTimeout(timeoutId);
-        return { ...result };        
+        return { ...result };
 
     } catch (e) {
         if (e instanceof Error) {
@@ -360,7 +360,7 @@ export async function websnap(params: ScraperParams): Promise<ScraperResult> {
 
         await page.close();
         return scraperResult;
-    } catch(exception) {
+    } catch (exception) {
         console.error(`Error in scraper: ${exception}`);
         return Promise.reject(exception);
     }
