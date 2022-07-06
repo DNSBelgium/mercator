@@ -271,7 +271,7 @@ const SMTPCard = (props) => {
     const renderHTML = () => {
         if(checkObjectIsFalsy(data)) {
             return (
-                <Card.Body>No data for this visit.</Card.Body>
+                <>No data for this visit.</>
             );
         }
 
@@ -321,7 +321,7 @@ const SMTPCard = (props) => {
             <Col className='mt-4'>
                 <Card>
                     <Card.Header as="h2" className="h5">Email crawl</Card.Header>
-                    { renderHTML() }
+                    <Card.Body>{ renderHTML() }</Card.Body>
                 </Card>
             </Col>
         </Row>

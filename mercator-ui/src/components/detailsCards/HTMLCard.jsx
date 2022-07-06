@@ -181,7 +181,7 @@ const HTMLCard = (props) => {
     const renderHTML = () => {
         if(!data.length || data.length === 0) {
             return (
-                <Card.Body>No data for this visit.</Card.Body>
+                <>No data for this visit.</>
             );
         }
 
@@ -550,9 +550,7 @@ const HTMLCard = (props) => {
             <Col className='mt-4'>
                 <Card>
                     <Card.Header as="h2" className="h5">HTML Features</Card.Header>
-                    {
-                        renderHTML()
-                    }
+                    <Card.Body>{ renderHTML() }</Card.Body>
                 </Card>
             </Col>
         </Row>
