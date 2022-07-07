@@ -235,16 +235,17 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
 
         return page.screenshot(params.screenshotOptions);
     } else {
-        console.log("Not taking a screenshot");
+        return Promise.reject("Not taking a screenshot");
     }
 }
 
-function saveHtml(params: ScraperParams, page: puppeteer.Page) {
+async function saveHtml(params: ScraperParams, page: puppeteer.Page): Promise<string> {
     if (params.saveHtml) {
         console.log("Saving html");
         return page.content();
     } else {
         console.log("Not saving html");
+        return Promise.reject();
     }
 }
 
@@ -261,6 +262,7 @@ async function registerHarEventListeners(page: puppeteer.Page, events: any[]) {
         });
     } catch (e) {
         console.error("Failed to register event listeners: " + e);
+        return Promise.reject("Failed to register event listeners");
     }
 }
 
@@ -302,18 +304,19 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
         console.log("page.url = [%s]", result.url);
 
-        result.metrics = await page.metrics();
-        result.pageTitle = await page.title();
-        result.browserVersion = await page.browser().version();
-        result.harData = await saveHar(params, events);
-        result.htmlData = await saveHtml(params, page);
-        result.htmlLength = result.htmlData ? result.htmlData.length : 0;
-        result.screenshotData = await takeScreenshot(params, page);
+        result.harData = saveHar(params, events);
+
+        // Get all data
+        await Promise.all([
+            page.metrics().then(output => { result.metrics = output; }),
+            page.title().then(output => { result.pageTitle = output; }),
+            page.browser().version().then(output => { result.browserVersion = output; }),
+            saveHtml(params, page).then(output => { result.htmlData = output; result.htmlLength = result.htmlData ? result.htmlData.length : 0 }),
+            takeScreenshot(params, page).then(output => { result.screenshotData = output; })
+        ]);
 
         console.log("Snap finished");
 
-        if (timeoutId)
-            clearTimeout(timeoutId);
         return { ...result };
 
     } catch (e) {
