@@ -28,7 +28,7 @@ public class Request {
     @Column(name = "prefix")            private String prefix;
     @Enumerated(EnumType.STRING)
     @Column(name = "record_type")       private RecordType recordType;
-    @Column(name = "rcode")             private int rcode;
+    @Column(name = "rcode")             private Integer rcode;
     @Builder.Default
     @Column(name = "crawl_timestamp")   private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     @Column(name = "ok")                private boolean ok;
