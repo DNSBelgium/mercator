@@ -1,12 +1,12 @@
 import AWS from "aws-sdk";
-import {ServiceConfigurationOptions} from "aws-sdk/lib/service";
-import {Consumer} from "sqs-consumer";
+import { ServiceConfigurationOptions } from "aws-sdk/lib/service";
+import { Consumer } from "sqs-consumer";
 import * as Producer from "sqs-producer";
 
-import * as metrics from "./metrics";
-import * as scraper from "./scraper";
-import * as config from "./config/config.json";
-import {computePath} from "./util";
+import * as metrics from "./metrics.js";
+import * as scraper from "./scraper.js";
+import * as config from "./config/config.json" assert { type: "json" };
+import { computePath } from "./util.js";
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {
@@ -22,7 +22,7 @@ if (config.s3_endpoint) {
 const s3 = new AWS.S3(s3Options);
 
 export async function getQueueUrl(queueName: string) {
-    const queueUrlResponse = await sqs.getQueueUrl({QueueName: queueName}).promise();
+    const queueUrlResponse = await sqs.getQueueUrl({ QueueName: queueName }).promise();
     return queueUrlResponse.QueueUrl;
 }
 

@@ -3,11 +3,11 @@ import * as path from "path";
 import { URL } from "url";
 import { v4 as uuid } from "uuid";
 import treekill from "tree-kill";
-import publicIp from "public-ip";
+import { publicIpv4, publicIpv6 } from "public-ip";
 
-import * as metrics from "./metrics";
+import * as metrics from "./metrics.js";
 
-const { harFromMessages } = require("chrome-har");
+import { harFromMessages } from "chrome-har";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
@@ -167,12 +167,12 @@ export async function setup() {
 
 (async () => {
     await Promise.all([
-        publicIp.publicIpv4({ onlyHttps: true }).then(result => {
+        publicIpv4({ onlyHttps: true }).then(result => {
             ipv4 = result;
             console.log("IPv4: [%s]", ipv4);
         }).catch(err => console.log("Cannot determine IPv4 : %s", err)),
 
-        publicIp.publicIpv6({ onlyHttps: true }).then(result => {
+        publicIpv6({ onlyHttps: true }).then(result => {
             ipv6 = result;
             console.log("IPv6: [%s]", ipv6);
         }).catch(err => console.log("Cannot determine IPv6 : %s", err))
