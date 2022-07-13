@@ -108,4 +108,16 @@ public class TlsCrawlResult {
         .findFirst();
   }
 
+  public boolean isChainTrustedByJavaPlatform() {
+    return scanResultMap.values()
+        .stream()
+        .anyMatch(ProtocolScanResult::isChainTrustedByJavaPlatform);
+  }
+
+  public boolean isHostNameMatchesCertificate() {
+    return scanResultMap.values()
+        .stream()
+        .anyMatch(ProtocolScanResult::isHostNameMatchesCertificate);
+  }
+
 }

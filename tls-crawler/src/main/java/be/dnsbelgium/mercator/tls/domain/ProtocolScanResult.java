@@ -36,12 +36,10 @@ public class ProtocolScanResult {
   private CertificateInfo peerCertificate;
   private List<CertificateInfo> certificateChain;
 
-  // TODO set certificate properties
-  //  boolean selfSignedCertificate;
-  //  boolean certificateExpired;
-  //  boolean certificateTooEarly;
+  private boolean chainTrustedByJavaPlatform;
+  private boolean hostNameMatchesCertificate;
 
-  private Duration scanDuration;
+  private Duration scanDuration = Duration.ZERO;
 
   public final static String CONNECTION_TIMED_OUT = "Connection timed out";
   public final static String CONNECTION_REFUSED   = "Connection refused";

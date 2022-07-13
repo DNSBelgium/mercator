@@ -1,9 +1,11 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
+import be.dnsbelgium.mercator.tls.domain.certificates.Trust;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2ScanResult;
 import lombok.SneakyThrows;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,15 +17,17 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -31,40 +35,48 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class TlsScanner {
 
   private static final Logger logger = getLogger(TlsScanner.class);
+  private static final int DEFAULT_PORT = 443;
 
   private final Map<TlsProtocolVersion, SSLSocketFactory> factoryMap = new HashMap<>();
-
-  private final int destinationPort;
 
   private final boolean ipv6Enabled;
 
   private final boolean verbose;
 
   private final Duration connectTimeOut;
+  private final Duration readTimeOut;
 
   private final SSL2Client ssl2Client;
 
+  private final HostnameVerifier hostnameVerifier;
+
   public final static int DEFAULT_CONNECT_TIME_OUT_MS = 5000;
+  public final static int DEFAULT_READ_TIME_OUT_MS = 5000;
 
   public static TlsScanner standard() {
-    return new TlsScanner(443, false, false, DEFAULT_CONNECT_TIME_OUT_MS);
+    return new TlsScanner(new DefaultHostnameVerifier(), false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
   }
 
   @SneakyThrows
   public TlsScanner(
-      @Value("${tls.scanner.destination.port:443}") int destinationPort,
+      HostnameVerifier hostnameVerifier,
       @Value("${tls.scanner.ipv6.enabled:false}") boolean ipv6Enabled,
       @Value("${tls.scanner.verbose:false}") boolean verbose,
-      @Value("${tls.scanner.connect.timeout.milliSeconds:3000}") int connectTimeOutMilliSeconds) {
-    this.destinationPort = destinationPort;
+      @Value("${tls.scanner.connect.timeout.milliSeconds:3000}") int connectTimeOutMilliSeconds,
+      @Value("${tls.scanner.read.timeout.milliSeconds:3000}") int readTimeOutMilliSeconds) {
+    this.hostnameVerifier = hostnameVerifier;
     this.verbose = verbose;
     this.ipv6Enabled = ipv6Enabled;
     this.connectTimeOut = Duration.ofMillis(connectTimeOutMilliSeconds);
-    logger.info("Creating TlsScanner with destinationPort={}", destinationPort);
+    this.readTimeOut    = Duration.ofMillis(readTimeOutMilliSeconds);
+    logger.info("Creating TlsScanner with connectTimeOut={}, readTimeOut={}", connectTimeOut, readTimeOut);
+
+    TrustManager trustManager = Trust.trustAnythingTrustManager();
+
     for (TlsProtocolVersion version : TlsProtocolVersion.values()) {
       // Modern java versions do not support SSL v2 => do not try to create SSLSocketFactory
       if (version != TlsProtocolVersion.SSL_2) {
-        SSLSocketFactory sslSocketFactory = factory(version);
+        SSLSocketFactory sslSocketFactory = factory(version, trustManager);
         factoryMap.put(version, sslSocketFactory);
       }
     }
@@ -72,25 +84,22 @@ public class TlsScanner {
   }
 
   public ProtocolScanResult scan(TlsProtocolVersion protocolVersion, String hostname) {
-    Instant start = Instant.now();
-    ProtocolScanResult scanResult  = scanForProtocol(protocolVersion, hostname);
-    Instant end = Instant.now();
-    Duration duration = Duration.between(start, end);
-    scanResult.setScanDuration(duration);
-    logger.info("Scanning {} for {} took {}", hostname, protocolVersion, duration);
-    return scanResult;
+    return scan(protocolVersion, hostname, DEFAULT_PORT);
   }
 
-  // TODO: -- TODO: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+  // This method is only used in test cases
+  public ProtocolScanResult scan(TlsProtocolVersion protocolVersion, String hostname, int destinationPort) {
+    InetSocketAddress inetSocketAddress = new InetSocketAddress(hostname, destinationPort);
+    return scanForProtocol(protocolVersion, inetSocketAddress);
+  }
 
-  public TlsCrawlResult scan(String hostname) {
-    InetSocketAddress address = new InetSocketAddress(hostname, destinationPort);
+
+  public TlsCrawlResult scan (InetSocketAddress address) {
     ProtocolScanResult scanResult_1_3  = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
     if (!scanResult_1_3.isConnectOK()) {
-      logger.debug("Could not connect to port {}, no need to check other TLS versions", destinationPort);
+      logger.debug("Could not connect to port {}, no need to check other TLS versions", address.getPort());
       return TlsCrawlResult.connectFailed(address, scanResult_1_3.getErrorMessage());
     }
-    logger.info("address.isUnresolved() = {}", address.isUnresolved());
     TlsCrawlResult crawlResult = new TlsCrawlResult(true);
     crawlResult.add(scanResult_1_3);
     crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_2, address));
@@ -100,8 +109,6 @@ public class TlsScanner {
     crawlResult.add(scanForProtocol(TlsProtocolVersion.SSL_2, address));
     return crawlResult;
   }
-
-
 
   public ProtocolScanResult scanForSSL2(InetSocketAddress socketAddress) {
     if (socketAddress.getAddress() instanceof Inet6Address && !ipv6Enabled) {
@@ -114,12 +121,17 @@ public class TlsScanner {
     return scanResult;
   }
 
-  public ProtocolScanResult scanForProtocol(TlsProtocolVersion protocolVersion, String hostname) {
-    InetSocketAddress inetSocketAddress = new InetSocketAddress(hostname, destinationPort);
-    return scanForProtocol(protocolVersion, inetSocketAddress);
+  public ProtocolScanResult scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+    Instant start = Instant.now();
+    ProtocolScanResult protocolScanResult = scanForProtocol_(protocolVersion, socketAddress);
+    Instant end = Instant.now();
+    Duration duration = Duration.between(start, end);
+    protocolScanResult.setScanDuration(duration);
+    logger.debug("Scanning {} for {} took {}", socketAddress, protocolVersion, duration);
+    return protocolScanResult;
   }
 
-  public ProtocolScanResult scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+  private ProtocolScanResult scanForProtocol_(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
     logger.info("Checking {} for {} support", socketAddress, protocolVersion);
     if (protocolVersion == TlsProtocolVersion.SSL_2) {
       // JDK does not support SSL 2.0 => use our own code to exchange Client & Server Hello messages
@@ -137,31 +149,27 @@ public class TlsScanner {
     SSLSocketFactory socketFactory = factoryMap.get(protocolVersion);
 
     try {
-      // Default time out seems to be 1 minute 15 seconds
       Socket socketConn = new Socket();
       socketConn.connect(socketAddress, (int) connectTimeOut.toMillis());
-      SSLSocket socket = (SSLSocket) socketFactory.createSocket(socketConn, socketAddress.getHostString(), destinationPort, true);
-
+      SSLSocket socket = (SSLSocket) socketFactory.createSocket(
+          socketConn, socketAddress.getHostString(), socketAddress.getPort(), true);
+      socket.setSoTimeout((int) readTimeOut.toMillis());
       scanResult.setConnectOK(true);
       scanResult.setIpAddress(socket.getInetAddress().getHostAddress());
       if (verbose) {
         logger.debug("socket.getRemoteSocketAddress = {}", socket.getRemoteSocketAddress());
       }
-
       try {
         String[] protocols = new String[]{protocolVersion.getName()};
         socket.setEnabledProtocols(protocols);
-        //socket.setEnabledCipherSuites(socketFactory.getSupportedCipherSuites());
-        // preferLocalCipherSuites
       } catch (IllegalArgumentException e) {
-        logger.warn("Test of {} on {}:{} => IllegalArgumentException: {}",
-            protocolVersion, scanResult.getServerName(), destinationPort, e.getMessage());
+        logger.warn("Test of {} on {} => IllegalArgumentException: {}",
+            protocolVersion, socketAddress, e.getMessage());
         logger.warn("IllegalArgumentException", e);
         scanResult.setErrorMessage(e.getMessage());
         return scanResult;
       }
       startHandshake(socket, protocolVersion, scanResult);
-
 
     } catch (SocketTimeoutException e) {
       scanResult.setConnectOK(false);
@@ -181,18 +189,6 @@ public class TlsScanner {
     }
   }
 
-  private void logServerNames(SSLSocket socket) {
-    SSLParameters parameters = socket.getSSLParameters();
-    List<SNIServerName> serverNames = parameters.getServerNames();
-    if (serverNames.size() > 1) {
-      logger.info("socket.getSSLParameters().getServerNames.size = {}", serverNames.size());
-      for (SNIServerName serverName : serverNames) {
-        logger.info(" * serverName = {}", serverName);
-      }
-    }
-    socket.setSSLParameters(parameters);
-  }
-
   private void startHandshake(SSLSocket socket, TlsProtocolVersion protocolVersion, ProtocolScanResult scanResult) {
     try {
       socket.startHandshake();
@@ -202,25 +198,12 @@ public class TlsScanner {
       scanResult.setHandshakeOK(true);
       scanResult.setSelectedCipherSuite(sslSession.getCipherSuite());
       scanResult.setSelectedProtocol(sslSession.getProtocol());
-
       processCertificate(socket, scanResult);
 
-    } catch (SSLHandshakeException e) {
-      // // TODO: is there a good reason to have three separate catch clauses ?
-      scanResult.setHandshakeOK(false);
-      scanResult.setErrorMessage(e.getMessage());
-
-      //logger.error("stacktrace", e);
-
-      logger.info("{} => SSLHandshakeException: {}", protocolVersion, e.getMessage());
-    } catch (SSLException e) {
-      scanResult.setHandshakeOK(false);
-      scanResult.setErrorMessage(e.getMessage());
-      logger.info("{} => SSLException: {}", protocolVersion, e.getMessage());
     } catch (IOException e) {
       scanResult.setHandshakeOK(false);
       scanResult.setErrorMessage(e.getMessage());
-      logger.info("{} => IOException: {}", protocolVersion, e.getMessage());
+      logger.info("{} => {} : {}", protocolVersion, e.getClass().getSimpleName(), e.getMessage());
     }
   }
 
@@ -232,19 +215,18 @@ public class TlsScanner {
       scanResult.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
       // an ordered array of peer certificates, with the peer's own certificate first followed by any certificate authorities.
       Certificate[] certificates = sslSession.getPeerCertificates();
+
       log("Found {} certificates", certificates.length);
       List<CertificateInfo> certificateChain = new ArrayList<>();
       boolean ok = true;
       int index = 0;
       CertificateInfo previous = null;
       for (Certificate certificate : certificates) {
-        if (certificate instanceof X509Certificate) {
-          X509Certificate x509Certificate = (X509Certificate) certificate;
+        if (certificate instanceof X509Certificate x509Certificate) {
           CertificateInfo certificateInfo = CertificateInfo.from(x509Certificate);
-          // here we assume that the certificates we got from sslSession.getPeerCertificates()
-          // form a chain (1st entry is signed by 2nd entry etc)
-          // This might not be the case ?
-          // TODO: should we call java.security.cert.Certificate.verify(java.security.PublicKey) ??
+          // here we assume that the certificates we got from sslSession.getPeerCertificates() form a chain
+          // (1st entry is signed by 2nd entry etc)
+          // A few lines lower we check if the chain is trusted by the java platform (with built-in set of trust anchors)
           if (previous != null) {
             previous.setSignedBy(certificateInfo);
           }
@@ -262,6 +244,14 @@ public class TlsScanner {
           scanResult.setCertificateChain(certificateChain);
         }
       }
+      boolean trusted = isChainTrustedByJavaPlatform(certificates);
+      scanResult.setChainTrustedByJavaPlatform(trusted);
+
+      boolean hostNameMatchesCertificate = hostnameVerifier.verify(scanResult.getServerName(), sslSession);
+      scanResult.setHostNameMatchesCertificate(hostNameMatchesCertificate);
+
+      logger.debug("Chain trusted: {} hostNameMatchesCertificate: {}", trusted, hostNameMatchesCertificate);
+
     } catch (SSLPeerUnverifiedException e) {
       scanResult.setPeerVerified(false);
       scanResult.setErrorMessage(e.getMessage());
@@ -273,17 +263,29 @@ public class TlsScanner {
     }
   }
 
+  private boolean isChainTrustedByJavaPlatform(Certificate[] certificates) {
+    X509Certificate[] certs = (X509Certificate[]) certificates;
+    try {
+      Trust.defaultTrustManager().checkServerTrusted(certs, "UNKNOWN");
+      logger.debug("Chain for {} IS trusted by Java platform", certs[0].getSubjectX500Principal());
+      return true;
+    } catch (CertificateException e) {
+      logger.debug("Chain for {} NOT trusted by Java platform: {}", certs[0].getSubjectX500Principal(), e.getMessage());
+      return false;
+    }
+  }
 
-  public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-    return factory(tlsProtocolVersion, false);
+  public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion, TrustManager trustManager)
+      throws NoSuchAlgorithmException, KeyManagementException {
+    return factory(tlsProtocolVersion, trustManager, false);
 
   }
-  public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion, boolean verbose) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+  public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion, TrustManager trustManager, boolean verbose) throws NoSuchAlgorithmException, KeyManagementException {
     String clsName = java.security.Security.getProperty("ssl.SocketFactory.provider");
     if (clsName != null) {
       logger.info("ssl.SocketFactory.provider = {}", clsName);
     }
-    TrustManager[] trustManagers = trustManagers();
+    TrustManager[] trustManagers = new TrustManager[] { trustManager };
     SSLContext sslContext = SSLContext.getInstance(tlsProtocolVersion.getName());
     sslContext.init(null, trustManagers, null);
     SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
@@ -303,28 +305,6 @@ public class TlsScanner {
     logger.info("sslSocketFactory for {} has {} default ciphers", protocolVersion, defaultCiphers.length);
     for (String cipher : defaultCiphers) {
       logger.debug("* default cipherSuites for {} : {}", protocolVersion, cipher);
-    }
-  }
-
-  private static TrustManager[] trustManagers() throws NoSuchAlgorithmException, KeyStoreException {
-    // TODO: check if this enough and which cases it will trust
-    String algo = TrustManagerFactory.getDefaultAlgorithm();
-    //logger.debug("TrustManagerFactory.getDefaultAlgorithm = {}", algo);
-    TrustManagerFactory trustManagerFactory;
-    try {
-      trustManagerFactory = TrustManagerFactory.getInstance(algo);
-      trustManagerFactory.init((KeyStore) null);
-      TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-      if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
-        throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
-      }
-      return trustManagers;
-    } catch (NoSuchAlgorithmException e) {
-      logger.info("NoSuchAlgorithmException: {}", e.getMessage());
-      throw e;
-    } catch (KeyStoreException e) {
-      logger.info("KeyStoreException: {}", e.getMessage());
-      throw e;
     }
   }
 

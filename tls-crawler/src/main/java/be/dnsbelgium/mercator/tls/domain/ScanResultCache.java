@@ -13,7 +13,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -46,7 +45,6 @@ public class ScanResultCache {
 
   public void evictEntriesOlderThan(Duration duration) {
     readWriteLock.writeLock().lock();
-    logger.debug("acquired write lock in evictEntriesOlderThan() method");
     try {
       Instant notBefore = Instant.now().minus(duration);
       logger.info("Evicting entries that older than {}, so after {}", duration, notBefore);
@@ -68,14 +66,31 @@ public class ScanResultCache {
     }
   }
 
+  public void remove(ScanResult scanResult) {
+    if (scanResult.getIp() == null) {
+      return;
+    }
+    logger.info("Removing from cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
+    readWriteLock.writeLock().lock();
+    try {
+      String ip = scanResult.getIp();
+      mapPerIp.remove(ip);
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+  }
+
   public void add(ScanResult scanResult) {
     add(Instant.now(), scanResult);
   }
 
   public void add(Instant added, ScanResult scanResult) {
+    if (scanResult.getIp() == null) {
+      // No need to cache when we could not find an IP
+      return;
+    }
     logger.info("Adding to cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
     readWriteLock.writeLock().lock();
-    logger.debug("acquired write lock in add() method");
     try {
       String ip = scanResult.getIp();
       CacheEntry entry = mapPerIp.get(ip);
@@ -118,10 +133,10 @@ public class ScanResultCache {
 
   public Optional<ScanResult> find(String ip) {
     readWriteLock.readLock().lock();
-    logger.debug("acquired read lock in find() method");
     try {
       CacheEntry match = mapPerIp.get(ip);
       if (match == null) {
+        logger.debug("No match for {}", ip);
         return Optional.empty();
       }
       if (match.totalScanResults < minimumEntriesPerIp) {
@@ -147,7 +162,6 @@ public class ScanResultCache {
   private static class CacheEntry {
     private ScanResult majority;
 
-    // TODO: should we keep a simplified (or transient/detached) version of the ScanResult's
     private final List<ScanResult> deviantScanResults = new ArrayList<>();
     private long totalScanResults;
     private long resultsInMajority;
@@ -164,7 +178,7 @@ public class ScanResultCache {
       long matchingEntries = deviantScanResults.stream().filter(p -> p.summary().equals(newSummary)).count() + 1;
       CacheEntry entry = new CacheEntry(scanResult, totalScanResults+1, matchingEntries, scanResult.getIp(), added);
       entry.deviantScanResults.clear();
-      entry.deviantScanResults.addAll(deviantScanResults.stream().filter(r -> !r.summary().equals(newSummary)).collect(Collectors.toList()));
+      entry.deviantScanResults.addAll(deviantScanResults.stream().filter(r -> !r.summary().equals(newSummary)).toList());
       entry.deviantScanResults.add(this.majority);
       return entry;
     }

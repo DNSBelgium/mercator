@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
-import be.dnsbelgium.mercator.test.ResourceReader;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -10,6 +9,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion.TLS_1_2;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -65,6 +65,26 @@ class CertificateInfoTest {
     assertThat(info.getVersion()).isEqualTo(3);
     assertThat(info.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
   }
+
+  @Test
+  public void cll_be() throws CertificateException, IOException {
+    X509Certificate certificate = readTestCertificate("cll.be.pem");
+    CertificateInfo peerCertificate = CertificateInfo.from(certificate);
+    logger.info("peerCertificate = {}", peerCertificate);
+    // matches with what python based ssl-crawler found.
+    assertThat(peerCertificate.getVersion()).isEqualTo(3);
+    assertThat(peerCertificate.getSerialNumber()).isEqualTo("118877526832461658454248843048988289064");
+    assertThat(peerCertificate.getPublicKeySchema()).isEqualTo("RSA");
+    assertThat(peerCertificate.getPublicKeyLength()).isEqualTo(2048);
+    assertThat(peerCertificate.getNotBefore()).isEqualTo("2022-01-26T00:00:00Z");
+    assertThat(peerCertificate.getNotAfter()) .isEqualTo("2023-01-26T23:59:59Z");
+    assertThat(peerCertificate.getIssuer()) .isEqualTo("CN=Gandi Standard SSL CA 2,O=Gandi,L=Paris,ST=Paris,C=FR");
+    assertThat(peerCertificate.getSubject()).isEqualTo("CN=www.cll.be");
+    assertThat(peerCertificate.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
+    assertThat(peerCertificate.getSha256Fingerprint()).isEqualTo("402514abe77794fc7c1d1b86b00e4f89a343c9755862fc050b27ed0488086af1");
+    assertThat(peerCertificate.getSubjectAlternativeNames()).containsExactly("www.cll.be", "cll.be");
+  }
+
 
   @Test
   public void subjectAlternativeNames_blackanddecker_be() throws CertificateException, IOException {

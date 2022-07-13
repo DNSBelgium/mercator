@@ -11,7 +11,7 @@ import static be.dnsbelgium.mercator.tls.domain.ssl2.SSL2CipherSuite.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
-//@Disabled(value = "Only for local testing, needs internet access and depends on external state")
+@Disabled(value = "Only for local testing, needs internet access and depends on external state")
 public class SSL2ClientTest {
 
   private static final Logger logger = getLogger(SSL2ClientTest.class);

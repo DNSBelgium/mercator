@@ -70,8 +70,19 @@ public class ScanResult {
   private String errorSsl_3_0;
   private String errorSsl_2_0;
 
+  private long millis_tls_1_3;
+  private long millis_tls_1_2;
+  private long millis_tls_1_1;
+  private long millis_tls_1_0;
+  private long millis_ssl_3_0;
+  private long millis_ssl_2_0;
+
+  private long totalDurationInMs;
+
   private boolean certificateExpired;
   private boolean certificateTooSoon;
+
+  private boolean chainTrustedByJavaPlatform;
 
   @JoinColumn(name = "leaf_certificate")
   @ManyToOne
@@ -90,7 +101,10 @@ public class ScanResult {
         "selectedCipherTls_1_2=" + selectedCipherTls_1_2 + ", " +
         "selectedCipherTls_1_1=" + selectedCipherTls_1_1 + ", " +
         "selectedCipherTls_1_0=" + selectedCipherTls_1_0 + ", " +
-        "selectedCipherSsl_3_0=" + selectedCipherSsl_3_0;
+        "selectedCipherSsl_3_0=" + selectedCipherSsl_3_0 + ", " +
+        "certificateTooSoon=" + certificateTooSoon + ", " +
+        "certificateExpired=" + certificateTooSoon + ", " +
+        "chainTrustedByJavaPlatform=" + chainTrustedByJavaPlatform;
   }
 
 }

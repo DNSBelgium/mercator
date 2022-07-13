@@ -5,5 +5,4 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface TlsScanResultRepository extends PagingAndSortingRepository<TlsScanResult, Long> {
 
-
 }

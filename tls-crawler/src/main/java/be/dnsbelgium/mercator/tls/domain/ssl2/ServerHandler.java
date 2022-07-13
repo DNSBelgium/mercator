@@ -18,8 +18,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     logger.debug("received msg: {}", msg);
 
-    if (msg instanceof ClientHello) {
-      ClientHello clientHello = (ClientHello) msg;
+    if (msg instanceof ClientHello clientHello) {
       logger.debug("clientHello = {}", clientHello);
 
       byte[] version = new byte[] {0x00, 0x02};

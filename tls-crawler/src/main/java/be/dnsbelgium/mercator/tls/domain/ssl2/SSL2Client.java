@@ -6,6 +6,7 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -46,10 +47,18 @@ public class SSL2Client {
   }
 
   public SSL2ScanResult connect(InetSocketAddress socketAddress) {
+    Instant start = Instant.now();
+    SSL2ScanResult scanResult = doConnect(socketAddress);
+    Instant end = Instant.now();
+    Duration duration = Duration.between(start, end);
+    logger.info("duration: {} ms", duration.toMillis());
+    return scanResult;
+  }
+
+  public SSL2ScanResult doConnect(InetSocketAddress socketAddress) {
     ClientHandler clientHandler = new ClientHandler(socketAddress, cipherSuites);
     EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
-    Instant start = Instant.now();
     try {
       Bootstrap b = new Bootstrap();
       b.group(workerGroup);
@@ -57,10 +66,13 @@ public class SSL2Client {
       b.option(ChannelOption.SO_KEEPALIVE, false);
       b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2000);
 
+      IdleStateHandler idleHandler = new IdleStateHandler(5, 5, 0);
+
       b.handler(new ChannelInitializer<SocketChannel>() {
         @SuppressWarnings("NullableProblems")
         @Override
         public void initChannel(SocketChannel ch) {
+          ch.pipeline().addLast("idleStateHandler", idleHandler);
           ch.pipeline().addLast(new ServerHelloDecoder());
           ch.pipeline().addLast(clientHelloEncoder);
           ch.pipeline().addLast(clientHandler);
@@ -71,10 +83,6 @@ public class SSL2Client {
       connectFuture.await(3, TimeUnit.SECONDS);
       // Wait until the connection is closed.
       connectFuture.channel().closeFuture().sync();
-
-      Instant end = Instant.now();
-      Duration duration = Duration.between(start, end);
-      logger.info("duration: {} ms", duration.toMillis());
 
       if (connectFuture.isSuccess()) {
         return clientHandler.scanResult();

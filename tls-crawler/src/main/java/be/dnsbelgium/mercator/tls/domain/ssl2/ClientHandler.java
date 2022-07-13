@@ -2,6 +2,8 @@ package be.dnsbelgium.mercator.tls.domain.ssl2;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
 
@@ -67,6 +69,19 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     if (ctx != null) {
       logger.info("Closing the connection");
       ctx.channel().close();
+    }
+  }
+
+  @Override
+  public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+    if (evt instanceof IdleStateEvent e) {
+      if (e.state() == IdleState.READER_IDLE) {
+        logger.debug("Idle on inbound traffic => close");
+        ctx.close();
+      } else if (e.state() == IdleState.WRITER_IDLE) {
+        logger.debug("Idle on outbound traffic => close");
+        ctx.close();
+      }
     }
   }
 

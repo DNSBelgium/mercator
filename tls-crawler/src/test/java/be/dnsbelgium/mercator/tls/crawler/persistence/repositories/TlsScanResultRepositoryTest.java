@@ -71,7 +71,7 @@ public class TlsScanResultRepositoryTest {
     TlsScanResult tlsScanResult = TlsScanResult.builder()
         .scanResult(scanResult)
         .domainName("dns.be")
-        .prefix("www")
+        .hostName("www.dns.be")
         .visitId(UUID.randomUUID())
         .crawlTimestamp(ZonedDateTime.now())
         .build();

@@ -27,7 +27,7 @@ public class TlsScanResult {
 
   private UUID visitId;
 
-  private String prefix;
+  private String hostName;
 
   private String domainName;
 
@@ -37,5 +37,7 @@ public class TlsScanResult {
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "scan_result")
   private ScanResult scanResult;
+
+  private boolean hostNameMatchesCertificate;
 
 }

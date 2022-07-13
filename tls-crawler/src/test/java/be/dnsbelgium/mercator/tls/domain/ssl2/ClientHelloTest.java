@@ -26,13 +26,13 @@ public class ClientHelloTest {
   private static final Logger logger = getLogger(ClientHelloTest.class);
 
   @Test
-  public void encodeDecode_With_SessionId() throws Exception {
+  public void encodeDecode_With_SessionId() {
     byte[] sessionId = RandomUtils.nextBytes(32);
     encodeDecode(sessionId);
   }
 
   @Test
-  public void noSessionId() throws Exception {
+  public void noSessionId() {
     byte[] sessionId = new byte[0];
     encodeDecode(sessionId);
   }

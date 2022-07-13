@@ -11,13 +11,18 @@ import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
+import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -25,6 +30,10 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class TlsCrawlerService {
 
   private final TlsScanner tlsScanner;
+
+  private final ScanResultCache scanResultCache;
+
+  private final BlackList blackList;
 
   private final CertificateRepository certificateRepository;
   private final TlsScanResultRepository tlsScanResultRepository;
@@ -35,9 +44,18 @@ public class TlsCrawlerService {
   // a cache of certificates that have already been saved to the database
   private final Set<String> savedCertificates = new HashSet<>();
 
+  private final int destinationPort;
+
   @Autowired
-  public TlsCrawlerService(TlsScanner tlsScanner, CertificateRepository certificateRepository, TlsScanResultRepository tlsScanResultRepository, ScanResultRepository scanResultRepository) {
+  public TlsCrawlerService(
+      @Value("${tls.scanner.destination.port:443}") int destinationPort,
+      TlsScanner tlsScanner, ScanResultCache scanResultCache, BlackList blackList,
+      CertificateRepository certificateRepository, TlsScanResultRepository tlsScanResultRepository,
+      ScanResultRepository scanResultRepository) {
+    this.destinationPort = destinationPort;
     this.tlsScanner = tlsScanner;
+    this.scanResultCache = scanResultCache;
+    this.blackList = blackList;
     this.certificateRepository = certificateRepository;
     this.tlsScanResultRepository = tlsScanResultRepository;
     this.scanResultRepository = scanResultRepository;
@@ -50,32 +68,85 @@ public class TlsCrawlerService {
     // TODO: pre-populate cache of TlsScanResult's ??
   }
 
+  @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
+  public void clearCacheScheduled() {
+    logger.info("clearCacheScheduled: evicting entries older than 4 hours");
+    // every 15 minutes we remove all ScanResult older than 4 hours from the cache
+    scanResultCache.evictEntriesOlderThan(Duration.ofHours(4));
+  }
+
   @Transactional
   public void crawl(VisitRequest visitRequest) {
     logger.info("Crawling {}", visitRequest);
     doCrawl(visitRequest);
-
-
-
-    logger.info("Done crawling {}", visitRequest);
   }
 
   private void doCrawl(VisitRequest visitRequest) {
-    String hostName = visitRequest.getDomainName();
-    TlsCrawlResult crawlResult = tlsScanner.scan(hostName);
-
     ZonedDateTime crawlTimestamp = ZonedDateTime.now();
+    String hostName = visitRequest.getDomainName();
+    InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
+
+    if (!address.isUnresolved()) {
+      String ip = address.getAddress().getHostAddress();
+      Optional<ScanResult> resultFromCache = scanResultCache.find(ip);
+      if (resultFromCache.isPresent()) {
+        logger.info("Found matching result in the cache");
+        ScanResult scanResult = resultFromCache.get();
+        fromCache(visitRequest, hostName, scanResult);
+      }
+    }
+    TlsCrawlResult crawlResult = scanIfNotBlacklisted(address);
     ScanResult scanResult = convert(crawlTimestamp, crawlResult);
+    scanResultCache.add(Instant.now(), scanResult);
+
     TlsScanResult tlsScanResult = TlsScanResult.builder()
         .scanResult(scanResult)
         .visitId(visitRequest.getVisitId())
         .domainName(visitRequest.getDomainName())
-        .prefix(null)
+        .hostName(visitRequest.getDomainName())
         .crawlTimestamp(crawlTimestamp)
+        .hostNameMatchesCertificate(crawlResult.isHostNameMatchesCertificate())
         .build();
 
     saveCertificates(crawlResult);
     scanResultRepository.save(scanResult);
+    tlsScanResultRepository.save(tlsScanResult);
+  }
+
+  private TlsCrawlResult scanIfNotBlacklisted(InetSocketAddress address) {
+    if (blackList.isBlacklisted(address)) {
+      return TlsCrawlResult.connectFailed(address, "IP address is blacklisted");
+    }
+    return tlsScanner.scan(address);
+  }
+
+  private void fromCache(VisitRequest visitRequest, String hostName, ScanResult resultFromCache) {
+    // When checking TLS support, we use a HostnameVerifier to set isHostNameMatchesCertificate
+    // Here we should check again if the hostName matches the received cert chain
+    // because hostName from VisitRequest probably differs from resultFromCache.get().getServerName()
+    // BUT we do not have an SSLSession ...
+    // so we just check the SubjectAltNames of the certificate from the cache
+
+    boolean match = false;
+    Certificate leafCertificate = resultFromCache.getLeafCertificate();
+    if (leafCertificate != null) {
+      List<String> subjectAltNames = leafCertificate.getSubjectAltNames();
+      if (subjectAltNames.contains(hostName)) {
+        logger.debug("{} found in the getSubjectAltNames of the cached ScanResult for {}", hostName, resultFromCache.getServerName());
+        match = true;
+      }
+    }
+    if (!match) {
+      logger.info("hostName {} does NOT match with subjectAltNames of the cached ScanResult for {}", hostName, resultFromCache.getServerName());
+    }
+    TlsScanResult tlsScanResult = TlsScanResult.builder()
+        .scanResult(resultFromCache)
+        .visitId(visitRequest.getVisitId())
+        .domainName(visitRequest.getDomainName())
+        .hostName(visitRequest.getDomainName())
+        .crawlTimestamp(ZonedDateTime.now())
+        .hostNameMatchesCertificate(match)
+        .build();
     tlsScanResultRepository.save(tlsScanResult);
   }
 
@@ -160,6 +231,12 @@ public class TlsCrawlerService {
         .errorTls_1_0(tls10.getErrorMessage())
         .errorSsl_3_0(ssl3.getErrorMessage())
         .errorSsl_2_0(ssl2.getErrorMessage())
+        .millis_tls_1_0(tls10.getScanDuration().toMillis())
+        .millis_tls_1_1(tls11.getScanDuration().toMillis())
+        .millis_tls_1_2(tls12.getScanDuration().toMillis())
+        .millis_tls_1_3(tls13.getScanDuration().toMillis())
+        .millis_ssl_3_0(ssl3.getScanDuration().toMillis())
+        .millis_ssl_2_0(ssl2.getScanDuration().toMillis())
         .ip(tls13.getIpAddress())
         .connectOk(tls13.isConnectOK())
         .serverName(tls13.getServerName())
@@ -171,6 +248,7 @@ public class TlsCrawlerService {
         .crawlTimestamp(timestamp)
         .certificateExpired(certificateExpired)
         .certificateTooSoon(certificateTooSoon)
+        .chainTrustedByJavaPlatform(tlsCrawlResult.isChainTrustedByJavaPlatform())
         .build();
   }
 

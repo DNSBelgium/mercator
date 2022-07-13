@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.ToString;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import javax.crypto.interfaces.DHPublicKey;
@@ -70,7 +69,6 @@ public class CertificateInfo {
   }
 
   public static CertificateInfo from(X509Certificate x509Certificate) throws CertificateParsingException {
-    logger.info("Building CertificateInfo from x509Certificate with serial = {}", x509Certificate.getSerialNumber());
     PublicKey pubKey = x509Certificate.getPublicKey();
     return CertificateInfo.builder()
         .issuer(x509Certificate.getIssuerX500Principal().getName())
@@ -104,27 +102,22 @@ public class CertificateInfo {
   }
 
   public static int getKeyLength(PublicKey pubKey) {
-    if (pubKey instanceof RSAPublicKey) {
-      RSAPublicKey rsaPublicKey = (RSAPublicKey) pubKey;
+    if (pubKey instanceof RSAPublicKey rsaPublicKey) {
       return rsaPublicKey.getModulus().bitLength();
     }
-    if (pubKey instanceof DSAPublicKey) {
-      final DSAPublicKey dsaPublicKey = (DSAPublicKey) pubKey;
+    if (pubKey instanceof final DSAPublicKey dsaPublicKey) {
       return dsaPublicKey.getY().bitLength();
     }
-    if (pubKey instanceof ECPublicKey) {
-      ECPublicKey ecPublicKey = (ECPublicKey) pubKey;
+    if (pubKey instanceof ECPublicKey ecPublicKey) {
       ECParameterSpec params = ecPublicKey.getParams();
       if (params != null) {
         return params.getOrder().bitLength();
       }
     }
-    if (pubKey instanceof DHPublicKey) {
-      DHPublicKey dhPublicKey = (DHPublicKey) pubKey;
+    if (pubKey instanceof DHPublicKey dhPublicKey) {
       return dhPublicKey.getY().bitLength();
     }
-    if (pubKey instanceof XECPublicKey) {
-      XECPublicKey xecPublicKey = (XECPublicKey) pubKey;
+    if (pubKey instanceof XECPublicKey xecPublicKey) {
       return xecPublicKey.getU().bitLength();
     }
     logger.info("Unknown public key type: alg={} class={}", pubKey.getAlgorithm(), pubKey.getClass());
@@ -192,13 +185,6 @@ public class CertificateInfo {
       throw e;
     }
     return subjectAlternativeNames;
-  }
-
-  public boolean sameFingerprintAs(CertificateInfo other) {
-    if (other == null) {
-      return false;
-    }
-    return StringUtils.equals(this.getSha256Fingerprint(), other.getSha256Fingerprint());
   }
 
 }

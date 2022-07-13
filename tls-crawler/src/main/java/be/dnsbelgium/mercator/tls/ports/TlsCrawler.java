@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlerService;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -10,10 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
-
-import javax.persistence.PersistenceException;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -26,6 +26,7 @@ public class TlsCrawler implements Crawler {
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService) {
     this.meterRegistry = meterRegistry;
@@ -47,18 +48,22 @@ public class TlsCrawler implements Crawler {
       crawlerService.crawl(visitRequest);
       meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
 
-    } catch (PersistenceException e) {
-      logger.info("PersistenceException: {}", e.getMessage());
+    } catch (DataIntegrityViolationException e) {
+      meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();
+      logger.info("DataIntegrityViolationException: {}", e.getMessage());
       if (exceptionContains(e, "duplicate key value violates unique constraint")) {
+        meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
         logger.info("visit_id already in the database: {} => ignoring this request", visitRequest.getVisitId());
       } else {
         logger.error("Unexpected PersistenceException => rethrowing exception ({})", e.getMessage());
         logAndRethrow(visitRequest, e);
       }
+      // TODO: ScanResult was not saved, we should not cache it
+      // Better to start Transactional after crawling
+
     } catch (Throwable e) {
       meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();
       logAndRethrow(visitRequest, e);
-      throw e;
     } finally {
       MDC.remove("domainName");
       MDC.remove("visitId");
