@@ -30,7 +30,7 @@ WORKDIR /app
 RUN chown node:node ./
 USER node
 
-ADD package.json npm-shrinkwrap.json tsconfig.json /app/
+ADD package.json package-lock.json tsconfig.json /app/
 RUN npm ci && npm cache clean --force
 
 ADD src /app/src
