@@ -88,16 +88,6 @@ smtp-crawler:
   geoip:
     key:
 
-ssl-crawler:
-  image:
-    repository: dnsbelgium/mercator/ssl-crawler
-    tag: k8s
-  database:
-    name: "postgres"
-    host: "localhost"
-    username: "postgres"
-    password: "password"
-
 vat-crawler:
   image:
     repository: dnsbelgium/mercator/vat-crawler
@@ -106,5 +96,16 @@ vat-crawler:
   database:
     url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=vat_crawler"
     schema: "vat_crawler"
+    username: "postgres"
+    password: "password"
+
+tls-crawler:
+  image:
+    repository: dnsbelgium/mercator/tls-crawler
+    pullPolicy: IfNotPresent
+    tag: k8s
+  database:
+    url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=tls_crawler"
+    schema: "tls_crawler"
     username: "postgres"
     password: "password"

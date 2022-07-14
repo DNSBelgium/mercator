@@ -48,28 +48,29 @@ public class MercatorShell implements PromptProvider {
 
   @SuppressWarnings("HttpUrlsUsage")
   private final static String MUPPETS_REQUEST_TEMPLATE =
-      "{\n" +
-          "  \"visitId\": \"${visitId}\",\n" +
-          "  \"domainName\": \"${domainName}\",\n" +
-          "  \"saveHar\": true,\n" +
-          "  \"saveHtml\": true,\n" +
-          "  \"saveScreenshot\": true,\n" +
-          "  \"url\": \"http://www.${domainName}\",\n" +
-          "  \"referer\" : \"https://google.com/\",\n" +
-          "  \"screenshotOptions\": {\n" +
-          "    \"type\": \"png\",\n" +
-          "    \"fullPage\": true,\n" +
-          "    \"omitBackground\": false,\n" +
-          "    \"encoding\": \"binary\"\n" +
-          "  },\n" +
-          "  \"browserOptions\": {\n" +
-          "    \"headless\": true,\n" +
-          "    \"defaultViewport\": {\n" +
-          "      \"width\": 1600,\n" +
-          "      \"height\": 1200\n" +
-          "    }\n" +
-          "  }\n" +
-          "}";
+      """
+          {
+            "visitId": "${visitId}",
+            "domainName": "${domainName}",
+            "saveHar": true,
+            "saveHtml": true,
+            "saveScreenshot": true,
+            "url": "http://www.${domainName}",
+            "referer" : "https://google.com/",
+            "screenshotOptions": {
+              "type": "png",
+              "fullPage": true,
+              "omitBackground": false,
+              "encoding": "binary"
+            },
+            "browserOptions": {
+              "headless": true,
+              "defaultViewport": {
+                "width": 1600,
+                "height": 1200
+              }
+            }
+          }""";
 
   enum RequestType {
     VISIT_REQUEST,
@@ -87,6 +88,7 @@ public class MercatorShell implements PromptProvider {
     SMTP,
     VAT,
     SSL,
+    TLS,
     ALL  // to send acks for every module
   }
 
@@ -309,19 +311,15 @@ public class MercatorShell implements PromptProvider {
   }
 
   private String generateRequest(String domainName, UUID visitId, RequestType requestType, CrawlerModule crawlerModule) {
-    switch (requestType) {
-      case ACK:
-        return ack(domainName, visitId, crawlerModule);
-      case MUPPETS_REQUEST:
-        return muppetsRequest(domainName, visitId);
-      case VISIT_REQUEST:
-        return visitRequest(domainName, visitId);
-      case JSON:
+    return switch (requestType) {
+      case ACK -> ack(domainName, visitId, crawlerModule);
+      case MUPPETS_REQUEST -> muppetsRequest(domainName, visitId);
+      case VISIT_REQUEST -> visitRequest(domainName, visitId);
+      case JSON ->
         // the first parameter should be valid JSON (not
-        return domainName;
-      default:
-        throw new RuntimeException("Unknown RequestType: " + requestType);
-    }
+          domainName;
+      default -> throw new RuntimeException("Unknown RequestType: " + requestType);
+    };
   }
 
   private String ack(String domainName, UUID visitId, CrawlerModule crawlerModule) {

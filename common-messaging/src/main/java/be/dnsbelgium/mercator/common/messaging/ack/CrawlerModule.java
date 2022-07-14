@@ -9,6 +9,7 @@ public enum CrawlerModule {
   WAPPALYZER(),
   SMTP(),
   VAT(),
+  TLS(false),
   SSL(false),
   ;
 

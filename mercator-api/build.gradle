@@ -36,6 +36,7 @@ dependencies {
 	implementation project(':smtp-crawler-persistence')
 	implementation project(':feature-extraction-persistence')
 	implementation project(':vat-crawler-persistence')
+	implementation project(':tls-crawler-persistence')
 	implementation project(':ssl-crawler-persistence')
 
 	compileOnly 'org.projectlombok:lombok'
