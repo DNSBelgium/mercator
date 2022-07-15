@@ -93,6 +93,7 @@ public class TlsCrawlerService {
         logger.info("Found matching result in the cache");
         ScanResult scanResult = resultFromCache.get();
         fromCache(visitRequest, hostName, scanResult);
+        return;
       }
     }
     TlsCrawlResult crawlResult = scanIfNotBlacklisted(address);
