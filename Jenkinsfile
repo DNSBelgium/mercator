@@ -79,10 +79,14 @@ pipeline {
               stage("Create docker image for ${app}") {
                 withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
                   sh """
-                    ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
-                    cd ${app}
-                    mkdir -p ${WORKSPACE}/trivy
-                    TMPDIR=${WORKSPACE}/trivy trivy image --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
+                    if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                      echo "image already exists"
+                    else
+                      ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
+                      cd ${app}
+                      mkdir -p ${WORKSPACE}/trivy
+                      TMPDIR=${WORKSPACE}/trivy trivy image --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
+                    fi
                   """
                 }
               }
