@@ -44,8 +44,4 @@ ENV SQS_INPUT_QUEUE "UNDEFINED"
 ENV SQS_OUTPUT_QUEUE "UNDEFINED"
 ENV SERVER_PORT "UNDEFINED"
 
-ADD entrypoint.sh /app/
-ADD src/config/config.json /app/dist/config.json
-
-ENTRYPOINT ["./entrypoint.sh"]
-CMD ["node", "/app/dist/server.js"]
+CMD ["node", "--trace-deprecation", "/app/dist/server.js"]

@@ -85,25 +85,25 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
-#  prometheus:
-#    image: prom/prometheus:v2.12.0
-#    command: '--config.file=/etc/prometheus/prometheus.yml'
-#    volumes:
-#      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
-#      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
-#    ports:
-#      - "9090:9090"
+  #  prometheus:
+  #    image: prom/prometheus:v2.12.0
+  #    command: '--config.file=/etc/prometheus/prometheus.yml'
+  #    volumes:
+  #      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
+  #      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
+  #    ports:
+  #      - "9090:9090"
 
-#  grafana:
-#    environment:
-#      GF_SECURITY_ADMIN_PASSWORD: password
-#    image: grafana/grafana:6.5.2
-#    volumes:
-#      - ${PWD}/observability/grafana/provisioning/:/etc/grafana/provisioning/
-#      - ${PWD}/observability/infra/modules/observability/templates/grafana-dashboards/:/var/lib/grafana/dashboards/
-#      - ${PWD}/observability/grafana/persistence/grafana.db:/etc/grafana/grafana.db
-#    ports:
-#      - "3000:3000"
+  #  grafana:
+  #    environment:
+  #      GF_SECURITY_ADMIN_PASSWORD: password
+  #    image: grafana/grafana:6.5.2
+  #    volumes:
+  #      - ${PWD}/observability/grafana/provisioning/:/etc/grafana/provisioning/
+  #      - ${PWD}/observability/infra/modules/observability/templates/grafana-dashboards/:/var/lib/grafana/dashboards/
+  #      - ${PWD}/observability/grafana/persistence/grafana.db:/etc/grafana/grafana.db
+  #    ports:
+  #      - "3000:3000"
 
   dispatcher:
     image: dnsbelgium/mercator/dispatcher:local
@@ -134,7 +134,7 @@ services:
       db:
         condition: service_started
       localstack:
-          condition: service_healthy
+        condition: service_healthy
 
   content-crawler:
     image: dnsbelgium/mercator/content-crawler:local

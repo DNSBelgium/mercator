@@ -1,5 +1,5 @@
 import {createConsumer, createHandler, createProducer, getQueueUrl} from "./websnapper.js";
-import * as config from "./config/config.json" assert { type: "json" };
+import config from "./config.js";
 import express from "express";
 import * as metrics from "./metrics.js";
 import {isBrowserConnected, shutdown} from "./scraper.js";

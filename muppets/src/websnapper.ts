@@ -5,7 +5,7 @@ import * as Producer from "sqs-producer";
 
 import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
-import * as config from "./config/config.json" assert { type: "json" };
+import config from "./config.js";
 import { computePath } from "./util.js";
 
 const sqsOptions: ServiceConfigurationOptions = {};
@@ -121,7 +121,6 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
         console.error(params);
         console.error(params.url);
     }
-
 }
 
 export async function createHandler(producer: Producer): Promise<(message: AWS.SQS.Types.Message) => Promise<void>> {
