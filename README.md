@@ -65,7 +65,7 @@ between temporary, internal module state and stable, consumable data.
 * `muppets` (NodeJS / TypeScript): Takes screenshots via puppeteer, interacts over SQS and stores results in S3
 * `observability`: code to support the observability property of the system
 * `smtp-crawler` (Java / Spring Boot): Stores information about SMTP servers.
-* `ssl-crawler` (Python): Gather SSL certificates and extracts data. Use [SSLyze](https://github.com/nabla-c0d3/sslyze).
+* `tls-crawler` (Java / Spring Boot): Gather SSL certificates and extracts data.
 * `vat-crawler` (Java / Spring Boot): Try to find VAT number (belgian only for now) on a website.
 * `mercator-cli` (Java / Spring Boot): Command-line interface to interact with the SQS queues of the different modules.
 

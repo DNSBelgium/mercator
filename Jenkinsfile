@@ -6,7 +6,6 @@ pipeline {
   }
   tools {
     jdk "OpenJDK 17"
-    nodejs "NodeJS 16.15.1"
   }
   options {
     buildDiscarder(logRotator(numToKeepStr: "10"))
@@ -74,7 +73,7 @@ pipeline {
       steps {
         script {
           def docker = [:]
-          ["dispatcher", "dns-crawler", "smtp-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
 //             docker[app] = {
               stage("Create docker image for ${app}") {
                 withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
@@ -102,7 +101,7 @@ pipeline {
       steps {
         script {
           def docker = [:]
-          ["dispatcher", "dns-crawler", "smtp-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
             docker[app] = {
               stage("Build and push helm chart for ${app}") {
                 withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {

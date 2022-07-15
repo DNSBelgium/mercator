@@ -201,6 +201,22 @@ services:
       db:
         condition: service_started
 
+  tls-crawler:
+    image: dnsbelgium/mercator/tls-crawler:local
+    mem_limit: 300M
+    ports:
+      - "8092:8092"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=tls_crawler
+      - SPRING_PROFILES_ACTIVE=local
+      - LOCALSTACK_URL=http://localstack:4566
+      - AWS_REGION=eu-west-1
+    depends_on:
+      localstack:
+        condition: service_healthy
+      db:
+        condition: service_started
+
   mercator-api:
     image: dnsbelgium/mercator/mercator-api:local
     ports:
