@@ -2,7 +2,8 @@ package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.TlsScanResult;
+import be.dnsbelgium.mercator.tls.domain.ScanResultCache;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlerService;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -15,6 +16,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
@@ -24,13 +27,16 @@ public class TlsCrawler implements Crawler {
 
   private final TlsCrawlerService crawlerService;
 
+  private final ScanResultCache scanResultCache;
+
   private static final Logger logger = getLogger(TlsCrawler.class);
 
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
-  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService) {
+  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, ScanResultCache scanResultCache) {
     this.meterRegistry = meterRegistry;
     this.crawlerService = crawlerService;
+    this.scanResultCache = scanResultCache;
   }
 
   @Override
@@ -45,8 +51,9 @@ public class TlsCrawler implements Crawler {
       MDC.put("visitId", visitRequest.getVisitId().toString());
       logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
 
-      crawlerService.crawl(visitRequest);
+      TlsScanResult tlsScanResult = crawlerService.crawl(visitRequest);
       meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
+      scanResultCache.add(Instant.now(), tlsScanResult.getScanResult());
 
     } catch (DataIntegrityViolationException e) {
       meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();
@@ -58,8 +65,6 @@ public class TlsCrawler implements Crawler {
         logger.error("Unexpected PersistenceException => rethrowing exception ({})", e.getMessage());
         logAndRethrow(visitRequest, e);
       }
-      // TODO: ScanResult was not saved, we should not cache it
-      // Better to start Transactional after crawling
 
     } catch (Throwable e) {
       meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();

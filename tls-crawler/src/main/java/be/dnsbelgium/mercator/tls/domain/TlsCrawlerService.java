@@ -76,12 +76,13 @@ public class TlsCrawlerService {
   }
 
   @Transactional
-  public void crawl(VisitRequest visitRequest) {
+  public TlsScanResult crawl(VisitRequest visitRequest) {
+    // TODO: better to start @Transactional method only after the actual crawling
     logger.info("Crawling {}", visitRequest);
-    doCrawl(visitRequest);
+    return doCrawl(visitRequest);
   }
 
-  private void doCrawl(VisitRequest visitRequest) {
+  private TlsScanResult doCrawl(VisitRequest visitRequest) {
     ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     String hostName = visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
@@ -92,13 +93,12 @@ public class TlsCrawlerService {
       if (resultFromCache.isPresent()) {
         logger.info("Found matching result in the cache");
         ScanResult scanResult = resultFromCache.get();
-        fromCache(visitRequest, hostName, scanResult);
-        return;
+        return fromCache(visitRequest, hostName, scanResult);
       }
     }
     TlsCrawlResult crawlResult = scanIfNotBlacklisted(address);
     ScanResult scanResult = convert(crawlTimestamp, crawlResult);
-    scanResultCache.add(Instant.now(), scanResult);
+    //scanResultCache.add(Instant.now(), scanResult);
 
     TlsScanResult tlsScanResult = TlsScanResult.builder()
         .scanResult(scanResult)
@@ -111,7 +111,7 @@ public class TlsCrawlerService {
 
     saveCertificates(crawlResult);
     scanResultRepository.save(scanResult);
-    tlsScanResultRepository.save(tlsScanResult);
+    return tlsScanResultRepository.save(tlsScanResult);
   }
 
   private TlsCrawlResult scanIfNotBlacklisted(InetSocketAddress address) {
@@ -121,7 +121,7 @@ public class TlsCrawlerService {
     return tlsScanner.scan(address);
   }
 
-  private void fromCache(VisitRequest visitRequest, String hostName, ScanResult resultFromCache) {
+  private TlsScanResult fromCache(VisitRequest visitRequest, String hostName, ScanResult resultFromCache) {
     // When checking TLS support, we use a HostnameVerifier to set isHostNameMatchesCertificate
     // Here we should check again if the hostName matches the received cert chain
     // because hostName from VisitRequest probably differs from resultFromCache.get().getServerName()
@@ -148,7 +148,7 @@ public class TlsCrawlerService {
         .crawlTimestamp(ZonedDateTime.now())
         .hostNameMatchesCertificate(match)
         .build();
-    tlsScanResultRepository.save(tlsScanResult);
+    return tlsScanResultRepository.save(tlsScanResult);
   }
 
   private void saveCertificates(TlsCrawlResult tlsCrawlResult) {
