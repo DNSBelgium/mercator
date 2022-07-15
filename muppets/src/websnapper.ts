@@ -1,7 +1,7 @@
 import AWS from "aws-sdk";
 import { ServiceConfigurationOptions } from "aws-sdk/lib/service";
 import { Consumer } from "sqs-consumer";
-import * as Producer from "sqs-producer";
+import Producer from "sqs-producer";
 
 import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
