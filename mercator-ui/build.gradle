@@ -1,17 +1,9 @@
 plugins {
   id 'base'
-  id "com.moowork.node" version "1.3.1"
   id 'org.unbroken-dome.helm'
 }
 
 version = '0.0.1-' + getCommitHash()
-
-npm_install {
-  args = ['--force']
-}
-
-//assemble.dependsOn npm_run_build
-assemble.dependsOn npm_install
 
 tasks.register('dockerBuild', Exec) {
   def registry = ""

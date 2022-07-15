@@ -6,7 +6,6 @@ pipeline {
   }
   tools {
     jdk "OpenJDK 17"
-    nodejs "NodeJS 16.15.1"
   }
   options {
     buildDiscarder(logRotator(numToKeepStr: "10"))
