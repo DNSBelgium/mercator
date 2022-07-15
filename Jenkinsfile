@@ -8,6 +8,10 @@ pipeline {
     jdk "OpenJDK 17"
     nodejs "NodeJS 16.15.1"
   }
+  environment {
+    NODEJS_HOME = "${tool 'NodeJS 16.15.1'}"
+    PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
+  }
   options {
     buildDiscarder(logRotator(numToKeepStr: "10"))
     ansiColor("xterm")
@@ -83,10 +87,10 @@ pipeline {
                       echo "image already exists"
                     else
                       ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
-                      cd ${app}
-                      mkdir -p ${WORKSPACE}/trivy
-                      TMPDIR=${WORKSPACE}/trivy trivy image --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
                     fi
+                    cd ${app}
+                    mkdir -p ${WORKSPACE}/trivy
+                    TMPDIR=${WORKSPACE}/trivy trivy image --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
                   """
                 }
               }
@@ -112,7 +116,11 @@ pipeline {
                 withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
                   sh """
                     export HELM_EXPERIMENTAL_OCI=1
-                    ./gradlew --no-daemon ${app}:helmPackage ${app}:helmPublish -PhelmRegistry=oci://${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/helm
+                    if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/helm/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                      echo "image already exists"
+                    else
+                      ./gradlew --no-daemon ${app}:helmPackage ${app}:helmPublish -PhelmRegistry=oci://${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/helm
+                    fi
                   """
                 }
               }
