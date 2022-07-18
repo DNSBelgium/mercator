@@ -28,13 +28,29 @@ public class ScanResultCache {
   private final Map<String, CacheEntry> mapPerIp = new ConcurrentHashMap<>();
 
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  private final boolean enabled;
 
   @Autowired
+  public ScanResultCache(
+      @Value("${scanResult.cache.enabled:true}") boolean cacheEnabled,
+      @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
+      @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio) {
+    this.minimumEntriesPerIp = minimumEntriesPerIp;
+    this.requiredRatio = requiredRatio;
+    this.enabled = cacheEnabled;
+    if (cacheEnabled) {
+      logger.info("ScanResultCache configured with minimumEntriesPerIp={} and requiredRatio={}", minimumEntriesPerIp, requiredRatio);
+    } else {
+      logger.warn("ScanResultCache is DISABLED");
+    }
+  }
+
   public ScanResultCache(
       @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
       @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio) {
     this.minimumEntriesPerIp = minimumEntriesPerIp;
     this.requiredRatio = requiredRatio;
+    this.enabled = true;
   }
 
   @SuppressWarnings("unused")
@@ -71,6 +87,9 @@ public class ScanResultCache {
   }
 
   public void add(Instant added, ScanResult scanResult) {
+    if (!enabled) {
+      return;
+    }
     if (scanResult.getIp() == null) {
       // No need to cache when we could not find an IP
       return;
@@ -127,6 +146,9 @@ public class ScanResultCache {
   }
 
   public Optional<ScanResult> find(String ip) {
+    if (!enabled) {
+      return Optional.empty();
+    }
     readWriteLock.readLock().lock();
     try {
       CacheEntry match = mapPerIp.get(ip);
