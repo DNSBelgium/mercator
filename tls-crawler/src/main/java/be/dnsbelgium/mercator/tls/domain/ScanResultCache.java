@@ -66,20 +66,6 @@ public class ScanResultCache {
     }
   }
 
-  public void remove(ScanResult scanResult) {
-    if (scanResult.getIp() == null) {
-      return;
-    }
-    logger.info("Removing from cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
-    readWriteLock.writeLock().lock();
-    try {
-      String ip = scanResult.getIp();
-      mapPerIp.remove(ip);
-    } finally {
-      readWriteLock.writeLock().unlock();
-    }
-  }
-
   public void add(ScanResult scanResult) {
     add(Instant.now(), scanResult);
   }
@@ -87,6 +73,11 @@ public class ScanResultCache {
   public void add(Instant added, ScanResult scanResult) {
     if (scanResult.getIp() == null) {
       // No need to cache when we could not find an IP
+      return;
+    }
+    if (scanResult.getId() == null) {
+      // Makes no sense the cache a ScanResult that was not yet persisted
+      logger.warn("Attempted to cache a ScanResult that has no id: {}", scanResult);
       return;
     }
     logger.info("Adding to cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
@@ -98,6 +89,10 @@ public class ScanResultCache {
         logger.debug("First time we see this IP: {}", ip);
         mapPerIp.put(ip, CacheEntry.of(added, scanResult));
       } else {
+        if (scanResult.getId().equals(entry.majority.getId())) {
+          // given ScanResult already cached => do nothing
+          return;
+        }
         String summary = scanResult.summary();
         String majoritySummary = entry.majority.summary();
         if (StringUtils.equals(summary, majoritySummary)) {

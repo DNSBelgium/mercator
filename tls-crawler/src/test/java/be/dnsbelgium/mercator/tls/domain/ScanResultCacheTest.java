@@ -16,6 +16,9 @@ class ScanResultCacheTest {
   private final static String IP1 = "10.20.30.40";
   private final static String IP2 = "1.2.3.4";
   private final static String IP3 = "3.3.3.3";
+
+  private Long idGenerator = 1L;
+
   private static final Logger logger = getLogger(ScanResultCacheTest.class);
 
   @Test
@@ -68,6 +71,7 @@ class ScanResultCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_first.be")
+        .id(idGenerator++)
         .build();
     scanResultCache.add(result1);
     // minimumEntriesPerIp not reached
@@ -77,6 +81,7 @@ class ScanResultCacheTest {
         .ip(IP1)
         .supportTls_1_2(true)
         .serverName("tls12_deviant.be")
+        .id(idGenerator++)
         .build();
     scanResultCache.add(result2);
     // minimumEntriesPerIp reached but ratio = 0.5 < 0.75
@@ -86,6 +91,7 @@ class ScanResultCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_second.be")
+        .id(idGenerator++)
         .build();
 
     scanResultCache.add(result3);
@@ -96,6 +102,7 @@ class ScanResultCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_third.be")
+        .id(idGenerator++)
         .build();
     scanResultCache.add(result4);
     // ratio = 0.75 => OK
@@ -104,11 +111,28 @@ class ScanResultCacheTest {
     assertThat(found).isNotEmpty();
   }
 
+  @Test
+  public void whenAddingSameResultTwiceThenItIsAddedOnlyOnce() {
+    ScanResultCache scanResultCache = new ScanResultCache(2, 0.75);
+    ScanResult result1 = ScanResult.builder()
+        .ip(IP1)
+        .supportTls_1_3(true)
+        .serverName("tls13_first.be")
+        .build();
+    scanResultCache.add(result1);
+    // minimumEntriesPerIp not reached
+    assertThat(scanResultCache.find(IP1)).isEmpty();
+    scanResultCache.add(result1);
+    // minimumEntriesPerIp still not reached
+    assertThat(scanResultCache.find(IP1)).isEmpty();
+  }
+
   private ScanResult makeScanResult(String ip, String serverName) {
     return ScanResult.builder()
         .ip(ip)
         .supportTls_1_3(true)
         .serverName(serverName)
+        .id(idGenerator++)
         .build();
   }
 
