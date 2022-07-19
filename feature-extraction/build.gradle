@@ -8,6 +8,9 @@ plugins {
 
 version = '0.0.1-' + getCommitHash()
 
+// CVE-2022-31159
+ext['awsjavasdk.version']="1.12.262"
+
 repositories {
     mavenCentral()
 }
@@ -43,7 +46,7 @@ dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-core'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.262'
+    implementation 'com.amazonaws:aws-java-sdk-s3'
 
     implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure'
     implementation 'io.awspring.cloud:spring-cloud-aws-core'

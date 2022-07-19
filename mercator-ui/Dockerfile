@@ -19,12 +19,8 @@ FROM nginx:stable-alpine
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 
-RUN apk upgrade --update-cache \
-      # CVE-2022-32207
-      curl libcurl \
-      # CVE-2022-2097 \
-      libcrypto1.1 libssl1.1 \
-      --no-cache
+#RUN apk upgrade --update-cache \
+#      --no-cache
 
 ## Nginx config
 # Port 8080

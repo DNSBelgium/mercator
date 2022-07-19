@@ -7,14 +7,6 @@ RUN apk add -u --update-cache \
     nss \
     ttf-freefont \
     font-noto-emoji \
-    # CVE-2022-2740 \
-    freetype \
-    # CVE-2021-44648
-    gdk-pixbuf \
-    # CVE-2022-0891
-    tiff-dev \
-    # CVE-2022-23308 and more \
-    curl libxml2 libcrypto1.1 libssl1.1 libxslt \
     && rm -rf /var/cache/* \
     && mkdir /var/cache/apk
 
