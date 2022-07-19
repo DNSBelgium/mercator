@@ -1,6 +1,9 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
+import be.dnsbelgium.mercator.tls.metrics.MetricName;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,15 +32,19 @@ public class ScanResultCache {
 
   private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
   private final boolean enabled;
+  private final MeterRegistry meterRegistry;
 
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   public ScanResultCache(
       @Value("${scanResult.cache.enabled:true}") boolean cacheEnabled,
       @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
-      @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio) {
+      @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio,
+      MeterRegistry meterRegistry) {
     this.minimumEntriesPerIp = minimumEntriesPerIp;
     this.requiredRatio = requiredRatio;
     this.enabled = cacheEnabled;
+    this.meterRegistry = meterRegistry;
     if (cacheEnabled) {
       logger.info("ScanResultCache configured with minimumEntriesPerIp={} and requiredRatio={}", minimumEntriesPerIp, requiredRatio);
     } else {
@@ -51,6 +58,7 @@ public class ScanResultCache {
     this.minimumEntriesPerIp = minimumEntriesPerIp;
     this.requiredRatio = requiredRatio;
     this.enabled = true;
+    this.meterRegistry = new SimpleMeterRegistry();
   }
 
   @SuppressWarnings("unused")
@@ -68,6 +76,7 @@ public class ScanResultCache {
       mapPerIp.entrySet().removeIf(e -> e.getValue().added.isBefore(notBefore));
       int entriesAfter = mapPerIp.size();
       logger.info("Eviction done. before cache had {} entries, now it has {} entries", entriesBefore, entriesAfter);
+      meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, entriesAfter);
     } finally {
       readWriteLock.writeLock().unlock();
     }
@@ -76,7 +85,9 @@ public class ScanResultCache {
   public int size() {
     readWriteLock.readLock().lock();
     try {
-      return mapPerIp.size();
+      int size = mapPerIp.size();
+      meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, size);
+      return size;
     } finally {
       readWriteLock.readLock().unlock();
     }
@@ -141,6 +152,8 @@ public class ScanResultCache {
         }
       }
     } finally {
+      int size = mapPerIp.size();
+      meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, size);
       readWriteLock.writeLock().unlock();
     }
   }
@@ -154,11 +167,11 @@ public class ScanResultCache {
       CacheEntry match = mapPerIp.get(ip);
       if (match == null) {
         logger.debug("No match for {}", ip);
-        return Optional.empty();
+        return cacheMiss();
       }
       if (match.totalScanResults < minimumEntriesPerIp) {
         logger.debug("Not enough scans for this IP. required={} in-cache={}", minimumEntriesPerIp, match.totalScanResults);
-        return Optional.empty();
+        return cacheMiss();
       }
       logger.debug("totalScanResults={} resultsInMajority={}", match.totalScanResults, match.resultsInMajority);
       double majorityRatio = (1.0 * match.resultsInMajority) / match.totalScanResults;
@@ -166,14 +179,19 @@ public class ScanResultCache {
 
       if (majorityRatio < requiredRatio) {
         logger.debug("Majority not strong enough: actual={} required={}", majorityRatio, requiredRatio);
-        return Optional.empty();
+        return cacheMiss();
       }
+      meterRegistry.counter(MetricName.COUNTER_SCANRESULT_CACHE_HITS).increment();
       return Optional.of(match.majority);
     } finally {
       readWriteLock.readLock().unlock();
     }
   }
 
+  private Optional<ScanResult> cacheMiss() {
+    meterRegistry.counter(MetricName.COUNTER_SCANRESULT_CACHE_MISSES).increment();
+    return Optional.empty();
+  }
 
   @AllArgsConstructor
   private static class CacheEntry {

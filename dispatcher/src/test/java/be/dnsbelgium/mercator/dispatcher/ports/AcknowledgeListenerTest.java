@@ -89,16 +89,16 @@ class AcknowledgeListenerTest {
     assertThat(repository.findById(uuid).get().getAcks()).containsOnlyKeys(CrawlerModule.DNS, CrawlerModule.SMTP,
                                                                            CrawlerModule.WAPPALYZER, CrawlerModule.MUPPETS);
 
-    acknowledgeListener.ack(new AckCrawlMessage(uuid, DOMAIN_NAME, CrawlerModule.SSL));
+    acknowledgeListener.ack(new AckCrawlMessage(uuid, DOMAIN_NAME, CrawlerModule.TLS));
     assertThat(repository.findById(uuid).get().getAcks().size()).isEqualTo(5);
     assertThat(repository.findById(uuid).get().getAcks()).containsOnlyKeys(CrawlerModule.DNS, CrawlerModule.SMTP,
-            CrawlerModule.WAPPALYZER, CrawlerModule.MUPPETS, CrawlerModule.SSL);
+            CrawlerModule.WAPPALYZER, CrawlerModule.MUPPETS, CrawlerModule.TLS);
 
     if (CrawlerModule.VAT.isEnabled()) {
       acknowledgeListener.ack(new AckCrawlMessage(uuid, DOMAIN_NAME, CrawlerModule.VAT));
       assertThat(repository.findById(uuid).get().getAcks().size()).isEqualTo(6);
       assertThat(repository.findById(uuid).get().getAcks()).containsOnlyKeys(CrawlerModule.DNS, CrawlerModule.SMTP,
-          CrawlerModule.WAPPALYZER, CrawlerModule.MUPPETS, CrawlerModule.SSL, CrawlerModule.VAT);
+          CrawlerModule.WAPPALYZER, CrawlerModule.MUPPETS, CrawlerModule.TLS, CrawlerModule.VAT);
     }
 
     verify(jmsTemplate).convertAndSend(anyString(), eq(new VisitRequest(uuid, DOMAIN_NAME)));
