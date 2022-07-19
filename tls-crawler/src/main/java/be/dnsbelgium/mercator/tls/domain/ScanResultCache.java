@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BinaryOperator;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -112,11 +113,11 @@ public class ScanResultCache {
     }
     logger.info("Adding to cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
     readWriteLock.writeLock().lock();
+    String ip = scanResult.getIp();
     try {
-      String ip = scanResult.getIp();
       CacheEntry entry = mapPerIp.get(ip);
       if (entry == null) {
-        logger.debug("First time we see this IP: {}", ip);
+        logger.info("First time we see this IP: {}", ip);
         mapPerIp.put(ip, CacheEntry.of(added, scanResult));
       } else {
         if (scanResult.getId().equals(entry.majority.getId())) {
@@ -154,6 +155,9 @@ public class ScanResultCache {
     } finally {
       int size = mapPerIp.size();
       meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, size);
+      Optional<Long> entries = mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalScanResults).reduce(Long::sum);
+      entries.ifPresent(aLong -> meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, aLong));
+      logger.info("Added {} => IP's cached: {}, entries={}", ip, size, entries);
       readWriteLock.writeLock().unlock();
     }
   }
