@@ -10,16 +10,7 @@ bootRun {
 
 version = '0.0.1-SNAPSHOT'
 
-repositories {
-	mavenCentral()
-	// this can be remove once spring shell 2.1.0 is released.
-	// We now uses 2.1.0 M5 because of https://github.com/spring-projects/spring-shell/issues/391
-	maven {
-		url 'https://repo.spring.io/milestone'
-	}
-}
-
 dependencies {
-	implementation 'org.springframework.shell:spring-shell-starter:2.1.0-M5'
+//	implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
 	implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.167'
 }
