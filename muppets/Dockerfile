@@ -13,10 +13,8 @@ RUN apk add -u --update-cache \
     gdk-pixbuf \
     # CVE-2022-0891
     tiff-dev \
-    # CVE-2022-23308 and more
-    curl libxml2 libxslt \
-    # CVE-2022-30065
-    libcrypto1.1=1.1.1q-r0 libssl1.1=1.1.1q-r0 \
+    # CVE-2022-23308 and more \
+    curl libxml2 libcrypto1.1 libssl1.1 libxslt \
     && rm -rf /var/cache/* \
     && mkdir /var/cache/apk
 
