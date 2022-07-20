@@ -1,6 +1,10 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
+import be.dnsbelgium.mercator.tls.metrics.MetricName;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -8,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -24,6 +29,33 @@ class ScanResultCacheTest {
   @Test
   public void whenMapIsEmptyThenWeFindNoResult() {
     ScanResultCache scanResultCache = ScanResultCache.withDefaultSettings();
+    Optional<ScanResult> found = scanResultCache.find(IP1);
+    assertThat(found).isEmpty();
+  }
+
+  @Test
+  public void gaugeCacheSize() {
+    MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    ScanResultCache scanResultCache = new ScanResultCache(true, 3, 1.0, meterRegistry);
+    Optional<Gauge> gauge = meterRegistry.get(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES).gauges().stream().findFirst();
+    assertThat(gauge).isPresent();
+    assertThat(gauge.get().value()).isEqualTo(0);
+    String ip = "10.20.30.40";
+    scanResultCache.add(now(), makeScanResult(ip, "abc.be"));
+    assertThat(gauge.get().value()).isEqualTo(1);
+    scanResultCache.add(now(), makeScanResult(ip, "abcd.be"));
+    assertThat(gauge.get().value()).isEqualTo(2);
+    scanResultCache.add(now(), makeScanResult(ip, "abcd.be"));
+    assertThat(gauge.get().value()).isEqualTo(2);
+    scanResultCache.add(now(), makeScanResult(ip, "abc.be"));
+  }
+
+  @Test
+  public void whenSameServerNameThenMinimumEntriesNotReached() {
+    ScanResultCache scanResultCache = new ScanResultCache(2, 0.0);
+    scanResultCache.add(now(), makeScanResult(IP1, "example.be"));
+    scanResultCache.add(now(), makeScanResult(IP1, "example.be"));
+    scanResultCache.add(now(), makeScanResult(IP1, "example.be"));
     Optional<ScanResult> found = scanResultCache.find(IP1);
     assertThat(found).isEmpty();
   }
@@ -53,10 +85,10 @@ class ScanResultCacheTest {
     ScanResult result1 = makeScanResult(IP1, "example1.be");
     ScanResult result2 = makeScanResult(IP2, "example2.be");
     ScanResult result3 = makeScanResult(IP3, "example3.be");
-    Instant timestamp = Instant.now().minusMillis(100);
+    Instant timestamp = now().minusMillis(100);
     scanResultCache.add(timestamp, result1);
     scanResultCache.add(timestamp, result2);
-    scanResultCache.add(Instant.now().plusSeconds(5), result3);
+    scanResultCache.add(now().plusSeconds(5), result3);
     assertThat(scanResultCache.size()).isEqualTo(3);
     scanResultCache.evictEntriesOlderThan(Duration.ofMinutes(5));
     assertThat(scanResultCache.size()).isEqualTo(3);

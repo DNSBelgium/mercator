@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.tls.domain;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +17,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.BinaryOperator;
+import java.util.function.ToDoubleFunction;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -51,15 +52,26 @@ public class ScanResultCache {
     } else {
       logger.warn("ScanResultCache is DISABLED");
     }
+    this.meterRegistry.gaugeMapSize(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, Tags.empty(), mapPerIp);
+    this.meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, Tags.empty(), this, new CountDeepEntries());
   }
 
   public ScanResultCache(
       @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
       @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio) {
-    this.minimumEntriesPerIp = minimumEntriesPerIp;
-    this.requiredRatio = requiredRatio;
-    this.enabled = true;
-    this.meterRegistry = new SimpleMeterRegistry();
+    this(true, minimumEntriesPerIp, requiredRatio, new SimpleMeterRegistry());
+  }
+
+  private static class CountDeepEntries implements ToDoubleFunction<ScanResultCache> {
+    @Override
+    public double applyAsDouble(ScanResultCache scanResultCache) {
+      logger.info("counting deep entries");
+      return scanResultCache.countDeepEntries();
+    }
+  }
+
+  public Long countDeepEntries() {
+    return mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalScanResults).reduce(Long::sum).orElse(0L);
   }
 
   @SuppressWarnings("unused")
@@ -124,6 +136,11 @@ public class ScanResultCache {
           // given ScanResult already cached => do nothing
           return;
         }
+        if (entry.serverNames.contains(scanResult.getServerName())) {
+          // only cache each serverName once
+          return;
+        }
+        entry.serverNames.add(scanResult.getServerName());
         String summary = scanResult.summary();
         String majoritySummary = entry.majority.summary();
         if (StringUtils.equals(summary, majoritySummary)) {
@@ -153,11 +170,6 @@ public class ScanResultCache {
         }
       }
     } finally {
-      int size = mapPerIp.size();
-      meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, size);
-      Optional<Long> entries = mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalScanResults).reduce(Long::sum);
-      entries.ifPresent(aLong -> meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, aLong));
-      logger.info("Added {} => IP's cached: {}, entries={}", ip, size, entries);
       readWriteLock.writeLock().unlock();
     }
   }
@@ -206,10 +218,14 @@ public class ScanResultCache {
     private long resultsInMajority;
     private final String ip;
 
+    private final Set<String> serverNames = new TreeSet<>();
+
     private final Instant added;
 
     private static CacheEntry of(Instant added, ScanResult scanResult) {
-      return new CacheEntry(scanResult, 1, 1, scanResult.getIp(), added);
+      CacheEntry entry = new CacheEntry(scanResult, 1, 1, scanResult.getIp(), added);
+      entry.serverNames.add(scanResult.getServerName());
+      return entry;
     }
 
     private CacheEntry newMajority(Instant added, ScanResult scanResult) {
@@ -219,6 +235,7 @@ public class ScanResultCache {
       entry.deviantScanResults.clear();
       entry.deviantScanResults.addAll(deviantScanResults.stream().filter(r -> !r.summary().equals(newSummary)).toList());
       entry.deviantScanResults.add(this.majority);
+      entry.serverNames.addAll(this.serverNames);
       return entry;
     }
 
