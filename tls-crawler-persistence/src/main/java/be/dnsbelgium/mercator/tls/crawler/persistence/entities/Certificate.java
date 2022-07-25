@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.tls.crawler.persistence.entities;
 
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -20,6 +21,8 @@ import java.util.List;
 @Getter
 @ToString
 @Table(name = "certificate")
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Certificate {
 
   @Id

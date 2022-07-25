@@ -98,9 +98,7 @@ public class ScanResultCache {
   public int size() {
     readWriteLock.readLock().lock();
     try {
-      int size = mapPerIp.size();
-      meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, size);
-      return size;
+      return mapPerIp.size();
     } finally {
       readWriteLock.readLock().unlock();
     }
@@ -161,7 +159,7 @@ public class ScanResultCache {
               // we have a new majority
               CacheEntry newEntry = entry.newMajority(added, scanResult);
               logger.info("we have a new majority: {}", newEntry);
-              mapPerIp.put(ip, entry.newMajority(added, scanResult));
+              mapPerIp.put(ip, newEntry);
             } else {
               logger.debug("we found a deviant ScanResult but majority config did not change: {}", entry);
               entry.totalScanResults++;

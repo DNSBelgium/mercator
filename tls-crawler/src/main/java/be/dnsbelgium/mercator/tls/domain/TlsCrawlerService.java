@@ -9,7 +9,6 @@ import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.ScanResultRep
 import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.TlsScanResultRepository;
 import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,9 +40,6 @@ public class TlsCrawlerService {
 
   private static final Logger logger = getLogger(TlsCrawlerService.class);
 
-  // a cache of certificates that have already been saved to the database
-  private final Set<String> savedCertificates = new HashSet<>();
-
   private final int destinationPort;
 
   @Autowired
@@ -64,8 +60,6 @@ public class TlsCrawlerService {
   @PostConstruct
   public void init() {
     logger.info("Initializing TlsCrawlerService");
-    // TODO: pre-populate savedCertificates with certificates in DB ?
-    // TODO: pre-populate cache of TlsScanResult's ??
   }
 
   @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -98,7 +92,6 @@ public class TlsCrawlerService {
     }
     TlsCrawlResult crawlResult = scanIfNotBlacklisted(address);
     ScanResult scanResult = convert(crawlTimestamp, crawlResult);
-    //scanResultCache.add(Instant.now(), scanResult);
 
     TlsScanResult tlsScanResult = TlsScanResult.builder()
         .scanResult(scanResult)
@@ -164,17 +157,10 @@ public class TlsCrawlerService {
   }
 
   private void save(CertificateInfo certificateInfo) {
-    String fingerprint = certificateInfo.getSha256Fingerprint();
-    if (!savedCertificates.contains(fingerprint)) {
-      Certificate certificate = asEntity(certificateInfo);
-      logger.info("certificate = {}", certificate.getSha256fingerprint());
-      // This could over-write pre-existing certificates. Do we care?
-      certificateRepository.save(certificate);
-      savedCertificates.add(fingerprint);
-      logger.info("We saved certificate with fingerprint {}", fingerprint);
-    } else {
-      logger.debug("Certificate with fingerprint {} already in the database. DN = {}", fingerprint, MDC.get("domainName"));
-    }
+    // always call save, let Hibernate 2nd level cache do its magic
+    Certificate certificate = asEntity(certificateInfo);
+    // Note: this could over-write pre-existing certificates.
+    certificateRepository.save(certificate);
   }
 
   public Certificate asEntity(CertificateInfo certificateInfo) {

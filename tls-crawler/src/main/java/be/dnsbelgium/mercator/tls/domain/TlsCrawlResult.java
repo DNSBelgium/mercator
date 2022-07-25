@@ -83,7 +83,6 @@ public class TlsCrawlResult {
         .findFirst();
   }
 
-
   public Optional<TlsProtocolVersion> getLowestVersionSupported() {
     return scanResultMap.values()
         .stream()
