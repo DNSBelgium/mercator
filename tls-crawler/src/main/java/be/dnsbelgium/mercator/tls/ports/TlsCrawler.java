@@ -66,12 +66,10 @@ public class TlsCrawler implements Crawler {
         meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
         logger.info("visit_id already in the database: {} => ignoring this request", visitRequest.getVisitId());
       } else {
-        logger.error("Unexpected PersistenceException => rethrowing exception ({})", e.getMessage());
         logAndRethrow(visitRequest, e);
       }
 
     } catch (Throwable e) {
-      meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();
       logAndRethrow(visitRequest, e);
     } finally {
       MDC.remove("domainName");

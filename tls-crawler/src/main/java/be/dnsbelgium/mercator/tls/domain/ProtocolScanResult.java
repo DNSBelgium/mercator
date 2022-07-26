@@ -15,7 +15,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Represents the result of scanning a host name for one specific <code>{@link TlsProtocolVersion}</code>
  */
 @Data
-@ToString
 public class ProtocolScanResult {
 
   private final TlsProtocolVersion protocolVersion;

@@ -163,8 +163,7 @@ public class TlsScanner {
         String[] protocols = new String[]{protocolVersion.getName()};
         socket.setEnabledProtocols(protocols);
       } catch (IllegalArgumentException e) {
-        logger.warn("Test of {} on {} => IllegalArgumentException: {}",
-            protocolVersion, socketAddress, e.getMessage());
+        logger.warn("Test of {} on {} => IllegalArgumentException: {}", protocolVersion, socketAddress, e.getMessage());
         logger.warn("IllegalArgumentException", e);
         scanResult.setErrorMessage(e.getMessage());
         return scanResult;
@@ -278,8 +277,8 @@ public class TlsScanner {
   public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion, TrustManager trustManager)
       throws NoSuchAlgorithmException, KeyManagementException {
     return factory(tlsProtocolVersion, trustManager, false);
-
   }
+
   public static SSLSocketFactory factory(TlsProtocolVersion tlsProtocolVersion, TrustManager trustManager, boolean verbose) throws NoSuchAlgorithmException, KeyManagementException {
     String clsName = java.security.Security.getProperty("ssl.SocketFactory.provider");
     if (clsName != null) {

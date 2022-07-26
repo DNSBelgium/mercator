@@ -22,7 +22,6 @@ import java.util.*;
 import static javax.security.auth.x500.X500Principal.RFC2253;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@ToString()
 @Data
 @Builder
 public class CertificateInfo {
