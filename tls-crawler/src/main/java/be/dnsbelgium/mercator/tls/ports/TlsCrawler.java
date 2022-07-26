@@ -60,7 +60,6 @@ public class TlsCrawler implements Crawler {
       }
 
     } catch (DataIntegrityViolationException e) {
-      meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();
       logger.info("DataIntegrityViolationException: {}", e.getMessage());
       if (exceptionContains(e, "duplicate key value violates unique constraint")) {
         meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
