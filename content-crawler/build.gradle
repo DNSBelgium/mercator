@@ -34,7 +34,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-prometheus'
 
   // JSON logging
-  implementation 'net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}'
+  implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}"
 
   implementation 'org.springframework.integration:spring-integration-core'
   implementation 'com.fasterxml.jackson.core:jackson-databind'

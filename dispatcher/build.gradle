@@ -34,7 +34,7 @@ dependencies {
   implementation 'io.micrometer:micrometer-registry-prometheus'
 
   // JSON logging
-  implementation 'net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}'
+  implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}"
 
   // DB
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
