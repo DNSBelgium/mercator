@@ -82,10 +82,9 @@ public class TlsCrawlerService {
       String ip = address.getAddress().getHostAddress();
       Optional<ScanResult> resultFromCache = scanResultCache.find(ip);
       if (resultFromCache.isPresent()) {
-        logger.info("Found matching result in the cache. Now get certificates for {}", hostName);
-        // TODO: check if version != null
+        logger.debug("Found matching result in the cache. Now get certificates for {}", hostName);
         TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
-        ProtocolScanResult protocolScanResult = tlsScanner.scan(version, hostName);
+        ProtocolScanResult protocolScanResult = (version != null) ? tlsScanner.scan(version, hostName) : null;
         return CrawlResult.fromCache(visitRequest, resultFromCache.get(), protocolScanResult);
       }
     }

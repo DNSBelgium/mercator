@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.tls.domain;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public enum TlsProtocolVersion {
 
@@ -58,9 +59,12 @@ public enum TlsProtocolVersion {
   }
 
   public static TlsProtocolVersion of(String value) {
+    if (value == null) {
+      return null;
+    }
     try {
       return Arrays.stream(TlsProtocolVersion.values()).filter(s -> s.getName().equals(value)).findFirst().orElseThrow();
-    } catch (Exception e) {
+    } catch (NoSuchElementException e) {
       return TlsProtocolVersion.valueOf(value);
     }
   }

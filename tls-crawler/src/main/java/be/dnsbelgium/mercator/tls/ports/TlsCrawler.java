@@ -58,18 +58,13 @@ public class TlsCrawler implements Crawler {
       if (crawlResult.isFresh()) {
         scanResultCache.add(Instant.now(), crawlResult.getScanResult());
       }
-
-    } catch (DataIntegrityViolationException e) {
-      logger.info("DataIntegrityViolationException: {}", e.getMessage());
+    } catch (Throwable e) {
       if (exceptionContains(e, "duplicate key value violates unique constraint")) {
         meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
         logger.info("visit_id already in the database: {} => ignoring this request", visitRequest.getVisitId());
       } else {
         logAndRethrow(visitRequest, e);
       }
-
-    } catch (Throwable e) {
-      logAndRethrow(visitRequest, e);
     } finally {
       MDC.remove("domainName");
       MDC.remove("visitId");
