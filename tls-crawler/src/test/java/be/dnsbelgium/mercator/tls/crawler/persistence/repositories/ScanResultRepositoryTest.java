@@ -49,8 +49,6 @@ public class ScanResultRepositoryTest {
         .errorTls_1_0("Go away")
         .errorSsl_3_0("Why?")
         .errorSsl_2_0("Protocol error")
-        .certificateTooSoon(false)
-        .certificateExpired(true)
         .ip("10.20.30.40")
         .crawlTimestamp(ZonedDateTime.now())
         .build();

@@ -85,13 +85,17 @@ public class CacheIntegrationTest {
     logger.info("======= visiting allesmoetduurzaam.be ====");
     try {
       // this will generate an SQL exception
-      tlsCrawlerService.crawl(visitRequest1);
+      CrawlResult result = tlsCrawlerService.visit(visitRequest1);
+      tlsCrawlerService.persist(result);
+
+
     } catch (DataIntegrityViolationException e) {
       logger.info("Expected: {}", e.getMessage());
     }
 
     logger.info("======= visiting sportgolf.be ====");
-    tlsCrawlerService.crawl(visitRequest2);
+    CrawlResult result2 = tlsCrawlerService.visit(visitRequest2);
+    tlsCrawlerService.persist(result2);
 
     // javax.cache.CacheManager cacheManager;
 

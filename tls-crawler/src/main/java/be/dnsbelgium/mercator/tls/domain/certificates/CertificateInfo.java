@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
@@ -185,6 +186,25 @@ public class CertificateInfo {
       throw e;
     }
     return subjectAlternativeNames;
+  }
+
+  public Certificate asEntity() {
+    String signedBy = (this.getSignedBy() == null) ?
+        null : this.getSignedBy().getSha256Fingerprint();
+    return Certificate.builder()
+        .sha256fingerprint(this.getSha256Fingerprint())
+        .version(this.getVersion())
+        .subjectAltNames(this.getSubjectAlternativeNames())
+        .serialNumber(this.getSerialNumber().toString())
+        .signatureHashAlgorithm(this.getSignatureHashAlgorithm())
+        .notBefore(this.getNotBefore())
+        .notAfter(this.getNotAfter())
+        .publicKeyLength(this.getPublicKeyLength())
+        .publicKeySchema(this.getPublicKeySchema())
+        .issuer(this.getIssuer())
+        .subject(this.getSubject())
+        .signedBySha256(signedBy)
+        .build();
   }
 
 }

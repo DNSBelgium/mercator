@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +18,8 @@ public enum TlsProtocolVersion {
 
   public static final int BITS_IN_A_BYTE = 8;
 
+  // The name passed to the constructor is used in calls to socket.setEnabledProtocols() so we cannot freely choose them
+  // and some of these values are not valid java identifiers so they do not match with name()
   TlsProtocolVersion(byte[] value, String name) {
     this.value = value;
     this.name = name;
@@ -45,10 +48,6 @@ public enum TlsProtocolVersion {
     return valueAsInt(this.value);
   }
 
-  static TlsProtocolVersion fromInt(int value) {
-    return MAP.get(value);
-  }
-
   public static TlsProtocolVersion from(byte[] bytes) {
     int key = valueAsInt(bytes);
     return MAP.get(key);
@@ -56,5 +55,13 @@ public enum TlsProtocolVersion {
 
   public byte[] getValue() {
     return value;
+  }
+
+  public static TlsProtocolVersion of(String value) {
+    try {
+      return Arrays.stream(TlsProtocolVersion.values()).filter(s -> s.getName().equals(value)).findFirst().orElseThrow();
+    } catch (Exception e) {
+      return TlsProtocolVersion.valueOf(value);
+    }
   }
 }

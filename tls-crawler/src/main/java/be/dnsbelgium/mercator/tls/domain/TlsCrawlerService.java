@@ -18,8 +18,6 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import java.net.InetSocketAddress;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -69,15 +67,14 @@ public class TlsCrawlerService {
     scanResultCache.evictEntriesOlderThan(Duration.ofHours(4));
   }
 
-  @Transactional
-  public TlsScanResult crawl(VisitRequest visitRequest) {
-    // TODO: better to start @Transactional method only after the actual crawling
+  /**
+   * Either visit the domain name or get the result from the cache.
+   * Does NOT save anything in the database
+   * @param visitRequest the domain name to visit
+   * @return the results of scanning the domain name
+   */
+  public CrawlResult visit(VisitRequest visitRequest) {
     logger.info("Crawling {}", visitRequest);
-    return doCrawl(visitRequest);
-  }
-
-  private TlsScanResult doCrawl(VisitRequest visitRequest) {
-    ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     String hostName = visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
 
@@ -85,26 +82,26 @@ public class TlsCrawlerService {
       String ip = address.getAddress().getHostAddress();
       Optional<ScanResult> resultFromCache = scanResultCache.find(ip);
       if (resultFromCache.isPresent()) {
-        logger.info("Found matching result in the cache");
-        ScanResult scanResult = resultFromCache.get();
-        return fromCache(visitRequest, hostName, scanResult);
+        logger.info("Found matching result in the cache. Now get certificates for {}", hostName);
+        // TODO: check if version != null
+        TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
+        ProtocolScanResult protocolScanResult = tlsScanner.scan(version, hostName);
+        return CrawlResult.fromCache(visitRequest, resultFromCache.get(), protocolScanResult);
       }
     }
-    TlsCrawlResult crawlResult = scanIfNotBlacklisted(address);
-    ScanResult scanResult = convert(crawlTimestamp, crawlResult);
+    TlsCrawlResult tlsCrawlResult = scanIfNotBlacklisted(address);
+    return CrawlResult.fromScan(visitRequest,  tlsCrawlResult);
+  }
 
-    TlsScanResult tlsScanResult = TlsScanResult.builder()
-        .scanResult(scanResult)
-        .visitId(visitRequest.getVisitId())
-        .domainName(visitRequest.getDomainName())
-        .hostName(visitRequest.getDomainName())
-        .crawlTimestamp(crawlTimestamp)
-        .hostNameMatchesCertificate(crawlResult.isHostNameMatchesCertificate())
-        .build();
-
-    saveCertificates(crawlResult);
-    scanResultRepository.save(scanResult);
-    return tlsScanResultRepository.save(tlsScanResult);
+  @Transactional
+  public void persist(CrawlResult crawlResult) {
+    logger.debug("Persisting crawlResult");
+    TlsScanResult tlsScanResult = crawlResult.convertToEntity();
+    if (crawlResult.isFresh()) {
+      scanResultRepository.save(crawlResult.getScanResult());
+    }
+    saveCertificates(crawlResult.getCertificateChain());
+    tlsScanResultRepository.save(tlsScanResult);
   }
 
   private TlsCrawlResult scanIfNotBlacklisted(InetSocketAddress address) {
@@ -114,129 +111,19 @@ public class TlsCrawlerService {
     return tlsScanner.scan(address);
   }
 
-  private TlsScanResult fromCache(VisitRequest visitRequest, String hostName, ScanResult resultFromCache) {
-    // When checking TLS support, we use a HostnameVerifier to set isHostNameMatchesCertificate
-    // Here we should check again if the hostName matches the received cert chain
-    // because hostName from VisitRequest probably differs from resultFromCache.get().getServerName()
-    // BUT we do not have an SSLSession ...
-    // so we just check the SubjectAltNames of the certificate from the cache
-
-    boolean match = false;
-    Certificate leafCertificate = resultFromCache.getLeafCertificate();
-    if (leafCertificate != null) {
-      List<String> subjectAltNames = leafCertificate.getSubjectAltNames();
-      if (subjectAltNames.contains(hostName)) {
-        logger.debug("{} found in the getSubjectAltNames of the cached ScanResult for {}", hostName, resultFromCache.getServerName());
-        match = true;
-      }
-    }
-    if (!match) {
-      logger.info("hostName {} does NOT match with subjectAltNames of the cached ScanResult for {}", hostName, resultFromCache.getServerName());
-    }
-    TlsScanResult tlsScanResult = TlsScanResult.builder()
-        .scanResult(resultFromCache)
-        .visitId(visitRequest.getVisitId())
-        .domainName(visitRequest.getDomainName())
-        .hostName(visitRequest.getDomainName())
-        .crawlTimestamp(ZonedDateTime.now())
-        .hostNameMatchesCertificate(match)
-        .build();
-    return tlsScanResultRepository.save(tlsScanResult);
-  }
-
-  private void saveCertificates(TlsCrawlResult tlsCrawlResult) {
-    Optional<List<CertificateInfo>> chain = tlsCrawlResult.getCertificateChain();
+  private void saveCertificates(Optional<List<CertificateInfo>> chain) {
     if (chain.isPresent()) {
       // We have to save the chain in reversed order because of the foreign keys
       List<CertificateInfo> reversed = new ArrayList<>(chain.get());
       Collections.reverse(reversed);
       for (CertificateInfo certificateInfo : reversed) {
-        save(certificateInfo);
+        // We always call save, let Hibernate 2nd level cache do its magic
+        // Note: this could over-write pre-existing certificates,
+        // but we assume the attributes will remain the same
+        Certificate certificate = certificateInfo.asEntity();
+        certificateRepository.save(certificate);
       }
     }
-  }
-
-  private void save(CertificateInfo certificateInfo) {
-    // always call save, let Hibernate 2nd level cache do its magic
-    Certificate certificate = asEntity(certificateInfo);
-    // Note: this could over-write pre-existing certificates.
-    certificateRepository.save(certificate);
-  }
-
-  public Certificate asEntity(CertificateInfo certificateInfo) {
-    String signedBy = (certificateInfo.getSignedBy() == null) ?
-        null : certificateInfo.getSignedBy().getSha256Fingerprint();
-    return Certificate.builder()
-        .sha256fingerprint(certificateInfo.getSha256Fingerprint())
-        .version(certificateInfo.getVersion())
-        .subjectAltNames(certificateInfo.getSubjectAlternativeNames())
-        .serialNumber(certificateInfo.getSerialNumber().toString())
-        .signatureHashAlgorithm(certificateInfo.getSignatureHashAlgorithm())
-        .notBefore(certificateInfo.getNotBefore())
-        .notAfter(certificateInfo.getNotAfter())
-        .publicKeyLength(certificateInfo.getPublicKeyLength())
-        .publicKeySchema(certificateInfo.getPublicKeySchema())
-        .issuer(certificateInfo.getIssuer())
-        .subject(certificateInfo.getSubject())
-        .signedBySha256(signedBy)
-        .build();
-  }
-
-  public ScanResult convert(ZonedDateTime timestamp,  TlsCrawlResult tlsCrawlResult) {
-    var tls13 = tlsCrawlResult.get(TlsProtocolVersion.TLS_1_3);
-    var tls12 = tlsCrawlResult.get(TlsProtocolVersion.TLS_1_2);
-    var tls11 = tlsCrawlResult.get(TlsProtocolVersion.TLS_1_1);
-    var tls10 = tlsCrawlResult.get(TlsProtocolVersion.TLS_1_0);
-    var ssl3 = tlsCrawlResult.get(TlsProtocolVersion.SSL_3);
-    var ssl2 = tlsCrawlResult.get(TlsProtocolVersion.SSL_2);
-
-    Optional<CertificateInfo> peerCertificate = tlsCrawlResult.getPeerCertificate();
-    Certificate leafCertificate = peerCertificate.map(this::asEntity).orElse(null);
-
-    boolean certificateExpired = peerCertificate.isPresent()
-        && Instant.now().isAfter(peerCertificate.get().getNotAfter());
-
-    boolean certificateTooSoon = peerCertificate.isPresent()
-        && Instant.now().isBefore(peerCertificate.get().getNotBefore());
-
-    String lowestVersion  = tlsCrawlResult.getLowestVersionSupported().map(TlsProtocolVersion::getName).orElse(null);
-    String highestVersion = tlsCrawlResult.getHighestVersionSupported().map(TlsProtocolVersion::getName).orElse(null);
-
-    return ScanResult.builder()
-        .lowestVersionSupported(lowestVersion)
-        .highestVersionSupported(highestVersion)
-        .leafCertificate(leafCertificate)
-        .supportTls_1_3(tls13.isHandshakeOK())
-        .supportTls_1_2(tls12.isHandshakeOK())
-        .supportTls_1_1(tls11.isHandshakeOK())
-        .supportTls_1_0(tls10.isHandshakeOK())
-        .supportSsl_3_0(ssl3.isHandshakeOK())
-        .supportSsl_2_0(ssl2.isHandshakeOK())
-        .errorTls_1_3(tls13.getErrorMessage())
-        .errorTls_1_2(tls12.getErrorMessage())
-        .errorTls_1_1(tls11.getErrorMessage())
-        .errorTls_1_0(tls10.getErrorMessage())
-        .errorSsl_3_0(ssl3.getErrorMessage())
-        .errorSsl_2_0(ssl2.getErrorMessage())
-        .millis_tls_1_0(tls10.getScanDuration().toMillis())
-        .millis_tls_1_1(tls11.getScanDuration().toMillis())
-        .millis_tls_1_2(tls12.getScanDuration().toMillis())
-        .millis_tls_1_3(tls13.getScanDuration().toMillis())
-        .millis_ssl_3_0(ssl3.getScanDuration().toMillis())
-        .millis_ssl_2_0(ssl2.getScanDuration().toMillis())
-        .ip(tls13.getIpAddress())
-        .connectOk(tls13.isConnectOK())
-        .serverName(tls13.getServerName())
-        .selectedCipherTls_1_3(tls13.getSelectedCipherSuite())
-        .selectedCipherTls_1_2(tls12.getSelectedCipherSuite())
-        .selectedCipherTls_1_1(tls11.getSelectedCipherSuite())
-        .selectedCipherTls_1_0(tls10.getSelectedCipherSuite())
-        .selectedCipherSsl_3_0(ssl3.getSelectedCipherSuite())
-        .crawlTimestamp(timestamp)
-        .certificateExpired(certificateExpired)
-        .certificateTooSoon(certificateTooSoon)
-        .chainTrustedByJavaPlatform(tlsCrawlResult.isChainTrustedByJavaPlatform())
-        .build();
   }
 
 }

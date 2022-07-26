@@ -38,6 +38,15 @@ public class TlsScanResult {
   @JoinColumn(name = "scan_result")
   private ScanResult scanResult;
 
+  @JoinColumn(name = "leaf_certificate")
+  @ManyToOne
+  private Certificate leafCertificate;
+
+  private boolean certificateExpired;
+  private boolean certificateTooSoon;
+
+  private boolean chainTrustedByJavaPlatform;
+
   private boolean hostNameMatchesCertificate;
 
 }

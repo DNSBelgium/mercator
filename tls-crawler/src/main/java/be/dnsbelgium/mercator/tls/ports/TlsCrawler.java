@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.TlsScanResult;
+import be.dnsbelgium.mercator.tls.domain.CrawlResult;
 import be.dnsbelgium.mercator.tls.domain.ScanResultCache;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlerService;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
@@ -51,9 +51,13 @@ public class TlsCrawler implements Crawler {
       MDC.put("visitId", visitRequest.getVisitId().toString());
       logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
 
-      TlsScanResult tlsScanResult = crawlerService.crawl(visitRequest);
+      CrawlResult crawlResult = crawlerService.visit(visitRequest);
+      crawlerService.persist(crawlResult);
       meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
-      scanResultCache.add(Instant.now(), tlsScanResult.getScanResult());
+
+      if (crawlResult.isFresh()) {
+        scanResultCache.add(Instant.now(), crawlResult.getScanResult());
+      }
 
     } catch (DataIntegrityViolationException e) {
       meterRegistry.counter(MetricName.COUNTER_VISITS_FAILED).increment();

@@ -79,15 +79,6 @@ public class ScanResult {
 
   private long totalDurationInMs;
 
-  private boolean certificateExpired;
-  private boolean certificateTooSoon;
-
-  private boolean chainTrustedByJavaPlatform;
-
-  @JoinColumn(name = "leaf_certificate")
-  @ManyToOne
-  private Certificate leafCertificate;
-
   // This method is used to see if two domain's on same IP have the same TLS configuration
   public String summary() {
     return "connectOk=" + connectOk + ", " +
@@ -101,10 +92,7 @@ public class ScanResult {
         "selectedCipherTls_1_2=" + selectedCipherTls_1_2 + ", " +
         "selectedCipherTls_1_1=" + selectedCipherTls_1_1 + ", " +
         "selectedCipherTls_1_0=" + selectedCipherTls_1_0 + ", " +
-        "selectedCipherSsl_3_0=" + selectedCipherSsl_3_0 + ", " +
-        "certificateTooSoon=" + certificateTooSoon + ", " +
-        "certificateExpired=" + certificateTooSoon + ", " +
-        "chainTrustedByJavaPlatform=" + chainTrustedByJavaPlatform;
+        "selectedCipherSsl_3_0=" + selectedCipherSsl_3_0;
   }
 
 }
