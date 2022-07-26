@@ -22,6 +22,7 @@ dependencies {
 
     // EKS IRSA support
     implementation 'com.amazonaws:aws-java-sdk-sts'
+
     implementation project(':common-messaging')
     implementation project(':common-geoip')
 
@@ -37,7 +38,7 @@ dependencies {
     implementation group: 'io.netty', name: 'netty-handler', version: '4.1.77.Final'
 
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
-    //  For now we only use it for encoding byte arrays to Hexadecimal strings
+    // For now we only use it for encoding byte arrays to Hexadecimal strings
     // (use this instead of bouncycastle which is 15x bigger)
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
 
@@ -48,7 +49,7 @@ dependencies {
     implementation group: 'com.github.seancfoley', name: 'ipaddress', version: '5.3.4'
 
     // JSON logging
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.2'
+    implementation 'net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}'
 
     implementation 'org.springframework.integration:spring-integration-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
