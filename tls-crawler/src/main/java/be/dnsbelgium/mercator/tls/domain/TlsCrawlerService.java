@@ -1,13 +1,13 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.TlsScanResult;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CrawlResultEntity;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.CertificateRepository;
-import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.ScanResultRepository;
-import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.TlsScanResultRepository;
-import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
+import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.FullScanRepository;
+import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.CrawlResultRepository;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,13 +28,13 @@ public class TlsCrawlerService {
 
   private final TlsScanner tlsScanner;
 
-  private final ScanResultCache scanResultCache;
+  private final FullScanCache fullScanCache;
 
   private final BlackList blackList;
 
   private final CertificateRepository certificateRepository;
-  private final TlsScanResultRepository tlsScanResultRepository;
-  private final ScanResultRepository scanResultRepository;
+  private final CrawlResultRepository crawlResultRepository;
+  private final FullScanRepository fullScanRepository;
 
   private static final Logger logger = getLogger(TlsCrawlerService.class);
 
@@ -43,16 +43,16 @@ public class TlsCrawlerService {
   @Autowired
   public TlsCrawlerService(
       @Value("${tls.scanner.destination.port:443}") int destinationPort,
-      TlsScanner tlsScanner, ScanResultCache scanResultCache, BlackList blackList,
-      CertificateRepository certificateRepository, TlsScanResultRepository tlsScanResultRepository,
-      ScanResultRepository scanResultRepository) {
+      TlsScanner tlsScanner, FullScanCache fullScanCache, BlackList blackList,
+      CertificateRepository certificateRepository, CrawlResultRepository crawlResultRepository,
+      FullScanRepository fullScanRepository) {
     this.destinationPort = destinationPort;
     this.tlsScanner = tlsScanner;
-    this.scanResultCache = scanResultCache;
+    this.fullScanCache = fullScanCache;
     this.blackList = blackList;
     this.certificateRepository = certificateRepository;
-    this.tlsScanResultRepository = tlsScanResultRepository;
-    this.scanResultRepository = scanResultRepository;
+    this.crawlResultRepository = crawlResultRepository;
+    this.fullScanRepository = fullScanRepository;
   }
 
   @PostConstruct
@@ -63,8 +63,8 @@ public class TlsCrawlerService {
   @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
   public void clearCacheScheduled() {
     logger.info("clearCacheScheduled: evicting entries older than 4 hours");
-    // every 15 minutes we remove all ScanResult older than 4 hours from the cache
-    scanResultCache.evictEntriesOlderThan(Duration.ofHours(4));
+    // every 15 minutes we remove all FullScanEntity objects older than 4 hours from the cache
+    fullScanCache.evictEntriesOlderThan(Duration.ofHours(4));
   }
 
   /**
@@ -80,47 +80,47 @@ public class TlsCrawlerService {
 
     if (!address.isUnresolved()) {
       String ip = address.getAddress().getHostAddress();
-      Optional<ScanResult> resultFromCache = scanResultCache.find(ip);
+      Optional<FullScanEntity> resultFromCache = fullScanCache.find(ip);
       if (resultFromCache.isPresent()) {
         logger.debug("Found matching result in the cache. Now get certificates for {}", hostName);
         TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
-        ProtocolScanResult protocolScanResult = (version != null) ? tlsScanner.scan(version, hostName) : null;
-        return CrawlResult.fromCache(visitRequest, resultFromCache.get(), protocolScanResult);
+        SingleVersionScan singleVersionScan = (version != null) ? tlsScanner.scan(version, hostName) : null;
+        return CrawlResult.fromCache(visitRequest, resultFromCache.get(), singleVersionScan);
       }
     }
-    TlsCrawlResult tlsCrawlResult = scanIfNotBlacklisted(address);
-    return CrawlResult.fromScan(visitRequest,  tlsCrawlResult);
+    FullScan fullScan = scanIfNotBlacklisted(address);
+    return CrawlResult.fromScan(visitRequest, fullScan);
   }
 
   @Transactional
   public void persist(CrawlResult crawlResult) {
     logger.debug("Persisting crawlResult");
-    TlsScanResult tlsScanResult = crawlResult.convertToEntity();
+    CrawlResultEntity crawlResultEntity = crawlResult.convertToEntity();
     if (crawlResult.isFresh()) {
-      scanResultRepository.save(crawlResult.getScanResult());
+      fullScanRepository.save(crawlResult.getFullScanEntity());
     }
     saveCertificates(crawlResult.getCertificateChain());
-    tlsScanResultRepository.save(tlsScanResult);
+    crawlResultRepository.save(crawlResultEntity);
   }
 
-  private TlsCrawlResult scanIfNotBlacklisted(InetSocketAddress address) {
+  private FullScan scanIfNotBlacklisted(InetSocketAddress address) {
     if (blackList.isBlacklisted(address)) {
-      return TlsCrawlResult.connectFailed(address, "IP address is blacklisted");
+      return FullScan.connectFailed(address, "IP address is blacklisted");
     }
     return tlsScanner.scan(address);
   }
 
-  private void saveCertificates(Optional<List<CertificateInfo>> chain) {
+  private void saveCertificates(Optional<List<Certificate>> chain) {
     if (chain.isPresent()) {
       // We have to save the chain in reversed order because of the foreign keys
-      List<CertificateInfo> reversed = new ArrayList<>(chain.get());
+      List<Certificate> reversed = new ArrayList<>(chain.get());
       Collections.reverse(reversed);
-      for (CertificateInfo certificateInfo : reversed) {
+      for (Certificate certificate : reversed) {
         // We always call save, let Hibernate 2nd level cache do its magic
         // Note: this could over-write pre-existing certificates,
         // but we assume the attributes will remain the same
-        Certificate certificate = certificateInfo.asEntity();
-        certificateRepository.save(certificate);
+        CertificateEntity certificateEntity = certificate.asEntity();
+        certificateRepository.save(certificateEntity);
       }
     }
   }

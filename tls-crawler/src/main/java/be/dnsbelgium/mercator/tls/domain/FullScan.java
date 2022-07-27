@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.Getter;
 import org.slf4j.Logger;
 
@@ -10,22 +10,22 @@ import java.util.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Getter
-public class TlsCrawlResult {
+public class FullScan {
 
-  private final Map<TlsProtocolVersion, ProtocolScanResult> scanResultMap = new HashMap<>();
+  private final Map<TlsProtocolVersion, SingleVersionScan> scanPerVersionMap = new HashMap<>();
 
   private final boolean connectOK;
 
-  private static final Logger logger = getLogger(TlsCrawlResult.class);
+  private static final Logger logger = getLogger(FullScan.class);
 
-  public TlsCrawlResult(boolean connectOK) {
+  public FullScan(boolean connectOK) {
     this.connectOK = connectOK;
   }
 
-  public static TlsCrawlResult connectFailed(InetSocketAddress address, String errorMessage) {
-    TlsCrawlResult crawlResult = new TlsCrawlResult(false);
+  public static FullScan connectFailed(InetSocketAddress address, String errorMessage) {
+    FullScan crawlResult = new FullScan(false);
     for (TlsProtocolVersion version : TlsProtocolVersion.values()) {
-      ProtocolScanResult result = ProtocolScanResult.of(version, address);
+      SingleVersionScan result = SingleVersionScan.of(version, address);
       result.setConnectOK(false);
       result.setErrorMessage(errorMessage);
       crawlResult.add(result);
@@ -33,25 +33,25 @@ public class TlsCrawlResult {
     return crawlResult;
   }
 
-  public void add(ProtocolScanResult scanResult) {
-    TlsProtocolVersion version = scanResult.getProtocolVersion();
-    ProtocolScanResult existingResult = scanResultMap.get(version);
+  public void add(SingleVersionScan singleVersionScan) {
+    TlsProtocolVersion version = singleVersionScan.getProtocolVersion();
+    SingleVersionScan existingResult = scanPerVersionMap.get(version);
     if (existingResult != null) {
       throw new IllegalStateException("We already have a result for " + version);
     }
-    scanResultMap.put(version, scanResult);
+    scanPerVersionMap.put(version, singleVersionScan);
   }
 
-  public ProtocolScanResult get(TlsProtocolVersion version) {
-    return scanResultMap.get(version);
+  public SingleVersionScan get(TlsProtocolVersion version) {
+    return scanPerVersionMap.get(version);
   }
 
   public void checkEachVersionFoundSameCertificate() {
     StringBuilder message = new StringBuilder();
     message.append("Certificates for ").append(getServerName()).append(":\n");
     Set<String> fingerPrints = new HashSet<>();
-    for (TlsProtocolVersion version : scanResultMap.keySet()) {
-      CertificateInfo cert = scanResultMap.get(version).getPeerCertificate();
+    for (TlsProtocolVersion version : scanPerVersionMap.keySet()) {
+      Certificate cert = scanPerVersionMap.get(version).getPeerCertificate();
       if (cert != null) {
         fingerPrints.add(cert.getSha256Fingerprint());
         message.append(version.getName()).append(" => ").append(cert.getSha256Fingerprint()).append("\n");
@@ -64,18 +64,18 @@ public class TlsCrawlResult {
     }
   }
 
-  public Optional<List<CertificateInfo>> getCertificateChain() {
+  public Optional<List<Certificate>> getCertificateChain() {
     // In theory, it's possible that scans for different TLS versions find different certificates.
-    // But for now we just log a warning and use the first chain we find in the ProtocolScanResult's
+    // But for now we just log a warning and use the first chain we find in the SingleVersionScan's
     checkEachVersionFoundSameCertificate();
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .filter(ProtocolScanResult::hasCertificateChain)
-        .map(ProtocolScanResult::getCertificateChain)
+        .filter(SingleVersionScan::hasCertificateChain)
+        .map(SingleVersionScan::getCertificateChain)
         .findFirst();
   }
 
-  public Optional<CertificateInfo> getPeerCertificate() {
+  public Optional<Certificate> getPeerCertificate() {
     return getCertificateChain()
         .stream()
         .filter(list -> !list.isEmpty())
@@ -84,39 +84,39 @@ public class TlsCrawlResult {
   }
 
   public Optional<TlsProtocolVersion> getLowestVersionSupported() {
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .filter(ProtocolScanResult::isHandshakeOK)
-        .map(ProtocolScanResult::getProtocolVersion)
+        .filter(SingleVersionScan::isHandshakeOK)
+        .map(SingleVersionScan::getProtocolVersion)
         .min(Comparator.comparingInt(TlsProtocolVersion::valueAsInt));
   }
 
   public Optional<TlsProtocolVersion> getHighestVersionSupported() {
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .filter(ProtocolScanResult::isHandshakeOK)
-        .map(ProtocolScanResult::getProtocolVersion)
+        .filter(SingleVersionScan::isHandshakeOK)
+        .map(SingleVersionScan::getProtocolVersion)
         .max(Comparator.comparingInt(TlsProtocolVersion::valueAsInt));
   }
 
   public Optional<String> getServerName() {
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .map(ProtocolScanResult::getServerName)
+        .map(SingleVersionScan::getServerName)
         .filter(Objects::nonNull)
         .findFirst();
   }
 
   public boolean isChainTrustedByJavaPlatform() {
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .anyMatch(ProtocolScanResult::isChainTrustedByJavaPlatform);
+        .anyMatch(SingleVersionScan::isChainTrustedByJavaPlatform);
   }
 
   public boolean isHostNameMatchesCertificate() {
-    return scanResultMap.values()
+    return scanPerVersionMap.values()
         .stream()
-        .anyMatch(ProtocolScanResult::isHostNameMatchesCertificate);
+        .anyMatch(SingleVersionScan::isHostNameMatchesCertificate);
   }
 
 }

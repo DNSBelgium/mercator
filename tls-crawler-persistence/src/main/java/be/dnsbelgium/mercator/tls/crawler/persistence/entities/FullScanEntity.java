@@ -16,8 +16,8 @@ import java.time.ZonedDateTime;
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Getter
 @ToString
-@Table(name = "scan_result")
-public class ScanResult {
+@Table(name = "full_scan")
+public class FullScanEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

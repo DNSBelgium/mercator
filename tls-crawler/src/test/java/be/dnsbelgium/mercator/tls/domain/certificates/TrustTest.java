@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
-import be.dnsbelgium.mercator.tls.domain.ProtocolScanResult;
+import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
@@ -27,7 +26,7 @@ class TrustTest {
   private static final Logger logger = getLogger(TrustTest.class);
 
   @Test
-  public void testDefault() throws NoSuchAlgorithmException, KeyStoreException {
+  public void testDefault() {
     Trust.defaultTrustManager();
     // TrustManagerFactory.getDefaultAlgorithm = PKIX
     // trustManager = sun.security.ssl.X509TrustManagerImpl@221a3fa4
@@ -45,8 +44,8 @@ class TrustTest {
     TlsScanner scanner = TlsScanner.standard();
     // checkServerTrusted with ECDHE_RSA
     InetSocketAddress address = new InetSocketAddress("een.be", 443);
-    ProtocolScanResult protocolScanResult = scanner.scanForProtocol(TlsProtocolVersion.TLS_1_2, address);
-    logger.info("protocolScanResult = {}", protocolScanResult);
+    SingleVersionScan singleVersionScan = scanner.scanForProtocol(TlsProtocolVersion.TLS_1_2, address);
+    logger.info("singleVersionScan = {}", singleVersionScan);
   }
 
   @Test

@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.tls.crawler.persistence.repositories;
 
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,15 +41,15 @@ public class CertificateRepositoryTest {
 
   @Test
   void save() {
-    Certificate certificate = Certificate.builder().sha256fingerprint("12345").build();
-    certificateRepository.save(certificate);
-    logger.info("certificate = {}", certificate);
+    CertificateEntity certificateEntity = CertificateEntity.builder().sha256fingerprint("12345").build();
+    certificateRepository.save(certificateEntity);
+    logger.info("certificateEntity = {}", certificateEntity);
   }
 
   @Test
   @Commit
   void saveAllAttributes() {
-    Certificate certificate = Certificate.builder()
+    CertificateEntity certificateEntity = CertificateEntity.builder()
         .sha256fingerprint("12345678")
         .issuer("I am the issuer")
         .subject("I am the subject")
@@ -63,10 +63,10 @@ public class CertificateRepositoryTest {
         .version(3)
         .signedBySha256(null)
         .build();
-    certificateRepository.save(certificate);
-    logger.info("certificate = {}", certificate);
+    certificateRepository.save(certificateEntity);
+    logger.info("certificateEntity = {}", certificateEntity);
 
-    Optional<Certificate> found = certificateRepository.findBySha256fingerprint("12345678");
+    Optional<CertificateEntity> found = certificateRepository.findBySha256fingerprint("12345678");
     assertThat(found).isPresent();
   }
 

@@ -1,9 +1,9 @@
 package be.dnsbelgium.mercator.tls.crawler.persistence.repositories;
 
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.TlsScanResult;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CrawlResultEntity;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +22,13 @@ import static org.slf4j.LoggerFactory.getLogger;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 @ActiveProfiles({"local", "test"})
-public class TlsScanResultRepositoryTest {
+public class CrawlResultRepositoryTest {
 
-  private static final Logger logger = getLogger(TlsScanResultRepositoryTest.class);
+  private static final Logger logger = getLogger(CrawlResultRepositoryTest.class);
 
   @Autowired private CertificateRepository certificateRepository;
-  @Autowired private TlsScanResultRepository tlsScanResultRepository;
-  @Autowired private ScanResultRepository scanResultRepository;
+  @Autowired private CrawlResultRepository crawlResultRepository;
+  @Autowired private FullScanRepository fullScanRepository;
 
   @Container
   static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
@@ -40,13 +40,13 @@ public class TlsScanResultRepositoryTest {
 
   @Test
   void save() {
-    Certificate certificate = Certificate.builder()
+    CertificateEntity certificateEntity = CertificateEntity.builder()
         .sha256fingerprint("12345")
         .build();
-    certificateRepository.save(certificate);
-    logger.info("certificate = {}", certificate);
+    certificateRepository.save(certificateEntity);
+    logger.info("certificateEntity = {}", certificateEntity);
 
-    ScanResult scanResult = ScanResult.builder()
+    FullScanEntity fullScanEntity = FullScanEntity.builder()
         .serverName("dnsbelgium.be")
         .connectOk(true)
         .highestVersionSupported("TLS 1.3")
@@ -65,17 +65,17 @@ public class TlsScanResultRepositoryTest {
         .crawlTimestamp(ZonedDateTime.now())
         .build();
 
-    TlsScanResult tlsScanResult = TlsScanResult.builder()
-        .scanResult(scanResult)
+    CrawlResultEntity crawlResultEntity = CrawlResultEntity.builder()
+        .fullScanEntity(fullScanEntity)
         .domainName("dns.be")
         .hostName("www.dns.be")
         .visitId(UUID.randomUUID())
         .crawlTimestamp(ZonedDateTime.now())
         .build();
 
-    scanResultRepository.save(scanResult);
-    tlsScanResultRepository.save(tlsScanResult);
-    logger.info("AFTER: tlsScanResult = {}", tlsScanResult);
+    fullScanRepository.save(fullScanEntity);
+    crawlResultRepository.save(crawlResultEntity);
+    logger.info("AFTER: crawlResultEntity = {}", crawlResultEntity);
 
   }
 

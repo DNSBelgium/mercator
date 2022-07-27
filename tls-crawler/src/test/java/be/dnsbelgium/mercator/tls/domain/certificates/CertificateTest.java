@@ -5,23 +5,21 @@ import org.slf4j.Logger;
 
 import java.io.*;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import static be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion.TLS_1_2;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
-class CertificateInfoTest {
+class CertificateTest {
 
-  private static final Logger logger = getLogger(CertificateInfoTest.class);
+  private static final Logger logger = getLogger(CertificateTest.class);
 
   @Test
   public void dnsbelgium_be() throws CertificateException, IOException {
       X509Certificate certificate = readTestCertificate("dnsbelgium.be.pem");
-      CertificateInfo info = CertificateInfo.from(certificate);
+      Certificate info = Certificate.from(certificate);
       logger.info("info = {}", info);
       logger.info("info = {}", info.prettyString());
       assertThat(info.getIssuer()).contains("CN=GlobalSign Extended Validation CA - SHA256 - G3,O=GlobalSign nv-sa,C=BE");
@@ -39,7 +37,7 @@ class CertificateInfoTest {
   @Test
   public void subjectAlternativeNames_DnsBelgium_be() throws CertificateException, IOException {
     X509Certificate certificate = readTestCertificate("dnsbelgium.be.pem");
-    List<String> subjectAlternativeNames = CertificateInfo.getSubjectAlternativeNames(certificate);
+    List<String> subjectAlternativeNames = Certificate.getSubjectAlternativeNames(certificate);
     logger.info("subjectAlternativeNames = {}", subjectAlternativeNames);
     assertThat(subjectAlternativeNames).containsOnly("dnsbelgium.be", "production.dnsbelgium.be", "www.dnsbelgium.be");
   }
@@ -51,7 +49,7 @@ class CertificateInfoTest {
   @Test
   public void blackanddecker_be() throws CertificateException, IOException {
     X509Certificate certificate = readTestCertificate("blackanddecker.be.pem");
-    CertificateInfo info = CertificateInfo.from(certificate);
+    Certificate info = Certificate.from(certificate);
     logger.info("info = {}", info);
     logger.info("info = {}", info.prettyString());
     assertThat(info.getSha256Fingerprint()).isEqualTo("ca20405088d49d4b0134d8e10467d34578ef0f664973d637c8686e9c9a00d39d");
@@ -69,7 +67,7 @@ class CertificateInfoTest {
   @Test
   public void cll_be() throws CertificateException, IOException {
     X509Certificate certificate = readTestCertificate("cll.be.pem");
-    CertificateInfo peerCertificate = CertificateInfo.from(certificate);
+    Certificate peerCertificate = Certificate.from(certificate);
     logger.info("peerCertificate = {}", peerCertificate);
     // matches with what python based ssl-crawler found.
     assertThat(peerCertificate.getVersion()).isEqualTo(3);
@@ -89,7 +87,7 @@ class CertificateInfoTest {
   @Test
   public void subjectAlternativeNames_blackanddecker_be() throws CertificateException, IOException {
     X509Certificate certificate = readTestCertificate("blackanddecker.be.pem");
-    List<String> subjectAlternativeNames = CertificateInfo.getSubjectAlternativeNames(certificate);
+    List<String> subjectAlternativeNames = Certificate.getSubjectAlternativeNames(certificate);
     logger.info("subjectAlternativeNames = {}", subjectAlternativeNames);
     assertThat(subjectAlternativeNames).contains("www.vidmar.com", "www.protoindustrial.com", "americanpride.dewalt.com");
   }

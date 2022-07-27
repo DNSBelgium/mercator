@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain.ssl2;
 
-import be.dnsbelgium.mercator.tls.domain.ProtocolScanResult;
+import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -38,24 +38,24 @@ public class SSL2Client {
     this.clientHelloEncoder = new ClientHelloEncoder();
   }
 
-  public SSL2ScanResult connect(String host) throws InterruptedException {
+  public SSL2Scan connect(String host) throws InterruptedException {
     return connect(host, 443);
   }
-  public SSL2ScanResult connect(String hostName, int port) {
+  public SSL2Scan connect(String hostName, int port) {
     InetSocketAddress socketAddress = new InetSocketAddress(hostName, port);
     return connect(socketAddress);
   }
 
-  public SSL2ScanResult connect(InetSocketAddress socketAddress) {
+  public SSL2Scan connect(InetSocketAddress socketAddress) {
     Instant start = Instant.now();
-    SSL2ScanResult scanResult = doConnect(socketAddress);
+    SSL2Scan scan = doConnect(socketAddress);
     Instant end = Instant.now();
     Duration duration = Duration.between(start, end);
     logger.info("duration: {} ms", duration.toMillis());
-    return scanResult;
+    return scan;
   }
 
-  public SSL2ScanResult doConnect(InetSocketAddress socketAddress) {
+  public SSL2Scan doConnect(InetSocketAddress socketAddress) {
     ClientHandler clientHandler = new ClientHandler(socketAddress, cipherSuites);
     EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
@@ -85,7 +85,7 @@ public class SSL2Client {
       connectFuture.channel().closeFuture().sync();
 
       if (connectFuture.isSuccess()) {
-        return clientHandler.scanResult();
+        return clientHandler.result();
       }
       return failure(socketAddress, connectFuture.cause());
 
@@ -97,9 +97,9 @@ public class SSL2Client {
     }
  }
 
- private static SSL2ScanResult failure(InetSocketAddress socketAddress, Throwable cause) {
+ private static SSL2Scan failure(InetSocketAddress socketAddress, Throwable cause) {
    String errorMessage = errorMessageFrom(cause);
-   return SSL2ScanResult.failed(socketAddress, errorMessage);
+   return SSL2Scan.failed(socketAddress, errorMessage);
  }
 
  private static String errorMessageFrom(Throwable cause) {
@@ -112,10 +112,10 @@ public class SSL2Client {
     }
     String causeMsg = cause.getMessage().toLowerCase();
     if (causeMsg.contains("connection timed out")) {
-      return ProtocolScanResult.CONNECTION_TIMED_OUT;
+      return SingleVersionScan.CONNECTION_TIMED_OUT;
     }
     if (causeMsg.contains("connection refused")) {
-      return ProtocolScanResult.CONNECTION_REFUSED;
+      return SingleVersionScan.CONNECTION_REFUSED;
     }
     return cause.getMessage();
  }

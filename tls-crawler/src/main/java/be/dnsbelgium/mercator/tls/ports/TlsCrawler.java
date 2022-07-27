@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.tls.ports;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.tls.domain.CrawlResult;
-import be.dnsbelgium.mercator.tls.domain.ScanResultCache;
+import be.dnsbelgium.mercator.tls.domain.FullScanCache;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlerService;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +26,16 @@ public class TlsCrawler implements Crawler {
 
   private final TlsCrawlerService crawlerService;
 
-  private final ScanResultCache scanResultCache;
+  private final FullScanCache fullScanCache;
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
-  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, ScanResultCache scanResultCache) {
+  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, FullScanCache fullScanCache) {
     this.meterRegistry = meterRegistry;
     this.crawlerService = crawlerService;
-    this.scanResultCache = scanResultCache;
+    this.fullScanCache = fullScanCache;
   }
 
   @Override
@@ -56,7 +55,7 @@ public class TlsCrawler implements Crawler {
       meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
 
       if (crawlResult.isFresh()) {
-        scanResultCache.add(Instant.now(), crawlResult.getScanResult());
+        fullScanCache.add(Instant.now(), crawlResult.getFullScanEntity());
       }
     } catch (Throwable e) {
       if (exceptionContains(e, "duplicate key value violates unique constraint")) {

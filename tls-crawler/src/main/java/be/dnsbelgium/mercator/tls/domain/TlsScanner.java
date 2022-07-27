@@ -1,9 +1,9 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import be.dnsbelgium.mercator.tls.domain.certificates.Trust;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client;
-import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2ScanResult;
+import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Scan;
 import lombok.SneakyThrows;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.slf4j.Logger;
@@ -18,7 +18,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -83,25 +82,25 @@ public class TlsScanner {
     this.ssl2Client = SSL2Client.withAllKnownCiphers();
   }
 
-  public ProtocolScanResult scan(TlsProtocolVersion protocolVersion, String hostname) {
+  public SingleVersionScan scan(TlsProtocolVersion protocolVersion, String hostname) {
     return scan(protocolVersion, hostname, DEFAULT_PORT);
   }
 
   // This method is only used in test cases
-  public ProtocolScanResult scan(TlsProtocolVersion protocolVersion, String hostname, int destinationPort) {
+  public SingleVersionScan scan(TlsProtocolVersion protocolVersion, String hostname, int destinationPort) {
     InetSocketAddress inetSocketAddress = new InetSocketAddress(hostname, destinationPort);
     return scanForProtocol(protocolVersion, inetSocketAddress);
   }
 
 
-  public TlsCrawlResult scan (InetSocketAddress address) {
-    ProtocolScanResult scanResult_1_3  = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
-    if (!scanResult_1_3.isConnectOK()) {
+  public FullScan scan (InetSocketAddress address) {
+    SingleVersionScan scan_1_3  = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
+    if (!scan_1_3.isConnectOK()) {
       logger.debug("Could not connect to port {}, no need to check other TLS versions", address.getPort());
-      return TlsCrawlResult.connectFailed(address, scanResult_1_3.getErrorMessage());
+      return FullScan.connectFailed(address, scan_1_3.getErrorMessage());
     }
-    TlsCrawlResult crawlResult = new TlsCrawlResult(true);
-    crawlResult.add(scanResult_1_3);
+    FullScan crawlResult = new FullScan(true);
+    crawlResult.add(scan_1_3);
     crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_2, address));
     crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_1, address));
     crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_0, address));
@@ -110,41 +109,41 @@ public class TlsScanner {
     return crawlResult;
   }
 
-  public ProtocolScanResult scanForSSL2(InetSocketAddress socketAddress) {
+  public SingleVersionScan scanForSSL2(InetSocketAddress socketAddress) {
     if (socketAddress.getAddress() instanceof Inet6Address && !ipv6Enabled) {
-      return SSL2ScanResult.failed(socketAddress, "Scanning IPv6 not enabled");
+      return SSL2Scan.failed(socketAddress, "Scanning IPv6 not enabled");
     }
     logger.info("Checking SSLv2 support on {}", socketAddress);
     // This will not do a full SSL handshake, just exchange ClientHello and ServerHello
-    SSL2ScanResult scanResult = ssl2Client.connect(socketAddress);
-    logger.debug("scanResult = {}", scanResult);
-    return scanResult;
+    SingleVersionScan scan = ssl2Client.connect(socketAddress);
+    logger.debug("SSL2Scan = {}", scan);
+    return scan;
   }
 
-  public ProtocolScanResult scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+  public SingleVersionScan scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
     Instant start = Instant.now();
-    ProtocolScanResult protocolScanResult = scanForProtocol_(protocolVersion, socketAddress);
+    SingleVersionScan singleVersionScan = scanForProtocol_(protocolVersion, socketAddress);
     Instant end = Instant.now();
     Duration duration = Duration.between(start, end);
-    protocolScanResult.setScanDuration(duration);
+    singleVersionScan.setScanDuration(duration);
     logger.debug("Scanning {} for {} took {}", socketAddress, protocolVersion, duration);
-    return protocolScanResult;
+    return singleVersionScan;
   }
 
-  private ProtocolScanResult scanForProtocol_(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+  private SingleVersionScan scanForProtocol_(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
     logger.info("Checking {} for {} support", socketAddress, protocolVersion);
     if (protocolVersion == TlsProtocolVersion.SSL_2) {
       // JDK does not support SSL 2.0 => use our own code to exchange Client & Server Hello messages
       return scanForSSL2(socketAddress);
     }
-    ProtocolScanResult scanResult = ProtocolScanResult.of(protocolVersion, socketAddress);
+    SingleVersionScan singleVersionScan = SingleVersionScan.of(protocolVersion, socketAddress);
     if (socketAddress.isUnresolved()) {
-      scanResult.setErrorMessage("Unknown host");
-      return scanResult;
+      singleVersionScan.setErrorMessage("Unknown host");
+      return singleVersionScan;
     }
     if (socketAddress.getAddress() instanceof Inet6Address && !ipv6Enabled) {
-      scanResult.setErrorMessage("Scanning IPv6 not enabled");
-      return scanResult;
+      singleVersionScan.setErrorMessage("Scanning IPv6 not enabled");
+      return singleVersionScan;
     }
     SSLSocketFactory socketFactory = factoryMap.get(protocolVersion);
 
@@ -154,8 +153,8 @@ public class TlsScanner {
       SSLSocket socket = (SSLSocket) socketFactory.createSocket(
           socketConn, socketAddress.getHostString(), socketAddress.getPort(), true);
       socket.setSoTimeout((int) readTimeOut.toMillis());
-      scanResult.setConnectOK(true);
-      scanResult.setIpAddress(socket.getInetAddress().getHostAddress());
+      singleVersionScan.setConnectOK(true);
+      singleVersionScan.setIpAddress(socket.getInetAddress().getHostAddress());
       if (verbose) {
         logger.debug("socket.getRemoteSocketAddress = {}", socket.getRemoteSocketAddress());
       }
@@ -165,21 +164,21 @@ public class TlsScanner {
       } catch (IllegalArgumentException e) {
         logger.warn("Test of {} on {} => IllegalArgumentException: {}", protocolVersion, socketAddress, e.getMessage());
         logger.warn("IllegalArgumentException", e);
-        scanResult.setErrorMessage(e.getMessage());
-        return scanResult;
+        singleVersionScan.setErrorMessage(e.getMessage());
+        return singleVersionScan;
       }
-      startHandshake(socket, protocolVersion, scanResult);
+      startHandshake(socket, protocolVersion, singleVersionScan);
 
     } catch (SocketTimeoutException e) {
-      scanResult.setConnectOK(false);
-      scanResult.setErrorMessage(ProtocolScanResult.CONNECTION_TIMED_OUT);
+      singleVersionScan.setConnectOK(false);
+      singleVersionScan.setErrorMessage(SingleVersionScan.CONNECTION_TIMED_OUT);
     } catch (IOException e) {
-      scanResult.setConnectOK(false);
-      scanResult.setErrorMessage(e.getMessage());
-      logger.info("IOException while scanning {}", scanResult.getServerName());
+      singleVersionScan.setConnectOK(false);
+      singleVersionScan.setErrorMessage(e.getMessage());
+      logger.info("IOException while scanning {}", singleVersionScan.getServerName());
       logger.info("IOException while scanning: {}", e.getMessage());
     }
-    return scanResult;
+    return singleVersionScan;
   }
 
   private void log(String message, Object... args) {
@@ -188,81 +187,81 @@ public class TlsScanner {
     }
   }
 
-  private void startHandshake(SSLSocket socket, TlsProtocolVersion protocolVersion, ProtocolScanResult scanResult) {
+  private void startHandshake(SSLSocket socket, TlsProtocolVersion protocolVersion, SingleVersionScan singleVersionScan) {
     try {
       socket.startHandshake();
       SSLSession sslSession = socket.getSession();
       log("sslSession.protocol      = {}", sslSession.getProtocol());
       log("sslSession.cipherSuite   = {}", sslSession.getCipherSuite());
-      scanResult.setHandshakeOK(true);
-      scanResult.setSelectedCipherSuite(sslSession.getCipherSuite());
-      scanResult.setSelectedProtocol(sslSession.getProtocol());
-      processCertificate(socket, scanResult);
+      singleVersionScan.setHandshakeOK(true);
+      singleVersionScan.setSelectedCipherSuite(sslSession.getCipherSuite());
+      singleVersionScan.setSelectedProtocol(sslSession.getProtocol());
+      processCertificate(socket, singleVersionScan);
 
     } catch (IOException e) {
-      scanResult.setHandshakeOK(false);
-      scanResult.setErrorMessage(e.getMessage());
+      singleVersionScan.setHandshakeOK(false);
+      singleVersionScan.setErrorMessage(e.getMessage());
       logger.info("{} => {} : {}", protocolVersion, e.getClass().getSimpleName(), e.getMessage());
     }
   }
 
-  private void processCertificate(SSLSocket socket, ProtocolScanResult scanResult) {
+  private void processCertificate(SSLSocket socket, SingleVersionScan singleVersionScan) {
     SSLSession sslSession = socket.getSession();
     try {
       logger.info("sslSession.peerPrincipal = {}", sslSession.getPeerPrincipal());
-      scanResult.setPeerVerified(true);
-      scanResult.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
+      singleVersionScan.setPeerVerified(true);
+      singleVersionScan.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
       // an ordered array of peer certificates, with the peer's own certificate first followed by any certificate authorities.
-      Certificate[] certificates = sslSession.getPeerCertificates();
+      java.security.cert.Certificate[] certificates = sslSession.getPeerCertificates();
 
       log("Found {} certificates", certificates.length);
-      List<CertificateInfo> certificateChain = new ArrayList<>();
+      List<Certificate> certificateChain = new ArrayList<>();
       boolean ok = true;
       int index = 0;
-      CertificateInfo previous = null;
-      for (Certificate certificate : certificates) {
-        if (certificate instanceof X509Certificate x509Certificate) {
-          CertificateInfo certificateInfo = CertificateInfo.from(x509Certificate);
+      Certificate previous = null;
+      for (java.security.cert.Certificate cert: certificates) {
+        if (cert instanceof X509Certificate x509Certificate) {
+          Certificate certificate = Certificate.from(x509Certificate);
           // here we assume that the certificates we got from sslSession.getPeerCertificates() form a chain
           // (1st entry is signed by 2nd entry etc)
           // A few lines lower we check if the chain is trusted by the java platform (with built-in set of trust anchors)
           if (previous != null) {
-            previous.setSignedBy(certificateInfo);
+            previous.setSignedBy(certificate);
           }
-          previous = certificateInfo;
-          certificateChain.add(certificateInfo);
+          previous = certificate;
+          certificateChain.add(certificate);
           if (index == 0) {
-            scanResult.setPeerCertificate(certificateInfo);
+            singleVersionScan.setPeerCertificate(certificate);
           }
           index++;
         } else {
-          logger.warn("Found certificate of type {}, class={}", certificate.getType(), certificate.getClass());
+          logger.warn("Found certificate of type {}, class={}", cert.getType(), cert.getClass());
           ok = false;
         }
         if (ok) {
-          scanResult.setCertificateChain(certificateChain);
+          singleVersionScan.setCertificateChain(certificateChain);
         }
       }
       boolean trusted = isChainTrustedByJavaPlatform(certificates);
-      scanResult.setChainTrustedByJavaPlatform(trusted);
+      singleVersionScan.setChainTrustedByJavaPlatform(trusted);
 
-      boolean hostNameMatchesCertificate = hostnameVerifier.verify(scanResult.getServerName(), sslSession);
-      scanResult.setHostNameMatchesCertificate(hostNameMatchesCertificate);
+      boolean hostNameMatchesCertificate = hostnameVerifier.verify(singleVersionScan.getServerName(), sslSession);
+      singleVersionScan.setHostNameMatchesCertificate(hostNameMatchesCertificate);
 
       logger.debug("Chain trusted: {} hostNameMatchesCertificate: {}", trusted, hostNameMatchesCertificate);
 
     } catch (SSLPeerUnverifiedException e) {
-      scanResult.setPeerVerified(false);
-      scanResult.setErrorMessage(e.getMessage());
-      logger.info("{} => SSLPeerUnverifiedException: {}", scanResult.getServerName(), e.getMessage());
+      singleVersionScan.setPeerVerified(false);
+      singleVersionScan.setErrorMessage(e.getMessage());
+      logger.info("{} => SSLPeerUnverifiedException: {}", singleVersionScan.getServerName(), e.getMessage());
     } catch (CertificateParsingException e) {
-      scanResult.setPeerVerified(false);
-      scanResult.setErrorMessage(e.getMessage());
-      logger.info("{} => CertificateParsingException: {}", scanResult.getServerName(), e.getMessage());
+      singleVersionScan.setPeerVerified(false);
+      singleVersionScan.setErrorMessage(e.getMessage());
+      logger.info("{} => CertificateParsingException: {}", singleVersionScan.getServerName(), e.getMessage());
     }
   }
 
-  private boolean isChainTrustedByJavaPlatform(Certificate[] certificates) {
+  private boolean isChainTrustedByJavaPlatform(java.security.cert.Certificate[] certificates) {
     X509Certificate[] certs = (X509Certificate[]) certificates;
     try {
       Trust.defaultTrustManager().checkServerTrusted(certs, "UNKNOWN");

@@ -10,6 +10,6 @@
         <heap unit="entries">30000</heap>
     </cache-template>
 
-    <cache alias="be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate" uses-template="simple"/>
+    <cache alias="be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity" uses-template="simple"/>
 
 </config>

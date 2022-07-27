@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.tls.crawler.persistence.repositories;
 
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +20,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
 @ActiveProfiles({"local", "test"})
-public class ScanResultRepositoryTest {
-  @Autowired private ScanResultRepository scanResultRepository;
-  private static final Logger logger = getLogger(ScanResultRepositoryTest.class);
+public class FullScanRepositoryTest {
+  @Autowired private FullScanRepository fullScanRepository;
+  private static final Logger logger = getLogger(FullScanRepositoryTest.class);
 
   @Container
   static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
@@ -34,7 +34,7 @@ public class ScanResultRepositoryTest {
 
   @Test
   public void save() {
-    ScanResult scanResult = ScanResult.builder()
+    FullScanEntity fullScanEntity = FullScanEntity.builder()
         .serverName("dnsbelgium.be")
         .connectOk(true)
         .highestVersionSupported("TLS 1.3")
@@ -52,10 +52,10 @@ public class ScanResultRepositoryTest {
         .ip("10.20.30.40")
         .crawlTimestamp(ZonedDateTime.now())
         .build();
-    logger.info("BEFORE scanResult = {}", scanResult);
-    scanResultRepository.save(scanResult);
-    logger.info("AFTER scanResult = {}", scanResult);
-    assertThat(scanResult.getId()).isNotNull();
+    logger.info("BEFORE fullScanEntity = {}", fullScanEntity);
+    fullScanRepository.save(fullScanEntity);
+    logger.info("AFTER fullScanEntity = {}", fullScanEntity);
+    assertThat(fullScanEntity.getId()).isNotNull();
   }
 
 }

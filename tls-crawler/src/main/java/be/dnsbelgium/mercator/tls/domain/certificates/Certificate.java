@@ -1,9 +1,8 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.Certificate;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
 import lombok.Builder;
 import lombok.Data;
-import lombok.ToString;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -24,7 +23,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Data
 @Builder
-public class CertificateInfo {
+public class Certificate {
 
   // Have only seen version 3 (99%) and version 1
   private final int version;
@@ -49,13 +48,13 @@ public class CertificateInfo {
   // common values are sha256, sha384, sha1, md5, sha512
   private final String signatureHashAlgorithm;
 
-  private CertificateInfo signedBy;
+  private Certificate signedBy;
 
   private final String sha256Fingerprint;
 
   private final List<String> subjectAlternativeNames;
 
-  private static final Logger logger = getLogger(CertificateInfo.class);
+  private static final Logger logger = getLogger(Certificate.class);
 
   private final static Map<String, String> OID_MAP = new HashMap<>();
   static {
@@ -68,9 +67,9 @@ public class CertificateInfo {
     OID_MAP.put("2.5.4.16", "PostalAddress");
   }
 
-  public static CertificateInfo from(X509Certificate x509Certificate) throws CertificateParsingException {
+  public static Certificate from(X509Certificate x509Certificate) throws CertificateParsingException {
     PublicKey pubKey = x509Certificate.getPublicKey();
-    return CertificateInfo.builder()
+    return Certificate.builder()
         .issuer(x509Certificate.getIssuerX500Principal().getName())
         .subject(x509Certificate.getSubjectX500Principal().getName(RFC2253, OID_MAP))
         .version(x509Certificate.getVersion())
@@ -86,7 +85,7 @@ public class CertificateInfo {
   }
 
   public String prettyString() {
-    return new StringJoiner(",\n ", CertificateInfo.class.getSimpleName() + "[\n", "]")
+    return new StringJoiner(",\n ", Certificate.class.getSimpleName() + "[\n", "]")
         .add("sha256Fingerprint=" + sha256Fingerprint)
         .add("version=" + version)
         .add("serialNumber=" + serialNumber)
@@ -187,10 +186,10 @@ public class CertificateInfo {
     return subjectAlternativeNames;
   }
 
-  public Certificate asEntity() {
+  public CertificateEntity asEntity() {
     String signedBy = (this.getSignedBy() == null) ?
         null : this.getSignedBy().getSha256Fingerprint();
-    return Certificate.builder()
+    return CertificateEntity.builder()
         .sha256fingerprint(this.getSha256Fingerprint())
         .version(this.getVersion())
         .subjectAltNames(this.getSubjectAlternativeNames())

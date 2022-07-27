@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.ScanResult;
+import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -22,9 +22,9 @@ import java.util.function.ToDoubleFunction;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class ScanResultCache {
+public class FullScanCache {
 
-  private static final Logger logger = getLogger(ScanResultCache.class);
+  private static final Logger logger = getLogger(FullScanCache.class);
 
   private final int minimumEntriesPerIp;
   private final double requiredRatio;
@@ -38,45 +38,44 @@ public class ScanResultCache {
 
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
-  public ScanResultCache(
-      @Value("${scanResult.cache.enabled:true}") boolean cacheEnabled,
-      @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
-      @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio,
+  public FullScanCache(
+      @Value("${full.scan.cache.enabled:true}") boolean cacheEnabled,
+      @Value("${full.scan.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
+      @Value("${full.scan.cache.required.ratio:0.9}")double requiredRatio,
       MeterRegistry meterRegistry) {
     this.minimumEntriesPerIp = minimumEntriesPerIp;
     this.requiredRatio = requiredRatio;
     this.enabled = cacheEnabled;
     this.meterRegistry = meterRegistry;
     if (cacheEnabled) {
-      logger.info("ScanResultCache configured with minimumEntriesPerIp={} and requiredRatio={}", minimumEntriesPerIp, requiredRatio);
+      logger.info("FullScanCache configured with minimumEntriesPerIp={} and requiredRatio={}", minimumEntriesPerIp, requiredRatio);
     } else {
-      logger.warn("ScanResultCache is DISABLED");
+      logger.warn("FullScanCache is DISABLED");
     }
     this.meterRegistry.gaugeMapSize(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, Tags.empty(), mapPerIp);
     this.meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, Tags.empty(), this, new CountDeepEntries());
   }
 
-  public ScanResultCache(
-      @Value("${scanResult.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
-      @Value("${scanResult.cache.required.ratio:0.9}")double requiredRatio) {
+  public FullScanCache(
+      int minimumEntriesPerIp,
+      double requiredRatio) {
     this(true, minimumEntriesPerIp, requiredRatio, new SimpleMeterRegistry());
   }
 
-  private static class CountDeepEntries implements ToDoubleFunction<ScanResultCache> {
+  private static class CountDeepEntries implements ToDoubleFunction<FullScanCache> {
     @Override
-    public double applyAsDouble(ScanResultCache scanResultCache) {
+    public double applyAsDouble(FullScanCache fullScanCache) {
       logger.info("counting deep entries");
-      return scanResultCache.countDeepEntries();
+      return fullScanCache.countDeepEntries();
     }
   }
 
   public Long countDeepEntries() {
-    return mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalScanResults).reduce(Long::sum).orElse(0L);
+    return mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalFullScanEntities).reduce(Long::sum).orElse(0L);
   }
 
-  @SuppressWarnings("unused")
-  public static ScanResultCache withDefaultSettings() {
-    return new ScanResultCache(10, 0.9);
+  public static FullScanCache withDefaultSettings() {
+    return new FullScanCache(10, 0.9);
   }
 
 
@@ -104,65 +103,65 @@ public class ScanResultCache {
     }
   }
 
-  public void add(ScanResult scanResult) {
-    add(Instant.now(), scanResult);
+  public void add(FullScanEntity fullScanEntity) {
+    add(Instant.now(), fullScanEntity);
   }
 
-  public void add(Instant added, ScanResult scanResult) {
+  public void add(Instant added, FullScanEntity fullScanEntity) {
     if (!enabled) {
       return;
     }
-    if (scanResult.getIp() == null) {
+    if (fullScanEntity.getIp() == null) {
       // No need to cache when we could not find an IP
       return;
     }
-    if (scanResult.getId() == null) {
-      // Makes no sense the cache a ScanResult that was not yet persisted
-      logger.warn("Attempted to cache a ScanResult that has no id: {}", scanResult);
+    if (fullScanEntity.getId() == null) {
+      // Makes no sense the cache a FullScanEntity that was not yet persisted
+      logger.warn("Attempted to cache a FullScanEntity that has no id: {}", fullScanEntity);
       return;
     }
-    logger.info("Adding to cache: IP = {} : scanResult: {}", scanResult.getIp(), scanResult.summary());
+    logger.info("Adding to cache: IP = {} : fullScanEntity: {}", fullScanEntity.getIp(), fullScanEntity.summary());
     readWriteLock.writeLock().lock();
-    String ip = scanResult.getIp();
+    String ip = fullScanEntity.getIp();
     try {
       CacheEntry entry = mapPerIp.get(ip);
       if (entry == null) {
         logger.info("First time we see this IP: {}", ip);
-        mapPerIp.put(ip, CacheEntry.of(added, scanResult));
+        mapPerIp.put(ip, CacheEntry.of(added, fullScanEntity));
       } else {
-        if (scanResult.getId().equals(entry.majority.getId())) {
-          // given ScanResult already cached => do nothing
+        if (fullScanEntity.getId().equals(entry.majority.getId())) {
+          // given FullScanEntity already cached => do nothing
           return;
         }
-        if (entry.serverNames.contains(scanResult.getServerName())) {
+        if (entry.serverNames.contains(fullScanEntity.getServerName())) {
           // only cache each serverName once
           return;
         }
-        entry.serverNames.add(scanResult.getServerName());
-        String summary = scanResult.summary();
+        entry.serverNames.add(fullScanEntity.getServerName());
+        String summary = fullScanEntity.summary();
         String majoritySummary = entry.majority.summary();
         if (StringUtils.equals(summary, majoritySummary)) {
-          // new ScanResult matches with the majority
+          // new FullScanEntity matches with the majority
           entry.resultsInMajority++;
-          entry.totalScanResults++;
-          logger.debug("new ScanResult matches with the majority: {}", entry);
+          entry.totalFullScanEntities++;
+          logger.debug("new FullScanEntity matches with the majority: {}", entry);
         } else {
-          // we found a deviant ScanResult => check if it became the majority
-          if (entry.resultsInMajority > entry.totalScanResults / 2 + 1) {
+          // we found a deviant FullScanEntity => check if it became the majority
+          if (entry.resultsInMajority > entry.totalFullScanEntities / 2 + 1) {
             // majority won't change
-            entry.totalScanResults++;
-            logger.debug("we found a deviant ScanResult but majority config did not change: {}", entry);
+            entry.totalFullScanEntities++;
+            logger.debug("we found a deviant FullScanEntity but majority config did not change: {}", entry);
           } else {
-            // count entries in deviantScanResults that have same summary
-            long matchingEntries = entry.deviantScanResults.stream().filter(p -> p.summary().equals(summary)).count();
+            // count entries in deviantFullScanEntities that have same summary
+            long matchingEntries = entry.deviantFullScanEntities.stream().filter(p -> p.summary().equals(summary)).count();
             if (matchingEntries + 1 > entry.resultsInMajority) {
               // we have a new majority
-              CacheEntry newEntry = entry.newMajority(added, scanResult);
+              CacheEntry newEntry = entry.newMajority(added, fullScanEntity);
               logger.info("we have a new majority: {}", newEntry);
               mapPerIp.put(ip, newEntry);
             } else {
-              logger.debug("we found a deviant ScanResult but majority config did not change: {}", entry);
-              entry.totalScanResults++;
+              logger.debug("we found a deviant FullScanEntity but majority config did not change: {}", entry);
+              entry.totalFullScanEntities++;
             }
           }
         }
@@ -172,7 +171,7 @@ public class ScanResultCache {
     }
   }
 
-  public Optional<ScanResult> find(String ip) {
+  public Optional<FullScanEntity> find(String ip) {
     if (!enabled) {
       return Optional.empty();
     }
@@ -183,12 +182,12 @@ public class ScanResultCache {
         logger.debug("No match for {}", ip);
         return cacheMiss();
       }
-      if (match.totalScanResults < minimumEntriesPerIp) {
-        logger.debug("Not enough scans for this IP. required={} in-cache={}", minimumEntriesPerIp, match.totalScanResults);
+      if (match.totalFullScanEntities < minimumEntriesPerIp) {
+        logger.debug("Not enough scans for this IP. required={} in-cache={}", minimumEntriesPerIp, match.totalFullScanEntities);
         return cacheMiss();
       }
-      logger.debug("totalScanResults={} resultsInMajority={}", match.totalScanResults, match.resultsInMajority);
-      double majorityRatio = (1.0 * match.resultsInMajority) / match.totalScanResults;
+      logger.debug("totalFullScanEntities={} resultsInMajority={}", match.totalFullScanEntities, match.resultsInMajority);
+      double majorityRatio = (1.0 * match.resultsInMajority) / match.totalFullScanEntities;
       logger.debug("requiredRatio={} actual ratio={}", requiredRatio, majorityRatio);
 
       if (majorityRatio < requiredRatio) {
@@ -202,17 +201,17 @@ public class ScanResultCache {
     }
   }
 
-  private Optional<ScanResult> cacheMiss() {
+  private Optional<FullScanEntity> cacheMiss() {
     meterRegistry.counter(MetricName.COUNTER_SCANRESULT_CACHE_MISSES).increment();
     return Optional.empty();
   }
 
   @AllArgsConstructor
   private static class CacheEntry {
-    private ScanResult majority;
+    private FullScanEntity majority;
 
-    private final List<ScanResult> deviantScanResults = new ArrayList<>();
-    private long totalScanResults;
+    private final List<FullScanEntity> deviantFullScanEntities = new ArrayList<>();
+    private long totalFullScanEntities;
     private long resultsInMajority;
     private final String ip;
 
@@ -220,19 +219,19 @@ public class ScanResultCache {
 
     private final Instant added;
 
-    private static CacheEntry of(Instant added, ScanResult scanResult) {
-      CacheEntry entry = new CacheEntry(scanResult, 1, 1, scanResult.getIp(), added);
-      entry.serverNames.add(scanResult.getServerName());
+    private static CacheEntry of(Instant added, FullScanEntity fullScanEntity) {
+      CacheEntry entry = new CacheEntry(fullScanEntity, 1, 1, fullScanEntity.getIp(), added);
+      entry.serverNames.add(fullScanEntity.getServerName());
       return entry;
     }
 
-    private CacheEntry newMajority(Instant added, ScanResult scanResult) {
-      String newSummary = scanResult.summary();
-      long matchingEntries = deviantScanResults.stream().filter(p -> p.summary().equals(newSummary)).count() + 1;
-      CacheEntry entry = new CacheEntry(scanResult, totalScanResults+1, matchingEntries, scanResult.getIp(), added);
-      entry.deviantScanResults.clear();
-      entry.deviantScanResults.addAll(deviantScanResults.stream().filter(r -> !r.summary().equals(newSummary)).toList());
-      entry.deviantScanResults.add(this.majority);
+    private CacheEntry newMajority(Instant added, FullScanEntity fullScanEntity) {
+      String newSummary = fullScanEntity.summary();
+      long matchingEntries = deviantFullScanEntities.stream().filter(p -> p.summary().equals(newSummary)).count() + 1;
+      CacheEntry entry = new CacheEntry(fullScanEntity, totalFullScanEntities +1, matchingEntries, fullScanEntity.getIp(), added);
+      entry.deviantFullScanEntities.clear();
+      entry.deviantFullScanEntities.addAll(deviantFullScanEntities.stream().filter(r -> !r.summary().equals(newSummary)).toList());
+      entry.deviantFullScanEntities.add(this.majority);
       entry.serverNames.addAll(this.serverNames);
       return entry;
     }
@@ -240,7 +239,7 @@ public class ScanResultCache {
     @Override
     public String toString() {
       return new StringJoiner(", ", CacheEntry.class.getSimpleName() + "[", "]")
-          .add("totalScanResults=" + totalScanResults)
+          .add("totalFullScanEntities=" + totalFullScanEntities)
           .add("resultsInMajority=" + resultsInMajority)
           .add("majority.summary=" + majority.summary())
           .add("ip='" + ip + "'")

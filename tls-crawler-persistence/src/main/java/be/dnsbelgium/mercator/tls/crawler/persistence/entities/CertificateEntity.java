@@ -23,7 +23,7 @@ import java.util.List;
 @Table(name = "certificate")
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Certificate {
+public class CertificateEntity {
 
   @Id
   @Column(name = "sha256_fingerprint")

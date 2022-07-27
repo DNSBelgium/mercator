@@ -17,8 +17,8 @@ import java.util.UUID;
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Getter
 @ToString
-@Table(name = "tls_scan_result")
-public class TlsScanResult {
+@Table(name = "crawl_result")
+public class CrawlResultEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,12 +35,12 @@ public class TlsScanResult {
   private ZonedDateTime crawlTimestamp;
 
   @ManyToOne(fetch = FetchType.EAGER)
-  @JoinColumn(name = "scan_result")
-  private ScanResult scanResult;
+  @JoinColumn(name = "full_scan")
+  private FullScanEntity fullScanEntity;
 
   @JoinColumn(name = "leaf_certificate")
   @ManyToOne
-  private Certificate leafCertificate;
+  private CertificateEntity leafCertificateEntity;
 
   private boolean certificateExpired;
   private boolean certificateTooSoon;

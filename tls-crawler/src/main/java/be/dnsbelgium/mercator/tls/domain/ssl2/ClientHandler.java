@@ -85,25 +85,25 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
   }
 
-  public SSL2ScanResult scanResult() {
-    SSL2ScanResult scanResult = new SSL2ScanResult();
-    scanResult.setAddress(socketAddress);
-    scanResult.setConnectOK(this.connectOK);
-    scanResult.setPeerVerified(false);
-    scanResult.setServerHello(serverHello);
+  public SSL2Scan result() {
+    SSL2Scan scan = new SSL2Scan();
+    scan.setAddress(socketAddress);
+    scan.setConnectOK(this.connectOK);
+    scan.setPeerVerified(false);
+    scan.setServerHello(serverHello);
     if (this.serverHello != null) {
-      scanResult.setSelectedProtocol(serverHello.selectedVersion());
+      scan.setSelectedProtocol(serverHello.selectedVersion());
       // Consider first in the list in ServerHello as the selected cipher
       if (!serverHello.getListSupportedCipherSuites().isEmpty()) {
-        scanResult.setSelectedCipherSuite(serverHello.getListSupportedCipherSuites().get(0).name());
+        scan.setSelectedCipherSuite(serverHello.getListSupportedCipherSuites().get(0).name());
       }
-      scanResult.setHandshakeOK(true);
-      scanResult.setErrorMessage(null);
+      scan.setHandshakeOK(true);
+      scan.setErrorMessage(null);
     } else {
-      scanResult.setHandshakeOK(false);
-      scanResult.setErrorMessage(errorMessage);
+      scan.setHandshakeOK(false);
+      scan.setErrorMessage(errorMessage);
     }
-    return scanResult;
+    return scan;
   }
 
 }

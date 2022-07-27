@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain.ssl2;
 
-import be.dnsbelgium.mercator.tls.domain.ProtocolScanResult;
+import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -19,69 +19,69 @@ public class SSL2ClientTest {
   @Test
   public void ssl2_supported() throws InterruptedException {
     SSL2Client client = SSL2Client.withAllKnownCiphers();
-    SSL2ScanResult scanResult = client.connect("www.chefxpo.be");
-    logger.info("scanResult = {}", scanResult);
-    logger.info("serverHello = {}", scanResult.getServerHello());
-    ServerHello serverHello = scanResult.getServerHello();
+    SSL2Scan ssl2Scan = client.connect("www.chefxpo.be");
+    logger.info("ssl2Scan = {}", ssl2Scan);
+    logger.info("serverHello = {}", ssl2Scan.getServerHello());
+    ServerHello serverHello = ssl2Scan.getServerHello();
     assertThat(serverHello).isNotNull();
     assertThat(serverHello.isSessionIdHit()).isFalse();
     assertThat(serverHello.getCertificateType()).isEqualTo(1);
     assertThat(serverHello.getVersionSelectedByServer()).isEqualTo(new byte[]{0, 2});
     assertThat(serverHello.getListSupportedCipherSuites()).hasSize(2);
     assertThat(serverHello.getConnectionId()).hasSize(16);
-    assertThat(scanResult.getErrorMessage()).isNull();
-    assertThat(scanResult.getIpAddress()).isNotNull();
-    assertThat(scanResult.getServerName()).isEqualTo("www.chefxpo.be");
-    assertThat(scanResult.isConnectOK()).isTrue();
-    assertThat(scanResult.isHandshakeOK()).isTrue();
-    assertThat(scanResult.getSelectedCipherSuite()).isEqualTo("SSL_CK_RC4_128_WITH_MD5");
-    assertThat(scanResult.getSelectedProtocol()).isEqualTo("SSLv2");
+    assertThat(ssl2Scan.getErrorMessage()).isNull();
+    assertThat(ssl2Scan.getIpAddress()).isNotNull();
+    assertThat(ssl2Scan.getServerName()).isEqualTo("www.chefxpo.be");
+    assertThat(ssl2Scan.isConnectOK()).isTrue();
+    assertThat(ssl2Scan.isHandshakeOK()).isTrue();
+    assertThat(ssl2Scan.getSelectedCipherSuite()).isEqualTo("SSL_CK_RC4_128_WITH_MD5");
+    assertThat(ssl2Scan.getSelectedProtocol()).isEqualTo("SSLv2");
   }
 
   @Test
   public void connectionRefused() {
     SSL2Client client = SSL2Client.withAllKnownCiphers();
-    SSL2ScanResult scanResult = client.connect("localhost", 400);
-    logger.info("scanResult = {}", scanResult);
-    logger.info("scanResult.getErrorMessage() = {}", scanResult.getErrorMessage());
-    assertThat(scanResult.isConnectOK()).isFalse();
-    assertThat(scanResult.isHandshakeOK()).isFalse();
-    assertThat(scanResult.getServerHello()).isNull();
-    assertThat(scanResult.getSelectedProtocol()).isNull();
-    assertThat(scanResult.getSelectedCipherSuite()).isNull();
-    assertThat(scanResult.getServerHello()).isNull();
-    assertThat(scanResult.getErrorMessage()).isEqualTo("Connection refused");
+    SSL2Scan ssl2Scan = client.connect("localhost", 400);
+    logger.info("ssl2Scan = {}", ssl2Scan);
+    logger.info("ssl2Scan.getErrorMessage() = {}", ssl2Scan.getErrorMessage());
+    assertThat(ssl2Scan.isConnectOK()).isFalse();
+    assertThat(ssl2Scan.isHandshakeOK()).isFalse();
+    assertThat(ssl2Scan.getServerHello()).isNull();
+    assertThat(ssl2Scan.getSelectedProtocol()).isNull();
+    assertThat(ssl2Scan.getSelectedCipherSuite()).isNull();
+    assertThat(ssl2Scan.getServerHello()).isNull();
+    assertThat(ssl2Scan.getErrorMessage()).isEqualTo("Connection refused");
   }
 
   @Test
   public void connectionReset() throws InterruptedException {
     SSL2Client client = SSL2Client.withAllKnownCiphers();
-    SSL2ScanResult scanResult = client.connect("google.be");
-    logger.info("scanResult = {}", scanResult);
-    assertThat(scanResult.isConnectOK()).isTrue();
-    assertThat(scanResult.getServerHello()).isNull();
+    SSL2Scan scan = client.connect("google.be");
+    logger.info("SSL2Scan = {}", scan);
+    assertThat(scan.isConnectOK()).isTrue();
+    assertThat(scan.getServerHello()).isNull();
     // google.be actually replies with a TLSv1 Record Layer message
     // 0x15 (Alert) 0x0301 (TLS 1.0) 0x0002 (length 2) 0x02 (Level 2 = Fatal) 0x46 (Protocol Version)
     // 0x 15 03 01 00 02 02 46
     // But our SSLv2 decoders don't understand it correctly
-    assertThat(scanResult.isHandshakeOK()).isFalse();
-    assertThat(scanResult.getServerHello()).isNull();
-    assertThat(scanResult.getSelectedProtocol()).isNull();
-    assertThat(scanResult.getSelectedCipherSuite()).isNull();
+    assertThat(scan.isHandshakeOK()).isFalse();
+    assertThat(scan.getServerHello()).isNull();
+    assertThat(scan.getSelectedProtocol()).isNull();
+    assertThat(scan.getSelectedCipherSuite()).isNull();
   }
 
   @Test
   public void connectionTimedOut() {
     SSL2Client client = SSL2Client.withAllKnownCiphers();
-    SSL2ScanResult scanResult = client.connect("google.be", 400);
-    logger.info("scanResult = {}", scanResult);
-    assertThat(scanResult.isConnectOK()).isFalse();
-    assertThat(scanResult.isHandshakeOK()).isFalse();
-    assertThat(scanResult.getServerHello()).isNull();
-    assertThat(scanResult.getSelectedProtocol()).isNull();
-    assertThat(scanResult.getSelectedCipherSuite()).isNull();
-    assertThat(scanResult.getErrorMessage()).isEqualTo(ProtocolScanResult.CONNECTION_TIMED_OUT);
-    logger.info("scanResult.getErrorMessage = {}", scanResult.getErrorMessage());
+    SSL2Scan scan = client.connect("google.be", 400);
+    logger.info("SSL2Scan = {}", scan);
+    assertThat(scan.isConnectOK()).isFalse();
+    assertThat(scan.isHandshakeOK()).isFalse();
+    assertThat(scan.getServerHello()).isNull();
+    assertThat(scan.getSelectedProtocol()).isNull();
+    assertThat(scan.getSelectedCipherSuite()).isNull();
+    assertThat(scan.getErrorMessage()).isEqualTo(SingleVersionScan.CONNECTION_TIMED_OUT);
+    logger.info("fullScanEntity.getErrorMessage = {}", scan.getErrorMessage());
   }
 
   @Test

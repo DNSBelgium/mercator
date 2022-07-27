@@ -5,6 +5,7 @@ import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 //@DataJpaTest
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles({"local", "test"})
+@Disabled
 public class CacheIntegrationTest {
 
   @Autowired
@@ -87,7 +89,6 @@ public class CacheIntegrationTest {
       // this will generate an SQL exception
       CrawlResult result = tlsCrawlerService.visit(visitRequest1);
       tlsCrawlerService.persist(result);
-
 
     } catch (DataIntegrityViolationException e) {
       logger.info("Expected: {}", e.getMessage());

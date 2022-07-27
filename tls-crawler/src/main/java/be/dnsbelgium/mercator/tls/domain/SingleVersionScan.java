@@ -1,8 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.domain.certificates.CertificateInfo;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.Data;
-import lombok.ToString;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -15,7 +14,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * Represents the result of scanning a host name for one specific <code>{@link TlsProtocolVersion}</code>
  */
 @Data
-public class ProtocolScanResult {
+public class SingleVersionScan {
 
   private final TlsProtocolVersion protocolVersion;
 
@@ -32,8 +31,8 @@ public class ProtocolScanResult {
   private String errorMessage;
   private String peerPrincipal;
 
-  private CertificateInfo peerCertificate;
-  private List<CertificateInfo> certificateChain;
+  private Certificate peerCertificate;
+  private List<Certificate> certificateChain;
 
   private boolean chainTrustedByJavaPlatform;
   private boolean hostNameMatchesCertificate;
@@ -44,16 +43,16 @@ public class ProtocolScanResult {
   public final static String CONNECTION_REFUSED   = "Connection refused";
   public final static String CONNECTION_RESET     = "Connection reset";
 
-  private static final Logger logger = getLogger(ProtocolScanResult.class);
+  private static final Logger logger = getLogger(SingleVersionScan.class);
 
-  protected ProtocolScanResult(TlsProtocolVersion protocolVersion) {
+  protected SingleVersionScan(TlsProtocolVersion protocolVersion) {
     this.protocolVersion = protocolVersion;
   }
 
-  public static ProtocolScanResult of(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
-    ProtocolScanResult protocolScanResult = new ProtocolScanResult(protocolVersion);
-    protocolScanResult.setAddress(socketAddress);
-    return protocolScanResult;
+  public static SingleVersionScan of(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+    SingleVersionScan singleVersionScan = new SingleVersionScan(protocolVersion);
+    singleVersionScan.setAddress(socketAddress);
+    return singleVersionScan;
   }
 
   public void setAddress(InetSocketAddress socketAddress) {
