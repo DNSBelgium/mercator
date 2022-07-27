@@ -20,7 +20,7 @@ dependencies {
   // JSONB support
   implementation 'com.vladmihalcea:hibernate-types-52:2.9.7'
 
-  implementation 'org.apache.commons:commons-lang3:3.9'
+  implementation 'org.apache.commons:commons-lang3'
 }
 
 dependencyManagement {

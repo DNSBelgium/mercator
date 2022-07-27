@@ -19,7 +19,7 @@ configurations {
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter'
 
-  implementation 'org.apache.commons:commons-lang3:3.12.0'
+  implementation 'org.apache.commons:commons-lang3'
 
   // Lombok
   compileOnly 'org.projectlombok:lombok'
