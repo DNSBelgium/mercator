@@ -9,7 +9,7 @@ public enum CrawlerModule {
   WAPPALYZER(),
   SMTP(),
   VAT(),
-  TLS(false),
+  TLS(),
   ;
 
   // this allows us to already use a new enum value in the code without having to deploy the corresponding module
