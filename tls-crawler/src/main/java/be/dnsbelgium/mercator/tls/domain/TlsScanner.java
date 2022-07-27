@@ -105,8 +105,8 @@ public class TlsScanner {
   }
 
 
-  public FullScan scan (InetSocketAddress address) {
-    SingleVersionScan scan_1_3  = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
+  public FullScan scan(InetSocketAddress address) {
+    SingleVersionScan scan_1_3 = scanForProtocol(TlsProtocolVersion.TLS_1_3, address);
     if (!scan_1_3.isConnectOK()) {
       logger.debug("Could not connect to port {}, no need to check other TLS versions", address.getPort());
       return FullScan.connectFailed(address, scan_1_3.getErrorMessage());

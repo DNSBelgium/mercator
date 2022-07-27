@@ -79,7 +79,7 @@ public class FullScan {
     return getCertificateChain()
         .stream()
         .filter(list -> !list.isEmpty())
-        .map(x -> x.get(0))
+        .map(list -> list.get(0))
         .findFirst();
   }
 

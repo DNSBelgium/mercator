@@ -30,7 +30,6 @@ import java.util.UUID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@DataJpaTest
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles({"local", "test"})
 @Disabled

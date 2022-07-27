@@ -41,7 +41,7 @@ public class FullScanCache {
   public FullScanCache(
       @Value("${full.scan.cache.enabled:true}") boolean cacheEnabled,
       @Value("${full.scan.cache.minimum.entries.per.ip:10}") int minimumEntriesPerIp,
-      @Value("${full.scan.cache.required.ratio:0.9}")double requiredRatio,
+      @Value("${full.scan.cache.required.ratio:0.9}") double requiredRatio,
       MeterRegistry meterRegistry) {
     this.minimumEntriesPerIp = minimumEntriesPerIp;
     this.requiredRatio = requiredRatio;
@@ -53,7 +53,7 @@ public class FullScanCache {
       logger.warn("FullScanCache is DISABLED");
     }
     this.meterRegistry.gaugeMapSize(MetricName.GAUGE_SCANRESULT_CACHE_SIZE, Tags.empty(), mapPerIp);
-    this.meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, Tags.empty(), this, new CountDeepEntries());
+    this.meterRegistry.gauge(MetricName.GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES, Tags.empty(), this, FullScanCache::countDeepEntries);
   }
 
   public FullScanCache(
@@ -62,22 +62,13 @@ public class FullScanCache {
     this(true, minimumEntriesPerIp, requiredRatio, new SimpleMeterRegistry());
   }
 
-  private static class CountDeepEntries implements ToDoubleFunction<FullScanCache> {
-    @Override
-    public double applyAsDouble(FullScanCache fullScanCache) {
-      logger.info("counting deep entries");
-      return fullScanCache.countDeepEntries();
-    }
-  }
-
   public Long countDeepEntries() {
-    return mapPerIp.values().stream().map(cacheEntry -> cacheEntry.totalFullScanEntities).reduce(Long::sum).orElse(0L);
+    return mapPerIp.values().stream().mapToLong(cacheEntry -> cacheEntry.totalFullScanEntities).sum();
   }
 
   public static FullScanCache withDefaultSettings() {
     return new FullScanCache(10, 0.9);
   }
-
 
   public void evictEntriesOlderThan(Duration duration) {
     readWriteLock.writeLock().lock();

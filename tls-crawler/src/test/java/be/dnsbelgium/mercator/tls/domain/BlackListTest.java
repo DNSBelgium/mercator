@@ -17,10 +17,6 @@ class BlackListTest {
   private static final Logger logger = getLogger(BlackListTest.class);
 
   @Test
-  public void v6() {
-  }
-
-  @Test
   public void add() throws UnknownHostException {
     BlackList blackList = new BlackList();
     String ipv6 = "2001:4860:4802:34::a";
@@ -51,10 +47,20 @@ class BlackListTest {
   @Test
   public void invalidIP() {
     BlackList blackList = new BlackList();
-    blackList.add("1.2");
-    blackList.isBlacklisted("1.2.3.x");
+    // This is simply ignored and an error is logged.
+    blackList.add("1.256.2.3");
+    assertThat(blackList.isBlacklisted("1.256.2.3")).isFalse();
   }
 
+  @Test
+  public void ipv4Range() {
+    BlackList blackList = new BlackList();
+    blackList.add("1.2"); // corresponds to 1.0.0.2
+    assertThat(blackList.isBlacklisted("1.2.2.2")).isFalse();
+    assertThat(blackList.isBlacklisted("1.0.0.2")).isTrue();
+  }
+
+  // TODO add test or remove
   @Test
   public void npe() {
     BlackList blackList = new BlackList();
