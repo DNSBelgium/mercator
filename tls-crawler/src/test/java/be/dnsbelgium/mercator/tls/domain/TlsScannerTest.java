@@ -23,8 +23,7 @@ class TlsScannerTest {
   // if we do this early enough, we don't have to set a system property when starting the JVM
   // (-Djava.security.properties=/path/to/custom/security.properties)
   static {
-    Security.setProperty("jdk.tls.disabledAlgorithms", "NULL");
-    Security.setProperty("jdk.tls.legacyAlgorithms", "");
+    TlsScanner.allowOldAlgorithms();
   }
 
   private final static TlsScanner tlsScanner = TlsScanner.standard();

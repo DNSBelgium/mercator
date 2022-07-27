@@ -19,11 +19,6 @@ public class TlsCrawlerConfiguration implements JmsConfig {
 
   private static final Logger logger = getLogger(TlsCrawlerConfiguration.class);
 
-  static {
-    logger.info("setting security property \"jdk.tls.disabledAlgorithms\" to \"NULL\"");
-    Security.setProperty("jdk.tls.disabledAlgorithms", "NULL");
-  }
-
   @Bean
   HostnameVerifier hostnameVerifier() {
     return new DefaultHostnameVerifier();

@@ -18,6 +18,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -51,6 +52,17 @@ public class TlsScanner {
 
   public final static int DEFAULT_CONNECT_TIME_OUT_MS = 5000;
   public final static int DEFAULT_READ_TIME_OUT_MS = 5000;
+
+  /**
+   * This method needs to be called as soon as possible after the start of the JVM
+   * if we do this early enough, we don't have to set a system property when starting the JVM
+   * (-Djava.security.properties=/path/to/custom/security.properties)
+   */
+  public static void allowOldAlgorithms() {
+    logger.info("setting security property \"jdk.tls.disabledAlgorithms\" to \"NULL\"");
+    Security.setProperty("jdk.tls.disabledAlgorithms", "NULL");
+  }
+
 
   public static TlsScanner standard() {
     return new TlsScanner(new DefaultHostnameVerifier(), false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
