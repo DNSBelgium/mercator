@@ -11,7 +11,8 @@ import { harFromMessages } from "chrome-har";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
-const GOTO_TIMEOUT = 30000;
+const GOTO_TIMEOUT = 15000;
+const MAX_RETRY_ATTEMPTS = 2;
 
 // event types to observe
 const observe = [
@@ -266,7 +267,7 @@ async function registerHarEventListeners(page: puppeteer.Page, events: any[]) {
     }
 }
 
-async function snap(page: puppeteer.Page, params: ScraperParams): Promise<ScraperResult> {
+async function snap(page: puppeteer.Page, params: ScraperParams, is_retry: boolean): Promise<ScraperResult> {
     const result: ScraperResult = {
         id: uuid(),
         ipv4: ipv4,
@@ -298,7 +299,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             await registerHarEventListeners(page, events);
         }
 
-        await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
+        if (!is_retry)
+            await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
+        else
+            await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
@@ -338,7 +342,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     }
 }
 
-export async function websnap(params: ScraperParams): Promise<ScraperResult> {
+export async function websnap(params: ScraperParams, attempt: number = 0): Promise<ScraperResult> {
+    if (attempt >= MAX_RETRY_ATTEMPTS)
+        return Promise.reject("Too many retry attempts");
+
     try {
         while (!browser || !browser.isConnected()) {
             console.log("browser is not ready");
@@ -358,13 +365,16 @@ export async function websnap(params: ScraperParams): Promise<ScraperResult> {
             browser.close();
         });
 
-        const scraperResult = await snap(page, params);
+        const scraperResult = await snap(page, params, attempt === 0);
         endProcessingTimeHist();
 
         await page.close();
         return scraperResult;
     } catch (exception) {
         console.error(`Error in scraper: ${exception}`);
-        return Promise.reject(exception);
+        if (attempt < MAX_RETRY_ATTEMPTS)
+            return websnap(params, attempt + 1);
+        else
+            return Promise.reject(exception);
     }
 }
