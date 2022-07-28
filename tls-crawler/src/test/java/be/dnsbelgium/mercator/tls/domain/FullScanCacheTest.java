@@ -16,7 +16,7 @@ import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
-class FullScanEntityCacheTest {
+class FullScanCacheTest {
 
   private final static String IP1 = "10.20.30.40";
   private final static String IP2 = "1.2.3.4";
@@ -24,7 +24,7 @@ class FullScanEntityCacheTest {
 
   private Long idGenerator = 1L;
 
-  private static final Logger logger = getLogger(FullScanEntityCacheTest.class);
+  private static final Logger logger = getLogger(FullScanCacheTest.class);
 
   @Test
   public void whenMapIsEmptyThenWeFindNoResult() {

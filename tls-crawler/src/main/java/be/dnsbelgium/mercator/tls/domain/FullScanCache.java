@@ -47,6 +47,9 @@ public class FullScanCache {
     this.requiredRatio = requiredRatio;
     this.enabled = cacheEnabled;
     this.meterRegistry = meterRegistry;
+    if (requiredRatio < 0.0 || requiredRatio > 1.0) {
+      throw new IllegalArgumentException("requiredRatio was {} but should be between 0.0 and 1.0");
+    }
     if (cacheEnabled) {
       logger.info("FullScanCache configured with minimumEntriesPerIp={} and requiredRatio={}", minimumEntriesPerIp, requiredRatio);
     } else {

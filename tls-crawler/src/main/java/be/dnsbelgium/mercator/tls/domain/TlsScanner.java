@@ -250,9 +250,9 @@ public class TlsScanner {
           logger.warn("Found certificate of type {}, class={}", cert.getType(), cert.getClass());
           ok = false;
         }
-        if (ok) {
-          singleVersionScan.setCertificateChain(certificateChain);
-        }
+      }
+      if (ok) {
+        singleVersionScan.setCertificateChain(certificateChain);
       }
       boolean trusted = isChainTrustedByJavaPlatform(certificates);
       singleVersionScan.setChainTrustedByJavaPlatform(trusted);
