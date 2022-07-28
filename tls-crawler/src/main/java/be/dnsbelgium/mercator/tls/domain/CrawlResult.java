@@ -75,7 +75,7 @@ public class CrawlResult {
       return fullScan.getCertificateChain();
     }
     if (singleVersionScan != null) {
-      return Optional.of(singleVersionScan.getCertificateChain());
+      return Optional.ofNullable(singleVersionScan.getCertificateChain());
     }
     return Optional.empty();
   }
@@ -85,7 +85,7 @@ public class CrawlResult {
       return fullScan.getPeerCertificate();
     }
     if (singleVersionScan != null) {
-      return Optional.of(singleVersionScan.getPeerCertificate());
+      return Optional.ofNullable(singleVersionScan.getPeerCertificate());
     }
     return Optional.empty();
   }
