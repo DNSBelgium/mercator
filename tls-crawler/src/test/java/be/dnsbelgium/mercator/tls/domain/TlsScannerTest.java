@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -72,7 +73,7 @@ class TlsScannerTest {
     // with readTimeOut of 5 seconds, it results in connectOK=true, handshakeOK=false , errorMessage=Read timed out
     TlsScanner tlsScanner = new TlsScanner(
         new DefaultHostnameVerifier(),
-        false, true, 5000, 4_000);
+        false, true, 5000, 4_000, new SimpleMeterRegistry());
     SingleVersionScan result = tlsScanner.scan(SSL_3, "een.be");
     logger.info("result.getScanDuration = {}", result.getScanDuration());
     assertThat(result.getScanDuration()).isLessThan(Duration.ofSeconds(6));
@@ -127,7 +128,10 @@ class TlsScannerTest {
 
   @Test
   public void connectionTimedOut() {
-    TlsScanner tlsScanner = new TlsScanner(new DefaultHostnameVerifier(), false, false, 2000, 3000);
+    TlsScanner tlsScanner = new TlsScanner(
+        new DefaultHostnameVerifier(),
+        false, false, 2000, 3000,
+        new SimpleMeterRegistry());
     SingleVersionScan result = tlsScanner.scan(TLS_1_2, "google.be", 400);
     logger.info("result = {}", result);
     assertThat(result.getIpAddress()).isNotNull();

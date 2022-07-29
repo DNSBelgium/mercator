@@ -15,4 +15,8 @@ public interface MetricName {
   // number of ScanResults (1 or more per IP)
   String GAUGE_SCANRESULT_CACHE_DEEP_ENTRIES         = "tls.crawler.scanresult.cache.deep.entries";
 
+  String COUNTER_CONNECTION_TIMEOUTS                 = "tls.crawler.scanner.connection.time.outs";
+  String COUNTER_IO_EXCEPTIONS                       = "tls.crawler.scanner.io.exceptions";
+  String COUNTER_HANDSHAKE_FAILURES                  = "tls.crawler.scanner.handshake.failures";
+  String COUNTER_CERTIFICATE_PARSING_ERRORS          = "tls.crawler.scanner.certificate.parsing.errors";
 }

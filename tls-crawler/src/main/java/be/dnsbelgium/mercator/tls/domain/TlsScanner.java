@@ -4,9 +4,12 @@ import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import be.dnsbelgium.mercator.tls.domain.certificates.Trust;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client;
 import be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Scan;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static be.dnsbelgium.mercator.tls.metrics.MetricName.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
@@ -36,6 +40,8 @@ public class TlsScanner {
 
   private static final Logger logger = getLogger(TlsScanner.class);
   private static final int DEFAULT_PORT = 443;
+  public static final String ERROR_UNKNOWN_HOST = "Unknown host";
+  public static final String IPV6_NOT_ENABLED = "Scanning IPv6 not enabled";
 
   private final Map<TlsProtocolVersion, SSLSocketFactory> factoryMap = new HashMap<>();
 
@@ -52,6 +58,7 @@ public class TlsScanner {
 
   public final static int DEFAULT_CONNECT_TIME_OUT_MS = 5000;
   public final static int DEFAULT_READ_TIME_OUT_MS = 5000;
+  private final MeterRegistry meterRegistry;
 
   /**
    * This method needs to be called as soon as possible after the start of the JVM
@@ -65,17 +72,21 @@ public class TlsScanner {
 
 
   public static TlsScanner standard() {
-    return new TlsScanner(new DefaultHostnameVerifier(), false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
+    return new TlsScanner(new DefaultHostnameVerifier(), false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS, new SimpleMeterRegistry());
   }
 
   @SneakyThrows
+  @Autowired
   public TlsScanner(
       HostnameVerifier hostnameVerifier,
       @Value("${tls.scanner.ipv6.enabled:false}") boolean ipv6Enabled,
       @Value("${tls.scanner.verbose:false}") boolean verbose,
       @Value("${tls.scanner.connect.timeout.milliSeconds:3000}") int connectTimeOutMilliSeconds,
-      @Value("${tls.scanner.read.timeout.milliSeconds:3000}") int readTimeOutMilliSeconds) {
+      @Value("${tls.scanner.read.timeout.milliSeconds:3000}") int readTimeOutMilliSeconds,
+      MeterRegistry meterRegistry
+  ) {
     this.hostnameVerifier = hostnameVerifier;
+    this.meterRegistry = meterRegistry;
     this.verbose = verbose;
     this.ipv6Enabled = ipv6Enabled;
     this.connectTimeOut = Duration.ofMillis(connectTimeOutMilliSeconds);
@@ -150,11 +161,11 @@ public class TlsScanner {
     }
     SingleVersionScan singleVersionScan = SingleVersionScan.of(protocolVersion, socketAddress);
     if (socketAddress.isUnresolved()) {
-      singleVersionScan.setErrorMessage("Unknown host");
+      singleVersionScan.setErrorMessage(ERROR_UNKNOWN_HOST);
       return singleVersionScan;
     }
     if (socketAddress.getAddress() instanceof Inet6Address && !ipv6Enabled) {
-      singleVersionScan.setErrorMessage("Scanning IPv6 not enabled");
+      singleVersionScan.setErrorMessage(IPV6_NOT_ENABLED);
       return singleVersionScan;
     }
     SSLSocketFactory socketFactory = factoryMap.get(protocolVersion);
@@ -175,7 +186,7 @@ public class TlsScanner {
         socket.setEnabledProtocols(protocols);
       } catch (IllegalArgumentException e) {
         logger.warn("Test of {} on {} => IllegalArgumentException: {}", protocolVersion, socketAddress, e.getMessage());
-        logger.warn("IllegalArgumentException", e);
+        logger.warn("Probably the JVM is not correctly configured? IllegalArgumentException", e);
         singleVersionScan.setErrorMessage(e.getMessage());
         return singleVersionScan;
       }
@@ -184,11 +195,13 @@ public class TlsScanner {
     } catch (SocketTimeoutException e) {
       singleVersionScan.setConnectOK(false);
       singleVersionScan.setErrorMessage(SingleVersionScan.CONNECTION_TIMED_OUT);
+      meterRegistry.counter(COUNTER_CONNECTION_TIMEOUTS, "version", protocolVersion.getName()).increment();
     } catch (IOException e) {
       singleVersionScan.setConnectOK(false);
       singleVersionScan.setErrorMessage(e.getMessage());
       logger.info("IOException while scanning {}", singleVersionScan.getServerName());
       logger.info("IOException while scanning: {}", e.getMessage());
+      meterRegistry.counter(COUNTER_IO_EXCEPTIONS, "version", protocolVersion.getName()).increment();
     }
     return singleVersionScan;
   }
@@ -213,6 +226,7 @@ public class TlsScanner {
     } catch (IOException e) {
       singleVersionScan.setHandshakeOK(false);
       singleVersionScan.setErrorMessage(e.getMessage());
+      meterRegistry.counter(COUNTER_HANDSHAKE_FAILURES, "version", protocolVersion.getName()).increment();
       logger.info("{} => {} : {}", protocolVersion, e.getClass().getSimpleName(), e.getMessage());
     }
   }
@@ -270,6 +284,7 @@ public class TlsScanner {
       singleVersionScan.setPeerVerified(false);
       singleVersionScan.setErrorMessage(e.getMessage());
       logger.info("{} => CertificateParsingException: {}", singleVersionScan.getServerName(), e.getMessage());
+      meterRegistry.counter(COUNTER_CERTIFICATE_PARSING_ERRORS).increment();      ;
     }
   }
 

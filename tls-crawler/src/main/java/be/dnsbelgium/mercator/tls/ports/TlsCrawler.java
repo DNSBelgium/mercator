@@ -30,7 +30,6 @@ public class TlsCrawler implements Crawler {
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, FullScanCache fullScanCache) {
     this.meterRegistry = meterRegistry;

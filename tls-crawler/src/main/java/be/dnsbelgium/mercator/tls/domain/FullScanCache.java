@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.ToDoubleFunction;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -36,7 +35,6 @@ public class FullScanCache {
   private final boolean enabled;
   private final MeterRegistry meterRegistry;
 
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Autowired
   public FullScanCache(
       @Value("${full.scan.cache.enabled:true}") boolean cacheEnabled,
