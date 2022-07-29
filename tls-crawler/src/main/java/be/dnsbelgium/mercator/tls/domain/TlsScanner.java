@@ -60,6 +60,8 @@ public class TlsScanner {
   public final static int DEFAULT_READ_TIME_OUT_MS = 5000;
   private final MeterRegistry meterRegistry;
 
+  private final RateLimiter rateLimiter;
+
   /**
    * This method needs to be called as soon as possible after the start of the JVM
    * if we do this early enough, we don't have to set a system property when starting the JVM
@@ -71,22 +73,27 @@ public class TlsScanner {
   }
 
 
-  public static TlsScanner standard() {
-    return new TlsScanner(new DefaultHostnameVerifier(), false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS, new SimpleMeterRegistry());
+  public static TlsScanner standard(RateLimiter rateLimiter) {
+    return new TlsScanner(
+        new DefaultHostnameVerifier(),
+        rateLimiter,
+        new SimpleMeterRegistry(),
+        false, false, DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
   }
 
   @SneakyThrows
   @Autowired
   public TlsScanner(
       HostnameVerifier hostnameVerifier,
+      RateLimiter rateLimiter,
+      MeterRegistry meterRegistry,
       @Value("${tls.scanner.ipv6.enabled:false}") boolean ipv6Enabled,
       @Value("${tls.scanner.verbose:false}") boolean verbose,
       @Value("${tls.scanner.connect.timeout.milliSeconds:3000}") int connectTimeOutMilliSeconds,
-      @Value("${tls.scanner.read.timeout.milliSeconds:3000}") int readTimeOutMilliSeconds,
-      MeterRegistry meterRegistry
-  ) {
+      @Value("${tls.scanner.read.timeout.milliSeconds:3000}") int readTimeOutMilliSeconds) {
     this.hostnameVerifier = hostnameVerifier;
     this.meterRegistry = meterRegistry;
+    this.rateLimiter = rateLimiter;
     this.verbose = verbose;
     this.ipv6Enabled = ipv6Enabled;
     this.connectTimeOut = Duration.ofMillis(connectTimeOutMilliSeconds);
@@ -146,15 +153,22 @@ public class TlsScanner {
   public SingleVersionScan scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
     Instant start = Instant.now();
     SingleVersionScan singleVersionScan = scanForProtocol_(protocolVersion, socketAddress);
+
+    String ipAddress = socketAddress.getAddress().getHostAddress();
+    rateLimiter.sleepIfNecessaryFor(ipAddress);
+
     Instant end = Instant.now();
     Duration duration = Duration.between(start, end);
     singleVersionScan.setScanDuration(duration);
     logger.debug("Scanning {} for {} took {}", socketAddress, protocolVersion, duration);
+
+    rateLimiter.registerDuration(ipAddress, duration);
     return singleVersionScan;
   }
 
   private SingleVersionScan scanForProtocol_(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
     logger.info("Checking {} for {} support", socketAddress, protocolVersion);
+
     if (protocolVersion == TlsProtocolVersion.SSL_2) {
       // JDK does not support SSL 2.0 => use our own code to exchange Client & Server Hello messages
       return scanForSSL2(socketAddress);
@@ -284,7 +298,7 @@ public class TlsScanner {
       singleVersionScan.setPeerVerified(false);
       singleVersionScan.setErrorMessage(e.getMessage());
       logger.info("{} => CertificateParsingException: {}", singleVersionScan.getServerName(), e.getMessage());
-      meterRegistry.counter(COUNTER_CERTIFICATE_PARSING_ERRORS).increment();      ;
+      meterRegistry.counter(COUNTER_CERTIFICATE_PARSING_ERRORS).increment();
     }
   }
 

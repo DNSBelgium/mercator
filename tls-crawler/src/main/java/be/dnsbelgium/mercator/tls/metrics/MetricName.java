@@ -19,4 +19,8 @@ public interface MetricName {
   String COUNTER_IO_EXCEPTIONS                       = "tls.crawler.scanner.io.exceptions";
   String COUNTER_HANDSHAKE_FAILURES                  = "tls.crawler.scanner.handshake.failures";
   String COUNTER_CERTIFICATE_PARSING_ERRORS          = "tls.crawler.scanner.certificate.parsing.errors";
+
+  String CACHE_RATE_LIMITER                          = "tls.crawler.rate.limiter.cache";
+
+
 }

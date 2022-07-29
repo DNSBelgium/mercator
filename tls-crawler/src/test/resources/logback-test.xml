@@ -7,6 +7,7 @@
     <logger name="be.dnsbelgium" level="DEBUG" />
 
     <logger name="be.dnsbelgium.mercator.tls" level="DEBUG" />
+    <logger name="be.dnsbelgium.mercator.tls.domain.RateLimiter" level="INFO" />
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />

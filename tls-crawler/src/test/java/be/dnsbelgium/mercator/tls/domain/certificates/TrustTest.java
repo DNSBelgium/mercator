@@ -1,9 +1,11 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
+import be.dnsbelgium.mercator.tls.domain.RateLimiter;
 import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 
 import javax.net.ssl.X509ExtendedTrustManager;
@@ -11,7 +13,6 @@ import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
 import java.util.Arrays;
@@ -24,6 +25,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 class TrustTest {
 
   private static final Logger logger = getLogger(TrustTest.class);
+
+  @Mock
+  private RateLimiter rateLimiter;
 
   @Test
   public void testDefault() {
@@ -41,7 +45,7 @@ class TrustTest {
 
   @Test
   public void check() {
-    TlsScanner scanner = TlsScanner.standard();
+    TlsScanner scanner = TlsScanner.standard(rateLimiter);
     // checkServerTrusted with ECDHE_RSA
     InetSocketAddress address = new InetSocketAddress("een.be", 443);
     SingleVersionScan singleVersionScan = scanner.scanForProtocol(TlsProtocolVersion.TLS_1_2, address);

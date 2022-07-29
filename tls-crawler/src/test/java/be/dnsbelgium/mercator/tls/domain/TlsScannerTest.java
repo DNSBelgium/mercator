@@ -1,20 +1,23 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.security.Security;
 import java.time.Duration;
 import java.util.List;
 
 import static be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion.*;
+import static be.dnsbelgium.mercator.tls.domain.TlsScanner.DEFAULT_CONNECT_TIME_OUT_MS;
+import static be.dnsbelgium.mercator.tls.domain.TlsScanner.DEFAULT_READ_TIME_OUT_MS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -27,7 +30,12 @@ class TlsScannerTest {
     TlsScanner.allowOldAlgorithms();
   }
 
-  private final static TlsScanner tlsScanner = TlsScanner.standard();
+  private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
+  @Mock
+  RateLimiter rateLimiter;
+
+  private final TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
   private static final Logger logger = getLogger(TlsScannerTest.class);
 
   @Test
@@ -66,14 +74,22 @@ class TlsScannerTest {
   // TODO: start TLS server instead of relying on google and others
   // Do it in a separate test class ??
   //
+  TlsScanner makeTlsScanner(int connectTimeOutMilliSeconds, int readTimeOutMilliSeconds) {
+    return new TlsScanner(
+        new DefaultHostnameVerifier(),
+        rateLimiter,
+        meterRegistry,
+        false, true, connectTimeOutMilliSeconds, readTimeOutMilliSeconds
+        );
+
+  }
+
 
   @Test
   public void een_be_ssl3() {
     // without setting soTimeOut, this takes around 20 seconds and results in SSLHandshakeException: Received fatal alert: protocol_version
     // with readTimeOut of 5 seconds, it results in connectOK=true, handshakeOK=false , errorMessage=Read timed out
-    TlsScanner tlsScanner = new TlsScanner(
-        new DefaultHostnameVerifier(),
-        false, true, 5000, 4_000, new SimpleMeterRegistry());
+    TlsScanner tlsScanner = makeTlsScanner(2000, 3000);
     SingleVersionScan result = tlsScanner.scan(SSL_3, "een.be");
     logger.info("result.getScanDuration = {}", result.getScanDuration());
     assertThat(result.getScanDuration()).isLessThan(Duration.ofSeconds(6));
@@ -128,10 +144,7 @@ class TlsScannerTest {
 
   @Test
   public void connectionTimedOut() {
-    TlsScanner tlsScanner = new TlsScanner(
-        new DefaultHostnameVerifier(),
-        false, false, 2000, 3000,
-        new SimpleMeterRegistry());
+    TlsScanner tlsScanner = makeTlsScanner(1000, 1500);
     SingleVersionScan result = tlsScanner.scan(TLS_1_2, "google.be", 400);
     logger.info("result = {}", result);
     assertThat(result.getIpAddress()).isNotNull();
