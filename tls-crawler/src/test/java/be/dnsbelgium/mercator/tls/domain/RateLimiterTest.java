@@ -12,6 +12,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 class RateLimiterTest {
 
+  // TODO use https://www.javadoc.io/doc/com.google.guava/guava-testlib/19.0/com/google/common/testing/FakeTicker.html
+  // to make timings more predictable
+
   private static final Logger logger = getLogger(RateLimiterTest.class);
 
   private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
@@ -65,7 +68,7 @@ class RateLimiterTest {
     // 4 * 600 = 2400 > 2000
     rateLimiter.registerDuration(ipAddress, Duration.ofMillis(600));
     delayMs = rateLimiter.milliSecondsToWait(ipAddress);
-    assertThat(delayMs).isEqualTo(2000);
+    assertThat(delayMs).isBetween(1980L, 2020L);
   }
 
   @Test
