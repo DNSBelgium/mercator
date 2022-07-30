@@ -5,7 +5,9 @@ import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 import javax.net.ssl.X509ExtendedTrustManager;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@ExtendWith(MockitoExtension.class)
 class TrustTest {
 
   private static final Logger logger = getLogger(TrustTest.class);
