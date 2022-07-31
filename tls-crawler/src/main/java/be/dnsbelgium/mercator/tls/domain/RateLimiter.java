@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -64,6 +65,13 @@ public class RateLimiter {
     return Duration.ofMillis((long) delay);
   }
 
+  public void registerDuration(InetSocketAddress inetSocketAddress, Duration duration) {
+    if (inetSocketAddress.isUnresolved()) {
+      return;
+    }
+    String ipAddress = inetSocketAddress.getAddress().getHostAddress();
+    registerDuration(ipAddress, duration);
+  }
 
   public void registerDuration(String ipAddress, Duration duration) {
     Duration delay = computeDelay(duration);
@@ -87,6 +95,14 @@ public class RateLimiter {
     long millis = ChronoUnit.MILLIS.between(now, sleepUntil);
     logger.debug("ip={} => sleep {} ms until {}", ipAddress, millis, sleepUntil);
     return millis;
+  }
+
+  public void sleepIfNecessaryFor(InetSocketAddress inetSocketAddress) {
+    if (inetSocketAddress.isUnresolved()) {
+      return;
+    }
+    String ipAddress = inetSocketAddress.getAddress().getHostAddress();
+    sleepIfNecessaryFor(ipAddress);
   }
 
 

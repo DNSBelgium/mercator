@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.net.ssl.*;
 import java.io.IOException;
-import java.net.Inet6Address;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
@@ -151,18 +148,13 @@ public class TlsScanner {
   }
 
   public SingleVersionScan scanForProtocol(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
+    rateLimiter.sleepIfNecessaryFor(socketAddress);
     Instant start = Instant.now();
     SingleVersionScan singleVersionScan = scanForProtocol_(protocolVersion, socketAddress);
-
-    String ipAddress = socketAddress.getAddress().getHostAddress();
-    rateLimiter.sleepIfNecessaryFor(ipAddress);
-
-    Instant end = Instant.now();
-    Duration duration = Duration.between(start, end);
+    Duration duration = Duration.between(start, Instant.now());
     singleVersionScan.setScanDuration(duration);
     logger.debug("Scanning {} for {} took {}", socketAddress, protocolVersion, duration);
-
-    rateLimiter.registerDuration(ipAddress, duration);
+    rateLimiter.registerDuration(socketAddress, duration);
     return singleVersionScan;
   }
 

@@ -5,7 +5,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -22,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Disabled(value = "These tests require internet access and depends on the google.be TLS configuration (could change anytime)")
+@ExtendWith(MockitoExtension.class)
 class TlsScannerTest {
 
   // if we do this early enough, we don't have to set a system property when starting the JVM
@@ -35,11 +38,11 @@ class TlsScannerTest {
   @Mock
   RateLimiter rateLimiter;
 
-  private final TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
   private static final Logger logger = getLogger(TlsScannerTest.class);
 
   @Test
   public void sslv3_protocol_alert() {
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
     SingleVersionScan result = tlsScanner.scan(SSL_3, "google.be");
     logger.info("result = {}", result);
     assertThat(result.getIpAddress()).isNotNull();
@@ -56,6 +59,7 @@ class TlsScannerTest {
 
   @Test
   public void connectionReset() {
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
     SingleVersionScan result = tlsScanner.scan(SSL_2, "google.be");
     logger.info("result = {}", result);
     assertThat(result.getIpAddress()).isNotNull();
@@ -99,6 +103,7 @@ class TlsScannerTest {
   public void renovations() {
     // 1a-renovations.be
     // chrome says: NET::ERR_CERT_COMMON_NAME_INVALID
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
     SingleVersionScan result = tlsScanner.scanForProtocol(
         TLS_1_0, new InetSocketAddress("1a-renovations.be", 443));
     logger.info("result = {}", result);
@@ -119,6 +124,7 @@ class TlsScannerTest {
 
     @Test
   public void google_be() {
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
     for (TlsProtocolVersion version : List.of(TLS_1_0, TLS_1_1, TLS_1_2, TLS_1_3)) {
       SingleVersionScan result = tlsScanner.scan(version, "google.be");
       logger.info("result = {}", result);
@@ -159,6 +165,7 @@ class TlsScannerTest {
 
   @Test
   public void connection_refused() {
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
     SingleVersionScan result = tlsScanner.scan(TLS_1_2, "localhost", 9745);
     logger.info("result = {}", result);
     assertThat(result.isConnectOK()).isFalse();
@@ -180,6 +187,14 @@ class TlsScannerTest {
     assertThat(address.isUnresolved()).isTrue();
     assertThat(address.getAddress()).isNull();
     assertThat(address.toString()).isEqualTo("x/<unresolved>:443");
+  }
+
+  @Test
+  public void unresolved_InetSocketAddress() {
+    InetSocketAddress address = new InetSocketAddress("x", 443);
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
+    SingleVersionScan result = tlsScanner.scanForProtocol(TLS_1_0, address);
+    logger.info("result = {}", result);
   }
 
 }
