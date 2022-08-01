@@ -44,12 +44,11 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    implementation 'com.amazonaws:aws-java-sdk-core'
+    // Explicitly set the version to make sure it matches with sqs version
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.262'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
     implementation 'com.amazonaws:aws-java-sdk-s3'
 
-    implementation 'io.awspring.cloud:spring-cloud-aws-autoconfigure'
-    implementation 'io.awspring.cloud:spring-cloud-aws-core'
     implementation 'com.amazonaws:aws-java-sdk-sts'
 
     // https://mvnrepository.com/artifact/org.jsoup/jsoup
