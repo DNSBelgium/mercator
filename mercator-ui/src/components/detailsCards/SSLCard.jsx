@@ -51,7 +51,7 @@ const SSLCard = (props) => {
                 console.log(e);
             }
 
-            
+            setCrawlResult(crawlResultResponse === undefined ? null : crawlResultResponse.data);
 
             setTrustStores(trustStoreResponse === undefined ? null : trustStoreResponse);
 
