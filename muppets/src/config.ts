@@ -9,7 +9,7 @@ interface MuppetsConfiguration {
 
 const env_config: MuppetsConfiguration  = {
     s3_endpoint: process.env.S3_ENDPOINT || null,
-    s3_bucket_name: process.env.S3_BUCKET_NAME || "mercator-muppets",
+    s3_bucket_name: process.env.S3_BUCKET || "mercator-muppets",
     sqs_endpoint: process.env.SQS_ENDPOINT || null,
     sqs_input_queue: process.env.SQS_INPUT_QUEUE || "mercator-muppets-input",
     sqs_output_queue: process.env.SQS_OUTPUT_QUEUE || "mercator-muppets-output",
