@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.tls.ports;
 
+import be.dnsbelgium.mercator.common.messaging.ack.AckMessageService;
+import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.tls.domain.CrawlResult;
@@ -26,14 +28,17 @@ public class TlsCrawler implements Crawler {
 
   private final TlsCrawlerService crawlerService;
 
+  private final AckMessageService ackMessageService;
+
   private final FullScanCache fullScanCache;
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
   @Autowired
-  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, FullScanCache fullScanCache) {
+  public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, AckMessageService ackMessageService, FullScanCache fullScanCache) {
     this.meterRegistry = meterRegistry;
     this.crawlerService = crawlerService;
+    this.ackMessageService = ackMessageService;
     this.fullScanCache = fullScanCache;
   }
 
@@ -56,6 +61,8 @@ public class TlsCrawler implements Crawler {
       if (crawlResult.isFresh()) {
         fullScanCache.add(Instant.now(), crawlResult.getFullScanEntity());
       }
+      ackMessageService.sendAck(visitRequest, CrawlerModule.TLS);
+
     } catch (Throwable e) {
       if (exceptionContains(e, "duplicate key value violates unique constraint")) {
         meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();

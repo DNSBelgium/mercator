@@ -32,6 +32,7 @@ class TlsCrawlerApplicationTests {
   @BeforeAll
   static void init() throws IOException, InterruptedException {
     localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "mercator-tls-crawler-input");
+    localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "mercator-dispatcher-ack");
   }
 
 
