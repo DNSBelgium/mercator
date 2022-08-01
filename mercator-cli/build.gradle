@@ -14,7 +14,13 @@ repositories {
 	mavenCentral()
 }
 
+dependencyManagement {
+	imports {
+		mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
-	implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.167'
+	implementation 'com.amazonaws:aws-java-sdk-sqs'
 }

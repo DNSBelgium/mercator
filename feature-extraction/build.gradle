@@ -8,9 +8,6 @@ plugins {
 
 version = '0.0.1-' + getCommitHash()
 
-// CVE-2022-31159
-ext['awsjavasdk.version']="1.12.262"
-
 repositories {
     mavenCentral()
 }
@@ -44,8 +41,6 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-    // Explicitly set the version to make sure it matches with sqs version
-    implementation 'com.amazonaws:aws-java-sdk-core:1.12.262'
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
     implementation 'com.amazonaws:aws-java-sdk-s3'
 

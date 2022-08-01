@@ -19,7 +19,11 @@ dependencies {
 
   // JMS
   api 'org.springframework:spring-jms'
-  api 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.0'
+  implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.0'
+  constraints {
+    implementation("com.amazonaws:aws-java-sdk-core:${project."aws-java-sdk.version"}")
+    implementation("com.amazonaws:aws-java-sdk-sqs:${project."aws-java-sdk.version"}")
+  }
 
   // JSON Messaging conversion
   implementation 'com.fasterxml.jackson.core:jackson-databind'

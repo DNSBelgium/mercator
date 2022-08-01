@@ -23,6 +23,7 @@ dependencyCheck {
 
 ext['springCloudAwsVersion']="2.4.1"
 ext['logstashLogbackEncoderVersion']="7.2"
+ext['aws-java-sdk.version']="1.12.262"
 
 ext {
   getCommitHash = { ->
