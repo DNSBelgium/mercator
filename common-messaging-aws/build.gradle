@@ -19,6 +19,9 @@ dependencies {
   api 'org.springframework:spring-jms'
   api 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.0'
 
+  // EKS IRSA support
+  implementation 'com.amazonaws:aws-java-sdk-sts'
+
   implementation 'com.fasterxml.jackson.core:jackson-databind'
 
   testImplementation('org.springframework.boot:spring-boot-starter-test') {

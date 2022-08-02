@@ -12,12 +12,6 @@ repositories {
     mavenCentral()
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
-    }
-}
-
 dependencies {
     implementation project(':common-messaging')
     implementation project(':common-messaging-aws')
@@ -44,8 +38,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3
     implementation 'com.amazonaws:aws-java-sdk-s3'
-
-    implementation 'com.amazonaws:aws-java-sdk-sts'
 
     // https://mvnrepository.com/artifact/org.jsoup/jsoup
     implementation 'org.jsoup:jsoup:1.14.2'

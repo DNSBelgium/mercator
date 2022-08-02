@@ -12,16 +12,7 @@ repositories {
     mavenCentral()
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
-    }
-}
-
 dependencies {
-
-    // EKS IRSA support
-    implementation 'com.amazonaws:aws-java-sdk-sts'
 
     implementation project(':common-messaging')
     implementation project(':common-messaging-aws')
@@ -54,11 +45,6 @@ dependencies {
 
     implementation 'org.springframework.integration:spring-integration-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
-
-    // explicitly declare a dependency on aws-java-sdk-core
-    // otherwise we could get an older version in our classpath via common-messaging
-    // seems to be an issue only when running from IntelliJ
-    implementation 'com.amazonaws:aws-java-sdk-core'
 
     // DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

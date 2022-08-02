@@ -16,15 +16,7 @@ test {
   useJUnitPlatform()
 }
 
-dependencyManagement {
-  imports {
-    mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
-  }
-}
-
 dependencies {
-  // EKS IRSA support
-  implementation 'com.amazonaws:aws-java-sdk-sts'
   implementation project(':common-messaging')
   implementation project(':common-messaging-aws')
 
@@ -41,11 +33,6 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
   implementation 'org.flywaydb:flyway-core'
   runtimeOnly 'org.postgresql:postgresql'
-
-  // explicitly declare a dependency on aws-java-sdk-core
-  // otherwise we could get an older version in our classpath via common-messaging
-  // seems to be an issue only when running from IntelliJ
-  implementation 'com.amazonaws:aws-java-sdk-core'
 
   // Lombok
   compileOnly 'org.projectlombok:lombok'

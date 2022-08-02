@@ -46,6 +46,13 @@ subprojects { subproject ->
 
   pluginManager.withPlugin("java") {
     sourceCompatibility = 17
+
+    dependencyManagement {
+      imports {
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
+      }
+    }
+
   }
 
   pluginManager.withPlugin("com.google.cloud.tools.jib") {
