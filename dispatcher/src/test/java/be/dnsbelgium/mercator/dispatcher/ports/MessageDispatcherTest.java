@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dispatcher.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
@@ -47,7 +48,7 @@ class MessageDispatcherTest {
   public static final String DOMAIN_NAME = "test.be";
 
   @MockBean
-  JmsTemplate jmsTemplate;
+  QueueClient queueClient;
 
   @MockBean
   DispatcherEventRepository repository;
@@ -97,7 +98,7 @@ class MessageDispatcherTest {
     sqs.sendMessage(queueUrl, new ObjectMapper().writeValueAsString(new DispatcherRequest(UUID.randomUUID(), DOMAIN_NAME, Collections.emptyList())));
 
     Thread.sleep(1000); // Give a sec to leave the time for processing messages
-    verify(jmsTemplate, times(2)).convertAndSend(queueCaptor.capture(), requestCaptor.capture());
+    verify(queueClient, times(2)).convertAndSend(queueCaptor.capture(), requestCaptor.capture());
 
     List<String> queues = queueCaptor.getAllValues();
     List<VisitRequest> requests = requestCaptor.getAllValues();

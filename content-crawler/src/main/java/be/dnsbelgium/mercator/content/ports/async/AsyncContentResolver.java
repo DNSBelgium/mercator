@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.content.ports.async;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import be.dnsbelgium.mercator.content.config.ResolvingConfigurationProperties;
 import be.dnsbelgium.mercator.content.domain.content.ContentResolver;
 import be.dnsbelgium.mercator.content.metrics.MetricName;
@@ -8,7 +9,6 @@ import be.dnsbelgium.mercator.content.ports.async.model.RequestMessage;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.InvocationTargetException;
@@ -23,14 +23,14 @@ public class AsyncContentResolver implements ContentResolver {
 
   private final MeterRegistry meterRegistry;
   private final ResolvingConfigurationProperties resolvingConfigurationProperties;
-  private final JmsTemplate jmsTemplate;
+  private final QueueClient queueClient;
 
   public AsyncContentResolver(MeterRegistry meterRegistry,
                               ResolvingConfigurationProperties resolvingConfigurationProperties,
-                              JmsTemplate jmsTemplate) {
+                              QueueClient queueClient) {
     this.meterRegistry = meterRegistry;
     this.resolvingConfigurationProperties = resolvingConfigurationProperties;
-    this.jmsTemplate = jmsTemplate;
+    this.queueClient = queueClient;
   }
 
   public void requestContentResolving(VisitRequest visitRequest, List<String> urlCandidates) {
@@ -45,7 +45,7 @@ public class AsyncContentResolver implements ContentResolver {
           request.setDomainName(visitRequest.getDomainName());
           request.setUrl(url);
           logger.info("Putting message {} on queue {}", request, queueName.getKey());
-          jmsTemplate.convertAndSend(queueName.getValue(), request);
+          queueClient.convertAndSend(queueName.getValue(), request);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
           logger.error("{} is not a correct argument, cannot find the associated RequestMessage class", key, e);
         }

@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dispatcher.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import be.dnsbelgium.mercator.dispatcher.metrics.MetricName;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
@@ -24,16 +25,16 @@ public class MessageDispatcher {
 
   private static final Logger LOG = LoggerFactory.getLogger(MessageDispatcher.class);
 
-  private final JmsTemplate jmsTemplate;
+  private final QueueClient queueClient;
   private final MeterRegistry meterRegistry;
   private final List<String> outputQueues;
   private final DispatcherEventRepository repository;
 
-  public MessageDispatcher(JmsTemplate jmsTemplate,
+  public MessageDispatcher(QueueClient queueClient,
                            MeterRegistry meterRegistry,
                            @Value("${dispatcher.queues.forward}") List<String> outputQueues,
                            DispatcherEventRepository repository) {
-    this.jmsTemplate = jmsTemplate;
+    this.queueClient = queueClient;
     this.meterRegistry = meterRegistry;
     this.outputQueues = outputQueues;
     this.repository = repository;
@@ -60,7 +61,7 @@ public class MessageDispatcher {
       repository.save(DispatcherEvent.from(visitRequest.getVisitId(), dispatcherRequest));
 
       for (String outputQueue : outputQueues) {
-        jmsTemplate.convertAndSend(outputQueue, visitRequest);
+        queueClient.convertAndSend(outputQueue, visitRequest);
         meterRegistry.counter(MetricName.MESSAGES_OUT, "queue", outputQueue).increment();
       }
     } catch (DataIntegrityViolationException e) {

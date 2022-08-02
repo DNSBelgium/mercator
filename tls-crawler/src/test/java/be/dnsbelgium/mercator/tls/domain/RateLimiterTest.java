@@ -72,7 +72,7 @@ class RateLimiterTest {
   }
 
   @Test
-  public void whenMaxSizeReachedThenIpEvicted() {
+  public void whenMaxSizeReachedThenIpEvicted() throws InterruptedException {
     RateLimiter rateLimiter = makeRateLimiter(100,2, 10, 250);
     String ip = "10.20.30.40";
     rateLimiter.registerDuration(ip, Duration.ofMillis(123));
@@ -84,7 +84,8 @@ class RateLimiterTest {
     // Test could be flaky
     // see javadoc of com.github.benmanes.caffeine.cache.Caffeine.maximumSize
     // Note that the cache may evict an entry before this limit is exceeded or temporarily exceed the threshold while evicting.
-    logger.info("rateLimiter.estimatedCacheSize = {}", rateLimiter.estimatedCacheSize());
+    Thread.sleep(10);
+    assertThat(rateLimiter.estimatedCacheSize()).isEqualTo(100);
     assertThat(rateLimiter.milliSecondsToWait(ip)).isEqualTo(0);
   }
 

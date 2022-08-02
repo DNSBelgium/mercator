@@ -1,6 +1,8 @@
 package be.dnsbelgium.mercator.dispatcher.ports;
 
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueMessage;
 import be.dnsbelgium.mercator.dispatcher.metrics.MetricName;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
@@ -21,7 +23,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class MessageDispatcherUnitTest {
 
-  JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+  QueueClient queueClient = mock(QueueClient.class);
 
   DispatcherEventRepository repository = mock(DispatcherEventRepository.class);
 
@@ -42,7 +44,7 @@ public class MessageDispatcherUnitTest {
         .thenThrow(new DataIntegrityViolationException("duplicate key value"))
         .thenReturn(DispatcherEvent.from(request3.getVisitId(), request3));
 
-    MessageDispatcher messageDispatcher = new MessageDispatcher(jmsTemplate, meterRegistry, outputQueues, repository);
+    MessageDispatcher messageDispatcher = new MessageDispatcher(queueClient, meterRegistry, outputQueues, repository);
 
     messageDispatcher.receiveAndForward(request1);
 
@@ -95,7 +97,7 @@ public class MessageDispatcherUnitTest {
     when(repository.save(any(DispatcherEvent.class)))
         .thenThrow(new DataIntegrityViolationException("Saving failed", new Exception("xyz")));
 
-    MessageDispatcher messageDispatcher = new MessageDispatcher(jmsTemplate, meterRegistry, outputQueues, repository);
+    MessageDispatcher messageDispatcher = new MessageDispatcher(queueClient, meterRegistry, outputQueues, repository);
 
     try {
       messageDispatcher.receiveAndForward(request1);

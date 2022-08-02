@@ -11,14 +11,15 @@ repositories {
 }
 
 dependencies {
+  implementation project(":common-messaging")
+
   implementation 'org.springframework.boot:spring-boot-starter'
 
-  // https://mvnrepository.com/artifact/io.micrometer/micrometer-core
-  implementation 'io.micrometer:micrometer-core'
+  // JMS
+  api 'org.springframework:spring-jms'
+  api 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.0'
 
-  // Lombok
-  compileOnly 'org.projectlombok:lombok'
-  annotationProcessor 'org.projectlombok:lombok'
+  implementation 'com.fasterxml.jackson.core:jackson-databind'
 
   testImplementation('org.springframework.boot:spring-boot-starter-test') {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -28,6 +29,7 @@ dependencies {
 dependencyManagement {
   imports {
     mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+    mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:${springCloudAwsVersion}"
   }
 }
 

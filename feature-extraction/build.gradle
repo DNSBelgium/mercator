@@ -20,6 +20,7 @@ dependencyManagement {
 
 dependencies {
     implementation project(':common-messaging')
+    implementation project(':common-messaging-aws')
     implementation project(':content-crawler-persistence')
     implementation project(':feature-extraction-persistence')
 

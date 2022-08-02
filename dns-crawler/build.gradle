@@ -26,6 +26,7 @@ dependencies {
   // EKS IRSA support
   implementation 'com.amazonaws:aws-java-sdk-sts'
   implementation project(':common-messaging')
+  implementation project(':common-messaging-aws')
   implementation project(':common-geoip')
   implementation project(':dns-crawler-dto')
   implementation project(':dns-crawler-persistence')

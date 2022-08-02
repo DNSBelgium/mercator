@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.common.messaging.ack.AckCrawlMessage;
 import be.dnsbelgium.mercator.common.messaging.ack.AckMetric;
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEvent;
 import be.dnsbelgium.mercator.dispatcher.persistence.DispatcherEventRepository;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -23,16 +24,16 @@ public class AcknowledgeListener {
   private static final Logger logger = LoggerFactory.getLogger(AcknowledgeListener.class);
 
   private final DispatcherEventRepository repository;
-  private final JmsTemplate jmsTemplate;
+  private final QueueClient queueClient;
   private final String outputQueue;
   private final MeterRegistry meterRegistry;
 
   private final long EXPECTED_ACKS = CrawlerModule.numberOfEnabledModules();
 
-  public AcknowledgeListener(DispatcherEventRepository repository, JmsTemplate jmsTemplate,
+  public AcknowledgeListener(DispatcherEventRepository repository, QueueClient queueClient,
                              @Value("${dispatcher.queue.out}") String outputQueue, MeterRegistry meterRegistry) {
     this.repository = repository;
-    this.jmsTemplate = jmsTemplate;
+    this.queueClient = queueClient;
     this.outputQueue = outputQueue;
     this.meterRegistry = meterRegistry;
   }
@@ -57,7 +58,7 @@ public class AcknowledgeListener {
     if (ackCount == EXPECTED_ACKS) {
       // All ack messages received. Sending output signal.
       logger.info("All ack messages received for {}. Sending out a signal.", ackCrawlMessage.getVisitId());
-      jmsTemplate.convertAndSend(outputQueue, new VisitRequest(ackCrawlMessage.getVisitId(), ackCrawlMessage.getDomainName()));
+      queueClient.convertAndSend(outputQueue, new VisitRequest(ackCrawlMessage.getVisitId(), ackCrawlMessage.getDomainName()));
       meterRegistry.counter(AckMetric.ALL_MODULES_COMPLETE).increment();
     }
   }

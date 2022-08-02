@@ -1,10 +1,10 @@
 package be.dnsbelgium.mercator.common.messaging.ack;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
 
 import java.util.UUID;
 
@@ -12,22 +12,22 @@ public class AckMessageService {
 
   private static final Logger logger = LoggerFactory.getLogger(AckMessageService.class);
 
-  private final JmsTemplate jmsTemplate;
+  private final QueueClient queueClient;
   private final String ackQueueName;
   private final MeterRegistry meterRegistry;
 
-  public AckMessageService(JmsTemplate jmsTemplate, String ackQueueName, MeterRegistry meterRegistry) {
+  public AckMessageService(QueueClient queueClient, String ackQueueName, MeterRegistry meterRegistry) {
     if (ackQueueName == null || ackQueueName.isEmpty()) {
       throw new IllegalArgumentException("ackQueueName should be set");
     }
-    this.jmsTemplate = jmsTemplate;
+    this.queueClient = queueClient;
     this.ackQueueName = ackQueueName;
     this.meterRegistry = meterRegistry;
   }
 
   public void sendAck(VisitRequest visitRequest, CrawlerModule crawlerModule) {
     var ackCrawlMessage = new AckCrawlMessage(visitRequest.getVisitId(), visitRequest.getDomainName(), crawlerModule);
-    jmsTemplate.convertAndSend(ackQueueName, ackCrawlMessage);
+    queueClient.convertAndSend(ackQueueName, ackCrawlMessage);
     meterRegistry.counter(AckMetric.SENT, "crawlerModule", crawlerModule.name()).increment();
     logger.info("sending ack message from {} for {} ({})", crawlerModule, visitRequest.getDomainName(), visitRequest.getVisitId());
   }

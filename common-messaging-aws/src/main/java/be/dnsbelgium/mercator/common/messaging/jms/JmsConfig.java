@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.common.messaging.jms;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.json.DefaultTypeJackson2MessageConverter;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import com.amazon.sqs.javamessaging.ProviderConfiguration;
 import com.amazon.sqs.javamessaging.SQSConnectionFactory;
 import com.amazonaws.ClientConfiguration;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.destination.DynamicDestinationResolver;
 
@@ -86,4 +88,8 @@ public interface JmsConfig {
     return new SQSConnectionFactory(providerConfiguration, clientBuilder);
   }
 
+  @Bean
+  default QueueClient jmsQueueClient(JmsTemplate jmsTemplate) {
+    return new JmsQueueClient(jmsTemplate);
+  }
 }

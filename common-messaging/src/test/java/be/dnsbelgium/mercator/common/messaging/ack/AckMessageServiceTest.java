@@ -1,12 +1,12 @@
 package be.dnsbelgium.mercator.common.messaging.ack;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
@@ -27,7 +27,7 @@ class AckMessageServiceTest {
   AckMessageService ackMessageService;
 
   @MockBean
-  JmsTemplate jmsTemplate;
+  QueueClient queueClient;
 
   @MockBean
   MeterRegistry meterRegistry;
@@ -42,7 +42,7 @@ class AckMessageServiceTest {
 
     verify(meterRegistry).counter(AckMetric.SENT, "crawlerModule", CrawlerModule.MUPPETS.name());
     verify(counter).increment();
-    verify(jmsTemplate).convertAndSend("test", new AckCrawlMessage(VISIT_ID, DOMAIN_NAME, CrawlerModule.MUPPETS));
+    verify(queueClient).convertAndSend("test", new AckCrawlMessage(VISIT_ID, DOMAIN_NAME, CrawlerModule.MUPPETS));
   }
 
 }
