@@ -19,8 +19,11 @@ FROM nginx:stable-alpine
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 
-#RUN apk upgrade --update-cache \
-#      --no-cache
+RUN \
+    # CVE-2022-30065 \
+    apk upgrade --no-cache busybox && \
+    # CVE-2022-37434 \
+    apk upgrade --no-cache zlib
 
 ## Nginx config
 # Port 8080
