@@ -11,6 +11,8 @@ RUN apk add -u --update-cache \
     && mkdir /var/cache/apk
 
 RUN \
+    # CVE-2022-30065 \
+    apk upgrade --no-cache busybox && \
     # CVE-2022-37434 \
     apk upgrade --no-cache zlib
 
