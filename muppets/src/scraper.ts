@@ -12,7 +12,6 @@ import { harFromMessages } from "chrome-har";
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
 const GOTO_TIMEOUT = 15000;
-const MAX_RETRY_ATTEMPTS = 2;
 
 // event types to observe
 const observe = [
@@ -42,6 +41,7 @@ export interface ScraperParams {
     saveHtml: boolean;
     saveScreenshot: boolean;
     saveHar: boolean;
+    attempt: number;
 }
 
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentResponseMessage
@@ -65,6 +65,7 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    attemptsDone: number;
 }
 
 let browser: puppeteer.Browser;
@@ -267,13 +268,14 @@ async function registerHarEventListeners(page: puppeteer.Page, events: any[]) {
     }
 }
 
-async function snap(page: puppeteer.Page, params: ScraperParams, is_retry: boolean): Promise<ScraperResult> {
+async function snap(page: puppeteer.Page, params: ScraperParams): Promise<ScraperResult> {
     const result: ScraperResult = {
         id: uuid(),
         ipv4: ipv4,
         ipv6: ipv6,
         request: params,
-        errors: []
+        errors: [],
+        attemptsDone: params.attempt + 1
     };
 
     let timeoutId;
@@ -299,10 +301,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams, is_retry: boole
             await registerHarEventListeners(page, events);
         }
 
-        if (!is_retry)
-            await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
-        else
+        if (params.attempt !== 0)
             await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
+        else
+            await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
@@ -342,10 +344,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams, is_retry: boole
     }
 }
 
-export async function websnap(params: ScraperParams, attempt: number = 0): Promise<ScraperResult> {
-    if (attempt >= MAX_RETRY_ATTEMPTS)
-        return Promise.reject("Too many retry attempts");
-
+export async function websnap(params: ScraperParams): Promise<ScraperResult> {
     try {
         while (!browser || !browser.isConnected()) {
             console.log("browser is not ready");
@@ -364,17 +363,12 @@ export async function websnap(params: ScraperParams, attempt: number = 0): Promi
             page.close();
             browser.close();
         });
-
-        const scraperResult = await snap(page, params, attempt === 0);
+        const scraperResult = await snap(page, params);
         endProcessingTimeHist();
 
         await page.close();
         return scraperResult;
     } catch (exception) {
-        console.error(`Error in scraper: ${exception}`);
-        if (attempt < MAX_RETRY_ATTEMPTS)
-            return websnap(params, attempt + 1);
-        else
-            return Promise.reject(exception);
+        return Promise.reject(`Error in scraper: ${exception}`);
     }
 }

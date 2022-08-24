@@ -51,12 +51,12 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
                                          true, null, response.getUrl(), response.getBucket(),
                                          response.getScreenshotFile(), response.getHtmlFile(), response.getHtmlLength(),
                                          response.getHarFile(), objectMapper.writeValueAsString(response.getMetrics()),
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getAttemptsDone());
     } else {
       resolution = new MuppetsResolution(visitId, response.getRequest().getDomainName(), response.getRequest().getUrl(), false,
                                          objectMapper.writeValueAsString(response.getErrors()), response.getUrl(),
                                          null, null, null, null, null, null,
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getAttemptsDone());
     }
 
     return resolution;

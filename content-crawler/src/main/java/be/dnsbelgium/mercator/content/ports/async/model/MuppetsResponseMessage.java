@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false) // Remove warning from lombok
 public class MuppetsResponseMessage extends ResponseMessage {
-
   private String id;
   private MuppetsRequestMessage request;
   private String hostname;
@@ -23,5 +22,5 @@ public class MuppetsResponseMessage extends ResponseMessage {
   private String ipv4;
   private String ipv6;
   private String browserVersion;
-
+  private int attemptsDone;
 }

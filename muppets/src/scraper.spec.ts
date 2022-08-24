@@ -1,11 +1,11 @@
 import * as Scraper from './scraper';
-import {ScraperParams} from './scraper';
-import {expect} from 'chai';
+import { ScraperParams } from './scraper';
+import { expect } from 'chai';
 import 'mocha';
 import sinon from 'sinon';
-import {v4 as uuid} from 'uuid';
+import { v4 as uuid } from 'uuid';
 import * as path from "path";
-import {convertDate} from "./util";
+import { convertDate } from "./util";
 
 describe('Scraper Tests', function () {
     this.timeout(5000);
@@ -27,7 +27,8 @@ describe('Scraper Tests', function () {
             },
             browserOptions: {
                 ignoreHTTPSErrors: true
-            }
+            },
+            attempt: 0,
         };
 
         let folder = path.join("output", "dnsbelgium.be", convertDate(new Date()), 'https', 'dnsbelgium.be', 'index.html', mockUuid);
@@ -35,8 +36,8 @@ describe('Scraper Tests', function () {
 
             expect(scraperResult).to.have.property('hostname', 'dnsbelgium.be');
             expect(scraperResult).to.have.property('url', 'https://www.dnsbelgium.be/');
-            expect(scraperResult).to.have.property('request', );
-            expect(scraperResult.request).to.have.eql({...params});
+            expect(scraperResult).to.have.property('request',);
+            expect(scraperResult.request).to.have.eql({ ...params });
             expect(scraperResult).to.have.property('referer', '');
             expect(scraperResult).to.have.property('htmlLength');
             expect(scraperResult).to.have.property('pageTitle');
@@ -45,6 +46,7 @@ describe('Scraper Tests', function () {
             expect(scraperResult).to.have.property('harFile', path.join(folder, 'dnsbelgium.be.har'));
             expect(scraperResult).to.have.property('htmlFile', path.join(folder, 'index.html'));
             expect(scraperResult).to.have.property('screenshot', path.join(folder, 'screenshot.png'));
+            expect(scraperResult).to.have.property('retriesDone', 1);
 
         });
 

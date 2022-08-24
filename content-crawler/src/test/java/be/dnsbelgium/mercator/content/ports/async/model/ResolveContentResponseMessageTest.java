@@ -19,10 +19,10 @@ class ResolveContentResponseMessageTest {
     muppetsResponseMessage.setIpv6("::1");
     muppetsResponseMessage.setMetrics(null);
     muppetsResponseMessage.setPageTitle("My super website");
+    muppetsResponseMessage.setAttemptsDone(1);
     muppetsResponseMessage.setUrl("https://www.dnsbelgium.be");
     muppetsResponseMessage.setRequest(new MuppetsRequestMessage());
 
     return muppetsResponseMessage;
   }
-
 }
