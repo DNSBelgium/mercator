@@ -1,8 +1,12 @@
 package be.dnsbelgium.mercator.content.ports.async;
 
+import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
+import be.dnsbelgium.mercator.common.messaging.queue.QueueMessage;
+import be.dnsbelgium.mercator.content.config.ResolvingConfigurationProperties;
 import be.dnsbelgium.mercator.content.domain.ContentCrawlService;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
 import be.dnsbelgium.mercator.content.metrics.MetricName;
+import be.dnsbelgium.mercator.content.ports.async.model.MuppetsRequestMessage;
 import be.dnsbelgium.mercator.content.ports.async.model.MuppetsResponseMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,24 +27,52 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
   private final ContentCrawlService service;
   private final ObjectMapper objectMapper;
 
+  private final ResolvingConfigurationProperties configuration;
+
+  private final QueueClient queueClient;
+
+  private static final int MAX_MUPPETS_ATTEMPT = 2;
+
   public MuppetsResolutionListener(ContentCrawlService service, ObjectMapper objectMapper,
-                                   MeterRegistry meterRegistry) {
+                                   MeterRegistry meterRegistry, ResolvingConfigurationProperties configuration, QueueClient queueClient) {
     this.service = service;
     this.objectMapper = objectMapper;
     this.meterRegistry = meterRegistry;
+    this.configuration = configuration;
+    this.queueClient = queueClient;
   }
 
   @Override
   public void contentResolved(MuppetsResponseMessage response) throws JsonProcessingException {
     meterRegistry.counter(MetricName.MUPPETS_MESSAGES_IN).increment();
     UUID visitId = response.getRequest().getVisitId();
+
     if (visitId != null && StringUtils.hasLength(visitId.toString())) {
-      logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
-      MuppetsResolution resolution = toContentResolution(response, visitId);
-      service.contentRetrieved(resolution);
+      if (!response.getErrors().isEmpty() && response.getAttemptsDone() < MAX_MUPPETS_ATTEMPT) {
+        handleRetry(response);
+      } else {
+        logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
+        MuppetsResolution resolution = toContentResolution(response, visitId);
+        service.contentRetrieved(resolution);
+      }
     } else {
       logger.warn("MuppetsResponseMessage has no visitId: {}", response);
     }
+  }
+
+  private void handleRetry(MuppetsResponseMessage response) {
+    MuppetsRequestMessage request = response.getRequest();
+    UUID visitId = request.getVisitId();
+    logger.info("Retrying visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
+
+    request.setAttempt(response.getAttemptsDone());
+    String queueName = this.configuration.getRequestQueues().get("muppets");
+    if (queueName == null) {
+      logger.error("Could not put visit {} back in queue, because no queue was given", visitId);
+      return;
+    }
+
+    this.queueClient.convertAndSend(queueName, request);
   }
 
   @Override
