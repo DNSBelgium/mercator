@@ -34,13 +34,14 @@ class ContentCrawlResultTest {
     assertThat(contentCrawlResult.getScreenshotKey()).isEqualTo(muppetsResolution.getScreenshotFile());
     assertThat(contentCrawlResult.getHarKey()).isEqualTo(muppetsResolution.getHarFile());
     assertThat(contentCrawlResult.getMetricsJson()).isEqualTo(muppetsResolution.getMetrics());
+    assertThat(contentCrawlResult.getMuppetRetries()).isEqualTo(muppetsResolution.getRetriesDone());
   }
 
   // Object Mothers
 
   public static ContentCrawlResult contentCrawlResult(UUID visitId, String url) {
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null);
+        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0);
     contentCrawlResult.setBucket("MyBucket");
     contentCrawlResult.setBrowserVersion("Blabla 1.2");
     contentCrawlResult.setHarKey("file.har");
@@ -50,6 +51,7 @@ class ContentCrawlResultTest {
     contentCrawlResult.setIpv4("1.2.3.4");
     contentCrawlResult.setIpv6("::0");
     contentCrawlResult.setMetricsJson("{}");
+    contentCrawlResult.setMuppetRetries(1);
     return contentCrawlResult;
   }
 
