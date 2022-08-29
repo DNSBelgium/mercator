@@ -46,7 +46,7 @@ describe('Scraper Tests', function () {
             expect(scraperResult).to.have.property('harFile', path.join(folder, 'dnsbelgium.be.har'));
             expect(scraperResult).to.have.property('htmlFile', path.join(folder, 'index.html'));
             expect(scraperResult).to.have.property('screenshot', path.join(folder, 'screenshot.png'));
-            expect(scraperResult).to.have.property('retriesDone', 1);
+            expect(scraperResult).to.have.property('retries', 1);
 
         });
 
