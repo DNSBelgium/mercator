@@ -47,7 +47,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     UUID visitId = response.getRequest().getVisitId();
 
     if (visitId != null && StringUtils.hasLength(visitId.toString())) {
-      if (!response.getErrors().isEmpty() && response.getRetries() <= MAX_RETRIES) {
+      if (!response.getErrors().isEmpty() && response.getRetries() < MAX_RETRIES) {
         handleRetry(response);
       } else {
         logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
