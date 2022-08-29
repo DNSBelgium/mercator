@@ -139,6 +139,10 @@ const ContentCrawlCard = (props) => {
                                                         <td>{data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</td>
                                                     </tr>
                                                     <tr>
+                                                        <th scope="row">Retries</th>
+                                                        <td>{data.retries}</td>
+                                                    </tr>
+                                                    <tr>
                                                         <th scope="row">Crawled from</th>
                                                         <td>ipv4: {data.ipv4}, ipv6: {data.ipv6}</td>
                                                     </tr>
