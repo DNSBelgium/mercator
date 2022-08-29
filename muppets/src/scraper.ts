@@ -104,7 +104,7 @@ export async function setup() {
             "--disable-dev-shm-usage",
             "--disable-extensions",
             "--disable-gesture-typing",
-            // "--disable-gpu",
+            "--disable-gpu",
             "--disable-hang-monitor",
             "--disable-infobars",
             "--disable-notifications",
@@ -321,6 +321,8 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             takeScreenshot(params, page).then(output => { result.screenshotData = output; })
         ]);
 
+        await page.close();
+
         console.log("Snap finished");
 
         return { ...result };
@@ -339,8 +341,6 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     } finally {
         if (timeoutId)
             clearTimeout(timeoutId);
-        // Not awaiting as it is not required for the flow
-        page.close();
     }
 }
 
@@ -359,16 +359,23 @@ export async function websnap(params: ScraperParams): Promise<ScraperResult> {
 
         // Error handling
         page.once("error", err => {
-            console.error("Page error catched [%s]", err.message);
-            page.close();
-            browser.close();
+            if (err instanceof Error) {
+                console.error("Page error caught [%s]", err.message);
+            } else {
+                console.error("Page error caught [%s]", err);
+            }
+            page.close().then(() => browser.close()).catch(err => console.error("Failed to handle error: " + err.message));
         });
         const scraperResult = await snap(page, params);
         endProcessingTimeHist();
 
-        await page.close();
+        try {
+            page.close().catch(_ => { });
+        } catch (Exception) {
+            // Crashes if page is closed already (because of an error)
+        }
         return scraperResult;
     } catch (exception) {
-        return Promise.reject(`Error in scraper: ${exception}`);
+        throw exception;
     }
 }
