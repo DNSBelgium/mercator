@@ -22,5 +22,5 @@ public class MuppetsResponseMessage extends ResponseMessage {
   private String ipv4;
   private String ipv6;
   private String browserVersion;
-  private int attemptsDone;
+  private int retries;
 }

@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.content.ports.async;
 
 import be.dnsbelgium.mercator.common.messaging.queue.QueueClient;
-import be.dnsbelgium.mercator.common.messaging.queue.QueueMessage;
 import be.dnsbelgium.mercator.content.config.ResolvingConfigurationProperties;
 import be.dnsbelgium.mercator.content.domain.ContentCrawlService;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
@@ -31,7 +30,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
 
   private final QueueClient queueClient;
 
-  private static final int MAX_MUPPETS_ATTEMPT = 2;
+  private static final int MAX_ATTEMPTS = 2;
 
   public MuppetsResolutionListener(ContentCrawlService service, ObjectMapper objectMapper,
                                    MeterRegistry meterRegistry, ResolvingConfigurationProperties configuration, QueueClient queueClient) {
@@ -48,7 +47,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     UUID visitId = response.getRequest().getVisitId();
 
     if (visitId != null && StringUtils.hasLength(visitId.toString())) {
-      if (!response.getErrors().isEmpty() && response.getAttemptsDone() < MAX_MUPPETS_ATTEMPT) {
+      if (!response.getErrors().isEmpty() && response.getRetries() < MAX_ATTEMPTS) {
         handleRetry(response);
       } else {
         logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
@@ -65,7 +64,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     UUID visitId = request.getVisitId();
     logger.info("Retrying visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
 
-    request.setAttempt(response.getAttemptsDone());
+    request.setRetries(response.getRetries());
     String queueName = this.configuration.getRequestQueues().get("muppets");
     if (queueName == null) {
       logger.error("Could not put visit {} back in queue, because no queue was given", visitId);
@@ -83,12 +82,12 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
                                          true, null, response.getUrl(), response.getBucket(),
                                          response.getScreenshotFile(), response.getHtmlFile(), response.getHtmlLength(),
                                          response.getHarFile(), objectMapper.writeValueAsString(response.getMetrics()),
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getAttemptsDone());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRetries());
     } else {
       resolution = new MuppetsResolution(visitId, response.getRequest().getDomainName(), response.getRequest().getUrl(), false,
                                          objectMapper.writeValueAsString(response.getErrors()), response.getUrl(),
                                          null, null, null, null, null, null,
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getAttemptsDone());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRetries());
     }
 
     return resolution;

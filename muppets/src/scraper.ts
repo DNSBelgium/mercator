@@ -41,7 +41,7 @@ export interface ScraperParams {
     saveHtml: boolean;
     saveScreenshot: boolean;
     saveHar: boolean;
-    attempt: number;
+    retries: number;
 }
 
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentResponseMessage
@@ -65,7 +65,7 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
-    attemptsDone: number;
+    retries: number;
 }
 
 let browser: puppeteer.Browser;
@@ -275,7 +275,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
-        attemptsDone: params.attempt + 1
+        retries: params.retries + 1
     };
 
     let timeoutId;
@@ -301,10 +301,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             await registerHarEventListeners(page, events);
         }
 
-        if (params.attempt !== 0)
-            await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
-        else
+        if (params.retries === 0)
             await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
+        else
+            await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;

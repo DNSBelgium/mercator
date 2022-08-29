@@ -37,23 +37,23 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   @Column(name = "ipv6")            private String        ipv6;
   @Column(name = "browser_version") private String        browserVersion;
   @Column(name = "final_url")       private String        finalUrl;
-  @Column(name = "muppet_retries")  private Integer       muppetRetries;
+  @Column(name = "retries")         private Integer       retries;
 
 
-  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int muppetRetries) {
+  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.url = url;
     this.ok = ok;
     this.problem = problem;
     this.crawlTimestamp = ZonedDateTime.now();
-    this.muppetRetries = muppetRetries;
+    this.retries = retries;
   }
 
   public static ContentCrawlResult of(MuppetsResolution resolution) {
     ContentCrawlResult contentCrawlResult;
     if (resolution.isOk()) {
-      contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetriesDone());
+      contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries());
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.htmlKey = resolution.getHtmlFile();
       contentCrawlResult.htmlLength = resolution.getHtmlLength();
@@ -62,7 +62,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else {
-      contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetriesDone());
+      contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries());
     }
     contentCrawlResult.ipv4 = resolution.getIpv4();
     contentCrawlResult.ipv6 = resolution.getIpv6();

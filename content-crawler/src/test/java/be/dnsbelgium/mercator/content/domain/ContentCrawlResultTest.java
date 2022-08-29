@@ -34,7 +34,7 @@ class ContentCrawlResultTest {
     assertThat(contentCrawlResult.getScreenshotKey()).isEqualTo(muppetsResolution.getScreenshotFile());
     assertThat(contentCrawlResult.getHarKey()).isEqualTo(muppetsResolution.getHarFile());
     assertThat(contentCrawlResult.getMetricsJson()).isEqualTo(muppetsResolution.getMetrics());
-    assertThat(contentCrawlResult.getMuppetRetries()).isEqualTo(muppetsResolution.getRetriesDone());
+    assertThat(contentCrawlResult.getRetries()).isEqualTo(muppetsResolution.getRetries());
   }
 
   // Object Mothers
@@ -51,7 +51,7 @@ class ContentCrawlResultTest {
     contentCrawlResult.setIpv4("1.2.3.4");
     contentCrawlResult.setIpv6("::0");
     contentCrawlResult.setMetricsJson("{}");
-    contentCrawlResult.setMuppetRetries(1);
+    contentCrawlResult.setRetries(1);
     return contentCrawlResult;
   }
 

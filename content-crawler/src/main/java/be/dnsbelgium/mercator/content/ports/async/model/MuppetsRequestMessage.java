@@ -19,7 +19,7 @@ public class MuppetsRequestMessage implements RequestMessage {
   private Boolean saveHtml = true;
   private Boolean saveScreenshot = true;
   private Boolean saveHar = true;
-  private Integer attempt = 0;
+  private Integer retries = 0;
 
   @Data
   static class ScreenshotOptions {

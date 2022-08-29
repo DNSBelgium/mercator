@@ -28,7 +28,7 @@ describe('Scraper Tests', function () {
             browserOptions: {
                 ignoreHTTPSErrors: true
             },
-            attempt: 0,
+            retries: 0,
         };
 
         let folder = path.join("output", "dnsbelgium.be", convertDate(new Date()), 'https', 'dnsbelgium.be', 'index.html', mockUuid);
