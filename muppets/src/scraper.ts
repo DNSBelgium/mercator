@@ -275,7 +275,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
-        retries: params.retries + 1
+        retries: params.retries
     };
 
     let timeoutId;

@@ -30,7 +30,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
 
   private final QueueClient queueClient;
 
-  private static final int MAX_ATTEMPTS = 2;
+  private static final int MAX_RETRIES = 1;
 
   public MuppetsResolutionListener(ContentCrawlService service, ObjectMapper objectMapper,
                                    MeterRegistry meterRegistry, ResolvingConfigurationProperties configuration, QueueClient queueClient) {
@@ -47,7 +47,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     UUID visitId = response.getRequest().getVisitId();
 
     if (visitId != null && StringUtils.hasLength(visitId.toString())) {
-      if (!response.getErrors().isEmpty() && response.getRetries() < MAX_ATTEMPTS) {
+      if (!response.getErrors().isEmpty() && response.getRetries() <= MAX_RETRIES) {
         handleRetry(response);
       } else {
         logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
@@ -64,7 +64,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     UUID visitId = request.getVisitId();
     logger.info("Retrying visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
 
-    request.setRetries(response.getRetries());
+    request.setRetries(response.getRetries() + 1);
     String queueName = this.configuration.getRequestQueues().get("muppets");
     if (queueName == null) {
       logger.error("Could not put visit {} back in queue, because no queue was given", visitId);
