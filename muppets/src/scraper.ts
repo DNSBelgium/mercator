@@ -65,7 +65,6 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
-    retries: number;
 }
 
 let browser: puppeteer.Browser;
@@ -275,7 +274,6 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
-        retries: params.retries
     };
 
     let timeoutId;

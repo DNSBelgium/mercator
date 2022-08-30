@@ -44,11 +44,12 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
   @Override
   public void contentResolved(MuppetsResponseMessage response) throws JsonProcessingException {
     meterRegistry.counter(MetricName.MUPPETS_MESSAGES_IN).increment();
-    UUID visitId = response.getRequest().getVisitId();
+    MuppetsRequestMessage request = response.getRequest();
+    UUID visitId = request.getVisitId();
 
     if (visitId != null && StringUtils.hasLength(visitId.toString())) {
-      if (!response.getErrors().isEmpty() && response.getRetries() < MAX_RETRIES) {
-        handleRetry(response);
+      if (!response.getErrors().isEmpty() && request.getRetries() < MAX_RETRIES) {
+        performRetry(request);
       } else {
         logger.info("Storing data for visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
         MuppetsResolution resolution = toContentResolution(response, visitId);
@@ -59,12 +60,11 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     }
   }
 
-  private void handleRetry(MuppetsResponseMessage response) {
-    MuppetsRequestMessage request = response.getRequest();
+  private void performRetry(MuppetsRequestMessage request) {;
     UUID visitId = request.getVisitId();
-    logger.info("Retrying visit {} and domainName = {}", visitId, response.getRequest().getDomainName());
+    logger.info("Retrying visit {} and domainName = {} (retry #{})", visitId, request.getDomainName(), request.getRetries());
 
-    request.setRetries(response.getRetries() + 1);
+    request.setRetries(request.getRetries() + 1);
     String queueName = this.configuration.getRequestQueues().get("muppets");
     if (queueName == null) {
       logger.error("Could not put visit {} back in queue, because no queue was given", visitId);
@@ -82,12 +82,12 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
                                          true, null, response.getUrl(), response.getBucket(),
                                          response.getScreenshotFile(), response.getHtmlFile(), response.getHtmlLength(),
                                          response.getHarFile(), objectMapper.writeValueAsString(response.getMetrics()),
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRetries());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries());
     } else {
       resolution = new MuppetsResolution(visitId, response.getRequest().getDomainName(), response.getRequest().getUrl(), false,
                                          objectMapper.writeValueAsString(response.getErrors()), response.getUrl(),
                                          null, null, null, null, null, null,
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRetries());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries());
     }
 
     return resolution;
