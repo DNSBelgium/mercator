@@ -299,10 +299,12 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             await registerHarEventListeners(page, events);
         }
 
-        if (params.retries === 0)
-            await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
-        else
+        if (params.retries) {
+            console.log("Easing conditions as this is a retry");
             await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
+        } else {
+            await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
+        }
 
         result.url = page.url();
         result.pathname = path.extname(new URL(result.url).pathname).trim().match(/\/?/) ? "index.html" : url.pathname;
