@@ -25,7 +25,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
 /* NavigationBar.jsx */
 #NavBar-Div {
-  padding-top: 40px;
+  padding: 2rem 3rem;
   background-color:#e3f5ff;
   min-width: 100px;
 
@@ -61,9 +61,11 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     }
   }
 
+  #navbar-buttongroup {
+    margin: 3rem 2rem;
+  }
+
   #cluster-link {
-    margin-left: 3rem;
-    margin-bottom: 2rem;
     background-color: $clickables-secondary-color;
     color: white;
   }

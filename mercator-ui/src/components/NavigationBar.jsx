@@ -1,10 +1,12 @@
-import {useState, useRef} from "react";
+import {useState, useRef, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
-import {Button, Dropdown, Form, FormControl} from "react-bootstrap";
+import {Button, ButtonGroup, Dropdown, Form, FormControl, ButtonToolbar, Container} from "react-bootstrap";
+import RecentDashboardsButton from "./RecentDashboardsButton";
 
 function NavigationBar() {
     const navigate = useNavigate();
 
+    const [recentDashboards, setRecentDashboards] = useState(null);
     const [validated, setValidated] = useState(false); // Hook to validate input field.
     const [searchType, setSearchType] = useState("domain"); // Hook to define searching by URL, visitId, ...
 
@@ -13,7 +15,7 @@ function NavigationBar() {
     // Handle 'search' click.
     const search = (event) => {
         event.preventDefault();
-        setValidated(true); //TODO: UI Vaidation isn't quite right yet.
+        setValidated(true); //TODO: UI Validation isn't quite right yet.
         let input = textInput.current.value.toLowerCase().trim();
 
         if(textInput.current.value.trim().length === 0) {
@@ -68,7 +70,7 @@ function NavigationBar() {
                     </Dropdown.Menu>
                 </Dropdown>
 
-                <FormControl 
+                <FormControl
                     id="navbar-input"
                     required
                     type="text"
@@ -96,13 +98,21 @@ function NavigationBar() {
                             changeSearchField()
                         }
                     </Form.Group>
-                    <Button
-                        id="cluster-link"
-                        onClick={() => navigate("/cluster")}
-                        >
-                        Cluster Validation
-                    </Button>
                 </Form>
+                <Container fluid>
+                <ButtonToolbar>
+                    <ButtonGroup>
+                        <Button
+                            id="cluster-link"
+                            onClick={() => navigate("/cluster")}
+                        >
+                            Cluster Validation
+                        </Button>
+                    </ButtonGroup>
+                    <ButtonGroup>
+                        <RecentDashboardsButton></RecentDashboardsButton>
+                    </ButtonGroup>
+                </ButtonToolbar></Container>
             </div>
         </>
     )
