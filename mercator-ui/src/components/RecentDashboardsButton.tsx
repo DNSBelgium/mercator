@@ -11,7 +11,7 @@ function RecentDashboardsButton() {
 
     async function dashboardExists(month: number, year: number): Promise<DashboardEntry | null> {
         const label = `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}`;
-        const url = (window as any)._env_.REACT_APP_MUPPETS_HOST + `/dashboard/${label}`;
+        const url = (window as any)._env_.REACT_APP_MUPPETS_HOST + `/dashboard/${label}/mercator_full_crawl_dashboard.html`;
         const response = await fetch(url,{ method: "HEAD" } );
         return response.status === 200 ? { label, url } : null;
     }
