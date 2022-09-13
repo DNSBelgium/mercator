@@ -26,6 +26,9 @@ ext['logstashLogbackEncoderVersion']="7.2"
 ext['aws-java-sdk.version']="1.12.262"
 ext['postgresql.version']="42.4.1"
 
+// CVE-2022-29244
+ext['snakeyaml.version'] = 1.31
+
 ext {
   getCommitHash = { ->
     def stdout = new ByteArrayOutputStream()
