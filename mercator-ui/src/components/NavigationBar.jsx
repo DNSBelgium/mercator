@@ -1,7 +1,6 @@
-import {useState, useRef, useEffect} from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
-import {Button, ButtonGroup, Dropdown, Form, FormControl, ButtonToolbar, Container} from "react-bootstrap";
-import RecentDashboardsButton from "./RecentDashboardsButton";
+import { Button, ButtonGroup, Dropdown, Form, FormControl, ButtonToolbar, Container } from "react-bootstrap";
 
 function NavigationBar() {
     const navigate = useNavigate();
@@ -108,9 +107,6 @@ function NavigationBar() {
                         >
                             Cluster Validation
                         </Button>
-                    </ButtonGroup>
-                    <ButtonGroup>
-                        <RecentDashboardsButton></RecentDashboardsButton>
                     </ButtonGroup>
                 </ButtonToolbar></Container>
             </div>
