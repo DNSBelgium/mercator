@@ -57,7 +57,7 @@ function RecentDashboardsButton() {
         );
         else
             return (
-                <span>Dashboard ( { recentDashboards[0].label }</span>
+                <span>Dashboard ({ recentDashboards[0].label })</span>
             );
     }
 
@@ -65,10 +65,12 @@ function RecentDashboardsButton() {
         if (recentDashboards === null)
             return <Dropdown.Menu></Dropdown.Menu>;
 
-        // TODO: expand
+        const versionDropdown = recentDashboards.map((item, idx) => (
+            <Dropdown.Item href={ item.url } target="_blank">{ item.label }{ idx == 0 ? " (latest)" : "" }</Dropdown.Item>
+        ));
         return (
            <Dropdown.Menu>
-                <Dropdown.Item href={recentDashboards[0].url} target="_blank">Version of { recentDashboards[0].label }</Dropdown.Item>
+               {versionDropdown}
            </Dropdown.Menu>
         );
 
@@ -77,7 +79,7 @@ function RecentDashboardsButton() {
     const recentDashboardsButton = () => {
         return (
             <Dropdown as={ButtonGroup}>
-                      <Button disabled={recentDashboards !== null} href={recentDashboards !== null ? recentDashboards[0].url : "#"}>
+                      <Button disabled={recentDashboards === null} href={recentDashboards !== null ? recentDashboards[0].url : "#"}>
                           { buttonContents() }
                       </Button>
                       <Dropdown.Toggle split />
