@@ -21,7 +21,6 @@
         "moment": "^2.29.1",
         "react": "^17.0.1",
         "react-bootstrap": "^1.4.3",
-        "react-border-wrapper": "^1.0.3",
         "react-dom": "^17.0.1",
         "react-router-dom": "^6.3.0",
         "react-scripts": "4.0.2",
@@ -12629,9 +12628,9 @@
       }
     },
     "node_modules/moment": {
-      "version": "2.29.3",
-      "resolved": "https://registry.npmjs.org/moment/-/moment-2.29.3.tgz",
-      "integrity": "sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==",
+      "version": "2.29.4",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.29.4.tgz",
+      "integrity": "sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==",
       "engines": {
         "node": "*"
       }
@@ -15335,20 +15334,6 @@
       "peerDependencies": {
         "react": ">=16.8.0",
         "react-dom": ">=16.8.0"
-      }
-    },
-    "node_modules/react-border-wrapper": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/react-border-wrapper/-/react-border-wrapper-1.0.3.tgz",
-      "integrity": "sha512-S3vcsT+SOfNsp5uBivgsoHl4EOm9GMsqYTbAJyQWe1hKstpTuY9lh1YaU2pjJp1j/VScImaYLBYaYuMpiqXIvw==",
-      "engines": {
-        "node": ">=8",
-        "npm": ">=5"
-      },
-      "peerDependencies": {
-        "prop-types": "^15.5.4",
-        "react": "^15.0.0 || ^16.0.0",
-        "react-dom": "^15.0.0 || ^16.0.0"
       }
     },
     "node_modules/react-dev-utils": {
@@ -18465,9 +18450,9 @@
       }
     },
     "node_modules/terser": {
-      "version": "4.8.0",
-      "resolved": "https://registry.npmjs.org/terser/-/terser-4.8.0.tgz",
-      "integrity": "sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==",
+      "version": "4.8.1",
+      "resolved": "https://registry.npmjs.org/terser/-/terser-4.8.1.tgz",
+      "integrity": "sha512-4GnLC0x667eJG0ewJTa6z/yXrbLGv80D9Ru6HIpCQmO+Q4PfEtBFi0ObSckqwL6VyQv/7ENJieXHo2ANmdQwgw==",
       "dependencies": {
         "commander": "^2.20.0",
         "source-map": "~0.6.1",
@@ -18616,9 +18601,9 @@
       }
     },
     "node_modules/terser-webpack-plugin/node_modules/terser": {
-      "version": "5.14.1",
-      "resolved": "https://registry.npmjs.org/terser/-/terser-5.14.1.tgz",
-      "integrity": "sha512-+ahUAE+iheqBTDxXhTisdA8hgvbEG1hHOQ9xmNjeUJSoi6DU/gMrKNcfZjHkyY6Alnuyc+ikYJaxxfHkT3+WuQ==",
+      "version": "5.15.0",
+      "resolved": "https://registry.npmjs.org/terser/-/terser-5.15.0.tgz",
+      "integrity": "sha512-L1BJiXVmheAQQy+as0oF3Pwtlo4s3Wi1X2zNZ2NxOB4wx9bdS9Vk67XQENLFdLYGCK/Z2di53mTj/hBafR+dTA==",
       "dependencies": {
         "@jridgewell/source-map": "^0.3.2",
         "acorn": "^8.5.0",
@@ -30843,9 +30828,9 @@
       }
     },
     "moment": {
-      "version": "2.29.3",
-      "resolved": "https://registry.npmjs.org/moment/-/moment-2.29.3.tgz",
-      "integrity": "sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw=="
+      "version": "2.29.4",
+      "resolved": "https://registry.npmjs.org/moment/-/moment-2.29.4.tgz",
+      "integrity": "sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w=="
     },
     "move-concurrently": {
       "version": "1.0.1",
@@ -33010,12 +32995,6 @@
         "uncontrollable": "^7.2.1",
         "warning": "^4.0.3"
       }
-    },
-    "react-border-wrapper": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/react-border-wrapper/-/react-border-wrapper-1.0.3.tgz",
-      "integrity": "sha512-S3vcsT+SOfNsp5uBivgsoHl4EOm9GMsqYTbAJyQWe1hKstpTuY9lh1YaU2pjJp1j/VScImaYLBYaYuMpiqXIvw==",
-      "requires": {}
     },
     "react-dev-utils": {
       "version": "11.0.4",
@@ -35465,9 +35444,9 @@
       }
     },
     "terser": {
-      "version": "4.8.0",
-      "resolved": "https://registry.npmjs.org/terser/-/terser-4.8.0.tgz",
-      "integrity": "sha512-EAPipTNeWsb/3wLPeup1tVPaXfIaU68xMnVdPafIL1TV05OhASArYyIfFvnvJCNrR2NIOvDVNNTFRa+Re2MWyw==",
+      "version": "4.8.1",
+      "resolved": "https://registry.npmjs.org/terser/-/terser-4.8.1.tgz",
+      "integrity": "sha512-4GnLC0x667eJG0ewJTa6z/yXrbLGv80D9Ru6HIpCQmO+Q4PfEtBFi0ObSckqwL6VyQv/7ENJieXHo2ANmdQwgw==",
       "requires": {
         "commander": "^2.20.0",
         "source-map": "~0.6.1",
@@ -35567,9 +35546,9 @@
           "integrity": "sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw=="
         },
         "terser": {
-          "version": "5.14.1",
-          "resolved": "https://registry.npmjs.org/terser/-/terser-5.14.1.tgz",
-          "integrity": "sha512-+ahUAE+iheqBTDxXhTisdA8hgvbEG1hHOQ9xmNjeUJSoi6DU/gMrKNcfZjHkyY6Alnuyc+ikYJaxxfHkT3+WuQ==",
+          "version": "5.15.0",
+          "resolved": "https://registry.npmjs.org/terser/-/terser-5.15.0.tgz",
+          "integrity": "sha512-L1BJiXVmheAQQy+as0oF3Pwtlo4s3Wi1X2zNZ2NxOB4wx9bdS9Vk67XQENLFdLYGCK/Z2di53mTj/hBafR+dTA==",
           "requires": {
             "@jridgewell/source-map": "^0.3.2",
             "acorn": "^8.5.0",
