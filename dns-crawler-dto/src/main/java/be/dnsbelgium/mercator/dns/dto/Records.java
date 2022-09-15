@@ -1,8 +1,6 @@
 package be.dnsbelgium.mercator.dns.dto;
 
 import lombok.Data;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Serializable;
 import java.util.*;
@@ -12,37 +10,48 @@ import java.util.stream.Stream;
 @Data
 public class Records implements Serializable {
 
-  private final Map<RecordType, List<RRecord>> records;
+  private final Map<RecordType, RRSet> records;
 
   public Records() {
     this.records = new HashMap<>();
   }
 
-  public Records(Map<RecordType, List<RRecord>> records) {
+  public Records(Map<RecordType, RRSet> records) {
     this.records = new HashMap<>(records);
   }
 
-  public List<RRecord> get(RecordType type) {
-    return records.getOrDefault(type, Collections.emptyList());
+  public Records(RecordType recordType, RRSet rrSet) {
+    this(Map.of(recordType, rrSet));
   }
 
-  public Map<RecordType, List<RRecord>> get(List<RecordType> types) {
-    return types.stream()
-        .collect(Collectors.toMap((type) -> type, this::get));
+  public RRSet get(RecordType type) {
+    return records.getOrDefault(type, null);
   }
 
-  private Records add(Map<RecordType, List<RRecord>> toAdd) {
-    toAdd.forEach((key, value) -> records.merge(key, value, (v1, v2) -> Stream.concat(v1.stream(), v2.stream()).collect(Collectors.toList())));
+//  public Map<RecordType, Set<RRecord>> get(List<RecordType> types) {
+//    return types.stream()
+//        .collect(Collectors.toMap((type) -> type, this::get));
+//  }
+
+  public Records add(Map<RecordType, RRSet> toAdd) {
+    toAdd.forEach((key, value) -> records.merge(key, value, (v1, v2) -> {
+      if (v1.rcode() != v2.rcode()) {
+        throw new IllegalArgumentException("Rcodes cannot be different in order to merge RRSets");
+      }
+      return new RRSet(Stream.concat(v1.records().stream(), v2.records().stream()).collect(Collectors.toSet()), v1.rcode());
+    }));
     return this;
   }
 
-  /**
-   * Add records to the current records map. Note that we don't prevent adding duplicate records.
-   *
-   * @param toAdd Records to add to the current Records
-   * @return this, allowing to chain add methods.
-   */
   public Records add(Records toAdd) {
-    return add(toAdd.getRecords());
+    add(toAdd.records);
+    return this;
+  }
+
+  public static Records merge(Records r1, Records r2) {
+    Records records = new Records();
+    records.add(r1);
+    records.add(r2);
+    return records;
   }
 }

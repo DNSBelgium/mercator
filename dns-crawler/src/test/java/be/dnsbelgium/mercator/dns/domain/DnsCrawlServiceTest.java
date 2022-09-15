@@ -2,10 +2,7 @@ package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.dns.domain.geoip.GeoIpEnricher;
-import be.dnsbelgium.mercator.dns.dto.DnsResolution;
-import be.dnsbelgium.mercator.dns.dto.RRecord;
-import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.dto.Records;
+import be.dnsbelgium.mercator.dns.dto.*;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.*;
 import be.dnsbelgium.mercator.dns.persistence.Request;
@@ -21,7 +18,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfigu
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.xbill.DNS.Name;
+import org.xbill.DNS.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,7 +60,10 @@ class DnsCrawlServiceTest {
 
   @Test
   void retrieveDnsRecordsDomainNotFound() {
-    when(dnsResolver.performCheck(any(Name.class))).thenReturn(DnsResolution.nxdomain().addRecords("@", new Records(Map.of(RecordType.A, Collections.emptyList()))));
+    when(dnsResolver.getAllRecords(anyString(), anyString(), anySet())).thenReturn(DnsResolution.nxdomain("dnsbelgium.be", "@", new Records(Map.of(RecordType.A, new RRSet(Collections.emptySet(), 3)))));
+    when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
+        "@", new ArrayList<>(List.of(RecordType.A))
+    )));
 
     VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), "dnsbelgium.be");
 
@@ -81,8 +81,7 @@ class DnsCrawlServiceTest {
 
   @Test
   void retrieveDnsRecords() {
-    when(dnsResolver.performCheck(any(Name.class))).thenReturn(DnsResolutionTest.dnsBelgiumDnsResolution());
-    when(dnsResolver.getAllRecords(any(Name.class), anyList())).thenReturn(new Records());
+    when(dnsResolver.getAllRecords(anyString(), anyString(), anySet())).thenReturn(DnsResolutionTest.dnsBelgiumDnsResolution());
     when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
         "@", new ArrayList<>(List.of(RecordType.SOA, RecordType.A, RecordType.AAAA, RecordType.CAA, RecordType.MX)),
         "www", new ArrayList<>(List.of(RecordType.A, RecordType.AAAA)),
@@ -93,7 +92,7 @@ class DnsCrawlServiceTest {
 
     dnsCrawlService.retrieveDnsRecords(visitRequest);
 
-    verify(requestRepository).saveAll(argCaptor.capture());
+    verify(requestRepository, times(3)).saveAll(argCaptor.capture());
 
     List<Request> requests = argCaptor.getValue();
     assertThat(requests).hasSize(9);
@@ -112,8 +111,8 @@ class DnsCrawlServiceTest {
         assertTrue(request.isOk());
         assertThat(request.getProblem()).isNull();
 
-        assertThat(request.getResponses()).hasSize(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).size());
-        assertThat(request.getNumOfResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).size());
+        assertThat(request.getResponses()).hasSize(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).records().size());
+        assertThat(request.getNumOfResponses()).isEqualTo(DnsResolutionTest.dnsBelgiumDnsResolution().getRecords(prefix).get(recordType).records().size());
 
         for (Response response : request.getResponses()) {
           assertThat(new RRecord(response.getTtl(), response.getRecordData())).isIn(dnsResolution.getRecords(prefix).getRecords().get(recordType));
