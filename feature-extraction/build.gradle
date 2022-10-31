@@ -40,24 +40,24 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // https://mvnrepository.com/artifact/org.jsoup/jsoup
-    implementation 'org.jsoup:jsoup:1.14.2'
+    implementation 'org.jsoup:jsoup:1.15.3'
 
     implementation 'org.apache.commons:commons-lang3'
-    implementation 'org.apache.commons:commons-text:1.9'
+    implementation 'org.apache.commons:commons-text:1.10.0'
 
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.2'
 
     implementation 'com.github.pemistahl:lingua:1.1.0'
 
-    implementation 'org.apache.poi:poi:5.1.0'
+    implementation 'org.apache.poi:poi:5.2.2'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
     testImplementation testFixtures(project(':common-testing'))
 
-    testImplementation 'commons-io:commons-io:2.8.0'
+    testImplementation 'commons-io:commons-io:2.11.0'
 }
 
 jib {
