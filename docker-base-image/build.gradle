@@ -3,7 +3,8 @@ plugins {
   id 'com.palantir.docker' version '0.32.0'
 }
 
-version = 20220315
+// switch to alpine because of CVE's
+version = 20221102
 
 docker {
   name "dnsbelgium/mercator/${project.name}:${project.version}"
