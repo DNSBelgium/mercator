@@ -28,6 +28,10 @@ RUN \
     # CVE-2022-37434 \
     apk upgrade --no-cache zlib
 
+RUN \
+  # CVE-2022-42915 & CVE-2022-42916 \
+  apk upgrade --no-cache curl libcurl
+
 ## Nginx config
 # Port 8080
 # React router config
