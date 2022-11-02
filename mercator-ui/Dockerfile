@@ -7,15 +7,18 @@ FROM node:lts-alpine as build
 WORKDIR /app
 
 COPY package.json npm-shrinkwrap.json /app/
-RUN npm ci --force && npm cache clean --force
+
+# see https://github.com/webpack/webpack/issues/14532
+RUN NODE_OPTIONS="--openssl-legacy-provider" npm ci --force && npm cache clean --force
 
 ADD tsconfig.json /app
 ADD src /app/src
 ADD public /app/public
 
-RUN npm run build --force
+RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build --force
 
-FROM nginx:stable-alpine
+#FROM nginx:stable-alpine
+FROM nginx@sha256:58edf9ad7347729e4a780739ac0225daf025ca699053a598aa28c12152b39a51
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 
