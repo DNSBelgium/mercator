@@ -1,6 +1,5 @@
 import {convertDate, getDomainName} from './util';
 import {expect} from 'chai';
-import 'mocha';
 
 describe('Util functions', () => {
 
