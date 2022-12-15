@@ -44,17 +44,17 @@
     "@types/uuid": "^8.3.0",
     "size-limit": "^7.0.5",
     "tsdx": "^0.14.1",
-    "tslib": "^2.3.1",
-    "typescript": "^4.3.2"
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4"
   },
   "dependencies": {
-    "aws-sdk": "2.1062.0",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
+    "aws-sdk": "2.1276.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.17.3",
     "pathval": "^1.1.1",
-    "prom-client": "^12.0.0",
+    "prom-client": "^14.1.0",
     "sqs-consumer": "5.6.0",
     "sqs-producer": "2.1.0",
-    "wappalyzer": "6.10.20"
+    "wappalyzer": "6.10.51"
   }
 }
