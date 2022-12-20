@@ -52,14 +52,14 @@ class CertificateTest {
     Certificate info = Certificate.from(certificate);
     logger.info("info = {}", info);
     logger.info("info = {}", info.prettyString());
-    assertThat(info.getSha256Fingerprint()).isEqualTo("ca20405088d49d4b0134d8e10467d34578ef0f664973d637c8686e9c9a00d39d");
-    assertThat(info.getIssuer()).isEqualTo("CN=DigiCert SHA2 Secure Server CA,O=DigiCert Inc,C=US");
+    assertThat(info.getSha256Fingerprint()).isEqualTo("fb051996220fa119022b25ce0d476725c6711f9142001801c9437af0f6017739");
+    assertThat(info.getIssuer()).isEqualTo("CN=DigiCert TLS RSA SHA256 2020 CA1,O=DigiCert Inc,C=US");
     assertThat(info.getSubject()).isEqualTo("CN=www.blackanddecker.com,O=Stanley Black & Decker\\, Inc.,L=New Britain,ST=Connecticut,C=US");
     assertThat(info.getPublicKeySchema()).isEqualTo("EC");
     assertThat(info.getPublicKeyLength()).isEqualTo(256);
-    assertThat(info.getNotBefore()).isEqualTo("2021-12-17T00:00:00Z");
-    assertThat(info.getNotAfter()).isEqualTo("2022-12-17T23:59:59Z");
-    assertThat(info.getSerialNumber()).isEqualTo("17256317477817387864342631933386872678");
+    assertThat(info.getNotBefore()).isEqualTo("2022-11-21T00:00:00Z");
+    assertThat(info.getNotAfter()).isEqualTo("2023-11-21T23:59:59Z");
+    assertThat(info.getSerialNumber()).isEqualTo("15968221808264138213884411823837304062");
     assertThat(info.getVersion()).isEqualTo(3);
     assertThat(info.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
   }

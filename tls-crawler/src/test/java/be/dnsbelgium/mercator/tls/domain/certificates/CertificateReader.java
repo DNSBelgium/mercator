@@ -15,7 +15,7 @@ public class CertificateReader {
    * @param filename the name of the PEM file to read
    * @return an X509Certificate
    * @throws IOException when reading the file failed
-   * @throws CertificateException when certifcate could not be loaded
+   * @throws CertificateException when certificate could not be loaded
    */
   public static X509Certificate readTestCertificate(String filename) throws IOException, CertificateException {
     try (InputStream is = ResourceReader.read("classpath:/test-certificates/" + filename)) {
