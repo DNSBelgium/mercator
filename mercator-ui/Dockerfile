@@ -1,5 +1,4 @@
-#FROM node:lts-alpine@sha256:777b5a7bf0c40e37766ff8df382c900f16c688ed05ae3a72d32a26f3e9002cf9 as build
-FROM node:lts-alpine as build
+FROM node:lts-alpine@sha256:a136ed7b0df71082cdb171f36d640ea3b392a5c70401c642326acee767b8c540 as build
 
 #ARG NODE_ENV=production
 #ENV NODE_ENV $NODE_ENV
@@ -28,9 +27,13 @@ RUN \
     # CVE-2022-37434 \
     apk upgrade --no-cache zlib
 
+RUN apk info curl
+
 RUN \
   # CVE-2022-42915 & CVE-2022-42916 \
   apk upgrade --no-cache curl libcurl
+
+RUN apk info curl
 
 ## Nginx config
 # Port 8080
