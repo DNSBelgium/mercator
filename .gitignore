@@ -10,3 +10,4 @@ spring-shell.log
 
 /.env
 /dashboard/dashboard_venv/
+/lib/
