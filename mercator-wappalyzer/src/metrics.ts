@@ -6,10 +6,10 @@ Prometheus.collectDefaultMetrics({prefix: "wappalyzer_"});
 
 export function initMetricsServer() {
     const app = express();
-    app.get("/health", (_, res) => {
+    app.get("/health", (_: any, res) => {
         res.send("OK"); // TODO: A pull request to wappalyzer for monitoring the health of the browser
     });
-    app.get("/actuator/prometheus", (_, res) => {
+    app.get("/actuator/prometheus", (_: any, res) => {
         res.set("Content-Type", getContentType());
         res.send(getMetrics());
     });

@@ -251,7 +251,7 @@ services:
   ground-truth:
     image: dnsbelgium/mercator/ground-truth:local
     ports:
-      - "8092:8080"
+      - "8094:8080"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ground_truth
       - SPRING_PROFILES_ACTIVE=local
@@ -276,3 +276,31 @@ services:
 #        condition: service_healthy
 #      db:
 #        condition: service_started
+
+#  predict_lowcontent:
+#    image: mercator-classification-job
+#    ports:
+#      - "8092:8080"
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ground_truth
+#      - SPRING_PROFILES_ACTIVE=local
+#      - MAX_ROWS_TO_FETCH=10
+#      - MAX_ITERATIONS=3
+#      - CHUNK_SIZE=5
+#      - MERCATOR_DATABASE_DB=postgres
+#      - MERCATOR_DATABASE_HOST=db
+#      - MERCATOR_DATABASE_USER=postgres
+#      - MERCATOR_DATABASE_PASSWORD=postgres
+#      - CLASSIFIER_S3_BUCKET_NAME=s3_bucket
+#      - CLASSIFIER_S3_KEY=s3_key
+#      - CLASSIFIER_DOWNLOAD_FROM_S3=False
+#      - CLASSIFIER_LOCAL_PATH=/app/xgboost-LOWCONTENT-classifier.pickle
+#      - DESTINATION_SCHEMA_NAME=classifier
+#      - DESTINATION_TABLE_NAME=destination_table
+#      - CLASSIFIER_LOCAL_FOLDER=/tmp/
+#      - TRAIN_XGBOOST=False
+#      - AWS_SESSION_TOKEN=AWS_SESSION_TOKEN
+#      - AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID
+#      - AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
+#      - JOB_VERB=PREDICT
+#      - JOB_SUBJECT=LOWCONTENT

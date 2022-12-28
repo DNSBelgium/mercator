@@ -37,6 +37,7 @@ ADD tsconfig.json /app
 ADD src /app/src
 ADD .env /app/.env
 
+# RUN npm run build --omit=dev
 RUN npm run build
 
 CMD ["node", "/app/dist/index.js"]

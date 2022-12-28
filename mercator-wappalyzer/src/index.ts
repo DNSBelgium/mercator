@@ -8,7 +8,7 @@ async function main() {
   initMetricsServer();
 
   await init_wappalyzer();
-  await start_sqs_polling(config.sqs_endpoint, config.sqs_input_queue, config.sqs_output_queue)
+  start_sqs_polling(config.sqs_endpoint, config.sqs_input_queue, config.sqs_output_queue)
 }
 
 (async () => {

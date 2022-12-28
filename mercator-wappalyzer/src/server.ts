@@ -1,51 +1,61 @@
-import AWS from "aws-sdk";
-import {ServiceConfigurationOptions} from "aws-sdk/lib/service";
+import { Message, SQS } from "@aws-sdk/client-sqs";
+import { SQSClientConfig } from "@aws-sdk/client-sqs/dist-types/SQSClient";
 import {Consumer} from "sqs-consumer";
-import {Producer} from "sqs-producer";
+import { Producer } from "sqs-producer";
 import {wappalyze} from "./wappalyzer_wrapper";
 import {WappalyzerRequest, WappalyzerResponse} from "./api";
 import {v4 as uuid} from "uuid";
 
-async function getQueueUrl(sqs: AWS.SQS, queueName: string) {
-    const queueUrlResponse = await sqs.getQueueUrl({QueueName: queueName}).promise();
+async function getQueueUrl(sqs: SQS, queueName: string) {
+    const queueUrlResponse = await sqs.getQueueUrl({QueueName: queueName});
     return queueUrlResponse.QueueUrl;
 }
 
 export async function start_sqs_polling(endpoint: string, input_queue: string, output_queue: string) {
-    const sqsOptions: ServiceConfigurationOptions = {};
+    const sqsOptions: SQSClientConfig = {};
     if (endpoint) {
         sqsOptions.endpoint = endpoint;
     }
-    const sqs = new AWS.SQS(sqsOptions);
+    const sqs = new SQS(sqsOptions)
+
+    let output_queue_url = await getQueueUrl(sqs, output_queue)
+    let input_queue_url = await getQueueUrl(sqs, input_queue)
+    console.log("input_queue_url: "  + input_queue_url)
+    console.log("output_queue_url: " + output_queue_url)
+
+    if (!output_queue_url) {
+        throw "Could not determine input_queue_url"
+    }
+    if (!input_queue_url) {
+        throw "Could not determine output_queue_url"
+    }
 
     const producer = Producer.create({
-        queueUrl: await getQueueUrl(sqs, output_queue),
+        queueUrl: output_queue_url,
         sqs: sqs
     });
-
     const consumer = new Consumer({
-        queueUrl: await getQueueUrl(sqs, input_queue),
+        queueUrl: input_queue_url,
         sqs: sqs,
         visibilityTimeout: 60,
         waitTimeSeconds: 20,
         handleMessage: await createHandler(producer)
     });
-
     consumer.on("error", (err: Error) => {
         console.error("SQS error: " + err.message);
         throw err;
     });
-
     consumer.on("processing_error", (err: Error) => {
         console.error("processing_error: " + err.message);
         throw err;
     });
-
     consumer.start();
+    console.log("consumer.start() is done")
+    console.log("consumer.isRunning() : " + consumer.isRunning)
 }
 
-export async function createHandler(producer: Producer): Promise<(message: AWS.SQS.Types.Message) => Promise<void>> {
-    return async (message: AWS.SQS.Types.Message) => {
+export async function createHandler(producer: Producer): Promise<(message: Message) => Promise<void>> {
+    return async (message: Message) => {
         const params = JSON.parse(message.Body!);
         const result = await handleMessage(params);
         if (result) {
