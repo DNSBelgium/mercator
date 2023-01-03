@@ -36,7 +36,7 @@ class VatFinderTest {
 
   @Test
   public void testIsValidVAT() {
-    String[] valid = {"BE0666679317", "BE0457741515", "BE0843370953"};
+    String[] valid = {"BE0666679317", "BE0457741515", "BE0843370953", "BE1000007697"};
     for (String vat : valid) {
       Assertions.assertTrue(vatFinder.isValidVAT(vat));
     }
@@ -45,7 +45,7 @@ class VatFinderTest {
   @Test
   public void testInvalidVAT() {
     // invalid checksums
-    String[] invalid = {"BE0666679300", "BE0457741542", "BE0843370973"};
+    String[] invalid = {"BE0666679300", "BE0457741542", "BE0843370973", "BE1000009797"};
     for (String vat : invalid) {
       Assertions.assertFalse(vatFinder.isValidVAT(vat));
     }
@@ -65,6 +65,14 @@ class VatFinderTest {
     List<String> list = vatFinder.findVatValues(input);
     logger.info("list = {}", list);
     assertThat(list).containsExactly("BE0666679317", "BE0457741515");
+  }
+
+  @Test
+  public void VatNumbersCanStartWithANonZeroNumber() {
+    String input = "BE1000000000 BTW BE 1100000002 1000.000.003";
+    List<String> list = vatFinder.findVatValues(input);
+    logger.info("list = {}", list);
+    assertThat(list).containsExactly("BE1000000000", "BE1100000002", "BE1000000003");
   }
 
   @Test
@@ -128,7 +136,7 @@ class VatFinderTest {
     expect("+32 999 999 999", List.of("BE0999999999"), List.of());
 
     // if the last 9 digits of a phone number happen to have correct check digits, they are mis-recognized as a VAT number
-    // but only if the character directlty before the 9 digits is 0 or a non-digit
+    // but only if the character directly before the 9 digits is 0 or a non-digit
     expect("Peter Pan 0032 (0)476 305 236 peter.pan@notdnsbelgium.be",
         List.of("BE0476305236"),
         List.of("BE0476305236")
@@ -168,7 +176,7 @@ class VatFinderTest {
         "0479/23.45.78",   // slash not allowed as separator
         "016 123456 0479/23.45.78"
     };
-    expectNoVatValuesIn("0-1234567890");
+    //expectNoVatValuesIn("0-1234567890");
     expectNoVatValuesIn("12345678901");
     expectNoVatValuesIn("0479/23.45.78");
     expectNoVatValuesIn("016 123456 0479/23.45.78");

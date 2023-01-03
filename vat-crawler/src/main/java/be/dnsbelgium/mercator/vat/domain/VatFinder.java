@@ -31,12 +31,8 @@ public class VatFinder {
   public static final String VAT_REGEX =
 
       "\\b(?:VAT|BTW|TVA)?(?:BE)?:?(?:" +  // always start on a word boundary, optional VAT or BTW or VAT, optional BE, optional colon
-          // followed by either
-          //  9 digits without leading zero
-          "[1-9][0-9]{8}" +
-
-          // OR:  zero, optional sep, 3 digits, optional sep, 3 digits, optional sep, 3 digits
-          "|0[ .-]?[0-9]{3}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +
+          // Possibly followed by a 0 or 1, with three times: three numbers, a possible separator
+          "[01]?[ .-]?[0-9]{3}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +
 
           // OR:  non-zero digit, optional sep, 2 digits, optional sep, 3 digits, optional sep , 3 digits
           "|[1-9][ .-]?[0-9]{2}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +
@@ -80,6 +76,8 @@ public class VatFinder {
         .replace("BE", "")
     ;
     if (VAT.length() < 10) {
+      // Although a VAT can have another leading number, we assume that people omitting it will have a zero as leading
+      // number.
       return "BE0" + VAT;
     }
     return "BE" + VAT;
