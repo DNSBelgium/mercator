@@ -29,10 +29,13 @@ public class VatFinder {
 
   private final Pattern vatPattern;
   public static final String VAT_REGEX =
+      // always start on a word boundary, optional VAT or BTW or VAT, optional BE, optional colon
+      "\\b(?:VAT|BTW|TVA)?(?:BE)?:?(?:" +
+          // Old format VAT numbers (with a leading 0 that is omitted)
+          "0[0-9]{8}" +
 
-      "\\b(?:VAT|BTW|TVA)?(?:BE)?:?(?:" +  // always start on a word boundary, optional VAT or BTW or VAT, optional BE, optional colon
-          // Possibly followed by a 0 or 1, with three times: three numbers, a possible separator
-          "[01]?[ .-]?[0-9]{3}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +
+          // Formatted as a 0 or 1, with three times three numbers and a possible separator
+          "|[01][ .-]?[0-9]{3}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +
 
           // OR:  non-zero digit, optional sep, 2 digits, optional sep, 3 digits, optional sep , 3 digits
           "|[1-9][ .-]?[0-9]{2}[ .-]?[0-9]{3}[ .-]?[0-9]{3}" +

@@ -36,7 +36,7 @@ class VatFinderTest {
 
   @Test
   public void testIsValidVAT() {
-    String[] valid = {"BE0666679317", "BE0457741515", "BE0843370953", "BE1000007697"};
+    String[] valid = {"BE0666679317", "BE0457741515", "BE0843370953", "BE1000007642"};
     for (String vat : valid) {
       Assertions.assertTrue(vatFinder.isValidVAT(vat));
     }
@@ -45,7 +45,7 @@ class VatFinderTest {
   @Test
   public void testInvalidVAT() {
     // invalid checksums
-    String[] invalid = {"BE0666679300", "BE0457741542", "BE0843370973", "BE1000009797"};
+    String[] invalid = {"BE0666679300", "BE0457741542", "BE0843370973", "BE1000000099"};
     for (String vat : invalid) {
       Assertions.assertFalse(vatFinder.isValidVAT(vat));
     }
