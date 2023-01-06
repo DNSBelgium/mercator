@@ -62,7 +62,7 @@ public class DnsCrawlerApplicationTest {
     dnsCrawler.process(visitRequest);
 
     List<Request> requests = requestRepository.findByVisitId(visitRequest.getVisitId());
-    assertThat(requests).hasSize(16);
+    assertThat(requests).hasSize(17);
 
     Request soa = requests.stream().filter(request -> request.getRecordType() == RecordType.SOA).findFirst().get();
     Request a = requests.stream().filter(request -> request.getRecordType() == RecordType.A).findFirst().get();
@@ -85,4 +85,31 @@ public class DnsCrawlerApplicationTest {
 
   }
 
+  public void non_idn() throws Exception {
+    String domainName = "dnsbelgium.be";
+    VisitRequest visitRequest = new VisitRequest(UUID.randomUUID(), domainName);
+    dnsCrawler.process(visitRequest);
+
+    List<Request> requests = requestRepository.findByVisitId(visitRequest.getVisitId());
+    assertThat(requests).hasSize(17);
+
+    Request soa = requests.stream().filter(request -> request.getRecordType() == RecordType.SOA).findFirst().get();
+    Request a = requests.stream().filter(request -> request.getRecordType() == RecordType.A).findFirst().get();
+    assertThat(soa.getResponses()).hasSize(1);
+    assertThat(a.getResponses()).hasSize(1);
+
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.A))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.AAAA))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.MX))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.SOA))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.TXT))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.CAA))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.HTTPS))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.SVCB))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.NS))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.DS))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.DNSKEY))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.CDNSKEY))).isTrue();
+    assertThat(requests.stream().anyMatch(r -> r.getRecordType().equals(RecordType.CDS))).isTrue();
+  }
 }

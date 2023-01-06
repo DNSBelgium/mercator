@@ -27,14 +27,16 @@ class DnsResolverTest {
 
   @Test
   void testGetAllRecords() throws TextParseException {
-    Records allRecords = dnsResolver.getAllRecords(Name.fromString("dnsbelgium.be"), List.of(RecordType.SOA, RecordType.AAAA, RecordType.CAA));
+    Records allRecords = dnsResolver.getAllRecords(Name.fromString("dnsbelgium.be"), List.of(RecordType.SOA, RecordType.AAAA, RecordType.CAA, RecordType.TXT));
     assertNotNull(allRecords);
 
     assertThat(allRecords.get(RecordType.A)).isEmpty();
     assertThat(allRecords.get(RecordType.SOA)).isNotEmpty();
     assertThat(allRecords.get(RecordType.AAAA)).isNotEmpty();
     assertThat(allRecords.get(RecordType.CAA)).isNotEmpty();
+    assertThat(allRecords.get(RecordType.TXT)).isNotEmpty();
 
+    assertTrue(allRecords.get(RecordType.SOA).stream().map(RRecord::getData).collect(Collectors.joining(" ")).contains("be-hostmaster.dnsbelgium.be"));
     assertTrue(allRecords.get(RecordType.SOA).stream().map(RRecord::getData).collect(Collectors.joining(" ")).contains("be-hostmaster.dnsbelgium.be"));
     assertTrue(allRecords.get(RecordType.AAAA).size() > 0);
   }
@@ -47,5 +49,4 @@ class DnsResolverTest {
     assertNotNull(dnsResolution.getRecords("@"));
     assertNotNull(dnsResolution.getRecords("@").get(RecordType.A));
   }
-
 }
