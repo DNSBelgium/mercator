@@ -167,7 +167,7 @@ Each module has a gradle task `dockerBuild` that will create the docker containe
 
 ### Helm charts
 
-Each module has its own Helm charts. We use Helm to deploy the app in Kubernetes.
+Each module has its Helm chart. We use Helm to deploy the app in Kubernetes.
 
 ### Local Kubernetes
 
