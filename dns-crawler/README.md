@@ -6,6 +6,7 @@ Gathers DNS records. Which records from which subdomain can be easily configured
 crawler.dns.subdomains.[@]=A, AAAA, MX, SOA, TXT, CAA, HTTPS, SVCB, NS, DS, DNSKEY, CDNSKEY, CDS
 crawler.dns.subdomains.www=A, AAAA
 crawler.dns.subdomains._dmarc=TXT
+crawler.dns.subdomains._doomainkey=TXT
 ```
 
 DNS Records are split into two separate tables, Requests and Responses.
