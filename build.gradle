@@ -1,5 +1,5 @@
 plugins {
-  id "org.owasp.dependencycheck" version "7.1.0.1"
+  id "org.owasp.dependencycheck" version "7.4.4"
   id 'com.google.cloud.tools.jib' version "3.2.1" apply false
   id 'org.unbroken-dome.helm' version '1.7.0' apply false
   id 'org.springframework.boot' version '2.7.5' apply false
