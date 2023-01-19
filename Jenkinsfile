@@ -90,7 +90,7 @@ pipeline {
                     fi
                     cd ${app}
                     mkdir -p ${WORKSPACE}/trivy
-                    TMPDIR=${WORKSPACE}/trivy trivy image --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
+                    TMPDIR=${WORKSPACE}/trivy trivy image --offline-scan --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
                   """
                 }
               }
