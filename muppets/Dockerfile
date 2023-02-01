@@ -11,10 +11,12 @@ RUN apk add -u --update-cache \
     && mkdir /var/cache/apk
 
 RUN \
-    # CVE-2022-30065 \
+    # CVE-2022-30065
     apk upgrade --no-cache busybox && \
-    # CVE-2022-37434 \
-    apk upgrade --no-cache zlib
+    # CVE-2022-37434
+    apk upgrade --no-cache zlib && \
+    # CVE-2023-24056
+    apk upgrade --no-cache pkgconf
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
