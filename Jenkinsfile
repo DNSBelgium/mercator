@@ -88,9 +88,6 @@ pipeline {
                     else
                       ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
                     fi
-                    cd ${app}
-                    mkdir -p ${WORKSPACE}/trivy
-                    TMPDIR=${WORKSPACE}/trivy trivy image --offline-scan --timeout 10m --ignorefile .trivyignore --exit-code 1 --format template --template "@/usr/local/share/trivy/templates/junit.tpl" -o ${app}-junit-report.xml --ignore-unfixed --severity "HIGH,CRITICAL" ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:\${GIT_COMMIT:0:7}
                   """
                 }
               }
@@ -99,9 +96,22 @@ pipeline {
 //           parallel docker
         }
       }
-      post {
-        always {
-          junit allowEmptyResults: true, testResults: "**/*-junit-report.xml"
+    }
+
+    stage("Scan docker images") {
+      steps {
+        script {
+          def docker = [:]
+          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+            stage("Scan docker image for ${app}") {
+              dir("${app}") {
+                withCredentials(bindings: [[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-role-ecr-Prod']]) {
+                  library 'dnsbelgium-jenkins-pipeline-steps'
+                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${GIT_COMMIT.take(7)}", ignoredCVEs: readFile(file: '.trivyignore'))
+                }
+              }
+            }
+          }
         }
       }
     }
