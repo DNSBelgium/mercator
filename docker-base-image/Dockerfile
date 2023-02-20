@@ -13,5 +13,5 @@ COPY --from=build /etc/ssl/certs /etc/ssl/certs
 
 # CVE-2022-43680 fixed in expat 2.5.0-r0
 # CVE-2023-0286
-RUN apk upgrade --no-cache expat openssl
+RUN apk upgrade --no-cache expat libssl3
 
