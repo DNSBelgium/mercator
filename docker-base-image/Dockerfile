@@ -12,5 +12,6 @@ FROM eclipse-temurin:17-jre-alpine
 COPY --from=build /etc/ssl/certs /etc/ssl/certs
 
 # CVE-2022-43680 fixed in expat 2.5.0-r0
-RUN apk upgrade --no-cache expat
+# CVE-2023-0286
+RUN apk upgrade --no-cache expat openssl
 
