@@ -17,7 +17,7 @@ RUN \
     # CVE-2023-24056
     apk upgrade --no-cache pkgconf && \
     # CVE-2023-0286
-    apk upgrade --no-cache libssl1.1 libcrypto1.1
+    apk upgrade --no-cache libssl3 libcrypto3
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
