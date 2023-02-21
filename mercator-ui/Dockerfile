@@ -22,18 +22,14 @@ FROM nginx@sha256:58edf9ad7347729e4a780739ac0225daf025ca699053a598aa28c12152b39a
 COPY --from=build /app/build/ /usr/share/nginx/html
 
 RUN \
-    # CVE-2022-30065 \
+    # CVE-2022-30065
     apk upgrade --no-cache busybox && \
-    # CVE-2022-37434 \
-    apk upgrade --no-cache zlib
-
-RUN apk info curl
-
-RUN \
+    # CVE-2022-37434
+    apk upgrade --no-cache zlib && \
+    # CVE-2023-0286
+    apk upgrade --no-cache libssl1.1 libcrypto1.1 && \
   # CVE-2022-42915 & CVE-2022-42916 \
   apk upgrade --no-cache curl libcurl
-
-RUN apk info curl
 
 ## Nginx config
 # Port 8080
