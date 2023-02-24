@@ -85,7 +85,7 @@ DNS Belgium is not responsible for any complaints you could receive in the resul
 
 ## Requirements
 
-* Java 11
+* Java 17
 * Docker & Docker Compose
 * Helm
 
