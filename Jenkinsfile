@@ -9,7 +9,7 @@ pipeline {
     nodejs "NodeJS 16.18.0"
   }
   environment {
-    NODEJS_HOME = "${tool 'NodeJS 16.15.1'}"
+    NODEJS_HOME = "${tool 'NodeJS 16.18.0'}"
     PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
   }
   options {
