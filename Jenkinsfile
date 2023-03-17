@@ -6,7 +6,7 @@ pipeline {
   }
   tools {
     jdk "OpenJDK 17"
-    nodejs "NodeJS 16.15.1"
+    nodejs "NodeJS 16.18.0"
   }
   environment {
     NODEJS_HOME = "${tool 'NodeJS 16.15.1'}"
