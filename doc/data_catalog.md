@@ -1,11 +1,12 @@
 # Service catalog : Mercator Data Catalog
 
-* [Intro](#MercatorDataCatalog-Intro)
-* [Content crawler](#MercatorDataCatalog-Contentcrawler)
+* [Intro](#intro)
+* [Content crawler](#content-crawler)
 * [DNS crawler](#MercatorDataCatalog-DNScrawler)
     * [dns\_crawl\_result](#MercatorDataCatalog-dns_crawl_result)
     * [dns\_crawl\_result\_geo\_ips](#MercatorDataCatalog-dns_crawl_result_geo_ips)
 * [SMTP crawler](#MercatorDataCatalog-SMTPcrawler)
+* [TLS crawler](#tls-crawler)
 * [SSL crawler](#MercatorDataCatalog-SSLcrawler)
     * [ssl\_crawl\_result](#MercatorDataCatalog-ssl_crawl_result)
     * [certificate](#MercatorDataCatalog-certificate)
@@ -454,8 +455,154 @@ The JSON contains an array of hosts, with the following information for each hos
   }
 ]
 ```
+## TLS crawler
 
-## SSL crawler
+The TLS crawler will determine which TLS versions abd ciphers are supported by the website linked to the given domain name.
+
+### Caching
+
+Some IP addresses are hosting a lot of websites (each having their own domain names) 
+and we found that in more than 99% of the cases the domain name used during the handshake has no impact on the supported TLS versions or ciphers.
+To avoid creating thousands of connections to the same server we cache the results per IP address.
+
+The caching can be disabled by setting the `full.scan.cache.enabled` property to `false`.
+Other properties to control the cache behavior:
+* `full.scan.cache.minimum.entries.per.ip` determines how many times the crawler will scan an IP before using a cached results (default value is 5)
+* `full.scan.cache.required.ratio` determines the percentage of scans on a given IP need to have the same config before using that cached config for new domains on that IP (default value is 0.90 = 90%)
+
+### Rate limiting
+
+To avoid overwhelming a server with too many TCP connection requests we implemented a rate-limit inspired by [heritix](https://heritrix.readthedocs.io/en/latest/configuring-jobs.html#politeness)
+For each request a delay is computed based on how long it took last time to conect to the IP
+The relevant properties for configuring the rate-imiter are:
+```
+rate.limiter.max.cache.size=20000 # how many IP addresses are kept in the in-memory cache
+rate.limiter.delay.factor=0.85    # the milliseconds of previous handshake are multiplied with this factor
+rate.limiter.min.delay.ms=50      # the delay will never be smaller than this value (milliseconds)
+rate.limiter.max.delay.ms=500     # the delay will never be greater than this value (milliseconds)
+```
+
+### Data model
+
+#### tls_crawler.crawl_result
+
+The TLS crawler will create a new row into table `tls_crawler.crawl_result` for every visit request it receives.
+If the crawler finds no relevant entry in the cache, it will contact the website (once for each TLS version) and store the info in a new row in the `tls_crawler.full_scan` table.
+The row in `tls_crawler.crawl_result` will then refer to that newly created row in `tls_crawler.full_scan`.
+
+If the crawler does find a relevant entry in the cache, it will *not* contact the website and will *not* create a new row in the `tls_crawler.full_scan` table.
+The row in `tls_crawler.crawl_result` will then refer to an already existing row in `tls_crawler.full_scan` that was the result of previously scanning another (or the same) domain name on that IP address.  
+
+| Column name                     | Description                                                                                                                                                                                                      | Example                                                          |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
+| id                              | primary key                                                                                                                                                                                                      | 10929666                                                         |
+| visit_id                        | Unique id (UUID) per visit. All modules share the same visit_id. primary key                                                                                                                                     | bcd90704-2f51-40e2-9c52-101dceca168e                             |
+| domain_name                     | The crawled domain name                                                                                                                                                                                          | dnsbelgium.be                                                    |
+| crawl_timestamp                 | Timestamp when the crawl performed                                                                                                                                                                               | 2022-09-09 23:48:53.216240 +00:00                                |
+| full_scan                       | Reference to a row in tls_crawler.full_scan with more details                                                                                                                                                    | 823722                                                           | 
+| host_name_matches_certificate   | A boolean indicating if the hostname in we used to connect matches with the subject or any of the SAN values in the certificate  Todo: add reference to Java class used                                          | true                                                             |
+| host_name                       | The hostname we used to start the TLS session. For now this will always match the domain_name. (later we might also try 'www.<domain_name>' )                                                                    | dnsbelgium.be                                                    |
+| leaf_certificate                | The sha256 hash of the leaf certificate that we received.                                                                                                                                                        | 213953a961249da03ec575c96cd11ee22acc7c0f7209601761d0ab65630ade06 |
+| certificate_expired             | A boolean that indicates if the not_after value in the certificate was in the future at the time of crawling                                                                                                     | false                                                            |
+| certificate_too_soon            | A boolean that indicates if the not_before value in the certificate was in the past at the time of crawling                                                                                                      | false                                                            |
+| chain_trusted_by_java_platform  | A boolean that indicates if the certificate is trusted by the Java platform. This basically means that the certificate chain is valid and contains a root cert that is a known trust anchor of the Java platform | true                                                             |
+
+#### tls_crawler.full_scan
+
+Each time the TLS crawler contacts a website to check which TLS versions are supported, it will a new row to this table. 
+Because of caching, this table will contain fewer entries than the `tls_crawler.crawl_result` table. See above for more details
+
+| Column name               | Description                                                                                                                 | Example                                                                                  |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| id                        | primary key                                                                                                                 | 10929666                                                                                 |
+| crawl_timestamp           | Timestamp when the crawl performed                                                                                          | 2022-09-09 23:48:53.216240 +00:00                                                        |
+| ip                        | The IP address that was contacted                                                                                           | 62.213.218.244                                                                           |
+| server_name               | The name that was used during the TLS handshake                                                                             | portalusconsulting.be                                                                    |
+| connect_ok                | Whether we could make a TCP connection on port 443.                                                                         | true                                                                                     | 
+| support_tls_1_3           | Whether the web server supported TLS 1.3 at the time of crawling                                                            | true                                                                                     |
+| support_tls_1_2           | Whether the web server supported TLS 1.2 at the time of crawling                                                            | true                                                                                     |
+| support_tls_1_1           | Whether the web server supported TLS 1.1 at the time of crawling                                                            | true                                                                                     |
+| support_tls_1_0           | Whether the web server supported TLS 1.0 at the time of crawling                                                            | false                                                                                    |
+| support_ssl_3_0           | Whether the web server supported SSL 3.0 at the time of crawling                                                            | false                                                                                    |
+| support_ssl_2_0           | Whether the web server supported SSL 2.0 at the time of crawling                                                            | false                                                                                    |
+| selected_cipher_tls_1_3   | The cipher selected by the web server when we tried to set up a TLS 1.3 session                                             | TLS_CHACHA20_POLY1305_SHA256                                                             |
+| selected_cipher_tls_1_2   | The cipher selected by the web server when we tried to set up a TLS 1.2 session                                             | TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384                                                    |
+| selected_cipher_tls_1_1   | The cipher selected by the web server when we tried to set up a TLS 1.1 session                                             | TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA                                                       |
+| selected_cipher_ssl_3_0   | The cipher selected by the web server when we tried to set up a SSL 3.0 session                                             | TLS_RSA_WITH_AES_256_CBC_SHA                                                             |
+| accepted_ciphers_ssl_2_0  | The list of ciphers supported by the web server when we tried to set up a SSL 2.0 session. *This column is not yet in use.* | null                                                                                     |
+| lowest_version_supported  | The lowest SSL or TLS version supported by the web server. (SSLv2 < SSLv3 < TLSv1 < TLSv1.1 < TLSv1.2 < TLSv1.3)            | TLSv1.2                                                                                  |
+| highest_version_supported | The highest SSL or TLS version supported by the web server.                                                                 | TLSv1.3                                                                                  |
+| error_tls_1_3             | What went wrong when establishing a TLS 1.3 session. Or null if no error occurred.                                          | Connection reset                                                                         |
+| error_tls_1_2             | What went wrong when establishing a TLS 1.2 session. Or null if no error occurred.                                          | Received fatal alert: handshake_failure                                                  |
+| error_tls_1_1             | What went wrong when establishing a TLS 1.1 session. Or null if no error occurred.                                          | The server selected protocol version TLS10 is not accepted by client preferences [TLS11] |
+| error_tls_1_0             | What went wrong when establishing a TLS 1.0 session. Or null if no error occurred.                                          | Connection refused                                                                       |
+| error_ssl_3_0             | What went wrong when establishing a SSL 3.0 session. Or null if no error occurred.                                          | Received fatal alert: handshake_failure                                                  |
+| error_ssl_2 _0            | What went wrong when establishing a SSL 2.0 session. Or null if no error occurred.                                          | Connection timed out                                                                     |
+| millis_ssl_2_0            | The number of milliseconds needed to establish a SSL 2.0 session                                                            | 43                                                                                       |
+| millis_ssl_3_0            | The number of milliseconds needed to establish a SSL 3.0 session                                                            | 57                                                                                       |
+| millis_tls_1_0            | The number of milliseconds needed to establish a TLS 1.0 session                                                            | 93                                                                                       |
+| millis_tls_1_1            | The number of milliseconds needed to establish a TLS 1.1 session                                                            | 58                                                                                       |
+| millis_tls_1_2            | The number of milliseconds needed to establish a TLS 1.2 session                                                            | 157                                                                                      |
+| millis_tls_1_3            | The number of milliseconds needed to establish a TLS 1.3 session                                                            | 57                                                                                       |
+| total_duration_in_ms      | The total duration of this crawl. Column is not yet filled in: it's always zero.                                            | 0                                                                                        |
+
+#### tls_crawler.certificate
+
+
+| Column name              | Description                                                                                                                                                                                            | Example                                                                                                                                                                                                              |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| sha256_fingerprint       | The SHA-256 fingerprint of the certificate, also the primary key of this table                                                                                                                         | 0aa3423012f58713ffcff9aefe875eb308c53305a713128e41d80f3bc45a5aff                                                                                                                                                     |
+| version                  | The version of X.509 specified in the certificate. Usually 3, the most recent version.                                                                                                                 | 3                                                                                                                                                                                                                    |
+| serial_number            | The serial number of the certificate. Must be unique for each certificate issued by a specific CA (as mentioned in RFC 5280)                                                                           | 10290817708216518963613984878                                                                                                                                                                                        |
+| public_key_schema        | The Public Key Algorithm used in the certificate                                                                                                                                                       | RSA                                                                                                                                                                                                                  |
+| public_key_length        | The number of bits used for the public key                                                                                                                                                             | 2048                                                                                                                                                                                                                 |
+| not_before               | The start of the certificate validity period                                                                                                                                                           | 2021-12-16 09:46:13.000000 +00:00                                                                                                                                                                                    |
+| not_after                | The end of the certificate validity period                                                                                                                                                             | 2023-01-17 09:46:13.000000 +00:00                                                                                                                                                                                    |
+| issuer                   | The issuer of the certificate, using a string representation of the X.500 distinguished name using the format defined in RFC 2253.                                                                     | CN=GlobalSign Extended Validation CA - SHA256 - G3,O=GlobalSign nv-sa,C=BE                                                                                                                                           |
+| subject                  | The subject of the certificate, using a string representation of the X.500 distinguished name using the format defined in RFC 2253. Some well-known OID's are replaced by a more user-friendly string. | CN=dnsbelgium.be,O=Domaine Name Registration België VZW,STREET=Philipssite 5  bus 13,L=Leuven,ST=Vlaams-Brabant,C=BE,JurisdictionOfIncorporationC=BE,SerialNumber=0466.158.640,BusinessCategory=Private Organization |
+| signature_hash_algorithm | The hashing algorithm used for the signature                                                                                                                                                           | SHA256withRSA                                                                                                                                                                                                        |  
+| signed_by_sha256         | The SHA-256 fingerprint of the certificate used to sign this certificate or null. This column is a foreigh key pointing to another row in this table.                                                  | aed5dd9a5339685dfb029f6d89a14335a96512c3cacc52b2994af8b6b37fa4d2                                                                                                                                                     |  
+| subject_alt_names        | An JSONB array with all Subject Alternative Name's present in this certificate. see [rfc2818](https://datatracker.ietf.org/doc/html/rfc2818)                                                           | ["dnsbelgium.be", "production.dnsbelgium.be", "www.dnsbelgium.be"]                                                                                                                                                   |  
+
+We only store the certificates that were sent by the peer during the TLS handshake.
+
+You can use this query to retrieve the stored certificate chain starting with a leaf certificate.
+
+```sql
+with recursive ancestor as (
+select  signed_by_sha256 as p, c.*
+from tls_crawler.certificate c
+where c.sha256_fingerprint = '0361d23f3871cb8feeabb1a51140ee5f1afea9403f116d5a3eb8e14d74915efa'
+union all
+select c2.signed_by_sha256, c2.*
+from ancestor, tls_crawler.certificate c2
+where ancestor.p = c2.sha256_fingerprint)
+select issuer, a.subject, a.subject_alt_names, signature_hash_algorithm, public_key_schema, public_key_length, a.not_before, a.not_after
+from ancestor a;
+```
+
+or with a less elegant query that never returns more than 5 rows:
+```sql
+select
+  unnest(array [c.subject, p1.subject, p2.subject, p3.subject, p4.subject]) as subject
+     , unnest(array [c.issuer, p1.issuer, p2.issuer, p3.issuer, p4.issuer]) as issuer
+     , unnest(array [c.subject_alt_names, p1.subject_alt_names, p2.subject_alt_names, p3.subject_alt_names, p4.subject_alt_names]) as subject_alt_names
+     , unnest(array [c.not_before, p1.not_before, p2.not_before, p3.not_before, p4.not_before]) as not_before
+     , unnest(array [c.not_after, p1.not_after, p2.not_after, p3.not_after, p4.not_after]) as not_after
+     , unnest(array [c.sha256_fingerprint, p1.sha256_fingerprint, p2.sha256_fingerprint, p3.sha256_fingerprint, p4.sha256_fingerprint]) as fingerprint
+from tls_crawler.certificate c
+       left join tls_crawler.certificate p1 on p1.sha256_fingerprint = c.signed_by_sha256
+       left join tls_crawler.certificate p2 on p2.sha256_fingerprint = p1.signed_by_sha256
+       left join tls_crawler.certificate p3 on p3.sha256_fingerprint = p2.signed_by_sha256
+       left join tls_crawler.certificate p4 on p4.sha256_fingerprint = p3.signed_by_sha256
+where c.sha256_fingerprint = '0361d23f3871cb8feeabb1a51140ee5f1afea9403f116d5a3eb8e14d74915efa' 
+```
+
+## SSL crawler (will be removed soon)
+
+The SSL crawler uses https://github.com/nabla-c0d3/sslyze but proved to be a bit unreliable and was making too many connections per domain name.
+We have therefor replaced it with a Java implementation (see TLS crawler) and will soon remove the SSL crawler module.
+
 
 ### ssl_crawl_result
 
