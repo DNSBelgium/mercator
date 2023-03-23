@@ -27,7 +27,8 @@ ext['aws-java-sdk.version']="1.12.262"
 ext['postgresql.version']="42.4.1"
 
 // CVE-2022-25857
-ext['snakeyaml.version']="1.32"
+// CVE-2022-1471
+ext['snakeyaml.version']="1.33"
 
 ext {
   getCommitHash = { ->
