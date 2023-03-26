@@ -3,7 +3,7 @@
 [Mercator](https://en.wikipedia.org/wiki/Gerardus_Mercator) was a Belgian geographer, but it is also DNS Belgium's
 crawler project.
 
-Given a domain name, Mercator gathers public information from different sources: HTML, DNS records, SMTP servers, SSL Certificates,
+Given a domain name, Mercator gathers public information from different sources: HTML, DNS records, SMTP servers, TLS certificates,
 etc.
 
 ## Architecture
@@ -35,14 +35,8 @@ The architecture is optimized to induce following properties in the system:
 ### Model
 
 The current architectural model is service-oriented, networked and event-driven. Multiple modules act on their own
-interests. The primary communication between modules happens by posting events on a shared message bus. Other modules
-can react to these events in their own processing and as a result announce new events.
-
-The contract between modules is thus mostly defined by events and the structure of the data in events. Modules should
-clearly show what events they publish. We do this in two ways. First is by naming convention: all events (and only
-events) should have class names ending in 'Event'. Second is by packaging conventions: all events (and only events)
-should be together in an 'events' package, somewhere in the module's hierarchy. Possible non-Java apps should adopt
-guidelines that create similar advantages.
+interests. The primary communication between modules happens over queues. Other modules can react to these events 
+in their own processing and as a result announce new events.
 
 The end goal of a crawler is to collect data, so all crawl results are written into a shared datastore, which allows
 easier manual consumption of the data. Each module has its own schema. Over time, we should make clear distinctions
@@ -57,7 +51,7 @@ between temporary, internal module state and stable, consumable data.
 * `dns-crawler` (Java / Spring Boot): DNS-related crawling. Fetch DNS records, post-process with geo-ip.
 * `feature-extraction`(Java / Spring Boot): extracts features from data collected by other modules. For now only
   extracts features from the HTML.
-* `ground-truth`(Java / Spring Boot): Ground-truth only creates tables for labeling the mercator visits.
+* `ground-truth`(Java / Spring Boot): Ground-truth only creates tables used for labeling the mercator visits.
 * `mercator-api` (Java / Spring Boot): Expose API via Spring Data REST, using the JPA entities of other modules.
 * `mercator-ui` (NodeJS / TypeScript / React): Basic UI for Mercator
 * `mercator-wappalyzer` (NodeJS / TypeScript): Wrapper around [Wappalyzer](https://github.com/AliasIO/wappalyzer), using
@@ -65,8 +59,8 @@ between temporary, internal module state and stable, consumable data.
 * `muppets` (NodeJS / TypeScript): Takes screenshots via puppeteer, interacts over SQS and stores results in S3
 * `observability`: code to support the observability property of the system
 * `smtp-crawler` (Java / Spring Boot): Stores information about SMTP servers.
-* `tls-crawler` (Java / Spring Boot): Gather SSL certificates and extracts data.
-* `vat-crawler` (Java / Spring Boot): Try to find VAT number (belgian only for now) on a website.
+* `tls-crawler` (Java / Spring Boot): Gathers TLS certificates and extracts data.
+* `vat-crawler` (Java / Spring Boot): Tries to find VAT number (belgian only for now) on a website.
 * `mercator-cli` (Java / Spring Boot): Command-line interface to interact with the SQS queues of the different modules.
 
 ### Data Model
@@ -134,7 +128,7 @@ Run `start-deps.sh` to start only the dependencies.
 
 Use the 'local' profile to start individual components.
 
-The local profile (Spring) or the local env (ssl-crawler) by default uses the following ports
+The local profile (Spring) by default uses the following ports
 
 * 8082 : DNS crawler
 * 8083 : SMTP crawler
@@ -146,8 +140,7 @@ The local profile (Spring) or the local env (ssl-crawler) by default uses the fo
 * 8089 : mercator-api
 * 8090 : mercator-ui
 * 8091 : vat-crawler
-* 8092 : ground-truth
-* 8093 : ssl-crawler
+* 8092 : tls-crawler
 
 Or use intellij to run/debug one of the Application classes. Do not forget to specify the local profile in this case.
 
