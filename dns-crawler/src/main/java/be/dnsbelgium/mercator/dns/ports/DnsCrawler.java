@@ -28,7 +28,7 @@ public class DnsCrawler implements Crawler {
   }
 
   @JmsListener(destination = "${dns.crawler.input.queue.name}")
-  public void process(VisitRequest visitRequest) throws Exception {
+  public void process(VisitRequest visitRequest) {
     logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
     if (visitRequest.getVisitId() == null) {
       logger.warn("Cannot process a request without visitId => skipping");
@@ -41,8 +41,9 @@ public class DnsCrawler implements Crawler {
     } catch (Exception e) {
       logger.error("failed to retrieveDnsRecords for domainName={} because of {}", visitRequest.getDomainName(), e.getMessage(), e);
 
-      // We do re-throw the exception to not acknowledge the message. The message is therefore put back on the queue.
-      // Since July 2020, we enable DLQ on SQS, allowing us to not care or to not keep a state/counter/ratelimiter to ignore messages that are reprocessed more than x times.
+      // We do re-throw the exception to not acknowledge the message.
+      // The message will therefore remain in the queue.
+      // Visit requests that repeatedly fail to be processed, will end up in the DLQ
       throw e;
     }
   }

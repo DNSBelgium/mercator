@@ -8,6 +8,7 @@ version = '0.0.1-SNAPSHOT'
 
 dependencyManagement {
   imports {
+    //noinspection UnnecessaryQualifiedReference
     mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
   }
 }
@@ -19,6 +20,6 @@ repositories {
 dependencies {
   testFixturesImplementation 'org.springframework.boot:spring-boot-starter-test'
   testFixturesApi 'org.testcontainers:postgresql:1.17.2'
-  testFixturesApi 'org.testcontainers:localstack:1.17.2'
+  testFixturesApi 'org.testcontainers:localstack:1.17.6'
   testFixturesApi 'org.testcontainers:junit-jupiter:1.17.2'
 }

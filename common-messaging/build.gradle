@@ -20,6 +20,11 @@ dependencies {
   compileOnly 'org.projectlombok:lombok'
   annotationProcessor 'org.projectlombok:lombok'
 
+  // IDN stuff
+  // https://mvnrepository.com/artifact/com.ibm.icu/icu4j
+  implementation group: 'com.ibm.icu', name: 'icu4j', version: '72.1'
+
+
   testImplementation('org.springframework.boot:spring-boot-starter-test') {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
@@ -27,6 +32,7 @@ dependencies {
 
 dependencyManagement {
   imports {
+    //noinspection UnnecessaryQualifiedReference
     mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
   }
 }
