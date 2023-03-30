@@ -25,6 +25,7 @@ public class PageFetcherConfig {
   private final Duration writeTimeOut;
   private final Duration cacheMaxStale;
   private final String userAgent;
+  private final DataSize maxContentLength;
 
   private final static String DEFAULT_USER_AGENT
       = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0";
@@ -40,7 +41,9 @@ public class PageFetcherConfig {
       @DefaultValue("5s")           Duration writeTimeOut,
       @DefaultValue("5s")           Duration callTimeOut,
       @DefaultValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0")
-                                    String userAgent
+                                    String userAgent,
+      @DefaultValue("8MB")
+                                    DataSize maxContentLength
       ) {
     this.cacheDirectory = cacheDirectory;
     this.cacheSize = cacheSize;
@@ -52,6 +55,7 @@ public class PageFetcherConfig {
     this.writeTimeOut = writeTimeOut;
     this.callTimeOut = callTimeOut;
     this.userAgent = userAgent;
+    this.maxContentLength = maxContentLength;
   }
 
   public static PageFetcherConfig defaultConfig() {
@@ -63,7 +67,22 @@ public class PageFetcherConfig {
         Duration.ofSeconds(5),
         Duration.ofSeconds(5),
         Duration.ofSeconds(8),
-        DEFAULT_USER_AGENT
+        DEFAULT_USER_AGENT,
+        DataSize.of(8, DataUnit.MEGABYTES)
+    );
+  }
+
+  public static PageFetcherConfig testConfig() {
+    return new PageFetcherConfig(
+        new File("/tmp/cache/"),
+        DataSize.of(100, DataUnit.MEGABYTES),
+        Duration.ofHours(24),
+        Duration.ofSeconds(5),
+        Duration.ofSeconds(5),
+        Duration.ofSeconds(5),
+        Duration.ofSeconds(8),
+        DEFAULT_USER_AGENT,
+        DataSize.of(100, DataUnit.KILOBYTES)
     );
   }
 
@@ -99,6 +118,10 @@ public class PageFetcherConfig {
     return userAgent;
   }
 
+  public DataSize getMaxContentLength() {
+    return maxContentLength;
+  }
+
   @Override
   public String toString() {
     return new StringJoiner(", ", PageFetcherConfig.class.getSimpleName() + "[", "]")
@@ -109,6 +132,7 @@ public class PageFetcherConfig {
         .add("readTimeOut=" + readTimeOut)
         .add("writeTimeOut=" + writeTimeOut)
         .add("callTimeOut=" + callTimeOut)
+        .add("maxContentLength=" + maxContentLength.toMegabytes() + "MB")
         .toString();
   }
 }

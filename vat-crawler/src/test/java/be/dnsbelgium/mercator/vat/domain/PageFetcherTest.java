@@ -10,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
-
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -30,6 +29,8 @@ class PageFetcherTest {
   private static boolean isHttpbinDisabled() {
     return true;
   }
+
+
 
   @Test
   public void fetchGoogle() throws IOException {
@@ -181,4 +182,11 @@ class PageFetcherTest {
     assertThat(page.getStatusCode()).isEqualTo(200);
   }
 
+  @Test
+  public void fetchPageWithoutContentLengthHeaderAndBodyLengthOverMax() throws IOException {
+    PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
+    testFetcher.clearCache();
+    Page page = testFetcher.fetch(HttpUrl.get("http://www.google.be"));
+    assertThat(page).isEqualTo(Page.PAGE_TOO_BIG);
+  }
 }
