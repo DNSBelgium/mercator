@@ -63,6 +63,8 @@ dependencies {
   // https://mvnrepository.com/artifact/com.github.tomakehurst/wiremock
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock', version: '2.27.2'
 
+  testImplementation("com.squareup.okhttp3:mockwebserver:4.10.0")
+
 }
 
 jib {
