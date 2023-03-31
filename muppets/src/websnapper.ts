@@ -7,6 +7,10 @@ import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
 import config from "./config.js";
 import { computePath } from "./util.js";
+import {ScraperResult} from "./scraper.js";
+import {v4 as uuid} from "uuid";
+
+const MAX_CONTENT_LENGTH = 10 * 1024 * 1024 ;
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {
@@ -64,6 +68,10 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
+function checkHtmlSize(data){
+    return data <= MAX_CONTENT_LENGTH;
+}
+
 function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
     if (!data)
         return Promise.resolve("");
@@ -90,14 +98,37 @@ function uploadToS3(result: scraper.ScraperResult) {
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
 
-    console.log("Uploading to S3 [%s]", prefix);
+    if (result) {
+        console.log("result is defined: " + result)
+        console.log(result.htmlLength +' htmllength')
+    } else {
+        console.log("result is undefined: ")
+        // @ts-ignore
+        const errorResult : ScraperResult = {
+            id: "",
+            ipv4: "",
+            ipv6: "",
+            errors: []
+        };
+        errorResult.errors.push("uploadToS3 called with undefined")
+        return errorResult
+    }
 
-    return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-    ])
-        .then(() => result);
+    //if it did not pass should we notify/ keep records of instances where this happens ?
+    //check if htmllenth is bigger then scanner max 10mb
+    if (checkHtmlSize(result.htmlLength)){
+        console.log("Uploading to S3 [%s]", prefix);
+
+        return Promise.all([
+            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+            s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
+            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
+        ])
+            .then(() => result);
+    }
+    console.log("uploading to S3 cancelled, html size bigger then 10Mb: "+ result.htmlLength + "b")
+    // need to return result to clear from queue
+    return result;
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {

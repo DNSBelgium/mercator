@@ -277,7 +277,14 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     };
 
     let timeoutId;
-
+    // // TODO: validate URL
+    // // find a function to check validity of URL
+    // // avoid non valid url's currently only domain names this may be limiting
+    // // npm package: is-valid-domain
+    // if (!isValidDomain(url)){
+    //     result.errors.push("URL is invalid: " + url)
+    //     return result;
+    // }
     try {
         const url = new URL(params.url);
         console.log("url = [%s]", url);
