@@ -6,10 +6,14 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.time.Duration;
@@ -184,9 +188,22 @@ class PageFetcherTest {
 
   @Test
   public void fetchPageWithoutContentLengthHeaderAndBodyLengthOverMax() throws IOException {
-    PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
-    testFetcher.clearCache();
-    Page page = testFetcher.fetch(HttpUrl.get("http://www.google.be"));
-    assertThat(page).isEqualTo(Page.PAGE_TOO_BIG);
+    HttpUrl baseUrl;
+    String BIG_BODY = StringUtils.repeat("ab", 100_000);
+    try (MockWebServer mockWebServer = new MockWebServer()) {
+      MockResponse response = new MockResponse()
+        .setChunkedBody(BIG_BODY, 100);
+      PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
+      testFetcher.clearCache();
+      mockWebServer.enqueue(response);
+      mockWebServer.start();
+      baseUrl = mockWebServer.url("/");
+      testFetcher.clearCache();
+      Page page = testFetcher.fetch(baseUrl);
+      logger.info("page = {}", page);
+      assertThat(page).isEqualTo(Page.PAGE_TOO_BIG);
+    }
   }
+
+
 }
