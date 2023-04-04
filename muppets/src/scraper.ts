@@ -277,10 +277,8 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
     };
 
     let timeoutId;
-    // // TODO: validate URL
-    // // find a function to check validity of URL
-    // // avoid non valid url's currently only domain names this may be limiting
-    // // npm package: is-valid-domain
+    // TODO: validate URL
+    // npm package: is-valid-domain
     // if (!isValidDomain(url)){
     //     result.errors.push("URL is invalid: " + url)
     //     return result;
@@ -289,7 +287,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         const url = new URL(params.url);
         console.log("url = [%s]", url);
 
-        // Setup a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
+        // Set up a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
         new Promise((resolve) => { timeoutId = setTimeout(resolve, 60000); })
             .then(() => console.error(`[${url}] timed out!`))
             .then(() => page.close())

@@ -68,8 +68,8 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
-function checkHtmlSize(data){
-    return data <= MAX_CONTENT_LENGTH;
+export function checkHtmlSize(data){
+    return data < MAX_CONTENT_LENGTH;
 }
 
 function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
@@ -93,14 +93,13 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
     });
 }
 
-function uploadToS3(result: scraper.ScraperResult) {
+export async function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
 
     if (result) {
         console.log("result is defined: " + result)
-        console.log(result.htmlLength +' htmllength')
     } else {
         console.log("result is undefined: ")
         // @ts-ignore
@@ -113,8 +112,6 @@ function uploadToS3(result: scraper.ScraperResult) {
         errorResult.errors.push("uploadToS3 called with undefined")
         return errorResult
     }
-
-    //if it did not pass should we notify/ keep records of instances where this happens ?
     //check if htmllenth is bigger then scanner max 10mb
     if (checkHtmlSize(result.htmlLength)){
         console.log("Uploading to S3 [%s]", prefix);
@@ -126,7 +123,8 @@ function uploadToS3(result: scraper.ScraperResult) {
         ])
             .then(() => result);
     }
-    console.log("uploading to S3 cancelled, html size bigger then 10Mb: "+ result.htmlLength + "b")
+    //give error description to result
+    result.errors.push("uploading to S3 cancelled, html size bigger then 10Mb")
     // need to return result to clear from queue
     return result;
 }
