@@ -436,6 +436,32 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       line-break: anywhere;
     }
   }
+
+  /* TLSCard.jsx */
+  #tls-card {
+    .certificates-chain{
+      border-top: solid #d3e5ff 2px;
+    }
+    .truncate {
+      text-overflow: ellipsis;
+      word-break: break-all;
+      overflow:hidden;
+      white-space: nowrap;
+    }
+    .truncate:hover{
+      overflow: visible;
+      white-space: normal;
+    }
+    .copy-btn {
+      float: right;
+      width: 25px;
+      height: 25px;
+    }
+    .copy-btn:hover {
+      cursor: pointer;
+      color: #e3f5ff;
+    }
+  }
 }
 
 /* HandleError.jsx error divs */
