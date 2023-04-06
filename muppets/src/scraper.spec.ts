@@ -59,7 +59,7 @@ describe('Scraper Tests', function () {
         return Scraper.websnap(params).then(scraperResult => {
             scraperResult.htmlLength = 11*1024*1024;
             return Websnapper.uploadToS3(scraperResult).then(result => {
-                expect(result.errors).to.be.an('array').that.includes("uploading to S3 cancelled, html size bigger then 10Mb")
+                expect(result.errors).to.be.an('array').that.includes("uploading to S3 cancelled, html size bigger then 10MiB")
             });
         });
     });
