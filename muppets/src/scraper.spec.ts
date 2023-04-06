@@ -11,9 +11,9 @@ describe('Scraper Tests', function () {
     // const mockUuid = '1fe39e26-9d20-4cc0-8696-fe7887a3dfbc';
     // sinon.stub(uuid, 'v4').returns(mockUuid);
     //
-    it('dns_png', () => {
+    it('dns', () => {
         let params: ScraperParams = {
-            url: 'https://kinepolis.be/',
+            url: 'https://dnsbelgium.be',
             visitId: uuid(),
             saveHar: true,
             saveHtml: true,
@@ -22,7 +22,7 @@ describe('Scraper Tests', function () {
                 fullPage: true,
                 encoding: "binary",
                 type: "png",
-                captureBeyondViewport: true
+                captureBeyondViewport: true,
             },
             browserOptions: {
                 ignoreHTTPSErrors: true
@@ -43,41 +43,7 @@ describe('Scraper Tests', function () {
             })
         });
     });
-    //
-    // it('dns_webp', () => {
-    //     let params: ScraperParams = {
-    //         url: 'https://dnsbelgium.be',
-    //         visitId: uuid(),
-    //         saveHar: true,
-    //         saveHtml: true,
-    //         saveScreenshot: true,
-    //         screenshotOptions: {
-    //             fullPage: true,
-    //             encoding: "binary",
-    //             type: "webp",
-    //             captureBeyondViewport: true,
-    //             quality: 100
-    //         },
-    //         browserOptions: {
-    //             ignoreHTTPSErrors: true
-    //         },
-    //         retries: 0,
-    //     };
-    //     return Scraper.websnap(params).then(scraperResult => {
-    //         if(scraperResult!=undefined){
-    //             // @ts-ignore
-    //             console.log(scraperResult.screenshotData.length/1024+" kB")
-    //             // @ts-ignore
-    //             console.log(scraperResult.screenshotData.length/1024/1024+" mB")
-    //         }
-    //         // @ts-ignore
-    //         return Websnapper.uploadToS3(scraperResult).then(result => {
-    //             console.log(result.errors)
-    //             expect(result.errors).to.be.empty;
-    //         })
-    //     });
-    // });
-    //
+
     // it('standaard_png_should come out in webp', () => {
     //
     //     let params: ScraperParams = {
@@ -111,8 +77,7 @@ describe('Scraper Tests', function () {
     //     });
     // });
 
-    it('testHtmlFile', () => {
-
+    it('kinepolis', () => {
         let params: ScraperParams = {
             url: 'https://kinepolis.be',
             visitId: uuid(),
@@ -235,7 +200,6 @@ describe('Scraper Tests', function () {
     //     });
     // });
 
-    //
     // it('zalando', () => {
     //     params.url ='https://zalando.be';
     //     params.visitId = uuid();

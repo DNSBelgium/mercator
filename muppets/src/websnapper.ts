@@ -92,12 +92,15 @@ export async function uploadToS3(result: scraper.ScraperResult) {
 
     console.log("Uploading to S3 [%s]", prefix);
     if (result.screenshotData!=undefined){
+        metrics.getScreenshotsSizes().observe((result.screenshotData?.length/1024)/1024)
         console.log("screenshot size: "+result.screenshotData?.length+"B");
-        if (result.screenshotData.length>8*1024*1024){
-            console.log("abnormaly large screenshot from :"+result.url)
+        if (result.screenshotData.length>10*1024*1024){
+            console.log("large screenshot from :"+result.url)
             console.log("with id :"+result.id)
+            metrics.getBigScreenshotCounter().inc()
         }
     }
+
     console.log(typeof result.screenshotData)
     //fix extension .png/ .webp wordt automatish toegewezen
     return Promise.all([
