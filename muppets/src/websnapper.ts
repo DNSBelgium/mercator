@@ -124,7 +124,7 @@ export async function uploadToS3(result: scraper.ScraperResult) {
         ])
             .then(() => result);
     }
-    result.errors.push("uploading to S3 cancelled, html size bigger then 10Mb")
+    result.errors.push("uploading to S3 cancelled, html size bigger then 10MiB")
     return result;
 }
 
