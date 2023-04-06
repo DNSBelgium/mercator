@@ -85,15 +85,19 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
     });
 }
 
-function uploadToS3(result: scraper.ScraperResult) {
+export async function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
 
     console.log("Uploading to S3 [%s]", prefix);
-
+    if (result.screenshotData!=undefined){
+        console.log("screenshot size: "+result.screenshotData?.length+"B");
+    }
+    console.log(typeof result.screenshotData)
+    //fix extension .png/ .webp wordt automatish toegewezen
     return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+        s3UploadFile(result.screenshotData, "screenshot", prefix, "image").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
         s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
         s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
     ])

@@ -229,12 +229,23 @@ function saveHar(params: ScraperParams, events: Event[]) {
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-
         params.screenshotOptions.type = params.screenshotOptions.type || "png";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
+        //als de screenshot groter is dan 3mb ander type
+        const screenshot = page.screenshot(params.screenshotOptions).then(screenshot => {
+            if (screenshot?.length>3000000){
+                params.screenshotOptions.type = "webp";
+                params.screenshotOptions.quality = 100;
+                console.log("taking screenshot in webp")
+                return page.screenshot(params.screenshotOptions)
+            } else {
+                console.log("taking screenshot in png")
+                return page.screenshot(params.screenshotOptions);
+            }
+        })
+        return screenshot;
 
-        return page.screenshot(params.screenshotOptions);
     } else {
         return Promise.reject("Not taking a screenshot");
     }
