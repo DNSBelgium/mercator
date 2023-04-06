@@ -93,6 +93,10 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     console.log("Uploading to S3 [%s]", prefix);
     if (result.screenshotData!=undefined){
         console.log("screenshot size: "+result.screenshotData?.length+"B");
+        if (result.screenshotData.length>8*1024*1024){
+            console.log("abnormaly large screenshot from :"+result.url)
+            console.log("with id :"+result.id)
+        }
     }
     console.log(typeof result.screenshotData)
     //fix extension .png/ .webp wordt automatish toegewezen

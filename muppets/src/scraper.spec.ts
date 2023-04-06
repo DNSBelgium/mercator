@@ -2,10 +2,8 @@ import * as Scraper from './scraper';
 import * as Websnapper from './websnapper';
 import { ScraperParams } from './scraper';
 import { expect } from 'chai';
-import sinon from 'sinon';
 import { v4 as uuid } from 'uuid';
-import * as path from "path";
-import { convertDate } from "./util";
+
 
 describe('Scraper Tests', function () {
     this.timeout(30000);
