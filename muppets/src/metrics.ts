@@ -31,6 +31,21 @@ const domainTimeOuts = new Prometheus.Counter({
     help: "Amount of timeouts from this server"
 });
 
+// prometeus bucket for keeping a record of screenschot sizes
+const getScreenshotsSizes =() => screenshotSizes;
+const screenshotSizes =new Prometheus.Histogram({
+    name: "muppets_screenshot_sizes",
+    help: "sizes of screenshots recorded during scrape"
+})
+
+// prometeus bucket for counter where the screenshot get counted that are above a certain size
+const getBigScreenshotCounter =() => bigScreenshotCounter;
+const bigScreenshotCounter = new Prometheus.Counter({
+    name: "muppets_largerScreenshot_Counter",
+    help: "Amount screenshots bigger then x MB"
+    }
+)
+
 export const getDomainTimeOuts = () => domainTimeOuts;
 
 // Helper to compute metrics

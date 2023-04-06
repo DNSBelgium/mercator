@@ -238,6 +238,7 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
                 params.screenshotOptions.type = "webp";
                 params.screenshotOptions.quality = 100;
                 console.log("taking screenshot in webp")
+
                 return page.screenshot(params.screenshotOptions)
             } else {
                 console.log("taking screenshot in png")
