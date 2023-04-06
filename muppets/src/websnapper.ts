@@ -2,13 +2,13 @@ import AWS from "aws-sdk";
 import { ServiceConfigurationOptions } from "aws-sdk/lib/service";
 import { Consumer } from "sqs-consumer";
 import Producer from "sqs-producer";
-
 import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
 import config from "./config.js";
 import { computePath } from "./util.js";
-import {ScraperResult} from "./scraper.js";
+import { ScraperResult } from "./scraper.js";
 import {v4 as uuid} from "uuid";
+import {request} from "express";
 
 const MAX_CONTENT_LENGTH = 10 * 1024 * 1024 ;
 
@@ -68,8 +68,8 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
-export function checkHtmlSize(data){
-    return data < MAX_CONTENT_LENGTH;
+function checkHtmlSize(dataLength){
+    return dataLength < MAX_CONTENT_LENGTH;
 }
 
 function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
@@ -97,16 +97,17 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
+    const request = result.request
 
     if (result) {
         console.log("result is defined: " + result)
     } else {
         console.log("result is undefined: ")
-        // @ts-ignore
-        const errorResult : ScraperResult = {
+        const errorResult : scraper.ScraperResult = {
             id: "",
             ipv4: "",
             ipv6: "",
+            request: request,
             errors: []
         };
         errorResult.errors.push("uploadToS3 called with undefined")
@@ -123,9 +124,7 @@ export async function uploadToS3(result: scraper.ScraperResult) {
         ])
             .then(() => result);
     }
-    //give error description to result
     result.errors.push("uploading to S3 cancelled, html size bigger then 10Mb")
-    // need to return result to clear from queue
     return result;
 }
 
