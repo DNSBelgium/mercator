@@ -100,10 +100,9 @@ export async function uploadToS3(result: scraper.ScraperResult) {
         }
     }
 
-    console.log(typeof result.screenshotData)
     //fix extension .png/ .webp wordt automatish toegewezen
     return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot", prefix, "image").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+        s3UploadFile(result.screenshotData, "screenshot."+result.screenshotType, prefix, "image/"+result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
         s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
         s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
     ])

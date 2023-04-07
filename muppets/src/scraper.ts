@@ -65,6 +65,7 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    screenshotType: string;
 }
 
 let browser: puppeteer.Browser;
@@ -284,6 +285,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        screenshotType: params.screenshotOptions.type ?? "png"
     };
 
     let timeoutId;
@@ -331,6 +333,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             takeScreenshot(params, page).then(output => { result.screenshotData = output; })
         ]);
 
+        result.screenshotType = params.screenshotOptions.type ?? "png";
         await page.close();
 
         console.log("Snap finished");
