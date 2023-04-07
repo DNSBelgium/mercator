@@ -42,7 +42,7 @@ const screenshotSizes =new Prometheus.Histogram({
 export const getBigScreenshotCounter =() => bigScreenshotCounter;
 const bigScreenshotCounter = new Prometheus.Counter({
     name: "muppets_largerScreenshot_Counter",
-    help: "Amount screenshots bigger then x MB"
+    help: "Amount screenshots bigger then 10 MiB"
     }
 )
 
