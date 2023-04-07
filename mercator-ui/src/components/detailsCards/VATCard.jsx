@@ -41,8 +41,11 @@ const VATCard = (props) => {
             return <>No VAT found</>;
         }
         if(data.vatValues.length === 1) {
+            const vat = data.vatValues[0].substring(2);
+            const link = "https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=" + vat + "&actionLu=Zoek";
+
             return (
-                data.vatValues
+                <a href={link} target="_blank">{data.vatValues[0]}</a>
             );
         }
         return (
@@ -59,9 +62,10 @@ const VATCard = (props) => {
                         <ul className="no-bullet mt-1 pl-0">
                             { 
                                 data.vatValues.map((data, index) => {
+                                    const link = "https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=" + data.substring(2) + "&actionLu=Zoek";
                                     return (
                                         <li key={index}>
-                                            { data }
+                                            <a href={link} target="_blank">{data}</a>
                                         </li>
                                     )
                                 })

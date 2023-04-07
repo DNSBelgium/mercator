@@ -6,10 +6,13 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -30,6 +33,8 @@ class PageFetcherTest {
   private static boolean isHttpbinDisabled() {
     return true;
   }
+
+
 
   @Test
   public void fetchGoogle() throws IOException {
@@ -180,5 +185,25 @@ class PageFetcherTest {
     logger.info("page = {}", page);
     assertThat(page.getStatusCode()).isEqualTo(200);
   }
+
+  @Test
+  public void fetchPageWithoutContentLengthHeaderAndBodyLengthOverMax() throws IOException {
+    HttpUrl baseUrl;
+    String BIG_BODY = StringUtils.repeat("ab", 100_000);
+    try (MockWebServer mockWebServer = new MockWebServer()) {
+      MockResponse response = new MockResponse()
+        .setChunkedBody(BIG_BODY, 100);
+      PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
+      testFetcher.clearCache();
+      mockWebServer.enqueue(response);
+      mockWebServer.start();
+      baseUrl = mockWebServer.url("/");
+      testFetcher.clearCache();
+      Page page = testFetcher.fetch(baseUrl);
+      logger.info("page = {}", page);
+      assertThat(page).isEqualTo(Page.PAGE_TOO_BIG);
+    }
+  }
+
 
 }
