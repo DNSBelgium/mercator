@@ -70,8 +70,8 @@ class ContentCrawlResultRepositoryTest {
     UUID visitId = UUID.randomUUID();
     ContentCrawlResult contentCrawlResult1 = ContentCrawlResultTest.contentCrawlResult(visitId);
     ContentCrawlResult contentCrawlResult2 = ContentCrawlResultTest.contentCrawlResult(visitId);
-    contentCrawlResult1.setOk(true);
-    contentCrawlResult2.setOk(false);
+    contentCrawlResult1.setCrawl_succesfull(true);
+    contentCrawlResult2.setCrawl_succesfull(false);
     boolean isDuplicate = repository.saveAndIgnoreDuplicateKeys(contentCrawlResult1);
     assertThat(isDuplicate).isFalse();
     isDuplicate = repository.saveAndIgnoreDuplicateKeys(contentCrawlResult2);
@@ -97,7 +97,7 @@ class ContentCrawlResultRepositoryTest {
     found = repository.findByVisitIdAndOk(visitId, true);
     assertThat(found).hasSize(1);
     ContentCrawlResult contentCrawlResult2 = ContentCrawlResultTest.contentCrawlResult(visitId, urls[1]);
-    contentCrawlResult2.setOk(false);
+    contentCrawlResult2.setCrawl_succesfull(false);
     repository.save(contentCrawlResult2);
     found = repository.findByVisitIdAndOk(visitId, true);
     assertThat(found).hasSize(1);

@@ -85,14 +85,15 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
-  #  prometheus:
-  #    image: prom/prometheus:v2.12.0
-  #    command: '--config.file=/etc/prometheus/prometheus.yml'
-  #    volumes:
-  #      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
-  #      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
-  #    ports:
-  #      - "9090:9090"
+  # out of comment for testing
+#  prometheus:
+#    image: prom/prometheus:v2.12.0
+#    command: '--config.file=/etc/prometheus/prometheus.yml'
+#    volumes:
+#      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
+#      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
+#    ports:
+#      - "9090:9090"
 
   #  grafana:
   #    environment:
@@ -129,7 +130,9 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
       - SPRING_PROFILES_ACTIVE=local
       - LOCALSTACK_URL=http://localstack:4566
-      - GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
+      - crawler.dns.geoIP.enabled=false
+      #- GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
+      - GEO_IP_MAXMIND_LICENSE_KEY=""
     depends_on:
       db:
         condition: service_started

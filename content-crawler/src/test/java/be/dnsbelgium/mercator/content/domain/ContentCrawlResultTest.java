@@ -27,7 +27,7 @@ class ContentCrawlResultTest {
     assertThat(contentCrawlResult.getFinalUrl()).isEqualTo(muppetsResolution.getFinalUrl());
     assertThat(contentCrawlResult.getBrowserVersion()).isEqualTo(muppetsResolution.getBrowserVersion());
     assertThat(contentCrawlResult.getBucket()).isEqualTo(muppetsResolution.getBucket());
-    assertThat(contentCrawlResult.isOk()).isEqualTo(muppetsResolution.isOk());
+    assertThat(contentCrawlResult.isCrawl_succesfull()).isEqualTo(muppetsResolution.isOk());
     assertThat(contentCrawlResult.getProblem()).isEqualTo(muppetsResolution.getErrors());
     assertThat(contentCrawlResult.getHtmlKey()).isEqualTo(muppetsResolution.getHtmlFile());
     assertThat(contentCrawlResult.getHtmlLength()).isEqualTo(muppetsResolution.getHtmlLength());
