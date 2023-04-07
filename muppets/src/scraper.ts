@@ -233,19 +233,17 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
         //als de screenshot groter is dan 3mb ander type
-        const screenshot = page.screenshot(params.screenshotOptions).then(screenshot => {
-            if (screenshot?.length>3000000){
+        return page.screenshot(params.screenshotOptions).then(screenshot => {
+            if (screenshot?.length > 3000000) {
                 params.screenshotOptions.type = "webp";
                 params.screenshotOptions.quality = 100;
                 console.log("taking screenshot in webp")
-
                 return page.screenshot(params.screenshotOptions)
             } else {
                 console.log("taking screenshot in png")
-                return page.screenshot(params.screenshotOptions);
+                return screenshot;
             }
-        })
-        return screenshot;
+        });
 
     } else {
         return Promise.reject("Not taking a screenshot");

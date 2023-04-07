@@ -3,6 +3,7 @@ import * as Websnapper from './websnapper';
 import { ScraperParams } from './scraper';
 import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
+import * as metrics from './metrics';
 
 
 describe('Scraper Tests', function () {
@@ -10,7 +11,7 @@ describe('Scraper Tests', function () {
 
     // const mockUuid = '1fe39e26-9d20-4cc0-8696-fe7887a3dfbc';
     // sinon.stub(uuid, 'v4').returns(mockUuid);
-    //
+
     it('dns', () => {
         let params: ScraperParams = {
             url: 'https://dnsbelgium.be',
@@ -32,9 +33,11 @@ describe('Scraper Tests', function () {
         return Scraper.websnap(params).then(scraperResult => {
             if(scraperResult!=undefined){
                 // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024+" kB")
+                console.log(scraperResult.screenshotData.length+" B")
                 // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024/1024+" mB")
+                console.log(scraperResult.screenshotData.length/1024+" KiB")
+                // @ts-ignore
+                console.log(scraperResult.screenshotData.length/1024/1024+" MiB")
             }
             // @ts-ignore
             return Websnapper.uploadToS3(scraperResult).then(result => {
@@ -98,9 +101,11 @@ describe('Scraper Tests', function () {
         return Scraper.websnap(params).then(scraperResult => {
             if(scraperResult!=undefined){
                 // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024+" kB")
+                console.log(scraperResult.screenshotData.length+" B")
                 // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024/1024+" mB")
+                console.log(scraperResult.screenshotData.length/1024+" KiB")
+                // @ts-ignore
+                console.log(scraperResult.screenshotData.length/1024/1024+" MiB")
             }
 
             return Websnapper.uploadToS3(scraperResult).then(result => {
@@ -145,7 +150,7 @@ describe('Scraper Tests', function () {
     //         })
     //     });
     // });
-    //
+
     // it('hln', () => {
     //     params.url ='https://hln.be';
     //     params.visitId = uuid();
@@ -163,7 +168,7 @@ describe('Scraper Tests', function () {
     //         })
     //     });
     // });
-    //
+
     // it('coolblue', () => {
     //     params.url ='https://coolblue.be';
     //     params.visitId = uuid();
