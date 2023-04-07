@@ -99,8 +99,6 @@ export async function uploadToS3(result: scraper.ScraperResult) {
             metrics.getBigScreenshotCounter().inc()
         }
     }
-
-    //fix extension .png/ .webp wordt automatish toegewezen
     return Promise.all([
         s3UploadFile(result.screenshotData, "screenshot."+result.screenshotType, prefix, "image/"+result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
         s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
