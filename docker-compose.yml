@@ -130,9 +130,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
       - SPRING_PROFILES_ACTIVE=local
       - LOCALSTACK_URL=http://localstack:4566
-      - crawler.dns.geoIP.enabled=false
-      #- GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
-      - GEO_IP_MAXMIND_LICENSE_KEY=""
+      - GEO_IP_MAXMIND_LICENSE_KEY=${MAXMIND_LICENSE_KEY}
     depends_on:
       db:
         condition: service_started

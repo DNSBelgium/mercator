@@ -24,7 +24,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   @Column(name = "visit_id")        private UUID          visitId;
   @Column(name = "domain_name")     private String        domainName;
   @Column(name = "url")             private String        url;
-  @Column(name = "ok")              private boolean       ok;
+  @Column(name = "crawl_succesfull")private boolean       crawl_succesfull;
   @Column(name = "problem")         private String        problem;
   @Column(name = "bucket")          private String        bucket;
   @Column(name = "html_key")        private String        htmlKey;
@@ -40,11 +40,11 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   @Column(name = "retries")         private Integer       retries;
 
 
-  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries) {
+  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean crawl_succesfull, String problem, int retries) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.url = url;
-    this.ok = ok;
+    this.crawl_succesfull = crawl_succesfull;
     this.problem = problem;
     this.crawlTimestamp = ZonedDateTime.now();
     this.retries = retries;
