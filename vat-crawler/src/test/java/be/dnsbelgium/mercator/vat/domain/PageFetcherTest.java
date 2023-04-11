@@ -193,7 +193,7 @@ class PageFetcherTest {
     try (MockWebServer mockWebServer = new MockWebServer()) {
       MockResponse response = new MockResponse()
         .setChunkedBody(BIG_BODY, 100);
-      PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
+      PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
       testFetcher.clearCache();
       mockWebServer.enqueue(response);
       mockWebServer.start();
