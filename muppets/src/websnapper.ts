@@ -125,7 +125,11 @@ export async function uploadToS3(result: scraper.ScraperResult) {
             .then(() => result);
     }
     result.errors.push("uploading to S3 cancelled, html size bigger then 10MiB")
-    return result;
+    return Promise.all([
+        s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+        s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
+    ])
+        .then(() => result);
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {
