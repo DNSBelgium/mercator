@@ -93,18 +93,22 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     console.log("Uploading to S3 [%s]", prefix);
     if (result.screenshotData!=undefined){
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length/1024)/1024);
+        if (result.screenshotData.length<10*1024*1024){
+            return Promise.all([
+                s3UploadFile(result.screenshotData, "screenshot."+result.screenshotType, prefix, "image/"+result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+                s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
+                s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
+            ])
+                .then(() => result);
+        }
         if (result.screenshotData.length>10*1024*1024){
             console.log("large screenshot from :"+result.url)
             console.log("with id :"+result.id)
             metrics.getBigScreenshotCounter().inc()
+            result.errors.push("screenshot bigger then 10MiB Upload to S3 cancelled")
         }
     }
-    return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot."+result.screenshotType, prefix, "image/"+result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-    ])
-        .then(() => result);
+    return result
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {
