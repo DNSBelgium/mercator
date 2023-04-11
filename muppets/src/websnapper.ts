@@ -8,7 +8,7 @@ import config from "./config.js";
 import { computePath } from "./util.js";
 import { ScraperResult } from "./scraper.js";
 import {v4 as uuid} from "uuid";
-import {request} from "express";
+import { request } from "express";
 
 const MAX_CONTENT_LENGTH = 10 * 1024 * 1024 ;
 
