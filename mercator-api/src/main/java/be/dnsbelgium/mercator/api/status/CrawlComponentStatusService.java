@@ -50,7 +50,7 @@ public class CrawlComponentStatusService {
     return new CrawlComponentStatus(visitId,
                                     request.stream().anyMatch(Request::isOk),
                                     smtpResult.map(result -> result.getCrawlStatus() == CrawlStatus.OK).orElse(false),
-                                    muppetsResults.stream().anyMatch(ContentCrawlResult::isCrawl_succesfull),
+                                    muppetsResults.stream().anyMatch(ContentCrawlResult::isOk),
                                     wappalyzerResult.map(WappalyzerResult::isOk).orElse(false));
   }
 }

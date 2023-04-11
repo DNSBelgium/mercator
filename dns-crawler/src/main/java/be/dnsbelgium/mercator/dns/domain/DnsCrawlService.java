@@ -108,7 +108,7 @@ public class DnsCrawlService {
             .prefix(dnsRequest.prefix())
             .recordType(dnsRequest.recordType())
             .rcode(dnsRequest.rcode())
-            .ok(dnsRequest.isOk())
+            .ok(dnsRequest.isOk())  ///same oke as in crawler result ?
             .problem(dnsRequest.humanReadableProblem())
             .build();
     for (RRecord record: dnsRequest.records()) {

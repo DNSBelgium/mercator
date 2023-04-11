@@ -81,7 +81,10 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
         console.log("Key = [%s]", putObjectPromise.Key);
         return putObjectPromise.Key;
     }).catch(err => {
-        throw new Error(`Upload failed for file [${params.Key}] : [${JSON.stringify(err)}]`);
+        if (params.Key.endsWith("screenshot.png")){
+            throw new Error(`Upload failed for file screenshot [${params.Key}] : [${JSON.stringify(err)}]`);
+        }///find a way to add html/screenshot/har before file
+        throw new Error(`Upload failed for file ${params.Key.endsWith("screenshot.png")}[${params.Key}] : [${JSON.stringify(err)}]`);
     });
 }
 
