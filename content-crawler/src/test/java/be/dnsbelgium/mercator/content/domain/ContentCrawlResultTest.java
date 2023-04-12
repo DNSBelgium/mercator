@@ -27,7 +27,7 @@ class ContentCrawlResultTest {
     assertThat(contentCrawlResult.getFinalUrl()).isEqualTo(muppetsResolution.getFinalUrl());
     assertThat(contentCrawlResult.getBrowserVersion()).isEqualTo(muppetsResolution.getBrowserVersion());
     assertThat(contentCrawlResult.getBucket()).isEqualTo(muppetsResolution.getBucket());
-    assertThat(contentCrawlResult.isCrawl_succesfull()).isEqualTo(muppetsResolution.isOk());
+    assertThat(contentCrawlResult.isOk()).isEqualTo(muppetsResolution.isOk());
     assertThat(contentCrawlResult.getProblem()).isEqualTo(muppetsResolution.getErrors());
     assertThat(contentCrawlResult.getHtmlKey()).isEqualTo(muppetsResolution.getHtmlFile());
     assertThat(contentCrawlResult.getHtmlLength()).isEqualTo(muppetsResolution.getHtmlLength());
@@ -41,7 +41,7 @@ class ContentCrawlResultTest {
 
   public static ContentCrawlResult contentCrawlResult(UUID visitId, String url) {
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0);
+        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, contentCrawlResult().getHtml_status(), contentCrawlResult().getScreenshot_status());
     contentCrawlResult.setBucket("MyBucket");
     contentCrawlResult.setBrowserVersion("Blabla 1.2");
     contentCrawlResult.setHarKey("file.har");
