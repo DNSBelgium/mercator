@@ -6,9 +6,9 @@ import be.dnsbelgium.mercator.content.persistence.WappalyzerResult;
 import be.dnsbelgium.mercator.content.persistence.WappalyzerResultRepository;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
-import be.dnsbelgium.mercator.smtp.persistence.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResult;
-import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResultRepository;
+import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpCrawlResultRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -48,9 +48,9 @@ public class CrawlComponentStatusService {
     Optional<WappalyzerResult> wappalyzerResult = wappalyzerFuture.exceptionally((ex -> Optional.empty())).get();
 
     return new CrawlComponentStatus(visitId,
-                                    request.stream().anyMatch(Request::isOk),
-                                    smtpResult.map(result -> result.getCrawlStatus() == CrawlStatus.OK).orElse(false),
-                                    muppetsResults.stream().anyMatch(ContentCrawlResult::isOk),
-                                    wappalyzerResult.map(WappalyzerResult::isOk).orElse(false));
+      request.stream().anyMatch(Request::isOk),
+      smtpResult.map(result -> result.getCrawlStatus() == CrawlStatus.OK).orElse(false),
+      muppetsResults.stream().anyMatch(ContentCrawlResult::isOk),
+      wappalyzerResult.map(WappalyzerResult::isOk).orElse(false));
   }
 }

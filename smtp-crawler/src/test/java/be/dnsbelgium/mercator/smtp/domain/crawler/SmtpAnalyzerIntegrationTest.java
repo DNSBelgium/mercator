@@ -2,13 +2,11 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.domain.crawler.config.TestContext;
-import be.dnsbelgium.mercator.smtp.persistence.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,12 +19,12 @@ import static org.slf4j.LoggerFactory.getLogger;
 // @EnabledOnOs(OS.MAC)
 @Disabled
 @SpringJUnitConfig({
-    TestContext.class,
-    DefaultSmtpIpAnalyzer.class,
-    NioSmtpConversationFactory.class,
-    SmtpAnalyzer.class,
-    MxFinder.class,
-    SimpleMeterRegistry.class})
+  TestContext.class,
+  DefaultSmtpIpAnalyzer.class,
+  NioSmtpConversationFactory.class,
+  SmtpAnalyzer.class,
+  MxFinder.class,
+  SimpleMeterRegistry.class})
 class SmtpAnalyzerIntegrationTest {
 
   @MockBean

@@ -1,0 +1,5 @@
+CREATE TABLE extension
+(
+    id   SERIAL PRIMARY KEY,
+    name VARCHAR(256) NOT NULL
+);
