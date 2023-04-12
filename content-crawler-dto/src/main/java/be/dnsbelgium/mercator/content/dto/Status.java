@@ -4,7 +4,7 @@ public enum Status {
     Ok("Success"),
     TimeOut("Failed: Time out error"),
     HtmlTooBig("Failed: Html file too big"),
-    screenshottooBig("Failed: Screenshot file too big"),
+    screenshotTooBig("Failed: Screenshot file too big"),
     UploadFailed("Failed: Upload failed"),
     NameNotResolved("Failed: Name not resolved"),
     UnexpectedError("Failed: Unexpected error");

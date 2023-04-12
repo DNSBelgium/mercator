@@ -82,9 +82,13 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
         return putObjectPromise.Key;
     }).catch(err => {
         if (params.Key.endsWith("screenshot.png")){
-            throw new Error(`Upload failed for file screenshot [${params.Key}] : [${JSON.stringify(err)}]`);
-        }///find a way to add html/screenshot/har before file
-        throw new Error(`Upload failed for file ${params.Key.endsWith("screenshot.png")}[${params.Key}] : [${JSON.stringify(err)}]`);
+            throw new Error(`Upload failed for screenshot file [${params.Key}] : [${JSON.stringify(err)}]`);
+        } else if (params.Key.endsWith("html")) {
+            throw new Error(`Upload failed for html file [${params.Key}] : [${JSON.stringify(err)}]`);
+        } else if (params.Key.endsWith("har")) {
+            throw new Error(`Upload failed for har file [${params.Key}] : [${JSON.stringify(err)}]`);
+        }
+        throw new Error(`Upload failed for file [${params.Key}] : [${JSON.stringify(err)}]`);
     });
 }
 
