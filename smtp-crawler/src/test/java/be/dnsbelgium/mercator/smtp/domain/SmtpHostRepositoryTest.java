@@ -22,10 +22,7 @@ import org.testcontainers.junit.jupiter.Container;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static java.util.UUID.randomUUID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -79,9 +76,13 @@ public class SmtpHostRepositoryTest {
     SmtpHostEntity entity = hostEntity.get();
     assertThat(entity.getIp()).isEqualTo("1.2.3.4");
     assertThat(entity.getBanner()).isEqualTo("my banner");
-    List<SmtpCrawlResult> servers = new java.util.ArrayList<>(entity.getServers().stream().map(SmtpServerEntity::getCrawlResult).toList());
-    servers.sort(Comparator.comparing(SmtpCrawlResult::getCrawlTimestamp));
-    ZonedDateTime zonedDateTime = servers.get(0).getCrawlTimestamp();
+    List<SmtpServerEntity> servers = entity.getServers();
+    List<SmtpCrawlResult> results = new ArrayList<>();
+    for (SmtpServerEntity server : servers) {
+      results.addAll(server.getCrawlResults());
+    }
+    results.sort(Comparator.comparing(SmtpCrawlResult::getCrawlTimestamp));
+    ZonedDateTime zonedDateTime = results.get(0).getCrawlTimestamp();
     assertThat(zonedDateTime).isAfter(ZonedDateTime.now().minusDays(1));
   }
 

@@ -29,9 +29,8 @@ public class SmtpServerEntity {
 
   private int priority;
 
-  @ManyToOne
-  @JoinColumn(name = "crawl_result")
-  private SmtpCrawlResult crawlResult;
+  @ManyToMany(mappedBy = "servers")
+  private List<SmtpCrawlResult> crawlResults = new ArrayList<>();
 
   @ManyToMany(cascade = CascadeType.PERSIST)
   @JoinTable(
@@ -39,6 +38,10 @@ public class SmtpServerEntity {
     joinColumns = @JoinColumn(name = "host_id"),
     inverseJoinColumns = @JoinColumn(name = "server_id"))
   private List<SmtpHostEntity> hosts = new ArrayList<>();
+
+  public void addCrawlResult(SmtpCrawlResult crawlResult) {
+    crawlResults.add(crawlResult);
+  }
 
   public SmtpServerEntity fromSmtpServer(SmtpServer smtpServer) {
     this.setHostName(smtpServer.getHostName());
