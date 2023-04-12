@@ -68,15 +68,15 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else {
       if (resolution.getErrors().contains("Navigation timeout of 15000 ms exceeded")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.TimeOut.getStatus(),Status.TimeOut.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.TimeOut.getStatus(),Status.TimeOut.getStatus());
       } else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.UploadFailed.getStatus(),Status.UploadFailed.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.NameNotResolved.getStatus(),Status.NameNotResolved.getStatus());
       } // both html and screenshot not uploaded
       else if (resolution.getErrors().contains("uploading to S3 cancelled, html size bigger then 10Mb:")&resolution.getErrors().contains("screenshot bigger then 10MiB Upload to S3 cancelled")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.HtmlTooBig.getStatus(),Status.screenshotTooBig.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.HtmlTooBig.getStatus(),Status.screenshotTooBig.getStatus());
       } // html not uploaded, screenshot did upload
       else if (resolution.getErrors().contains("uploading to S3 cancelled, html size bigger then 10Mb:")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.HtmlTooBig.getStatus(),Status.Ok.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.HtmlTooBig.getStatus(),Status.Ok.getStatus());
         contentCrawlResult.bucket = resolution.getBucket();
         contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
         contentCrawlResult.harKey = resolution.getHarFile();
@@ -84,7 +84,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
         contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
       } // html uploaded screenshot not uploaded
       else if (resolution.getErrors().contains("screenshot bigger then 10MiB Upload to S3 cancelled")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.Ok.getStatus(),Status.screenshotTooBig.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.Ok.getStatus(),Status.screenshotTooBig.getStatus());
         contentCrawlResult.bucket = resolution.getBucket();
         contentCrawlResult.htmlKey = resolution.getHtmlFile();
         contentCrawlResult.htmlLength = resolution.getHtmlLength();
@@ -93,10 +93,10 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
         contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
       } // both html and screenshot not uploaded
       else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.UploadFailed.getStatus(),Status.UploadFailed.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.UploadFailed.getStatus(),Status.UploadFailed.getStatus());
       } // html not uploaded, screenshot did upload
       else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file")) ){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.UploadFailed.getStatus(),Status.Ok.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.UploadFailed.getStatus(),Status.Ok.getStatus());
         contentCrawlResult.bucket = resolution.getBucket();
         contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
         if (!(resolution.getErrors().contains("Upload failed for har file"))){
@@ -106,7 +106,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
         contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
       } // html uploaded screenshot not uploaded
       else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.Ok.getStatus(),Status.UploadFailed.getStatus());
+        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.Ok.getStatus(),Status.UploadFailed.getStatus());
         contentCrawlResult.bucket = resolution.getBucket();
         contentCrawlResult.htmlKey = resolution.getHtmlFile();
         contentCrawlResult.htmlLength = resolution.getHtmlLength();
