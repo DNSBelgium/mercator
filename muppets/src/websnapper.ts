@@ -10,8 +10,6 @@ import { ScraperResult } from "./scraper.js";
 import {v4 as uuid} from "uuid";
 import { request } from "express";
 
-const MAX_CONTENT_LENGTH = 10 * 1024 * 1024 ;
-
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {
     sqsOptions.endpoint = config.sqs_endpoint;
@@ -69,7 +67,8 @@ function clean(result: scraper.ScraperResult) {
 }
 
 function checkHtmlSize(dataLength){
-    return dataLength < MAX_CONTENT_LENGTH;
+    log("checkHtmlSize dataLength=[%s] max=[%s]",dataLength, config.max_content_length)
+    return dataLength < config.max_content_length
 }
 
 function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
@@ -98,9 +97,9 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
     const request = result.request
-
+    // TODO Tars: nakijken of deze if echt wel nodig is ??
     if (result) {
-        console.log("result is defined: " + result)
+        log("result is defined: " + result)
     } else {
         console.log("result is undefined: ")
         const errorResult : scraper.ScraperResult = {
@@ -114,8 +113,12 @@ export async function uploadToS3(result: scraper.ScraperResult) {
         return errorResult
     }
     //check if htmllenth is bigger then scanner max 10mb
-    if (checkHtmlSize(result.htmlLength)){
-        console.log("Uploading to S3 [%s]", prefix);
+    console.log("BEFORE checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
+    // TODO: no need to create a method for doing a simple comparison (unless you call it multiple times?)
+    if (checkHtmlSize(result.htmlLength)) {
+
+        log("Uploading to S3 [%s]", prefix);
+        console.log("AFTER (then) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
 
         return Promise.all([
             s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
@@ -123,13 +126,27 @@ export async function uploadToS3(result: scraper.ScraperResult) {
             s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
         ])
             .then(() => result);
+    } else {
+        console.log("AFTER (else) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
+
+        log("uploading of html to S3 cancelled since html size [%s] is bigger then %s", result.htmlLength, config.max_content_length)
+        result.errors.push("uploading to S3 cancelled, html size bigger then 10MiB")
+        return Promise.all([
+            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png")
+              .then(key => result.screenshotFile = key)
+              .catch((err) => result.errors.push(err.message)),
+            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json")
+              .then(key => result.harFile = key)
+              .catch((err) => result.errors.push(err.message)),
+        ])
+          .then(() => result);
     }
-    result.errors.push("uploading to S3 cancelled, html size bigger then 10MiB")
-    return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-    ])
-        .then(() => result);
+}
+
+function log(...data: any[]) {
+  if (config.verbose) {
+      console.log(data)
+  }
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {
@@ -145,7 +162,7 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
 
         metrics.getProcessedUrlCounter().inc();
 
-        console.log("Scraper returned with result [%s]", JSON.stringify(result));
+        log("Scraper returned with result [%s]", JSON.stringify(result));
         return result;
     } else {
         console.error("ERROR: message on SQS did not have a URL specified.");
