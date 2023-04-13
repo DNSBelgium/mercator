@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "is-valid-domain": "^0.1.6"
+  }
+}
