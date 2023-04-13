@@ -14,9 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.Instant;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -34,12 +36,31 @@ public class TlsCrawler implements Crawler {
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
+  @Value("${tls.crawler.visit.apex:true}")  private boolean visitApex;
+  @Value("${tls.crawler.visit.www:true}")   private boolean visitWww;
+  @Value("${tls.crawler.allow.noop:false}") private boolean allowNoop;
+
   @Autowired
   public TlsCrawler(MeterRegistry meterRegistry, TlsCrawlerService crawlerService, AckMessageService ackMessageService, FullScanCache fullScanCache) {
     this.meterRegistry = meterRegistry;
     this.crawlerService = crawlerService;
     this.ackMessageService = ackMessageService;
     this.fullScanCache = fullScanCache;
+  }
+
+  @PostConstruct
+  public void checkConfig() {
+    logger.info("visitApex = tls.crawler.visit.apex = {}", visitApex);
+    logger.info("visitWww  = tls.crawler.visit.www  = {}", visitWww);
+    if (!visitApex && !visitWww) {
+      logger.error("visitApex == visitWww == false => The TLS crawler will basically do nothing !!");
+      if (!allowNoop) {
+        logger.error("The TLS crawler will basically do nothing !!");
+        logger.error("Set tls.crawler.allow.noop=false if this is really what you want.");
+        throw new RuntimeException("visitApex == visitWww == allowNoop = false. \n" +
+            "Set tls.crawler.allow.noop=false if this is really what you want");
+      }
+    }
   }
 
   @Override
@@ -54,25 +75,37 @@ public class TlsCrawler implements Crawler {
       MDC.put("visitId", visitRequest.getVisitId().toString());
       logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
 
-      CrawlResult crawlResult = crawlerService.visit(visitRequest);
-      crawlerService.persist(crawlResult);
-      meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
-
-      if (crawlResult.isFresh()) {
-        fullScanCache.add(Instant.now(), crawlResult.getFullScanEntity());
+      if (visitApex) {
+        scanHostname("", visitRequest);
       }
+      if (visitWww) {
+        scanHostname("www.", visitRequest);
+      }
+
+      meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
       ackMessageService.sendAck(visitRequest, CrawlerModule.TLS);
 
-    } catch (Throwable e) {
-      if (exceptionContains(e, "duplicate key value violates unique constraint")) {
-        meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
-        logger.info("visit_id already in the database: {} => ignoring this request", visitRequest.getVisitId());
-      } else {
-        logAndRethrow(visitRequest, e);
-      }
     } finally {
       MDC.remove("domainName");
       MDC.remove("visitId");
+    }
+  }
+
+  private void scanHostname(String prefix, VisitRequest visitRequest) {
+    String hostName = prefix + visitRequest.getDomainName();
+    try {
+      CrawlResult crawlResult = crawlerService.visit(hostName, visitRequest);
+      crawlerService.persist(crawlResult);
+      if (crawlResult.isFresh()) {
+        fullScanCache.add(Instant.now(), crawlResult.getFullScanEntity());
+      }
+    } catch (Throwable e) {
+      if (exceptionContains(e, "duplicate key value violates unique constraint")) {
+        meterRegistry.counter(MetricName.COUNTER_DUPLICATE_VISITS).increment();
+        logger.info("crawlResult already in the database hostName={} visitId={} => ignoring this request", hostName, visitRequest.getVisitId());
+      } else {
+        logAndRethrow(visitRequest, e);
+      }
     }
   }
 

@@ -73,9 +73,8 @@ public class TlsCrawlerService {
    * @param visitRequest the domain name to visit
    * @return the results of scanning the domain name
    */
-  public CrawlResult visit(VisitRequest visitRequest) {
+  public CrawlResult visit(String hostName, VisitRequest visitRequest) {
     logger.info("Crawling {}", visitRequest);
-    String hostName = visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
 
     if (!address.isUnresolved()) {
@@ -85,11 +84,11 @@ public class TlsCrawlerService {
         logger.debug("Found matching result in the cache. Now get certificates for {}", hostName);
         TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
         SingleVersionScan singleVersionScan = (version != null) ? tlsScanner.scan(version, hostName) : null;
-        return CrawlResult.fromCache(visitRequest, resultFromCache.get(), singleVersionScan);
+        return CrawlResult.fromCache(hostName, visitRequest, resultFromCache.get(), singleVersionScan);
       }
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
-    return CrawlResult.fromScan(visitRequest, fullScan);
+    return CrawlResult.fromScan(hostName, visitRequest, fullScan);
   }
 
   @Transactional

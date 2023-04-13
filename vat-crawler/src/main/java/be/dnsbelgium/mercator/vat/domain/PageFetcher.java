@@ -13,6 +13,7 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,8 +26,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 @Service
 public class PageFetcher {
-
-  private final static long MAX_CONTENT_LENGTH = 8 * 1024 * 1024;
 
   private final static MediaType APPLICATION_JSON = MediaType.parse("application/json");
 
@@ -137,8 +136,8 @@ public class PageFetcher {
           return Page.CONTENT_TYPE_NOT_SUPPORTED;
         }
         long contentLength = responseBody.contentLength();
-        if (contentLength > MAX_CONTENT_LENGTH) {
-          logger.info("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(), MAX_CONTENT_LENGTH);
+        if (contentLength > config.getMaxContentLength().toBytes()) {
+          logger.info("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(), config.getMaxContentLength().toBytes());
           meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
           return Page.PAGE_TOO_BIG;
         }
@@ -156,16 +155,15 @@ public class PageFetcher {
           double hitRatio = 1.0 * client.cache().hitCount() / client.cache().requestCount();
           meterRegistry.gauge(MetricName.COUNTER_OKHTTP_CACHE_HIT_RATIO, hitRatio);
         }
-        if (body.length() > MAX_CONTENT_LENGTH) {
-          logger.info("url={} already fetched but skipped since length {} exceeds max content length of {}", url, body.length(), MAX_CONTENT_LENGTH);
+        if (body.length() > config.getMaxContentLength().toBytes()) {
+          logger.info("url={} already fetched but skipped since length {} exceeds max content length of {}", url, body.length(), config.getMaxContentLength().toBytes());
           meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
           return Page.PAGE_TOO_BIG;
         }
         return new Page(
-            response.request().url(),
-            sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType);
-      }
-
+                response.request().url(),
+                sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType);
+        }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.info("Failed to fetch {} because of {}", url, e.getMessage());
       meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();

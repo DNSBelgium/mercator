@@ -16,6 +16,8 @@ public class CrawlResult {
 
   private final ZonedDateTime crawlTimestamp;
 
+  private final String hostName;
+
   private final SingleVersionScan singleVersionScan;
 
   private final VisitRequest visitRequest;
@@ -24,22 +26,23 @@ public class CrawlResult {
 
   private final FullScanEntity fullScanEntity;
 
-  private CrawlResult(VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
+  private CrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
     this.crawlTimestamp = ZonedDateTime.now();
     this.singleVersionScan = singleVersionScan;
     this.visitRequest = visitRequest;
     this.fullScan = fullScan;
     this.fullScanEntity = fullScanEntity;
+    this.hostName = hostName;
   }
 
-  public static CrawlResult fromCache(VisitRequest visitRequest, FullScanEntity fullScanEntity, SingleVersionScan singleVersionScan) {
-    return new CrawlResult(visitRequest, singleVersionScan, fullScanEntity, null);
+  public static CrawlResult fromCache(String hostName, VisitRequest visitRequest, FullScanEntity fullScanEntity, SingleVersionScan singleVersionScan) {
+    return new CrawlResult(hostName, visitRequest, singleVersionScan, fullScanEntity, null);
   }
 
-  public static CrawlResult fromScan(VisitRequest visitRequest, FullScan fullScan) {
+  public static CrawlResult fromScan(String hostName, VisitRequest visitRequest, FullScan fullScan) {
     ZonedDateTime crawlTimestamp = ZonedDateTime.now();
     FullScanEntity fullScanEntity = convert(crawlTimestamp, fullScan);
-    return new CrawlResult(visitRequest, null, fullScanEntity, fullScan);
+    return new CrawlResult(hostName, visitRequest, null, fullScanEntity, fullScan);
   }
 
   public FullScanEntity getFullScanEntity() {
@@ -100,7 +103,7 @@ public class CrawlResult {
         .fullScanEntity(this.fullScanEntity)
         .visitId(this.visitRequest.getVisitId())
         .domainName(this.visitRequest.getDomainName())
-        .hostName(this.visitRequest.getDomainName())
+        .hostName(this.hostName)
         .crawlTimestamp(this.crawlTimestamp)
         .leafCertificateEntity(leafCertificateEntity)
         .certificateExpired(certificateExpired)

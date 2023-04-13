@@ -6,7 +6,10 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.core.io.ClassPathResource;
@@ -16,6 +19,8 @@ import java.io.IOException;
 import java.util.List;
 
 import lombok.SneakyThrows;
+import org.testcontainers.shaded.org.apache.commons.lang3.StringUtils;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
@@ -124,6 +129,31 @@ class VatScraperTest {
             .withBody(body)
             .withHeader("Content-Type", "text/html; charset=UTF-8"))
     );
+  }
+
+  @Test
+  @Disabled
+  public void fetchPageAndParseTestWith1PageThatErrors() throws IOException {
+    HttpUrl baseUrl;
+    String BIG_BODY = StringUtils.repeat("abcdefghjiklmnopqrst", 10_000_000);
+    try (MockWebServer mockWebServer = new MockWebServer()) {
+      MockResponse response = new MockResponse()
+        .setChunkedBody(BIG_BODY, 100);
+      PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
+      testFetcher.clearCache();
+      VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new LinkPrioritizer());
+      mockWebServer.enqueue(response);
+      mockWebServer.enqueue(new MockResponse().setBody("test"));
+      mockWebServer.start();
+      baseUrl = mockWebServer.url("/");
+      Page page1 = testVatScraper.fetchAndParse(baseUrl);
+      assertThat(page1).isEqualTo(null);
+      testFetcher.clearCache();
+      Page page2 = testVatScraper.fetchAndParse(baseUrl);
+      logger.info("page = {}", page2);
+      assertThat(page2.getStatusCode()).isEqualTo(200);
+      assertThat(page2.getResponseBody()).isEqualTo("test");
+    }
   }
 
 }
