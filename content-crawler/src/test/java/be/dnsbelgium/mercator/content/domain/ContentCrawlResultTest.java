@@ -11,6 +11,68 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ContentCrawlResultTest {
 
+  //html status tests
+  @Test
+  void testHtmlStatusTooBig(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlFailTooBig();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testHtmlUploadFail(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlUploadFail();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testHtmlStatusNameNotFound(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testHtmlTimeOut(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestTimeOut();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+
+  //screenhshot status tests
+  @Test
+  void testScreenhsotStatusTooBig(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlFailTooBig();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testScreenshotUploadFail(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlUploadFail();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testScreenshotStatusNameNotFound(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+  @Test
+  void testScreenshotTimeOut(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestTimeOut();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+  }
+
+
+
   @Test
   void testOfContentResolution() {
     MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTest();

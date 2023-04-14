@@ -81,7 +81,7 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
         console.log("Key = [%s]", putObjectPromise.Key);
         return putObjectPromise.Key;
     }).catch(err => {
-        if (params.Key.endsWith("screenshot.png")){
+        if (params.Key.endsWith("screenshot.png")||params.Key.endsWith("screenshot.webp")){
             throw new Error(`Upload failed for screenshot file [${params.Key}] : [${JSON.stringify(err)}]`);
         } else if (params.Key.endsWith("html")) {
             throw new Error(`Upload failed for html file [${params.Key}] : [${JSON.stringify(err)}]`);
@@ -93,29 +93,25 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
 }
 
 export async function uploadToS3(result: scraper.ScraperResult) {
-    const url = new URL(result.request.url);
+    const url:URL = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
-    const prefix = computePath(url);
+    const prefix:string = computePath(url);
+    const s3UploadResults:Promise<string | number>[] = [];
 
     console.log("Uploading to S3 [%s]", prefix);
     if (result.screenshotData!=undefined){
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length/1024)/1024);
         if (result.screenshotData.length<10*1024*1024){
-            return Promise.all([
-                s3UploadFile(result.screenshotData, "screenshot."+result.screenshotType, prefix, "image/"+result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-                s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
-                s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-            ])
-                .then(() => result);
+            s3UploadResults.push(s3UploadFile(result.screenshotData, "screenshot." + result.screenshotType, prefix, "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
         }
-        if (result.screenshotData.length>10*1024*1024){
-            console.log("large screenshot from :"+result.url)
-            console.log("with id :"+result.id)
+        if (result.screenshotData.length>=10*1024*1024){
             metrics.getBigScreenshotCounter().inc()
             result.errors.push("screenshot bigger then 10MiB Upload to S3 cancelled")
         }
     }
-    return result
+    s3UploadResults.push(s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)));
+    s3UploadResults.push(s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)));
+    return Promise.all(s3UploadResults).then(() => result);
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {
