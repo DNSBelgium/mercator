@@ -6,9 +6,6 @@ import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
 import config from "./config.js";
 import { computePath } from "./util.js";
-import { ScraperResult } from "./scraper.js";
-import { v4 as uuid } from "uuid";
-import { request } from "express";
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {
@@ -66,13 +63,8 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
-//TODO remove later
-function checkHtmlSize(dataLength){
-    log("checkHtmlSize dataLength=[%s] max=[%s]",dataLength, config.max_content_length)
-    return dataLength < config.max_content_length
-}
 
-function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
+export function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
     if (!data)
         return Promise.resolve("");
 
@@ -97,12 +89,10 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
-    const request = result.request
 
     console.log("BEFORE checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
-    // TODO: no need to create a method for doing a simple comparison (unless you call it multiple times?)
     if (result.htmlLength!=undefined && result.htmlLength<config.max_content_length) {
-
+        log("checkHtmlSize dataLength=[%s] max=[%s]",result.htmlLength, config.max_content_length)
         log("Uploading to S3 [%s]", prefix);
         console.log("AFTER (then) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
 
