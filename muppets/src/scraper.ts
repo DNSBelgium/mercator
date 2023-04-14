@@ -65,7 +65,6 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
-    // does it need to be given or only when it is skipped -> true ?
     htmlSkipped?: boolean;
     screenshotSkipped?:boolean;
     harSkipped?:boolean;
