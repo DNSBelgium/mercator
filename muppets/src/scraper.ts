@@ -65,6 +65,10 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    // does it need to be given or only when it is skipped -> true ?
+    htmlSkipped?: boolean;
+    screenshotSkipped?:boolean;
+    harSkipped?:boolean;
 }
 
 let browser: puppeteer.Browser;
@@ -329,7 +333,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
     } catch (e) {
         if (e instanceof Error) {
-            console.error("Error catched [%s]", e.message);
+            console.error("Error caught [%s]", e.message);
             if (e.message === `Navigation timeout of ${GOTO_TIMEOUT} ms exceeded`) {
                 metrics.getDomainTimeOuts().inc();
             }

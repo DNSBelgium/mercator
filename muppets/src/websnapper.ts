@@ -7,7 +7,7 @@ import * as scraper from "./scraper.js";
 import config from "./config.js";
 import { computePath } from "./util.js";
 import { ScraperResult } from "./scraper.js";
-import {v4 as uuid} from "uuid";
+import { v4 as uuid } from "uuid";
 import { request } from "express";
 
 const sqsOptions: ServiceConfigurationOptions = {};
@@ -66,6 +66,7 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
+//TODO remove later
 function checkHtmlSize(dataLength){
     log("checkHtmlSize dataLength=[%s] max=[%s]",dataLength, config.max_content_length)
     return dataLength < config.max_content_length
@@ -97,28 +98,15 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
     const request = result.request
-    // TODO Tars: nakijken of deze if echt wel nodig is ??
-    if (result) {
-        log("result is defined: " + result)
-    } else {
-        console.log("result is undefined: ")
-        const errorResult : scraper.ScraperResult = {
-            id: "",
-            ipv4: "",
-            ipv6: "",
-            request: request,
-            errors: []
-        };
-        errorResult.errors.push("uploadToS3 called with undefined")
-        return errorResult
-    }
-    //check if htmllenth is bigger then scanner max 10mb
+
     console.log("BEFORE checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
     // TODO: no need to create a method for doing a simple comparison (unless you call it multiple times?)
-    if (checkHtmlSize(result.htmlLength)) {
+    if (result.htmlLength!=undefined && result.htmlLength<config.max_content_length) {
 
         log("Uploading to S3 [%s]", prefix);
         console.log("AFTER (then) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
+
+        result.htmlSkipped = false;
 
         return Promise.all([
             s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
@@ -130,14 +118,12 @@ export async function uploadToS3(result: scraper.ScraperResult) {
         console.log("AFTER (else) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
 
         log("uploading of html to S3 cancelled since html size [%s] is bigger then %s", result.htmlLength, config.max_content_length)
-        result.errors.push("uploading to S3 cancelled, html size bigger then 10MiB")
+
+        result.htmlSkipped = true;
+
         return Promise.all([
-            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png")
-              .then(key => result.screenshotFile = key)
-              .catch((err) => result.errors.push(err.message)),
-            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json")
-              .then(key => result.harFile = key)
-              .catch((err) => result.errors.push(err.message)),
+            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
+            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
         ])
           .then(() => result);
     }

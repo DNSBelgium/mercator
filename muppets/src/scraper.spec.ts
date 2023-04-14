@@ -1,7 +1,7 @@
 import * as Scraper from './scraper';
 import * as Websnapper from './websnapper';
 import { ScraperParams } from './scraper';
-import { expect } from 'chai';
+import {assert, expect} from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
@@ -50,11 +50,12 @@ describe('Scraper Tests', function () {
         });
     });
 
-    it('S3 bucket upload cancelled due to html size', () => {
+    it('S3 bucket upload fails due to html size', () => {
         return Scraper.websnap(params).then(scraperResult => {
             scraperResult.htmlLength = 11*1024*1024;
             return Websnapper.uploadToS3(scraperResult).then(result => {
-                expect(result.errors).to.be.an('array').that.includes("uploading to S3 cancelled, html size bigger then 10MiB")
+                expect(result.htmlSkipped).to.equal(true);
+                expect(result.errors).to.be.empty
             });
         });
     });
@@ -62,10 +63,20 @@ describe('Scraper Tests', function () {
     it('S3 bucket upload succeeds', () => {
         return Scraper.websnap(params).then(scraperResult => {
             return Websnapper.uploadToS3(scraperResult).then(result => {
-                console.log(result.errors)
-                expect(result.errors).to.be.an('array').that.not.includes("uploading to S3 cancelled, html size bigger then 10MiB")
+                expect(result.htmlSkipped).to.equal(false)
+                expect(result.errors).to.be.empty
             });
         });
     });
 
+    it('S3 bucket upload does not happen twice when html fails', () => {
+        return Scraper.websnap(params).then(scraperResult => {
+            scraperResult.errors = [];
+            //find a way to see if the retry logic gets called
+            return Websnapper.uploadToS3(scraperResult).then(result => {
+                expect(result.htmlSkipped).to.equal(true)
+                expect(result.errors).to.be.empty
+            });
+        });
+    });
 });
