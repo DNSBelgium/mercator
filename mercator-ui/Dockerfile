@@ -1,4 +1,4 @@
-FROM node:lts-alpine@sha256:26a1b20f194c2adab3be2d9e569ca837ddd31fe105d95dd51344e5bf829f1349 as build
+FROM node:lts-alpine@sha256:a136ed7b0df71082cdb171f36d640ea3b392a5c70401c642326acee767b8c540 as build
 
 #ARG NODE_ENV=production
 #ENV NODE_ENV $NODE_ENV
