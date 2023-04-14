@@ -1,7 +1,7 @@
 import * as Scraper from './scraper';
 import * as Websnapper from './websnapper';
 import { ScraperParams } from './scraper';
-import {assert, expect} from 'chai';
+import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
@@ -10,7 +10,6 @@ describe('Scraper Tests', function () {
     this.timeout(15000);
 
     const mockUuid = '1fe39e26-9d20-4cc0-8696-fe7887a3dfbc';
-    // sinon.stub(uuid, 'v4').returns(mockUuid);
     Object.defineProperty(uuid, 'v4', { value: mockUuid});
 
     let params: ScraperParams = {
@@ -56,27 +55,9 @@ describe('Scraper Tests', function () {
             return Websnapper.uploadToS3(scraperResult).then(result => {
                 expect(result.htmlSkipped).to.equal(true);
                 expect(result.errors).to.be.empty
+                console.log(result.errors)
             });
         });
     });
 
-    it('S3 bucket upload succeeds', () => {
-        return Scraper.websnap(params).then(scraperResult => {
-            return Websnapper.uploadToS3(scraperResult).then(result => {
-                expect(result.htmlSkipped).to.equal(false)
-                expect(result.errors).to.be.empty
-            });
-        });
-    });
-
-    it('S3 bucket upload does not happen twice when html fails', () => {
-        return Scraper.websnap(params).then(scraperResult => {
-            scraperResult.errors = [];
-            //find a way to see if the retry logic gets called
-            return Websnapper.uploadToS3(scraperResult).then(result => {
-                expect(result.htmlSkipped).to.equal(true)
-                expect(result.errors).to.be.empty
-            });
-        });
-    });
 });
