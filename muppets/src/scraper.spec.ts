@@ -1,10 +1,12 @@
 import * as Scraper from './scraper';
 import * as Websnapper from './websnapper';
 import { ScraperParams } from './scraper';
+import sinon from 'sinon';
 import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
+import { uploadToS3 } from "./websnapper";
 
 describe('Scraper Tests', function () {
     this.timeout(15000);
@@ -55,6 +57,17 @@ describe('Scraper Tests', function () {
             return Websnapper.uploadToS3(scraperResult).then(result => {
                 expect(result.htmlSkipped).to.equal(true);
                 expect(result.errors).to.be.empty
+            });
+        });
+    });
+
+    it('S3 bucket succeeds', () => {
+        return Scraper.websnap(params).then(scraperResult => {
+            scraperResult.htmlLength = 11*1024*1024;
+            return Websnapper.uploadToS3(scraperResult).then(result => {
+                expect(result.htmlSkipped).to.equal(true);
+                expect(result.errors).to.be.empty
+                sinon.assert.calledThrice(uploadToS3(result))
                 console.log(result.errors)
             });
         });
