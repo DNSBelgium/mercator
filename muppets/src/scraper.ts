@@ -66,6 +66,9 @@ export interface ScraperResult {
     request: ScraperParams;
     errors: string[];
     screenshotType: string;
+    htmlSkipped?: boolean;
+    screenshotSkipped?:boolean;
+    harSkipped?:boolean;
 }
 
 let browser: puppeteer.Browser;

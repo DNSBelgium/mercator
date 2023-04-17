@@ -26,59 +26,29 @@ describe('Scraper Tests', function () {
         retries: 0,
     };
 
-    it('dns', () => {
+    it('dns should succeed', () => {
         return Scraper.websnap(params).then(scraperResult => {
-            if(scraperResult!=undefined){
-                // @ts-ignore
-                console.log(scraperResult.screenshotData.length+" B")
-                // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024+" KiB")
-                // @ts-ignore
+            if(scraperResult.screenshotData!=undefined){
                 console.log(scraperResult.screenshotData.length/1024/1024+" MiB")
             }
             // @ts-ignore
             return Websnapper.uploadToS3(scraperResult).then(result => {
                 console.log(result.errors)
+                expect(result.screenshotSkipped).to.equal(false)
                 expect(result.errors).to.be.empty;
             })
         });
     });
 
-    it('standaard_png_should come out in webp', () => {
-        params.url='https://standaard.be';
-
+    it('dns should fail length > then max', () => {
         return Scraper.websnap(params).then(scraperResult => {
             if(scraperResult.screenshotData!=undefined){
-
-                console.log(scraperResult.screenshotData.length/1024+" kB")
-
                 console.log(scraperResult.screenshotData.length/1024/1024+" mB")
-
-                scraperResult.screenshotData?.length+10*1024*1024;
-            }
-            return Websnapper.uploadToS3(scraperResult).then(result => {
-                console.log(result.errors)
-                console.log(result.screenshotType)
-                expect(result.errors).to.contain("screenshot")
-            })
-        });
-    });
-
-    it('kinepolis', () => {
-       params.url = 'kinepolis.be'
-
-        return Scraper.websnap(params).then(scraperResult => {
-            if(scraperResult!=undefined){
-                // @ts-ignore
-                console.log(scraperResult.screenshotData.length+" B")
-                // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024+" KiB")
-                // @ts-ignore
-                console.log(scraperResult.screenshotData.length/1024/1024+" MiB")
             }
             return Websnapper.uploadToS3(scraperResult).then(result => {
                 console.log(result.errors)
                 expect(result.errors).to.be.empty;
+                expect(result.screenshotSkipped).to.be.equal(true)
             })
         });
     });
