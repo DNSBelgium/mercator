@@ -5,7 +5,7 @@
 */
 
 $clickables-color: #007bff;
-$clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
+$clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
 
 /* App.js */
 .App {
@@ -26,7 +26,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 /* NavigationBar.jsx */
 #NavBar-Div {
   padding: 2rem 3rem;
-  background-color:#e3f5ff;
+  background-color: #e3f5ff;
   min-width: 100px;
 
   #form-container {
@@ -85,24 +85,29 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       background-color: #e3f5ff;
       color: #2a6485;
     }
+
     th {
       vertical-align: middle !important; //Overwriting Bootstrap
       padding-left: 10px !important; //Overwriting Bootstrap
     }
+
     td {
       padding-top: 0px !important; //Overwriting Bootstrap
       padding-bottom: 0px !important; //Overwriting Bootstrap
     }
+
     // All Status td's and Visit Id
     td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       text-align: center;
       justify-content: center;
       align-items: center;
     }
+
     // Crawl Time td & Visit Id td
     td:nth-child(1), td:nth-child(6) {
       vertical-align: middle !important; //Overwriting Bootstrap
     }
+
     // Image row
     td:nth-child(7) {
       vertical-align: middle !important; //Overwriting Bootstrap
@@ -111,9 +116,11 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
         padding: 0;
       }
     }
+
     th:nth-child(2), th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6), th:nth-child(7), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7) {
       max-width: 50px;
     }
+
     #Copy-Id-Btn {
       background-color: $clickables-secondary-color;
       border: 0px;
@@ -124,7 +131,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       max-height: 100%;
     }
   }
-  
+
   /* Paging buttons at the bottom of the table */
   #Paging-Div {
     margin-left: auto;
@@ -139,6 +146,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       background-color: white;
       border: none;
     }
+
     .current-page {
       color: $clickables-secondary-color;
       text-decoration: underline;
@@ -179,7 +187,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       flex-basis: 19.18%;
       border: 1px solid;
       text-align: center;
-  
+
       p {
         bottom: 0;
         // margin-top: 1rem;
@@ -187,7 +195,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
         margin-bottom: 0;
         color: $clickables-color;
       }
-  
+
       img {
         max-width: 100%;
         max-height: 19vh;
@@ -201,7 +209,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     #flex-item:hover {
       cursor: pointer;
       box-shadow: 5px 5px $clickables-secondary-color;
-      
+
       p {
         color: $clickables-secondary-color;
       }
@@ -254,6 +262,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     color: $clickables-color;
     border: none;
   }
+
   .open-all-button:hover {
     color: $clickables-secondary-color;
     text-decoration: none;
@@ -267,7 +276,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
   }
 
   /* Details Card tables */
-  .content-table, .smtp-table, .html-table, .dns-table, .vat-table{
+  .content-table, .smtp-table, .html-table, .dns-table, .vat-table, .tls-table {
     margin-top: -15px;
     margin-bottom: -15px;
   }
@@ -277,6 +286,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     width: 650px;
     max-width: 650px;
   }
+
   th {
     width: 350px;
   }
@@ -288,6 +298,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     color: $clickables-color;
     background-color: white;
   }
+
   .more-info:hover {
     color: $clickables-secondary-color;
   }
@@ -307,17 +318,19 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       font-weight: bold;
     }
   }
-  
+
   /* ContentCrawlCard.jsx */
   #content-card {
     #metrics-json-content {
       overflow: hidden;
     }
+
     .content-card-link-button {
       color: $clickables-color;
       border: none;
       background-color: white;
     }
+
     .content-card-link-button:hover {
       color: $clickables-secondary-color;
       text-decoration: underline;
@@ -330,6 +343,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
         flex-direction: column;
         text-align: start;
       }
+
       .technologies-names-btns {
         margin-top: 0.25rem;
         max-width: 10rem;
@@ -338,9 +352,11 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
         text-align: start;
         color: $clickables-color;
       }
+
       .technologies-names-btns:hover {
         text-decoration: underline;
       }
+
       .no-bullet {
         list-style-type: none;
       }
@@ -353,7 +369,8 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
       margin-top: 8px;
       margin-bottom: -10px;
     }
-    .dns-records{
+
+    .dns-records {
       margin-top: 10px;
       margin-bottom: 10px;
       word-wrap: break-word;
@@ -373,18 +390,19 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
       .prefix-data-div {
         display: flex;
-        
+
         li {
           margin-bottom: 10px;
           max-width: 700px;
           word-wrap: break-word;
         }
       }
+
       .prefix-data-div > :first-child {
         min-width: 2.5rem; // Just width doesn't work
         max-width: 2.5rem; // Due to dynamic rendering
       }
-      
+
       .geo-ip-data {
         margin-left: 1rem;
         // display: flex;
@@ -401,11 +419,13 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     .smtp-crawl-timestamps {
       color: $clickables-color;
     }
+
     .smtp-crawl-timestamps:hover {
       color: $clickables-secondary-color;
       text-decoration: underline;
       cursor: pointer;
     }
+
     #SMTP-Hosts-Card {
       padding-left: 1.25rem;
       padding-top: 0.5rem;
@@ -424,7 +444,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
   /* VATCard.jsx */
   // #vat-card {
-    // No css necessary.
+  // No css necessary.
   // }
 
   /* SSLCard.jsx */
@@ -432,6 +452,7 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
     .nested-table-header {
       width: 150px;
     }
+
     .nested-table-data {
       line-break: anywhere;
     }
@@ -439,27 +460,43 @@ $clickables-secondary-color: #2a6485;//rgba(86, 86, 255, 0.755);
 
   /* TLSCard.jsx */
   #tls-card {
-    .certificates-chain{
+    .certificates-chain {
       border-top: solid #d3e5ff 2px;
     }
+
     .truncate {
       text-overflow: ellipsis;
       word-break: break-all;
-      overflow:hidden;
+      overflow: hidden;
       white-space: nowrap;
     }
-    .truncate:hover{
+
+    .truncate:hover {
       overflow: visible;
       white-space: normal;
     }
+
     .copy-btn {
       float: right;
       width: 25px;
       height: 25px;
     }
+
     .copy-btn:hover {
       cursor: pointer;
       color: #e3f5ff;
+    }
+
+    .duration {
+      text-align: right;
+    }
+
+    .bi-check {
+      color: green;
+    }
+
+    .bi-x {
+      color: red;
     }
   }
 }

@@ -5,9 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface CertificateRepository extends PagingAndSortingRepository<CertificateEntity, Long> {
 
@@ -15,8 +13,8 @@ public interface CertificateRepository extends PagingAndSortingRepository<Certif
   Optional<CertificateEntity> findBySha256fingerprint(@Param("fingerprint") String fingerprint);
 
   @Query("select c from CertificateEntity c" +
-    "    join CrawlResultEntity cr on c.sha256fingerprint = cr.leafCertificateEntity" +
-    "    where cr.visitId = :visitId")
-  List<CertificateEntity> findRelatedToCrawlResult(@Param("visitId") UUID visitId);
+    " join CrawlResultEntity cr on c.sha256fingerprint = cr.leafCertificateEntity" +
+    " where cr.id = :crawlResultId")
+  Optional<CertificateEntity> findByCrawlResultId(@Param("crawlResultId") Long crawlResultId);
 
 }
