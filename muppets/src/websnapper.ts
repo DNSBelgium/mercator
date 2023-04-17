@@ -101,11 +101,11 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     console.log("Uploading to S3 [%s]", prefix);
     if (result.screenshotData!=undefined){
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length/1024)/1024);
-        if (result.screenshotData.length<10*1024*1024){
+        if (result.screenshotData.length < config.max_content_length){
             s3UploadResults.push(s3UploadFile(result.screenshotData, "screenshot." + result.screenshotType, prefix, "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
             result.screenshotSkipped = false
         }
-        if (result.screenshotData.length>=10*1024*1024){
+        if (result.screenshotData.length >= config.max_content_length){
             metrics.getBigScreenshotCounter().inc()
             result.screenshotSkipped = true
         }
