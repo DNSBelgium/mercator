@@ -54,6 +54,7 @@ describe('Scraper Tests', function () {
         return Scraper.websnap(params).then(scraperResult => {
             scraperResult.htmlLength = 11*1024*1024;
             return Websnapper.uploadToS3(scraperResult).then(result => {
+                console.log(result.errors)
                 expect(result.htmlSkipped).to.equal(true);
                 expect(result.errors).to.be.empty
             });
@@ -62,11 +63,10 @@ describe('Scraper Tests', function () {
 
     it('S3 bucket succeeds', () => {
         return Scraper.websnap(params).then(scraperResult => {
-            scraperResult.htmlLength = 11*1024*1024;
             return Websnapper.uploadToS3(scraperResult).then(result => {
-                expect(result.htmlSkipped).to.equal(true);
-                expect(result.errors).to.be.empty
                 console.log(result.errors)
+                expect(result.htmlSkipped).to.equal(false);
+                expect(result.errors).to.be.empty
             });
         });
     });

@@ -89,34 +89,22 @@ export async function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);
+    const s3UploadResults:Promise<string | number>[] = [];
 
     console.log("BEFORE checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
-    if (result.htmlLength!=undefined && result.htmlLength<config.max_content_length) {
-        log("checkHtmlSize dataLength=[%s] max=[%s]",result.htmlLength, config.max_content_length)
-        log("Uploading to S3 [%s]", prefix);
-        console.log("AFTER (then) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
-
-        result.htmlSkipped = false;
-
-        return Promise.all([
-            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-            s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
-            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-        ])
-            .then(() => result);
-    } else {
-        console.log("AFTER (else) checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
-
-        log("uploading of html to S3 cancelled since html size [%s] is bigger then %s", result.htmlLength, config.max_content_length)
-
-        result.htmlSkipped = true;
-
-        return Promise.all([
-            s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-            s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-        ])
-          .then(() => result);
+    if (result.htmlLength!= undefined && result.htmlLength < config.max_content_length) {
+        log("checkHtmlSize dataLength=[%s] max=[%s]", result.htmlLength, config.max_content_length)
+        result.htmlSkipped = false
+        s3UploadResults.push(s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)));
     }
+    if (result.htmlLength== undefined || result.htmlLength >= config.max_content_length){
+        log("uploading of html to S3 cancelled since html size [%s] is bigger then %s", result.htmlLength, config.max_content_length)
+        result.htmlSkipped = true
+    }
+    log("Uploading to S3 [%s]", prefix);
+    s3UploadResults.push(s3UploadFile(result.screenshotData, "screenshot.", prefix, "image/").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
+    s3UploadResults.push(s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)));
+    return Promise.all(s3UploadResults).then(() => result);
 }
 
 function log(...data: any[]) {
