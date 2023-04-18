@@ -139,7 +139,7 @@ class VatScraperTest {
     try (MockWebServer mockWebServer = new MockWebServer()) {
       MockResponse response = new MockResponse()
         .setChunkedBody(BIG_BODY, 100);
-      PageFetcher testFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.testConfig());
+      PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
       testFetcher.clearCache();
       VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new LinkPrioritizer());
       mockWebServer.enqueue(response);

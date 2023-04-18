@@ -86,7 +86,8 @@ public class CacheIntegrationTest {
     logger.info("======= visiting allesmoetduurzaam.be ====");
     try {
       // this will generate an SQL exception
-      CrawlResult result = tlsCrawlerService.visit(visitRequest1);
+      String hostName = visitRequest1.getDomainName();
+      CrawlResult result = tlsCrawlerService.visit(hostName, visitRequest1);
       tlsCrawlerService.persist(result);
 
     } catch (DataIntegrityViolationException e) {
@@ -94,7 +95,8 @@ public class CacheIntegrationTest {
     }
 
     logger.info("======= visiting sportgolf.be ====");
-    CrawlResult result2 = tlsCrawlerService.visit(visitRequest2);
+    String hostName = visitRequest2.getDomainName();
+    CrawlResult result2 = tlsCrawlerService.visit(hostName, visitRequest2);
     tlsCrawlerService.persist(result2);
 
     // javax.cache.CacheManager cacheManager;
