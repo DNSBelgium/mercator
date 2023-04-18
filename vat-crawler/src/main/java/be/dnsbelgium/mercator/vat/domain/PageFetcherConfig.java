@@ -72,20 +72,6 @@ public class PageFetcherConfig {
     );
   }
 
-  public static PageFetcherConfig testConfig() {
-    return new PageFetcherConfig(
-        new File("/tmp/cache/"),
-        DataSize.of(100, DataUnit.MEGABYTES),
-        Duration.ofHours(24),
-        Duration.ofSeconds(5),
-        Duration.ofSeconds(5),
-        Duration.ofSeconds(5),
-        Duration.ofSeconds(8),
-        DEFAULT_USER_AGENT,
-        DataSize.of(100, DataUnit.KILOBYTES)
-    );
-  }
-
   public File getCacheDirectory() {
     return cacheDirectory;
   }
