@@ -24,6 +24,7 @@ public class MuppetsResolution implements Resolution {
   String browserVersion;
   Integer retries;
   boolean htmlSkipped;
-  boolean sceenshotSkipped;
+  boolean screenshotSkipped;
   boolean harSkipped;
 }
+

@@ -69,7 +69,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
         contentCrawlResult.htmlLength = null;
         contentCrawlResult.html_status = Status.HtmlTooBig.getStatus();
       }
-      if (!resolution.isSceenshotSkipped()){
+      if (!resolution.isScreenshotSkipped()){
         contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
         contentCrawlResult.screenshot_status = Status.Ok.getStatus();
       } else {

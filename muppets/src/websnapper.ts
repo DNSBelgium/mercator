@@ -64,7 +64,7 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
-function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
+export function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
     if (!data)
         return Promise.resolve("");
 
@@ -91,27 +91,30 @@ function s3UploadFile(data: string | void | Buffer, filename: string, prefix: st
         throw new Error(`Upload failed for file [${params.Key}] : [${JSON.stringify(err)}]`);
     });
 }
+export interface S3UploadFunction {
+    (data: string | void | Buffer, filename: string, prefix: string, contentType?: string): Promise<string>;
+    }
 
-export async function uploadToS3(result: scraper.ScraperResult) {
-    const url:URL = new URL(result.request.url);
+export async function uploadToS3(result: scraper.ScraperResult, uploadFunction: S3UploadFunction = s3UploadFile) {
+    const url: URL = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
-    const prefix:string = computePath(url);
-    const s3UploadResults:Promise<string | number>[] = [];
+    const prefix: string = computePath(url);
+    const s3UploadResults: Promise<string | number>[] = [];
 
     console.log("Uploading to S3 [%s]", prefix);
-    if (result.screenshotData!=undefined){
-        metrics.getScreenshotsSizes().observe((result.screenshotData?.length/1024)/1024);
-        if (result.screenshotData.length < config.max_content_length){
-            s3UploadResults.push(s3UploadFile(result.screenshotData, "screenshot." + result.screenshotType, prefix, "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
+    if (result.screenshotData != undefined) {
+        metrics.getScreenshotsSizes().observe((result.screenshotData?.length / 1024) / 1024);
+        if (result.screenshotData.length < config.max_content_length) {
+            s3UploadResults.push(uploadFunction(result.screenshotData, "screenshot." + result.screenshotType, prefix, "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
             result.screenshotSkipped = false
         }
-        if (result.screenshotData.length >= config.max_content_length){
+        if (result.screenshotData.length >= config.max_content_length) {
             metrics.getBigScreenshotCounter().inc()
             result.screenshotSkipped = true
         }
     }
-    s3UploadResults.push(s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)));
-    s3UploadResults.push(s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)));
+    s3UploadResults.push(uploadFunction(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)));
+    s3UploadResults.push(uploadFunction(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)));
     return Promise.all(s3UploadResults).then(() => result);
 }
 
