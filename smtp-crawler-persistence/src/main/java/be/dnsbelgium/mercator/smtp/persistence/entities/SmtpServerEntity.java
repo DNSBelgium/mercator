@@ -29,14 +29,14 @@ public class SmtpServerEntity {
 
   private int priority;
 
-  @ManyToMany(mappedBy = "servers")
+  @ManyToMany(mappedBy = "smtpServerEntities", cascade = CascadeType.PERSIST)
   private List<SmtpCrawlResult> crawlResults = new ArrayList<>();
 
   @ManyToMany(cascade = CascadeType.PERSIST)
   @JoinTable(
     name = "smtp_server_host",
-    joinColumns = @JoinColumn(name = "host_id"),
-    inverseJoinColumns = @JoinColumn(name = "server_id"))
+    joinColumns = @JoinColumn(name = "server_id"),
+    inverseJoinColumns = @JoinColumn(name = "host_id"))
   private List<SmtpHostEntity> hosts = new ArrayList<>();
 
   public void addCrawlResult(SmtpCrawlResult crawlResult) {

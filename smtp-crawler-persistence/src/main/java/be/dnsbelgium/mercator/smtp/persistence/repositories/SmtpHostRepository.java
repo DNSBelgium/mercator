@@ -12,10 +12,9 @@ import java.util.Optional;
 
 public interface SmtpHostRepository extends PagingAndSortingRepository<SmtpHostEntity, Long> {
   @Query(value = "select * from smtp_crawler.smtp_host h " +
-    "join smtp_crawler.smtp_server_host sh on sh.host_id = h.id " +
-    "join smtp_crawler.smtp_server s on sh.server_id = s.id " +
-    "join smtp_crawler.smtp_crawl_result c on c.id = s.crawl_result " +
-    "where h.ip = ?1 and (cast(?2 as timestamp) - c.crawl_timestamp) < '24 hours' ",
+    "where h.ip = ?1 and (cast(?2 as timestamp) - h.timestamp) < '24 hours' " +
+    "order by h.timestamp desc " +
+    "limit 1",
     nativeQuery = true)
   Optional<SmtpHostEntity> findRecentCrawlByIp(@Param("ip") String ip, @Param("date_time") ZonedDateTime dateTime);
 }

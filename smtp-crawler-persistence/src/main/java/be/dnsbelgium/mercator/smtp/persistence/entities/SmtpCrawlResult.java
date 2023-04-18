@@ -45,12 +45,12 @@ public class SmtpCrawlResult {
   @Column(name = "servers", columnDefinition = "jsonb")
   private List<SmtpServer> servers = new ArrayList<>();
 
+  @ToString.Exclude
   @ManyToMany(cascade = CascadeType.PERSIST)
   @JoinTable(
     name = "crawl_result_server",
-    joinColumns = @JoinColumn(name = "server_id"),
-    inverseJoinColumns = @JoinColumn(name = "crawl_id"))
-  @ToString.Exclude
+    joinColumns = @JoinColumn(name = "crawl_id"),
+    inverseJoinColumns = @JoinColumn(name = "server_id"))
   private List<SmtpServerEntity> smtpServerEntities = new ArrayList<>();
 
   private static final Logger logger = getLogger(SmtpCrawlResult.class);

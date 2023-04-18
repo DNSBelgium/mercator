@@ -14,5 +14,6 @@ CREATE TABLE smtp_host
     error_message        VARCHAR(256),
     connection_time_ms   bigint,
     software             VARCHAR(128),
-    software_version     VARCHAR(128)
+    software_version     VARCHAR(128),
+    timestamp            timestamp with time zone
 );

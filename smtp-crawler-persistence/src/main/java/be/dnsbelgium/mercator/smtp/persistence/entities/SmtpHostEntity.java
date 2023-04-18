@@ -10,6 +10,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -82,14 +83,17 @@ public class SmtpHostEntity {
   @Column(name = "software_version")
   private String softwareVersion;
 
-  @ManyToMany(mappedBy = "hosts")
+  @ManyToMany(mappedBy = "hosts", cascade = CascadeType.PERSIST)
   private List<SmtpServerEntity> servers = new ArrayList<>();
+
+  private ZonedDateTime timestamp = ZonedDateTime.now();
 
   public void addServer(SmtpServerEntity server) {
     servers.add(server);
   }
 
   public SmtpHostEntity fromSmtpHostIp(SmtpHostIp host) {
+    this.setId(host.getId());
     this.setIp(host.getIp());
     this.setAsn(host.getAsn());
     this.setCountry(host.getCountry());
@@ -108,11 +112,13 @@ public class SmtpHostEntity {
     this.setConnectionTimeMs(host.getConnectionTimeMs());
     this.setSoftware(host.getSoftware());
     this.setSoftwareVersion(host.getSoftwareVersion());
+    this.setTimestamp(host.getTimestamp());
     return this;
   }
 
   public SmtpHostIp toSmtpHostIp() {
     SmtpHostIp hostIp = new SmtpHostIp();
+    hostIp.setId(id);
     hostIp.setIp(ip);
     hostIp.setAsn(asn);
     hostIp.setCountry(country);
@@ -131,6 +137,7 @@ public class SmtpHostEntity {
     hostIp.setConnectionTimeMs(connectionTimeMs);
     hostIp.setSoftware(software);
     hostIp.setSoftwareVersion(softwareVersion);
+    hostIp.setTimestamp(timestamp);
     return hostIp;
   }
 }
