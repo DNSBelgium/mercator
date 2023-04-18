@@ -45,7 +45,7 @@ const VATCard = (props) => {
             const link = "https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=" + vat + "&actionLu=Zoek";
 
             return (
-                <a href={link}>{data.vatValues[0]}</a>
+                <a href={link} target="_blank">{data.vatValues[0]}</a>
             );
         }
         return (
@@ -62,9 +62,10 @@ const VATCard = (props) => {
                         <ul className="no-bullet mt-1 pl-0">
                             { 
                                 data.vatValues.map((data, index) => {
+                                    const link = "https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=" + data.substring(2) + "&actionLu=Zoek";
                                     return (
                                         <li key={index}>
-                                            { data }
+                                            <a href={link} target="_blank">{data}</a>
                                         </li>
                                     )
                                 })

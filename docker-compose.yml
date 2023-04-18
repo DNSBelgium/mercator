@@ -22,6 +22,24 @@ services:
       - ${PWD}/localstack/scripts/:/docker-entrypoint-initaws.d:ro
       #- ${PWD}/localstack/container/:/tmp/localstack
 
+  s3-proxy:
+    image: pottava/s3-proxy
+    mem_limit: 50M
+    ports:
+      - 8080:80
+    environment:
+      - AWS_API_ENDPOINT=http://localstack:4566
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=accessKey
+      - AWS_SECRET_ACCESS_KEY=secretKey
+      - AWS_S3_BUCKET=mercator-muppets
+      - ACCESS_LOG=true
+      - DIRECTORY_LISTINGS=true
+      - DIRECTORY_LISTINGS_FORMAT=html
+      - GET_ALL_PAGES_IN_DIR=true
+      - HEALTHCHECK_PATH=/health
+    container_name: s3-proxy
+
   muppets:
     build:
       context: ./muppets
@@ -42,7 +60,7 @@ services:
       localstack:
         condition: service_healthy
     healthcheck:
-      test: curl -f http://localhost:8080/health || exit 1
+      test: rm -f health && wget -q 127.0.0.11:8080/health && grep -q OK health
       interval: 10s
       timeout: 5s
       retries: 3
@@ -69,10 +87,10 @@ services:
       localstack:
         condition: service_healthy
     healthcheck:
-      test: curl -f http://localhost:8080/health || exit 1
-      interval: 10s
+      test: rm -f health && wget -q 127.0.0.11:8087/health && grep OK health
+      interval: 5s
       timeout: 5s
-      retries: 3
+      retries: 5
     restart: always # since the process stops listening for messages on network issues, we need to restart it
 
   db:
@@ -120,6 +138,12 @@ services:
         condition: service_started
       localstack:
         condition: service_healthy
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8086/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   dns-crawler:
     image: dnsbelgium/mercator/dns-crawler:local
@@ -136,6 +160,12 @@ services:
         condition: service_started
       localstack:
         condition: service_healthy
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   content-crawler:
     image: dnsbelgium/mercator/content-crawler:local
@@ -151,6 +181,12 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8084/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   smtp-crawler:
     image: dnsbelgium/mercator/smtp-crawler:local
@@ -167,6 +203,12 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8083/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   feature-extraction:
     image: dnsbelgium/mercator/feature-extraction:local
@@ -185,6 +227,12 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8088/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   vat-crawler:
     image: dnsbelgium/mercator/vat-crawler:local
@@ -196,11 +244,18 @@ services:
       - SPRING_PROFILES_ACTIVE=local
       - LOCALSTACK_URL=http://localstack:4566
       - AWS_REGION=eu-west-1
+      - management.health.probes.enabled=true
     depends_on:
       localstack:
         condition: service_healthy
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8091/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
   tls-crawler:
     image: dnsbelgium/mercator/tls-crawler:local
@@ -217,8 +272,14 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8092/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
-  mercator-api:
+  api:
     image: dnsbelgium/mercator/mercator-api:local
     ports:
       - "8089:8089"
@@ -234,8 +295,14 @@ services:
     depends_on:
       db:
         condition: service_started
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8089/actuator/health && grep UP health > /dev/null"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
-  mercator-ui:
+  ui:
     image: dnsbelgium/mercator/mercator-ui:local
     build:
       context: ./mercator-ui
@@ -245,8 +312,9 @@ services:
       - MERCATOR_API_SCHEME=http
       - MERCATOR_API_HOST=mercator-api
       - MERCATOR_API_PORT=8089
+      - REACT_APP_MUPPETS_HOST=http://localhost:8080
     depends_on:
-      mercator-api:
+      api:
         condition: service_started
 
   ground-truth:
@@ -260,48 +328,4 @@ services:
       db:
         condition: service_started
 
-#  ssl-crawler:
-#    image: dnsbelgium/mercator/ssl-crawler:local
-#    build:
-#      context: ./ssl-crawler
-#    ports:
-#      - "8093:8443"
-#    environment:
-#      - SSL_CRAWLER_DB_HOST=db
-#      - AWS_ACCESS_KEY_ID=accessKey
-#      - AWS_SECRET_ACCESS_KEY=secretKey
-#      - SSL_CRAWLER_SQS_ENDPOINT=http://localstack:4566
-#      - SSL_CRAWLER_ENV=local
-#    depends_on:
-#      localstack:
-#        condition: service_healthy
-#      db:
-#        condition: service_started
 
-#  predict_lowcontent:
-#    image: mercator-classification-job
-#    ports:
-#      - "8092:8080"
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ground_truth
-#      - SPRING_PROFILES_ACTIVE=local
-#      - MAX_ROWS_TO_FETCH=10
-#      - MAX_ITERATIONS=3
-#      - CHUNK_SIZE=5
-#      - MERCATOR_DATABASE_DB=postgres
-#      - MERCATOR_DATABASE_HOST=db
-#      - MERCATOR_DATABASE_USER=postgres
-#      - MERCATOR_DATABASE_PASSWORD=postgres
-#      - CLASSIFIER_S3_BUCKET_NAME=s3_bucket
-#      - CLASSIFIER_S3_KEY=s3_key
-#      - CLASSIFIER_DOWNLOAD_FROM_S3=False
-#      - CLASSIFIER_LOCAL_PATH=/app/xgboost-LOWCONTENT-classifier.pickle
-#      - DESTINATION_SCHEMA_NAME=classifier
-#      - DESTINATION_TABLE_NAME=destination_table
-#      - CLASSIFIER_LOCAL_FOLDER=/tmp/
-#      - TRAIN_XGBOOST=False
-#      - AWS_SESSION_TOKEN=AWS_SESSION_TOKEN
-#      - AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID
-#      - AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
-#      - JOB_VERB=PREDICT
-#      - JOB_SUBJECT=LOWCONTENT
