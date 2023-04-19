@@ -135,7 +135,7 @@ class ContentCrawlResultTest {
 
   public static ContentCrawlResult contentCrawlResult(UUID visitId, String url) {
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, contentCrawlResult().getHtml_status(), contentCrawlResult().getScreenshot_status());
+        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, "Success", "Success");
     contentCrawlResult.setBucket("MyBucket");
     contentCrawlResult.setBrowserVersion("Blabla 1.2");
     contentCrawlResult.setHarKey("file.har");
