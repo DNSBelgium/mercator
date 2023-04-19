@@ -40,6 +40,8 @@ data:
   SPRING_DATASOURCE_VAT_USERNAME: "{{ .Values.database.username }}"
   SPRING_DATASOURCE_SSL_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.ssl.schema }}"
   SPRING_DATASOURCE_SSL_USERNAME: "{{ .Values.database.username }}"
+  SPRING_DATASOURCE_TLS_JDBC_URL: "{{ .Values.database.url }}{{ .Values.database.tls.schema }}"
+  SPRING_DATASOURCE_TLS_USERNAME: "{{ .Values.database.username }}"
 ---
 apiVersion: v1
 kind: ConfigMap

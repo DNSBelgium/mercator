@@ -6,7 +6,7 @@ import ContentCrawlCard from "./detailsCards/ContentCrawlCard";
 import HTMLCard from "./detailsCards/HTMLCard";
 import SMTPCard from "./detailsCards/SMTPCard";
 import VATCard from "./detailsCards/VATCard";
-import SSLCard from "./detailsCards/SSLCard";
+import TLSCard from "./detailsCards/TLSCard";
 
 function Details() {
     const { visitId } = useParams(); // Fetch :visitId from url
@@ -84,8 +84,8 @@ function Details() {
                     VAT crawl
                 </button>
 
-                <button onClick={() => scrollToElement('ssl-card')}>
-                    SSL crawl
+                <button onClick={() => scrollToElement('tls-card')}>
+                    TLS crawl
                 </button>
             </div>
 
@@ -161,12 +161,8 @@ function Details() {
                     />
                 </div>
 
-                <div id={'ssl-card'}>
-                    <SSLCard 
-                        openLeafCertificate={leafCertificateButtonOn} 
-                        setOpenLeafCertificate={leafCertificateButtonSetOn} 
-                        openTrustStores={trustStoresButtonOn} 
-                        setOpenTrustStores={trustStoresButtonSetOn} 
+                <div id={'tls-card'}>
+                    <TLSCard
                         visitId={visitId}
                     />
                 </div>
