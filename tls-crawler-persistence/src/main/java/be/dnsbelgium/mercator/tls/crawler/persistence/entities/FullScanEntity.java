@@ -25,8 +25,10 @@ public class FullScanEntity {
 
   private String ip;
 
+  @Column(name = "server_name")
   private String serverName;
 
+  @Column(name = "connect_ok")
   private boolean connectOk;
 
   @Column(name = "support_tls_1_3")
@@ -47,23 +49,36 @@ public class FullScanEntity {
   @Column(name = "support_ssl_2_0")
   private boolean supportSsl_2_0;
 
+  @Column(name = "selected_cipher_tls_1_3")
   private String selectedCipherTls_1_3;
+  @Column(name = "selected_cipher_tls_1_2")
   private String selectedCipherTls_1_2;
+  @Column(name = "selected_cipher_tls_1_1")
   private String selectedCipherTls_1_1;
+  @Column(name = "selected_cipher_tls_1_0")
   private String selectedCipherTls_1_0;
+  @Column(name = "selected_cipher_ssl_3_0")
   private String selectedCipherSsl_3_0;
 
   // TODO
   //private List<String> acceptedCipherSsl_2_0;
 
+  @Column(name = "lowest_version_supported")
   private String lowestVersionSupported;
+  @Column(name = "highest_version_supported")
   private String highestVersionSupported;
 
+  @Column(name = "error_tls_1_3")
   private String errorTls_1_3;
+  @Column(name = "error_tls_1_2")
   private String errorTls_1_2;
+  @Column(name = "error_tls_1_1")
   private String errorTls_1_1;
+  @Column(name = "error_tls_1_0")
   private String errorTls_1_0;
+  @Column(name = "error_ssl_3_0")
   private String errorSsl_3_0;
+  @Column(name = "error_ssl_2_0")
   private String errorSsl_2_0;
 
   private long millis_tls_1_3;
@@ -73,6 +88,7 @@ public class FullScanEntity {
   private long millis_ssl_3_0;
   private long millis_ssl_2_0;
 
+  @Column(name = "total_duration_in_ms")
   private long totalDurationInMs;
 
   // This method is used to see if two domain's on same IP have the same TLS configuration

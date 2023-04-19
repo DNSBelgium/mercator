@@ -12,4 +12,9 @@ public interface CertificateRepository extends PagingAndSortingRepository<Certif
   @Query("select c from CertificateEntity c where c.sha256fingerprint = :fingerprint")
   Optional<CertificateEntity> findBySha256fingerprint(@Param("fingerprint") String fingerprint);
 
+  @Query("select c from CertificateEntity c" +
+    " join CrawlResultEntity cr on c.sha256fingerprint = cr.leafCertificateEntity" +
+    " where cr.id = :crawlResultId")
+  Optional<CertificateEntity> findByCrawlResultId(@Param("crawlResultId") Long crawlResultId);
+
 }
