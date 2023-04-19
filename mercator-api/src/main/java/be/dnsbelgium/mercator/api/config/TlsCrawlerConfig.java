@@ -1,4 +1,4 @@
-/*package be.dnsbelgium.mercator.api.config;
+package be.dnsbelgium.mercator.api.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
@@ -14,23 +14,23 @@ import javax.sql.DataSource;
 
 @Configuration
 @EnableJpaRepositories(
-    basePackages = "be.dnsbelgium.mercator.ssl.crawler.persistence",
-    entityManagerFactoryRef = "sslEntityManager",
-    transactionManagerRef = "sslTransactionManager"
+    basePackages = "be.dnsbelgium.mercator.tls.crawler.persistence",
+    entityManagerFactoryRef = "tlsEntityManager",
+    transactionManagerRef = "tlsTransactionManager"
 )
-public class SslCrawlerConfig {
+public class TlsCrawlerConfig {
 
   @Bean
-  @ConfigurationProperties(prefix = "spring.datasource.ssl")
-  public DataSource sslDataSource() {
+  @ConfigurationProperties(prefix = "spring.datasource.tls")
+  public DataSource tlsDataSource() {
     return DataSourceBuilder.create().build();
   }
 
   @Bean
-  public LocalContainerEntityManagerFactoryBean sslEntityManager() {
+  public LocalContainerEntityManagerFactoryBean tlsEntityManager() {
     LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-    em.setDataSource(sslDataSource());
-    em.setPackagesToScan("be.dnsbelgium.mercator.ssl.crawler.persistence");
+    em.setDataSource(tlsDataSource());
+    em.setPackagesToScan("be.dnsbelgium.mercator.tls.crawler.persistence");
 
     HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
     em.setJpaVendorAdapter(vendorAdapter);
@@ -39,10 +39,9 @@ public class SslCrawlerConfig {
   }
 
   @Bean
-  public PlatformTransactionManager sslTransactionManager() {
+  public PlatformTransactionManager tlsTransactionManager() {
     JpaTransactionManager transactionManager = new JpaTransactionManager();
-    transactionManager.setEntityManagerFactory(sslEntityManager().getObject());
+    transactionManager.setEntityManagerFactory(tlsEntityManager().getObject());
     return transactionManager;
   }
 }
- */
