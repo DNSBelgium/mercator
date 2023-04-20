@@ -2,6 +2,9 @@
 // Returns true if it is falsy and returns false if it is not falsy.
 // I'm sorry for the naming. It could have been better.
 // Check out src/__unit-tests__/Util.test.js for examples.
+import moment from "moment/moment";
+require('moment-precise-range-plugin');
+
 export const checkObjectIsFalsy = (data) => {
     // Checking for falsy Json data.
     // https://stackoverflow.com/questions/679915/how-do-i-test-for-an-empty-javascript-object
@@ -70,4 +73,36 @@ const caseFourOFour = () => {
             <p>Domain was not yet crawled, domain does not exist or page is out of bounds.</p>
         </div>
     );
+}
+
+export const differenceBetweenTwoDates = (date1, date2) => {
+    const firstDate = new moment(date1);
+    const secondDate = new moment(date2);
+    //https://github.com/codebox/moment-precise-range
+    const diff = moment.preciseDiff(firstDate, secondDate, true);
+    let string = "";
+    if (diff.years > 0) {
+        if (diff.years === 1) {
+            string += (diff.years + " year ");
+        } else {
+            string += (diff.years + " years ");
+        }
+    }
+    if (diff.months > 0) {
+        if (diff.months === 1){
+            string += (diff.months + " month ");
+        }
+        else{
+            string += (diff.months + " months ");
+        }
+    }
+    if (diff.days > 0) {
+        if (diff.days === 1){
+            string += (diff.days + " day ");
+        }
+        else{
+            string += (diff.days + " days ");
+        }
+    }
+    return string;
 }

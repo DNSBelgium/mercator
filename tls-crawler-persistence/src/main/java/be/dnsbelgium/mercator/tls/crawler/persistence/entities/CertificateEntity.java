@@ -60,7 +60,7 @@ public class CertificateEntity {
   private String signedBySha256;
 
   @Type(type = "jsonb")
-  @Column(columnDefinition = "jsonb")
+  @Column(columnDefinition = "jsonb", name = "subject_alt_names")
   public List<String> subjectAltNames = Collections.emptyList();
 
 }
