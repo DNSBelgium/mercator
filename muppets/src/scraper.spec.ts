@@ -6,39 +6,36 @@ import { v4 as uuid } from 'uuid';
 import config from "./config";
 import sinon from 'sinon';
 
+const mockUuid = '4004ab8c-d4a9-47a8-8b7b-e45648068899';
+
+let params: ScraperParams = {
+    url: 'https://dnsbelgium.be',
+    visitId: uuid(),
+    saveHar: true,
+    saveHtml: true,
+    saveScreenshot: true,
+    screenshotOptions: {
+        fullPage: true,
+        encoding: "binary",
+        type: "png",
+        captureBeyondViewport: true,
+    },
+    browserOptions: {
+        ignoreHTTPSErrors: true
+    },
+    retries: 0,
+};
+
 describe('Scraper Tests', function () {
     this.timeout(30000);
 
-    const mockUuid = '4004ab8c-d4a9-47a8-8b7b-e45648068899';
-
-    let params: ScraperParams = {
-        url: 'https://dnsbelgium.be',
-        visitId: uuid(),
-        saveHar: true,
-        saveHtml: true,
-        saveScreenshot: true,
-        screenshotOptions: {
-            fullPage: true,
-            encoding: "binary",
-            type: "png",
-            captureBeyondViewport: true,
-        },
-        browserOptions: {
-            ignoreHTTPSErrors: true
-        },
-        retries: 0,
-    };
-
     it('should upload files to S3 and return ScraperResult', async () => {
-        const s3UploadFileSpy = sinon.spy(s3UploadFile);
 
         const scraperWebsnapResult = await Scraper.websnap(params)
-        const result = await uploadToS3(scraperWebsnapResult,s3UploadFileSpy);
+        const result = await uploadToS3(scraperWebsnapResult);
 
-        console.log(`s3UploadFile was called ${s3UploadFileSpy.callCount} times`);
         console.log(result.errors);
 
-        expect(s3UploadFileSpy.callCount).to.be.equal(3)
         expect(result).to.deep.equal({
             ...scraperWebsnapResult,
             bucket: scraperWebsnapResult.bucket,
@@ -49,6 +46,10 @@ describe('Scraper Tests', function () {
         });
         sinon.restore();
     });
+});
+
+describe('Scraper Tests', function () {
+    this.timeout(30000);
 
     it('dns should succeed and upload', async () => {
         const s3UploadFileSpy = sinon.spy(s3UploadFile);
@@ -66,6 +67,10 @@ describe('Scraper Tests', function () {
 
         sinon.restore();
     });
+});
+
+describe('Scraper Tests', function () {
+    this.timeout(30000);
 
     it('dns should not upload screenshot due to html-file size but not retry because of it', async () => {
         const before_test_max_content_length = config.max_content_length

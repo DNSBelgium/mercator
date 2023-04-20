@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "is-valid-domain": "^0.1.6",
-    "ts-node": "^10.9.1"
-  }
-}

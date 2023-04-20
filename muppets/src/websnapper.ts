@@ -91,11 +91,10 @@ export function s3UploadFile(data: string | void | Buffer, filename: string, pre
         throw new Error(`Upload failed for file [${params.Key}] : [${JSON.stringify(err)}]`);
     });
 }
-export interface S3UploadFunction {
-    (data: string | void | Buffer, filename: string, prefix: string, contentType?: string): Promise<string>;
-    }
 
-export async function uploadToS3(result: scraper.ScraperResult, uploadFunction: S3UploadFunction = s3UploadFile) {
+export type S3FileUpload = (data: string | void | Buffer, filename: string, prefix: string, contentType?: string) => Promise<string>;
+
+export async function uploadToS3(result: scraper.ScraperResult, uploadFunction: S3FileUpload = s3UploadFile) {
     const url: URL = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix: string = computePath(url);
@@ -107,8 +106,7 @@ export async function uploadToS3(result: scraper.ScraperResult, uploadFunction: 
         if (result.screenshotData.length < config.max_content_length) {
             s3UploadResults.push(uploadFunction(result.screenshotData, "screenshot." + result.screenshotType, prefix, "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)));
             result.screenshotSkipped = false
-        }
-        if (result.screenshotData.length >= config.max_content_length) {
+        } else {
             metrics.getBigScreenshotCounter().inc()
             result.screenshotSkipped = true
         }
