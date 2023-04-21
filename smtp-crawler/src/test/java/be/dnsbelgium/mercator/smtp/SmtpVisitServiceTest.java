@@ -80,8 +80,16 @@ public class SmtpVisitServiceTest {
     host.setFromMx(true);
     host.setVisit(visit);
 
+    SmtpHostEntity host2 = new SmtpHostEntity();
+    host2.setConversation(conversation2);
+    host2.setHostName("protection.outlook.com");
+    host2.setPriority(0);
+    host2.setFromMx(true);
+    host2.setVisit(visit);
+
     List<SmtpHostEntity> hosts = new ArrayList<>();
     hosts.add(host);
+    hosts.add(host2);
 
     visit.setHosts(hosts);
 
