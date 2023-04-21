@@ -4,11 +4,18 @@ import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
+import be.dnsbelgium.mercator.test.LocalstackContainer;
+import be.dnsbelgium.mercator.test.PostgreSqlContainer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +31,31 @@ public class SmtpVisitServiceTest {
 
   @Autowired
   SmtpVisitRepository repository;
+  @Container
+  static PostgreSqlContainer pgsql = PostgreSqlContainer.getInstance();
+
+  @Container
+  static LocalstackContainer localstack = new LocalstackContainer();
+
+  @DynamicPropertySource
+  static void datasourceProperties(DynamicPropertyRegistry registry) {
+    pgsql.setDatasourceProperties(registry, "smtp_crawler");
+    localstack.setDynamicPropertySource(registry);
+  }
+  // This test does not really need SQS but when we don't start localstack, we get a stacktrace in the logs
+  //  (Unable to execute HTTP request: Connect to localhost:4576 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed)
+  // because starts listening on SQS in a background thread.
+  // Our options
+  // (a) ignore the warning + stacktrace
+  // (b) find a way to not start listening on SQS
+  // (c) start LocalStack from within this test
+  //
+  //  So far we have chosen for option (c) which adds 17 seconds to the execution time of this test.
+
+  @BeforeAll
+  static void init() throws IOException, InterruptedException {
+    localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "smtp.queue");
+  }
 
   @Test
   void saveTest(){
@@ -57,7 +89,7 @@ public class SmtpVisitServiceTest {
 
     Optional<SmtpVisitEntity> savedVisit = repository.findByVisitId(visitId);
     assertThat(savedVisit).isPresent();
-    List<SmtpHostEntity> hostEntities = savedVisit.get().getHosts();
-
+    SmtpVisitEntity visitEntity = savedVisit.get();
+    assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
   }
 }
