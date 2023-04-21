@@ -1,13 +1,11 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
-import be.dnsbelgium.mercator.smtp.SmtpHostService;
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.SmtpConversationService;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
 import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -43,7 +41,7 @@ public class SmtpAnalyzer {
   private static final Logger logger = getLogger(SmtpAnalyzer.class);
 
   @Autowired
-  private SmtpHostService hostService;
+  private SmtpConversationService hostService;
 
   @Autowired
   public SmtpAnalyzer(MeterRegistry meterRegistry, SmtpIpAnalyzer smtpIpAnalyzer, MxFinder mxFinder,
@@ -126,21 +124,15 @@ public class SmtpAnalyzer {
     logger.debug("We found {} addresses for {}", addresses.size(), domainName);
     SmtpServer server = new SmtpServer(domainName, priority);
     for (InetAddress address : addresses) {
-      SmtpHostIp smtpHostIp;
-      Optional<SmtpHostEntity> hostEntity = hostService.ipRecentlyCrawled(address);
-      if (hostEntity.isPresent()) {
-        logger.debug("Address {} already scanned in the past 24 hours", address);
-        smtpHostIp = hostEntity.get().toSmtpHostIp();
-      } else {
-        smtpHostIp = crawl(address);
-      }
-      smtpHostIp.clean();
-      server.addHost(smtpHostIp);
+      SmtpConversation smtpConversation;
+      smtpConversation = crawl(address);
+      smtpConversation.clean();
+      server.addHost(smtpConversation);
     }
     return Optional.of(server);
   }
 
-  private SmtpHostIp crawl(InetAddress address) {
+  private SmtpConversation crawl(InetAddress address) {
     logger.debug("crawling ip {}", address.toString());
 
     if (address.isLoopbackAddress()) {
@@ -155,15 +147,15 @@ public class SmtpAnalyzer {
     if (skipIPv6 && address instanceof Inet6Address) {
       return skip(address, "conversation with IPv6 SMTP host skipped");
     }
-    SmtpHostIp hostIp = smtpIpAnalyzer.crawl(address);
+    SmtpConversation hostIp = smtpIpAnalyzer.crawl(address);
     logger.debug("done crawling ip {}", address.toString());
     return hostIp;
   }
 
-  private SmtpHostIp skip(InetAddress address, String message) {
+  private SmtpConversation skip(InetAddress address, String message) {
     meterRegistry.counter(MetricName.COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
     logger.debug("{} : {}", message, address);
-    SmtpHostIp hostIp = new SmtpHostIp(address);
+    SmtpConversation hostIp = new SmtpConversation(address);
     hostIp.setErrorMessage(message);
     return hostIp;
   }

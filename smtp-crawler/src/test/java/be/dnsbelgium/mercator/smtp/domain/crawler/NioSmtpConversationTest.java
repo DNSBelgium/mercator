@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.hubspot.smtp.client.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -55,7 +55,7 @@ class NioSmtpConversationTest {
         CompletableFuture<SmtpClientResponse> connect = crawl.connect().toCompletableFuture();
         connect.get();
         logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpHostIp result = crawl.getSmtpHostIp();
+        SmtpConversation result = crawl.getSmtpHostIp();
         assertThat(result.getBanner()).isNull();
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
@@ -73,7 +73,7 @@ class NioSmtpConversationTest {
         crawl.connect();
         crawl.sendEHLO(response.get());
         logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpHostIp result = crawl.getSmtpHostIp();
+        SmtpConversation result = crawl.getSmtpHostIp();
         assertThat(result.getBanner()).isEqualTo("123 my-test-banner");
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
@@ -93,7 +93,7 @@ class NioSmtpConversationTest {
         crawl.sendEHLO(connectResponse);
         crawl.startTLS(connectResponse);
         logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpHostIp result = crawl.getSmtpHostIp();
+        SmtpConversation result = crawl.getSmtpHostIp();
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
         assertThat(result.getIpVersion()).isEqualTo(4);
@@ -112,7 +112,7 @@ class NioSmtpConversationTest {
         CompletableFuture<SmtpClientResponse> future = new CompletableFuture<>();
         future.orTimeout(5, TimeUnit.MILLISECONDS);
         when(sessionFactory.connect(sessionConfig)).thenReturn(future);
-        CompletableFuture<SmtpHostIp> crawlFuture = crawl.start();
+        CompletableFuture<SmtpConversation> crawlFuture = crawl.start();
         logger.info("crawl = {}", crawlFuture.get());
         assertThat(crawl.getSmtpHostIp().getErrorMessage()).isNotBlank();
         assertThat(crawl.getSmtpHostIp().getErrorMessage()).contains("TimeoutException");

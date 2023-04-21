@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpCrawlResultRepository;
@@ -58,7 +58,7 @@ class SmtpCrawlResultRepositoryTest {
     SmtpCrawlResult crawlResult = new SmtpCrawlResult(uuid, "dnsbelgium.be");
     SmtpServer server1 = new SmtpServer("smtp1.example.com");
     SmtpServer server2 = new SmtpServer("smtp2.example.com");
-    SmtpHostIp hostIp = new SmtpHostIp("1.2.3.4");
+    SmtpConversation hostIp = new SmtpConversation("1.2.3.4");
     hostIp.setConnectReplyCode(220);
     hostIp.setIpVersion(4);
     hostIp.setBanner("my banner");
@@ -66,7 +66,7 @@ class SmtpCrawlResultRepositoryTest {
     hostIp.setStartTlsOk(false);
     hostIp.setCountry("Jamaica");
     hostIp.setAsnOrganisation("Happy Green grass");
-    hostIp.setAsn(654);
+    hostIp.setAsn(654L);
     server1.addHost(hostIp);
     crawlResult.add(server1);
     crawlResult.add(server2);
@@ -83,7 +83,7 @@ class SmtpCrawlResultRepositoryTest {
     assertThat(smtpCrawlResult.getServers().size()).isEqualTo(2);
     assertThat(smtpCrawlResult.getServers()).isEqualTo(crawlResult.getServers());
 
-    List<SmtpHostIp> hosts = smtpCrawlResult.getServers().get(0).getHosts();
+    List<SmtpConversation> hosts = smtpCrawlResult.getServers().get(0).getHosts();
     assertThat(hosts).isNotNull();
     assertThat(hosts.size()).isEqualTo(1);
     assertThat(hosts.get(0).getIp()).isEqualTo("1.2.3.4");
@@ -140,7 +140,7 @@ class SmtpCrawlResultRepositoryTest {
     SmtpCrawlResult crawlResult = crawlResultWithBinaryData();
     // clean the data before saving
     for (SmtpServer server : crawlResult.getServers()) {
-      for (SmtpHostIp host : server.getHosts()) {
+      for (SmtpConversation host : server.getHosts()) {
         host.clean();
       }
     }
@@ -156,7 +156,7 @@ class SmtpCrawlResultRepositoryTest {
   private SmtpCrawlResult crawlResult(UUID uuid) {
     SmtpCrawlResult crawlResult = new SmtpCrawlResult(uuid, "jamaica.be");
     SmtpServer server = new SmtpServer("smtp1.example.com");
-    SmtpHostIp hostIp = new SmtpHostIp("1.2.3.4");
+    SmtpConversation hostIp = new SmtpConversation("1.2.3.4");
     hostIp.setConnectReplyCode(220);
     hostIp.setIpVersion(4);
     hostIp.setBanner("my binary banner");
@@ -164,7 +164,7 @@ class SmtpCrawlResultRepositoryTest {
     hostIp.setStartTlsOk(false);
     hostIp.setCountry("Jamaica");
     hostIp.setAsnOrganisation("Happy Green grass");
-    hostIp.setAsn(654);
+    hostIp.setAsn(654L);
     server.addHost(hostIp);
     crawlResult.add(server);
     return crawlResult;
@@ -174,7 +174,7 @@ class SmtpCrawlResultRepositoryTest {
     UUID uuid = randomUUID();
     SmtpCrawlResult crawlResult = new SmtpCrawlResult(uuid, "dnsbelgium.be");
     SmtpServer server = new SmtpServer("smtp1.example.com");
-    SmtpHostIp hostIp = new SmtpHostIp("1.2.3.4");
+    SmtpConversation hostIp = new SmtpConversation("1.2.3.4");
     hostIp.setConnectReplyCode(220);
     hostIp.setIpVersion(4);
     hostIp.setBanner("my binary \u0000 banner");
@@ -182,7 +182,7 @@ class SmtpCrawlResultRepositoryTest {
     hostIp.setStartTlsOk(false);
     hostIp.setCountry("Jamaica \u0000");
     hostIp.setAsnOrganisation("Happy \u0000 Green grass");
-    hostIp.setAsn(654);
+    hostIp.setAsn(654L);
     server.addHost(hostIp);
     crawlResult.add(server);
     return crawlResult;

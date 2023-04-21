@@ -12,7 +12,7 @@ public class SmtpServer {
 
     private final String hostName;
     private final int priority;
-    private final List<SmtpHostIp> hosts = new ArrayList<>();
+    private final List<SmtpConversation> hosts = new ArrayList<>();
 
     @JsonCreator
     public SmtpServer(@JsonProperty("hostName") String hostName, @JsonProperty("priority") int priority) {
@@ -25,7 +25,7 @@ public class SmtpServer {
         this.priority = 0;
     }
 
-    public void addHost(SmtpHostIp hostIp) {
+    public void addHost(SmtpConversation hostIp) {
         hosts.add(hostIp);
     }
 

@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
  */
 @Data
 // TODO [codereview] Could that be named SmtpHostInfo or simply SmtpHost ? It is not just about the IP
-public class SmtpHostIp {
+public class SmtpConversation {
 
   private Long id;
 
   private String ip;
 
-  private Integer asn;
+  private Long asn;
   private String country;
   private String asnOrganisation;
 
@@ -70,14 +70,14 @@ public class SmtpHostIp {
   // without this constructor repository.save(result) fails with
   // Cannot construct instance of `be.dnsbelgium.mercator.smtp.dto.SmtpHostIp`
   // (although at least one Creator exists): cannot deserialize from Object value (no delegate- or property-based Creator)
-  public SmtpHostIp() {
+  public SmtpConversation() {
   }
 
-  public SmtpHostIp(String ip) {
+  public SmtpConversation(String ip) {
     this.ip = ip;
   }
 
-  public SmtpHostIp(InetAddress ip) {
+  public SmtpConversation(InetAddress ip) {
     this.ip = ip.getHostAddress();
     if (ip instanceof Inet4Address) {
       ipVersion = 4;
@@ -96,7 +96,7 @@ public class SmtpHostIp {
     this.asnOrganisation = clean(asnOrganisation);
     this.errorMessage = clean(errorMessage);
     this.ip = clean(ip);
-    this.supportedExtensions = supportedExtensions.stream().map(SmtpHostIp::clean).collect(Collectors.toSet());
+    this.supportedExtensions = supportedExtensions.stream().map(SmtpConversation::clean).collect(Collectors.toSet());
   }
 
   private static String clean(String input) {

@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
@@ -37,9 +37,9 @@ class SmtpAnalyzerTest {
   InetAddress localhost = ip("127.0.0.1");
   InetAddress privateIP = ip("172.16.2.3");
 
-  SmtpHostIp crawledIp1 = new SmtpHostIp(ip1);
-  SmtpHostIp crawledIp2 = new SmtpHostIp(ip2);
-  SmtpHostIp crawledIpv6 = new SmtpHostIp(ipv6);
+  SmtpConversation crawledIp1 = new SmtpConversation(ip1);
+  SmtpConversation crawledIp2 = new SmtpConversation(ip2);
+  SmtpConversation crawledIpv6 = new SmtpConversation(ipv6);
 
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
   MXRecord mx2 = mxRecord(DOMAIN_NAME, 20, "smtp2.name.be");
@@ -193,8 +193,8 @@ class SmtpAnalyzerTest {
     assertThat(server1.getHostName()).isEqualTo(mx1Target);
     assertThat(server1.getHosts().size()).isEqualTo(2);
 
-    SmtpHostIp host1 = server1.getHosts().get(0);
-    SmtpHostIp host2 = server1.getHosts().get(1);
+    SmtpConversation host1 = server1.getHosts().get(0);
+    SmtpConversation host2 = server1.getHosts().get(1);
 
     assertThat(host1.getErrorMessage()).isEqualTo("conversation with loopback address skipped");
     ;

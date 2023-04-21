@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.hubspot.smtp.client.ChannelClosedException;
 import com.hubspot.smtp.client.SmtpClientResponse;
@@ -27,9 +27,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * A stateful class to represents the conversation with one IP of an SMTP server.
  */
-public class NioSmtpConversation implements SmtpConversation {
+public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation {
 
-    private final SmtpHostIp smtpHostIp;
+    private final SmtpConversation smtpConversation;
     private long connectionStart;
     private long connectionTimeMs = -1;
     private Temporal ehloSent;
@@ -63,17 +63,17 @@ public class NioSmtpConversation implements SmtpConversation {
         this.sessionFactory = sessionFactory;
         this.sessionConfig = sessionConfig;
         this.config = config;
-        this.smtpHostIp = new SmtpHostIp(ipAddress);
+        this.smtpConversation = new SmtpConversation(ipAddress);
     }
 
     // for testing
-    protected SmtpHostIp getSmtpHostIp() {
-        return smtpHostIp;
+    protected SmtpConversation getSmtpHostIp() {
+        return smtpConversation;
     }
 
     // TODO: now that we decided to block on every SMTP conversation we can consider using another SMTP client library
     @Override
-    public SmtpHostIp talk() {
+    public SmtpConversation talk() {
         try {
             return start().get();
         } catch (ExecutionException | InterruptedException e) {
@@ -83,8 +83,8 @@ public class NioSmtpConversation implements SmtpConversation {
         }
     }
 
-    public CompletableFuture<SmtpHostIp> start() {
-        logger.debug("Starting SMTP crawl of {}", smtpHostIp.getIp());
+    public CompletableFuture<SmtpConversation> start() {
+        logger.debug("Starting SMTP crawl of {}", smtpConversation.getIp());
         CompletionStage<SmtpClientResponse> connected = this.connect();
         logger.debug("connected = {}", connected);
         return
@@ -93,7 +93,7 @@ public class NioSmtpConversation implements SmtpConversation {
                 .thenCompose(this::startTLS)
                 .thenCompose(this::tlsCompleted)
                 .thenCompose(this::closeSession)
-                .thenCompose(aVoid -> CompletableFuture.completedFuture(smtpHostIp))
+                .thenCompose(aVoid -> CompletableFuture.completedFuture(smtpConversation))
                 .exceptionally(this::handleException)
                 .toCompletableFuture();
     }
@@ -108,12 +108,12 @@ public class NioSmtpConversation implements SmtpConversation {
         logger.debug("received banner: {}", response.toString());
         connectionTimeMs = System.currentTimeMillis() - connectionStart;
         meterRegistry.timer(MetricName.TIMER_SMTP_CONNECT).record(connectionTimeMs, TimeUnit.MILLISECONDS);
-        smtpHostIp.setConnectionTimeMs(connectionTimeMs);
-        smtpHostIp.setConnectOK(!response.containsError());
+        smtpConversation.setConnectionTimeMs(connectionTimeMs);
+        smtpConversation.setConnectOK(!response.containsError());
         final String banner = StringUtils.abbreviate(response.toString(), MAX_REPLY_LENGTH);
-        smtpHostIp.setBanner(banner);
-        logger.debug("Connected to {}. connectOK={}", smtpHostIp.getIp(), smtpHostIp.isConnectOK());
-        smtpHostIp.setConnectReplyCode(getReplyCode(response));
+        smtpConversation.setBanner(banner);
+        logger.debug("Connected to {}. connectOK={}", smtpConversation.getIp(), smtpConversation.isConnectOK());
+        smtpConversation.setConnectReplyCode(getReplyCode(response));
         DefaultSmtpRequest ehloCommand = new DefaultSmtpRequest(SmtpCommand.EHLO, config.getEhloDomain());
         ehloSent = now();
         return response.getSession().send(ehloCommand);
@@ -123,17 +123,17 @@ public class NioSmtpConversation implements SmtpConversation {
         logger.debug("EHLO response received: {}", response);
         ehloResponseReceived = now();
         meterRegistry.timer(MetricName.TIMER_EHLO_RESPONSE_RECEIVED).record(Duration.between(ehloSent, ehloResponseReceived));
-        smtpHostIp.setSupportedExtensions(response.getSession().getEhloResponse().getSupportedExtensions());
+        smtpConversation.setSupportedExtensions(response.getSession().getEhloResponse().getSupportedExtensions());
         return response.getSession().startTls();
     }
 
     private CompletableFuture<SmtpClientResponse> tlsCompleted(SmtpClientResponse response) {
         logger.debug("STARTTLS: {}", response);
         meterRegistry.timer(MetricName.TIMER_STARTTLS_COMPLETED).record(Duration.between(ehloResponseReceived, now()));
-        smtpHostIp.setStartTlsReplyCode(getReplyCode(response));
+        smtpConversation.setStartTlsReplyCode(getReplyCode(response));
         logger.debug("session is encrypted: {}", response.getSession().isEncrypted());
         // response.getSession().getSSLSession().ifPresent(certificateProcessor::process);
-        smtpHostIp.setStartTlsOk(response.getSession().isEncrypted());
+        smtpConversation.setStartTlsOk(response.getSession().isEncrypted());
         return sendQuit(response);
     }
 
@@ -173,16 +173,16 @@ public class NioSmtpConversation implements SmtpConversation {
         return (smtpClientResponse.getResponses().isEmpty() ? NO_RESPONSE_CODE : smtpClientResponse.getResponses().get(0).code());
     }
 
-    private SmtpHostIp handleException(Throwable throwable) {
+    private SmtpConversation handleException(Throwable throwable) {
         Instant start = now();
         // also set time to connect in case of Connection time-out => allows us to see how long we waited
         if (connectionTimeMs == -1) {
             connectionTimeMs = System.currentTimeMillis() - connectionStart;
-            smtpHostIp.setConnectionTimeMs(connectionTimeMs);
+            smtpConversation.setConnectionTimeMs(connectionTimeMs);
         }
         Throwable rootCause = rootCause(throwable);
         if (rootCause instanceof ChannelClosedException) {
-            smtpHostIp.setErrorMessage("channel was closed while waiting for response");
+            smtpConversation.setErrorMessage("channel was closed while waiting for response");
         } else {
             if (config.isLogStackTraces()) {
                 logger.debug("exception: ", throwable);
@@ -192,10 +192,10 @@ public class NioSmtpConversation implements SmtpConversation {
                 errorMessage = rootCause.getClass().getSimpleName();
             }
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
-            smtpHostIp.setErrorMessage(errorMessage);
+            smtpConversation.setErrorMessage(errorMessage);
         }
-        logger.debug("crawl done: smtpHostIp = {}", smtpHostIp);
+        logger.debug("crawl done: smtpHostIp = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
-        return smtpHostIp;
+        return smtpConversation;
     }
 }

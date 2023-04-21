@@ -45,14 +45,6 @@ public class SmtpCrawlResult {
   @Column(name = "servers", columnDefinition = "jsonb")
   private List<SmtpServer> servers = new ArrayList<>();
 
-  @ToString.Exclude
-  @ManyToMany(cascade = CascadeType.PERSIST)
-  @JoinTable(
-    name = "crawl_result_server",
-    joinColumns = @JoinColumn(name = "crawl_id"),
-    inverseJoinColumns = @JoinColumn(name = "server_id"))
-  private List<SmtpServerEntity> smtpServerEntities = new ArrayList<>();
-
   private static final Logger logger = getLogger(SmtpCrawlResult.class);
 
   public SmtpCrawlResult(UUID visitId, String domainName) {
@@ -63,16 +55,6 @@ public class SmtpCrawlResult {
   }
 
   public void add(SmtpServer server) {
-    SmtpServerEntity entity = new SmtpServerEntity().fromSmtpServer(server);
-    entity.addCrawlResult(this);
-    this.smtpServerEntities.add(entity);
-  }
-
-  public List<SmtpServer> getServers() {
-    List<SmtpServer> smtpServers = new ArrayList<>();
-    for (SmtpServerEntity entity : smtpServerEntities) {
-      smtpServers.add(entity.toSmtpServer());
-    }
-    return smtpServers;
+    servers.add(server);
   }
 }
