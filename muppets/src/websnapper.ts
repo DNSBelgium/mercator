@@ -85,7 +85,7 @@ export function s3UploadFile(data: string | void | Buffer, filename: string, pre
     });
 }
 
-export async function uploadToS3(result: scraper.ScraperResult) {
+export function uploadToS3(result: scraper.ScraperResult) {
     const url = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix = computePath(url);

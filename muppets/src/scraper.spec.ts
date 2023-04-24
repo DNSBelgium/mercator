@@ -5,6 +5,7 @@ import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
+import * as sinon from "sinon";
 
 
 describe('Scraper Tests', function () {
@@ -12,6 +13,8 @@ describe('Scraper Tests', function () {
 
     const mockUuid = '1fe39e26-9d20-4cc0-8696-fe7887a3dfbc';
     Object.defineProperty(uuid, 'v4', { value: mockUuid});
+
+    // sinon.stub(uuid, 'v4').returns('1fe39e26-9d20-4cc0-8696-fe7887a3dfbc')
 
     let params: ScraperParams = {
         url: 'https://dnsbelgium.be',

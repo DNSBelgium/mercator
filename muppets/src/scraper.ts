@@ -65,9 +65,9 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
-    htmlSkipped?: boolean;
-    screenshotSkipped?:boolean;
-    harSkipped?:boolean;
+    htmlSkipped: boolean;
+    screenshotSkipped:boolean;
+    harSkipped:boolean;
 }
 
 let browser: puppeteer.Browser;
@@ -277,6 +277,9 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        harSkipped: false,
+        screenshotSkipped: false,
+        htmlSkipped: false
     };
 
     let timeoutId;

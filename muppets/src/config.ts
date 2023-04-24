@@ -9,7 +9,7 @@ interface MuppetsConfiguration {
     max_content_length: number
 }
 
-const ten_MiB = "10485760"
+const MAX_CONTENT_LENGTH_DEFAULT = "10485760"
 
 const env_config: MuppetsConfiguration  = {
     s3_endpoint: process.env.S3_ENDPOINT || null,
@@ -19,7 +19,7 @@ const env_config: MuppetsConfiguration  = {
     sqs_output_queue: process.env.SQS_OUTPUT_QUEUE || "mercator-muppets-output",
     server_port: parseInt(process.env.SERVER_PORT || "8085"),
     verbose: (process.env.VERBOSE != null && process.env.VERBOSE.toLowerCase() == 'true'),
-    max_content_length : parseInt(process.env.MAX_CONTENT_LENGTH || ten_MiB),
+    max_content_length : parseInt(process.env.MAX_CONTENT_LENGTH || MAX_CONTENT_LENGTH_DEFAULT),
 };
 
 console.log(`Using configuration:`);
