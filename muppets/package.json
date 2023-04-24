@@ -21,7 +21,7 @@
     "sqs-consumer": "^5.4.0",
     "sqs-producer": "^1.6.3",
     "tree-kill": "^1.2.2",
-    "ts-node": "^10.9.1",
+
     "uuid": "^7.0.2"
   },
   "devDependencies": {
@@ -33,6 +33,7 @@
     "chai": "^4.3.6",
     "mocha": "^10.2.0",
     "sinon": "^13.0.1",
+    "ts-node": "^10.9.1",
     "typescript": "^4.6.3"
   }
 }

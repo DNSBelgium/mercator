@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.content.dto;
 
 public enum Status {
-    Ok("Success"),
+    Ok("succeeded"),
     TimeOut("Failed: Time out error"),
     HtmlTooBig("Failed: Html file too big"),
     screenshotTooBig("Failed: Screenshot file too big"),

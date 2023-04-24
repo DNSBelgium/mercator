@@ -59,6 +59,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     ContentCrawlResult contentCrawlResult;
     if (resolution.isOk()) {
       contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries(),Status.Ok.getStatus(),Status.Ok.getStatus());
+      System.out.println(Status.Ok.getStatus());
       contentCrawlResult.bucket = resolution.getBucket();
       if (!resolution.isHtmlSkipped()){
         contentCrawlResult.htmlKey = resolution.getHtmlFile();
@@ -82,7 +83,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else {
-      if (resolution.getErrors().contains("Navigation timeout of 15000 ms exceeded")) {
+      if (resolution.getErrors().contains("Navigation timeout")) {
         contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.TimeOut.getStatus(),Status.TimeOut.getStatus());
       }
       else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
