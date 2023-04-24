@@ -6,8 +6,6 @@ import { v4 as uuid } from 'uuid';
 import config from "./config";
 import sinon from 'sinon';
 
-const mockUuid = '4004ab8c-d4a9-47a8-8b7b-e45648068899';
-
 let params: ScraperParams = {
     url: 'https://dnsbelgium.be',
     visitId: uuid(),
