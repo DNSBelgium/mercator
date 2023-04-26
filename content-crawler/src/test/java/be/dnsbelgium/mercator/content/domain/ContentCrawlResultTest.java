@@ -19,7 +19,7 @@ class ContentCrawlResultTest {
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
     assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Html file too big");
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Success");
+    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("succeeded");
     assertThat(contentCrawlResult.getProblem()).isNull();
   }
   @Test
@@ -61,7 +61,7 @@ class ContentCrawlResultTest {
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
     assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Screenshot file too big");
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Success");
+    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("succeeded");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
