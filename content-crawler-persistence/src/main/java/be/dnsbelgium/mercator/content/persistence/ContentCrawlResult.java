@@ -56,16 +56,14 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   }
 
   public static ContentCrawlResult of(MuppetsResolution resolution) {
-    ContentCrawlResult contentCrawlResult;
+    ContentCrawlResult contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries(), Status.Ok, Status.Ok);
+    contentCrawlResult.ipv4 = resolution.getIpv4();
+    contentCrawlResult.ipv6 = resolution.getIpv6();
+    contentCrawlResult.browserVersion = resolution.getBrowserVersion();
 
     if (!resolution.isOk()) {
-      contentCrawlResult = convertErrorsToResult(resolution);
-      contentCrawlResult.ipv4 = resolution.getIpv4();
-      contentCrawlResult.ipv6 = resolution.getIpv6();
-      contentCrawlResult.browserVersion = resolution.getBrowserVersion();
-      return contentCrawlResult;
+      return convertErrorsToResult(resolution, contentCrawlResult);
     }
-    contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries(), Status.Ok, Status.Ok);
 
     contentCrawlResult.bucket = resolution.getBucket();
     contentCrawlResult.htmlKey = resolution.getHtmlFile();
@@ -73,9 +71,6 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
     contentCrawlResult.metricsJson = resolution.getMetrics();
     contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-    contentCrawlResult.ipv4 = resolution.getIpv4();
-    contentCrawlResult.ipv6 = resolution.getIpv6();
-    contentCrawlResult.browserVersion = resolution.getBrowserVersion();
 
     if (resolution.isHtmlSkipped()) {
       contentCrawlResult.htmlKey = null;
@@ -95,32 +90,19 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     return contentCrawlResult;
   }
 
-  private static ContentCrawlResult convertErrorsToResult(MuppetsResolution resolution) {
-    ContentCrawlResult contentCrawlResult = new ContentCrawlResult();
-
-    contentCrawlResult.visitId = resolution.getVisitId();
-    contentCrawlResult.domainName = resolution.getDomainName();
-    contentCrawlResult.url = resolution.getUrl();
-    contentCrawlResult.ok = resolution.isOk();
-    contentCrawlResult.problem = null;
-    contentCrawlResult.retries = resolution.getRetries();
-    contentCrawlResult.html_status = Status.Ok.getStatus();
-    contentCrawlResult.screenshot_status = Status.Ok.getStatus();
-
+  private static ContentCrawlResult convertErrorsToResult(MuppetsResolution resolution, ContentCrawlResult contentCrawlResult) {
     if (resolution.getErrors().contains("Navigation timeout")) {
       contentCrawlResult.screenshot_status = Status.TimeOut.getStatus();
       contentCrawlResult.html_status = Status.TimeOut.getStatus();
     } else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
       contentCrawlResult.screenshot_status = Status.NameNotResolved.getStatus();
       contentCrawlResult.html_status = Status.NameNotResolved.getStatus();
-    }
-    // both html and screenshot not uploaded
-    else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")) {
+    } else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")) {
+      // both html and screenshot not uploaded
       contentCrawlResult.screenshot_status = Status.UploadFailed.getStatus();
       contentCrawlResult.html_status = Status.UploadFailed.getStatus();
-    }
-    // html not uploaded, screenshot did upload
-    else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file"))) {
+    } else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file"))) {
+      // html not uploaded, screenshot did upload
       contentCrawlResult.html_status = Status.UploadFailed.getStatus();
 
       contentCrawlResult.bucket = resolution.getBucket();
@@ -130,11 +112,9 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       }
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-    }
-    // html uploaded screenshot not uploaded
-    else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")) {
+    } else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")) {
+      // html uploaded screenshot not uploaded
       contentCrawlResult.screenshot_status = Status.UploadFailed.getStatus();
-
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.htmlKey = resolution.getHtmlFile();
       contentCrawlResult.htmlLength = resolution.getHtmlLength();
@@ -143,9 +123,8 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       }
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-    }
-    //unexpected error
-    else {
+    } else {
+      //unexpected error
       contentCrawlResult.problem = resolution.getErrors();
       contentCrawlResult.screenshot_status = Status.UnexpectedError.getStatus();
       contentCrawlResult.html_status = Status.UnexpectedError.getStatus();
