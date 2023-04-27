@@ -104,12 +104,9 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     } else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file"))) {
       // html not uploaded, screenshot did upload
       contentCrawlResult.html_status = Status.UploadFailed.getStatus();
-
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
-      if (!(resolution.getErrors().contains("Upload failed for har file"))) {
-        contentCrawlResult.harKey = resolution.getHarFile();
-      }
+      checkHar(resolution, contentCrawlResult);
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")) {
@@ -118,9 +115,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.htmlKey = resolution.getHtmlFile();
       contentCrawlResult.htmlLength = resolution.getHtmlLength();
-      if (!(resolution.getErrors().contains("Upload failed for har file"))) {
-        contentCrawlResult.harKey = resolution.getHarFile();
-      }
+      checkHar(resolution, contentCrawlResult);
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else {
@@ -130,5 +125,11 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.html_status = Status.UnexpectedError.getStatus();
     }
     return contentCrawlResult;
+  }
+
+  private static void checkHar(MuppetsResolution resolution, ContentCrawlResult contentCrawlResult) {
+    if (!(resolution.getErrors().contains("Upload failed for har file"))) {
+      contentCrawlResult.harKey = resolution.getHarFile();
+    }
   }
 }
