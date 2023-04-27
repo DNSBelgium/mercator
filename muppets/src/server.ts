@@ -1,8 +1,8 @@
-import {createConsumer, createHandler, createProducer, getQueueUrl} from "./websnapper.js";
+import { createConsumer, createHandler, createProducer, getQueueUrl } from "./websnapper.js";
 import config from "./config.js";
 import express from "express";
 import * as metrics from "./metrics.js";
-import {isBrowserConnected, shutdown} from "./scraper.js";
+import { isBrowserConnected, shutdown } from "./scraper.js";
 
 let server;
 let consumer;
@@ -16,7 +16,7 @@ async function gracefulStop() {
     console.log("Closing SQS Consumer");
     if (consumer) consumer.stop();
 
-    await new Promise(resolve => consumer.on("stopped", resolve)).then(shutdown).catch(() => {});
+    await new Promise(resolve => consumer.on("stopped", resolve)).then(shutdown).catch(() => { });
 }
 
 const handle = code => {
