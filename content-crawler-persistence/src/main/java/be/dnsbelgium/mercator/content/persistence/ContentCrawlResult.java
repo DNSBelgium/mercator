@@ -43,7 +43,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   @Column(name = "retries")           private Integer       retries;
 
 
-  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries, String html_status, String screenshot_status) {
+  public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries, Status htmlStatus, Status screenshotStatus) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.url = url;
@@ -51,74 +51,105 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     this.problem = problem;
     this.crawlTimestamp = ZonedDateTime.now();
     this.retries = retries;
-    this.html_status = html_status;
-    this.screenshot_status = screenshot_status;
+    this.html_status = htmlStatus.getStatus();
+    this.screenshot_status = screenshotStatus.getStatus();
   }
 
   public static ContentCrawlResult of(MuppetsResolution resolution) {
     ContentCrawlResult contentCrawlResult;
-    if (resolution.isOk()) {
-      contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries(),Status.Ok.getStatus(),Status.Ok.getStatus());
-      System.out.println(Status.Ok.getStatus());
+
+    if (!resolution.isOk()) {
+      contentCrawlResult = convertErrorsToResult(resolution);
+      contentCrawlResult.ipv4 = resolution.getIpv4();
+      contentCrawlResult.ipv6 = resolution.getIpv6();
+      contentCrawlResult.browserVersion = resolution.getBrowserVersion();
+      return contentCrawlResult;
+    }
+    contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), true, null, resolution.getRetries(), Status.Ok, Status.Ok);
+
+    contentCrawlResult.bucket = resolution.getBucket();
+    contentCrawlResult.htmlKey = resolution.getHtmlFile();
+    contentCrawlResult.htmlLength = resolution.getHtmlLength();
+    contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
+    contentCrawlResult.metricsJson = resolution.getMetrics();
+    contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
+    contentCrawlResult.ipv4 = resolution.getIpv4();
+    contentCrawlResult.ipv6 = resolution.getIpv6();
+    contentCrawlResult.browserVersion = resolution.getBrowserVersion();
+
+    if (resolution.isHtmlSkipped()) {
+      contentCrawlResult.htmlKey = null;
+      contentCrawlResult.htmlLength = null;
+      contentCrawlResult.html_status = Status.HtmlTooBig.getStatus();
+    }
+
+    if (resolution.isScreenshotSkipped()) {
+      contentCrawlResult.screenshotKey = null;
+      contentCrawlResult.screenshot_status = Status.screenshotTooBig.getStatus();
+    }
+
+    if (!resolution.isHarSkipped()) {
+      contentCrawlResult.harKey = resolution.getHarFile();
+    }
+
+    return contentCrawlResult;
+  }
+
+  private static ContentCrawlResult convertErrorsToResult(MuppetsResolution resolution) {
+    ContentCrawlResult contentCrawlResult = new ContentCrawlResult();
+
+    contentCrawlResult.visitId = resolution.getVisitId();
+    contentCrawlResult.domainName = resolution.getDomainName();
+    contentCrawlResult.url = resolution.getUrl();
+    contentCrawlResult.ok = resolution.isOk();
+    contentCrawlResult.problem = null;
+    contentCrawlResult.retries = resolution.getRetries();
+    contentCrawlResult.html_status = Status.Ok.getStatus();
+    contentCrawlResult.screenshot_status = Status.Ok.getStatus();
+
+    if (resolution.getErrors().contains("Navigation timeout")) {
+      contentCrawlResult.screenshot_status = Status.TimeOut.getStatus();
+      contentCrawlResult.html_status = Status.TimeOut.getStatus();
+    } else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
+      contentCrawlResult.screenshot_status = Status.NameNotResolved.getStatus();
+      contentCrawlResult.html_status = Status.NameNotResolved.getStatus();
+    }
+    // both html and screenshot not uploaded
+    else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")) {
+      contentCrawlResult.screenshot_status = Status.UploadFailed.getStatus();
+      contentCrawlResult.html_status = Status.UploadFailed.getStatus();
+    }
+    // html not uploaded, screenshot did upload
+    else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file"))) {
+      contentCrawlResult.html_status = Status.UploadFailed.getStatus();
+
       contentCrawlResult.bucket = resolution.getBucket();
-      if (!resolution.isHtmlSkipped()){
-        contentCrawlResult.htmlKey = resolution.getHtmlFile();
-        contentCrawlResult.htmlLength = resolution.getHtmlLength();
-        contentCrawlResult.html_status = Status.Ok.getStatus();
-      } else {
-        contentCrawlResult.htmlKey = null;
-        contentCrawlResult.htmlLength = null;
-        contentCrawlResult.html_status = Status.HtmlTooBig.getStatus();
-      }
-      if (!resolution.isScreenshotSkipped()){
-        contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
-        contentCrawlResult.screenshot_status = Status.Ok.getStatus();
-      } else {
-        contentCrawlResult.screenshotKey = null;
-        contentCrawlResult.screenshot_status = Status.screenshotTooBig.getStatus();
-      }
-      if (!resolution.isHarSkipped()){
+      contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
+      if (!(resolution.getErrors().contains("Upload failed for har file"))) {
         contentCrawlResult.harKey = resolution.getHarFile();
       }
       contentCrawlResult.metricsJson = resolution.getMetrics();
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-    } else {
-      if (resolution.getErrors().contains("Navigation timeout")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.TimeOut.getStatus(),Status.TimeOut.getStatus());
-      }
-      else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.NameNotResolved.getStatus(),Status.NameNotResolved.getStatus());
-      } // both html and screenshot not uploaded
-      else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.UploadFailed.getStatus(),Status.UploadFailed.getStatus());
-      } // html not uploaded, screenshot did upload
-      else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file")) ){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.UploadFailed.getStatus(),Status.Ok.getStatus());
-        contentCrawlResult.bucket = resolution.getBucket();
-        contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
-        if (!(resolution.getErrors().contains("Upload failed for har file"))){
-          contentCrawlResult.harKey = resolution.getHarFile();
-        }
-        contentCrawlResult.metricsJson = resolution.getMetrics();
-        contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-      } // html uploaded screenshot not uploaded
-      else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")){
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, null, resolution.getRetries(),Status.Ok.getStatus(),Status.UploadFailed.getStatus());
-        contentCrawlResult.bucket = resolution.getBucket();
-        contentCrawlResult.htmlKey = resolution.getHtmlFile();
-        contentCrawlResult.htmlLength = resolution.getHtmlLength();
-        if (!(resolution.getErrors().contains("Upload failed for har file"))){
-          contentCrawlResult.harKey = resolution.getHarFile();
-        }
-        contentCrawlResult.metricsJson = resolution.getMetrics();
-        contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
-      } else {
-        contentCrawlResult = new ContentCrawlResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(), false, resolution.getErrors(), resolution.getRetries(),Status.UnexpectedError.getStatus(),Status.UnexpectedError.getStatus());
-      }
     }
-    contentCrawlResult.ipv4 = resolution.getIpv4();
-    contentCrawlResult.ipv6 = resolution.getIpv6();
-    contentCrawlResult.browserVersion = resolution.getBrowserVersion();
+    // html uploaded screenshot not uploaded
+    else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")) {
+      contentCrawlResult.screenshot_status = Status.UploadFailed.getStatus();
+
+      contentCrawlResult.bucket = resolution.getBucket();
+      contentCrawlResult.htmlKey = resolution.getHtmlFile();
+      contentCrawlResult.htmlLength = resolution.getHtmlLength();
+      if (!(resolution.getErrors().contains("Upload failed for har file"))) {
+        contentCrawlResult.harKey = resolution.getHarFile();
+      }
+      contentCrawlResult.metricsJson = resolution.getMetrics();
+      contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
+    }
+    //unexpected error
+    else {
+      contentCrawlResult.problem = resolution.getErrors();
+      contentCrawlResult.screenshot_status = Status.UnexpectedError.getStatus();
+      contentCrawlResult.html_status = Status.UnexpectedError.getStatus();
+    }
     return contentCrawlResult;
   }
 }

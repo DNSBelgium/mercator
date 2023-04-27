@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.content.domain;
 
 import be.dnsbelgium.mercator.content.domain.content.ContentResolutionTest;
+import be.dnsbelgium.mercator.content.dto.Status;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
 import org.junit.jupiter.api.Test;
@@ -135,7 +136,7 @@ class ContentCrawlResultTest {
 
   public static ContentCrawlResult contentCrawlResult(UUID visitId, String url) {
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, "Success", "Success");
+            new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, Status.Ok, Status.Ok);
     contentCrawlResult.setBucket("MyBucket");
     contentCrawlResult.setBrowserVersion("Blabla 1.2");
     contentCrawlResult.setHarKey("file.har");
