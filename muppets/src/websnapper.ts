@@ -91,8 +91,6 @@ export interface IFileUploader {
 }
 
 export async function uploadScrapedData(result: scraper.ScraperResult, uploader: IFileUploader = new S3FileUploader) {
-    // TODO: insert verbose in function
-
     const url: URL = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
     const prefix: string = computePath(url);
@@ -102,38 +100,33 @@ export async function uploadScrapedData(result: scraper.ScraperResult, uploader:
     if (result.screenshotData !== undefined) {
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length / 1024) / 1024);
         if (result.screenshotData.length < config.max_content_length) {
-            s3UploadResults.push(
-                uploader.upload(
-                    result.screenshotData, "screenshot." + result.screenshotType,
-                    prefix, "screenshot", "image/" + result.screenshotType)
-
-                    .then(key => result.screenshotFile = key).catch((err) => {
-                        result.errors.push(err.message);
-                        return Promise.reject()
-                    }
-                ));
+            s3UploadResults.push(uploader.upload(result.screenshotData, "screenshot." + result.screenshotType, prefix, "screenshot", "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => {
+                result.errors.push(err.message);
+                return Promise.reject()
+            }));
             result.screenshotSkipped = false
         } else {
             metrics.getBigScreenshotCounter().inc()
             result.screenshotSkipped = true
         }
     }
-    s3UploadResults.push(
-        uploader.upload(result.htmlData, result.pathname || "index.html", prefix, "html", "text/html")
-            .then(key => result.htmlFile = key)
-            .catch((err) => {
+
+    if (result.htmlLength !== undefined) {
+        if (result.htmlLength < config.max_content_length) {
+            s3UploadResults.push(uploader.upload(result.htmlData, result.pathname || "index.html", prefix, "html", "text/html").then(key => result.htmlFile = key).catch((err) => {
                 result.errors.push(err.message);
                 return Promise.reject();
-            })
-    );
-    s3UploadResults.push(
-        uploader.upload(result.harData, result.hostname + ".har", prefix, "har", "application/json")
-            .then(key => result.harFile = key)
-            .catch((err) => {
-                result.errors.push(err.message);
-                return Promise.reject();
-            })
-    );
+            }));
+            result.htmlSkipped = false;
+        } else {
+            result.htmlSkipped = true
+        }
+    }
+
+    s3UploadResults.push(uploader.upload(result.harData, result.hostname + ".har", prefix, "har", "application/json").then(key => result.harFile = key).catch((err) => {
+        result.errors.push(err.message);
+        return Promise.reject();
+    }));
     return Promise.all(s3UploadResults).then(() => result);
 }
 

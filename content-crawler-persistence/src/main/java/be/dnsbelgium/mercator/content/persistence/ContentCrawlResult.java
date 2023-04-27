@@ -112,6 +112,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   }
 
   private static ContentCrawlResult convertErrorsToResult(MuppetsResolution resolution, ContentCrawlResult contentCrawlResult) {
+    contentCrawlResult.ok = false;
     if (resolution.getErrors().contains("Navigation timeout")) {
       contentCrawlResult.screenshotStatus = Status.TimeOut;
       contentCrawlResult.htmlStatus = Status.TimeOut;
