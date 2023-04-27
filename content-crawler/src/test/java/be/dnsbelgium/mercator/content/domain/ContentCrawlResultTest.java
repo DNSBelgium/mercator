@@ -19,8 +19,8 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Html file too big");
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("succeeded");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Html file too big");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("succeeded");
     assertThat(contentCrawlResult.getProblem()).isNull();
   }
   @Test
@@ -29,7 +29,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Upload failed");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Upload failed");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -39,7 +39,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Name not resolved");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Name not resolved");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -49,20 +49,20 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Time out error");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Time out error");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
 
   //screenshot status tests
   @Test
-  void testScreenhsotStatusTooBig(){
+  void testScreenhsotStatusTooBig() {
     MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestScreenshotFailTooBig();
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Screenshot file too big");
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("succeeded");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Screenshot file too big");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("succeeded");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -72,7 +72,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Upload failed");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Upload failed");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -81,7 +81,7 @@ class ContentCrawlResultTest {
     MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Name not resolved");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Name not resolved");
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -91,18 +91,18 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Time out error");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Time out error");
     assertThat(contentCrawlResult.getProblem()).isNull();
   }
 
   @Test
-  void testUnexpectedError(){
+  void testUnexpectedError() {
     MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestUnexpectedError();
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtml_status()).isEqualTo("Failed: Unexpected error");
-    assertThat(contentCrawlResult.getScreenshot_status()).isEqualTo("Failed: Unexpected error");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Unexpected error");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Unexpected error");
     assertThat(contentCrawlResult.getProblem()).isEqualTo(muppetsResolution.getErrors());
   }
 
