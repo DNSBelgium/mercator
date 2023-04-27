@@ -18,8 +18,8 @@ const env_config: MuppetsConfiguration  = {
     sqs_input_queue: process.env.SQS_INPUT_QUEUE || "mercator-muppets-input",
     sqs_output_queue: process.env.SQS_OUTPUT_QUEUE || "mercator-muppets-output",
     server_port: parseInt(process.env.SERVER_PORT || "8085"),
-    verbose: (process.env.VERBOSE != null && process.env.VERBOSE.toLowerCase() == 'true'),
-    max_content_length : parseInt(process.env.MAX_CONTENT_LENGTH || MAX_CONTENT_LENGTH_DEFAULT),
+    verbose: (process.env.VERBOSE !== null && process.env.VERBOSE.toLowerCase() == 'true'),
+    max_content_length: parseInt(process.env.MAX_CONTENT_LENGTH || MAX_CONTENT_LENGTH_DEFAULT),
 };
 
 console.log(`Using configuration:`);

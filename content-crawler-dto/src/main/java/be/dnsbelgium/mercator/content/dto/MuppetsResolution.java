@@ -23,4 +23,8 @@ public class MuppetsResolution implements Resolution {
   String ipv6;
   String browserVersion;
   Integer retries;
+  boolean htmlSkipped;
+  boolean screenshotSkipped;
+  boolean harSkipped;
 }
+

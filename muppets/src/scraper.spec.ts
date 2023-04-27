@@ -1,11 +1,27 @@
 import * as Scraper from './scraper';
 import * as Websnapper from './websnapper';
+import {IFileUploader, uploadScrapedData} from './websnapper';
 import { ScraperParams } from './scraper';
 import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
 import * as sinon from "sinon";
+import config from './config';
+
+class MockFileUploader implements IFileUploader {
+    private called: number = 0;
+
+    async upload(data: string | void | Buffer, filename: string, prefix: string, uploadFileFormat: string, contentType?: string): Promise<string> {
+        this.called++;
+
+        return Promise.resolve("");
+    }
+
+    public getCalledCount(): number {
+        return this.called;
+    }
+}
 
 
 describe('Scraper Tests', function () {
@@ -53,7 +69,7 @@ describe('Scraper Tests', function () {
     it('S3 bucket upload fails due to html size', () => {
         return Scraper.websnap(params).then(scraperResult => {
             scraperResult.htmlLength = 11*1024*1024;
-            return Websnapper.uploadToS3(scraperResult).then(result => {
+            return uploadScrapedData(scraperResult, new MockFileUploader()).then(result => {
                 console.log(result.errors)
                 expect(result.htmlSkipped).to.equal(true);
                 expect(result.errors).to.be.empty
@@ -63,7 +79,7 @@ describe('Scraper Tests', function () {
 
     it('S3 bucket succeeds', () => {
         return Scraper.websnap(params).then(scraperResult => {
-            return Websnapper.uploadToS3(scraperResult).then(result => {
+            return uploadScrapedData(scraperResult, new MockFileUploader() ).then(result => {
                 console.log(result.errors)
                 expect(result.htmlSkipped).to.equal(false);
                 expect(result.errors).to.be.empty
@@ -71,4 +87,52 @@ describe('Scraper Tests', function () {
         });
     });
 
+    it('should upload files to S3 and return ScraperResult', async () => {
+        const scraperWebsnapResult = await Scraper.websnap(params)
+        const result = await uploadScrapedData(scraperWebsnapResult);
+
+        console.log(result.errors);
+
+        expect(result).to.deep.equal({
+            ...scraperWebsnapResult,
+            bucket: scraperWebsnapResult.bucket,
+            screenshotFile: scraperWebsnapResult.screenshotFile,
+            screenshotSkipped: false,
+            htmlFile: scraperWebsnapResult.htmlFile,
+            harFile: scraperWebsnapResult.harFile,
+        });
+    });
+
+    it('snap should succeed and upload', async () => {
+        const mockedUploader = new MockFileUploader();
+
+        const scraperWebsnapResult = await Scraper.websnap(params)
+        const websnapperResult = await uploadScrapedData(scraperWebsnapResult, mockedUploader)
+
+        console.log(`s3UploadFile was called ${mockedUploader.getCalledCount()} times`);
+        console.log(websnapperResult.errors);
+
+        expect(mockedUploader.getCalledCount()).to.be.equal(3);
+        expect(websnapperResult.screenshotSkipped).to.equal(false)
+        expect(websnapperResult.errors).to.be.empty;
+    });
+
+    it('snap should not upload too large screenshot', async () => {
+        const before_test_max_content_length = config.max_content_length
+        config.max_content_length = 1;
+        const mockedUploader = new MockFileUploader();
+
+        const scraperWebsnapResult = await Scraper.websnap(params)
+        const websnapperResult = await uploadScrapedData(scraperWebsnapResult, mockedUploader);
+
+        console.log(`s3UploadFile was called ${mockedUploader.getCalledCount()} times`);
+        console.log(websnapperResult.errors);
+
+        expect(mockedUploader.getCalledCount()).to.be.equal(2);
+        expect(websnapperResult.screenshotSkipped).to.equal(true);
+        expect(websnapperResult.errors).to.be.empty;
+
+        config.max_content_length = before_test_max_content_length;
+        sinon.restore();
+    });
 });

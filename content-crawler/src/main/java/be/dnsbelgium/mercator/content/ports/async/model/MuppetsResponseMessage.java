@@ -22,4 +22,8 @@ public class MuppetsResponseMessage extends ResponseMessage {
   private String ipv4;
   private String ipv6;
   private String browserVersion;
+  private String screenshotType;
+  private boolean htmlSkipped;
+  private boolean screenshotSkipped;
+  private boolean harSkipped;
 }

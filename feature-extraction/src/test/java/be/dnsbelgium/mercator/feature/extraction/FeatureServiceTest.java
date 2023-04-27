@@ -229,7 +229,7 @@ class FeatureServiceTest {
   public static ContentCrawlResult randomContentCrawlResult(String domainName) {
     String url = "https://" + RandomStringUtils.randomAlphabetic(5).toLowerCase() + "." + domainName;
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(UUID.randomUUID(),domainName, url, true, null, 0);
+        new ContentCrawlResult(UUID.randomUUID(),domainName, url, true, null, 0,"Success","Success");
     contentCrawlResult.setBucket(RandomStringUtils.randomAlphabetic(10));
     contentCrawlResult.setHarKey(RandomStringUtils.randomAlphabetic(10) +  ".har");
     contentCrawlResult.setHtmlKey(RandomStringUtils.randomAlphabetic(10) + ".html");

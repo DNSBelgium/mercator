@@ -11,8 +11,6 @@
     "test": "mocha -r ts-node/register src/**/*.spec.ts"
   },
   "dependencies": {
-    "@types/express": "^4.17.17",
-    "@types/node": "^18.15.11",
     "aws-sdk": "^v2.1030.0",
     "chrome-har": "^0.13.0",
     "express": "^4.17.3",

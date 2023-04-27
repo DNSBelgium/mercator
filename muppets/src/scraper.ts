@@ -65,6 +65,7 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    screenshotType: string;
     htmlSkipped: boolean;
     screenshotSkipped:boolean;
     harSkipped:boolean;
@@ -232,12 +233,21 @@ function saveHar(params: ScraperParams, events: Event[]) {
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-
         params.screenshotOptions.type = params.screenshotOptions.type || "png";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
+        return page.screenshot(params.screenshotOptions).then(screenshot => {
+            if (screenshot?.length > 3000000) {
+                params.screenshotOptions.type = "webp";
+                params.screenshotOptions.quality = 100;
+                console.log("taking screenshot in webp")
+                return page.screenshot(params.screenshotOptions)
+            } else {
+                console.log("taking screenshot in png")
+                return screenshot;
+            }
+        });
 
-        return page.screenshot(params.screenshotOptions);
     } else {
         return Promise.reject("Not taking a screenshot");
     }
@@ -277,9 +287,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        screenshotType: params.screenshotOptions.type ?? "png",
         harSkipped: false,
         screenshotSkipped: false,
-        htmlSkipped: false
+        htmlSkipped: false,
     };
 
     let timeoutId;
@@ -327,6 +338,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             takeScreenshot(params, page).then(output => { result.screenshotData = output; })
         ]);
 
+        result.screenshotType = params.screenshotOptions.type ?? "png";
         await page.close();
 
         console.log("Snap finished");
