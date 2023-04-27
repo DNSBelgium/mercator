@@ -1,12 +1,12 @@
 import * as Scraper from './scraper';
-import { ScraperParams } from './scraper';
-import { s3UploadFile, uploadToS3 } from './websnapper';
-import { expect } from 'chai';
-import { v4 as uuid } from 'uuid';
+import {ScraperParams} from './scraper';
+import {IFileUploader, uploadScrapedData} from './websnapper';
+import {expect} from 'chai';
+import {v4 as uuid} from 'uuid';
 import config from "./config";
 import sinon from 'sinon';
 
-let params: ScraperParams = {
+const params: ScraperParams = {
     url: 'https://dnsbelgium.be',
     visitId: uuid(),
     saveHar: true,
@@ -24,13 +24,27 @@ let params: ScraperParams = {
     retries: 0,
 };
 
+
+class MockFileUploader implements IFileUploader {
+    private called: number = 0;
+
+    async upload(data: string | void | Buffer, filename: string, prefix: string, uploadFileFormat: string, contentType?: string): Promise<string> {
+        this.called++;
+
+        return Promise.resolve("");
+    }
+
+    public getCalledCount(): number {
+        return this.called;
+    }
+}
+
 describe('Scraper Tests', function () {
     this.timeout(30000);
 
     it('should upload files to S3 and return ScraperResult', async () => {
-
         const scraperWebsnapResult = await Scraper.websnap(params)
-        const result = await uploadToS3(scraperWebsnapResult);
+        const result = await uploadScrapedData(scraperWebsnapResult);
 
         console.log(result.errors);
 
@@ -42,49 +56,40 @@ describe('Scraper Tests', function () {
             htmlFile: scraperWebsnapResult.htmlFile,
             harFile: scraperWebsnapResult.harFile,
         });
-        sinon.restore();
     });
 });
+
 
 describe('Scraper Tests', function () {
     this.timeout(30000);
 
-    it('dns should succeed and upload', async () => {
-        const s3UploadFileSpy = sinon.spy(s3UploadFile);
+    it('snap should succeed and upload', async () => {
+        const mockedUploader = new MockFileUploader();
 
         const scraperWebsnapResult = await Scraper.websnap(params)
-        const websnapperResult = await uploadToS3(scraperWebsnapResult,s3UploadFileSpy)
+        const websnapperResult = await uploadScrapedData(scraperWebsnapResult, mockedUploader)
 
-        console.log(`s3UploadFile was called ${await s3UploadFileSpy.callCount} times`);
+        console.log(`s3UploadFile was called ${mockedUploader.getCalledCount()} times`);
         console.log(websnapperResult.errors);
 
-        expect(s3UploadFileSpy.calledThrice).to.be.true;
-        expect(s3UploadFileSpy.callCount).to.be.equal(3)
+        expect(mockedUploader.getCalledCount()).to.be.equal(3);
         expect(websnapperResult.screenshotSkipped).to.equal(false)
         expect(websnapperResult.errors).to.be.empty;
-
-        sinon.restore();
     });
-});
 
-describe('Scraper Tests', function () {
-    this.timeout(30000);
-
-    it('dns should not upload screenshot due to html-file size but not retry because of it', async () => {
+    it('snap should not upload too large screenshot', async () => {
         const before_test_max_content_length = config.max_content_length
         config.max_content_length = 1;
-
-        const s3UploadFileSpy = sinon.spy(s3UploadFile);
+        const mockedUploader = new MockFileUploader();
 
         const scraperWebsnapResult = await Scraper.websnap(params)
-        const websnapperResult = await uploadToS3(scraperWebsnapResult,s3UploadFileSpy)
+        const websnapperResult = await uploadScrapedData(scraperWebsnapResult, mockedUploader);
 
-        console.log(`s3UploadFile was called ${await s3UploadFileSpy.callCount} times`);
+        console.log(`s3UploadFile was called ${mockedUploader.getCalledCount()} times`);
         console.log(websnapperResult.errors);
 
-        expect(s3UploadFileSpy.calledTwice).to.be.true;
-        expect(s3UploadFileSpy.callCount).to.be.equal(2)
-        expect(websnapperResult.screenshotSkipped).to.equal(true)
+        expect(mockedUploader.getCalledCount()).to.be.equal(2);
+        expect(websnapperResult.screenshotSkipped).to.equal(true);
         expect(websnapperResult.errors).to.be.empty;
 
         config.max_content_length = before_test_max_content_length;
