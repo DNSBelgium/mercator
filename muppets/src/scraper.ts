@@ -31,7 +31,7 @@ const observe = [
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
 export interface ScraperParams {
     url: string;
-    referer?: string;
+    referer: string | null;
 
     visitId: string;
 
@@ -300,7 +300,9 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         console.log("url = [%s]", url);
 
         // Set up a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
-        new Promise((resolve) => { timeoutId = setTimeout(resolve, 60000); })
+        new Promise((resolve) => {
+            timeoutId = setTimeout(resolve, 60000);
+        })
             .then(() => console.error(`[${url}] timed out!`))
             .then(() => page.close())
             .then(() => browser.close());
@@ -308,7 +310,8 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         // TODO: Should that be from url or final url ?
         result.hostname = url.hostname;
 
-        params.referer && await setReferer(page, params.referer);
+        if (params.referer)
+            await setReferer(page, params.referer);
 
         // list of events for converting to HAR
         const events: Event[] = [];
@@ -318,7 +321,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
         if (params.retries) {
             console.log("Easing conditions as this is a retry");
-            await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
+            await page.goto(params.url, {waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT});
         } else {
             await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
         }

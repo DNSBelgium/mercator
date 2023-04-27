@@ -150,7 +150,7 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
 
         metrics.getProcessedUrlCounter().inc();
 
-        log("Scraper returned with result [%s]", JSON.stringify(result));
+        console.log("Scraper returned with result [%s]", JSON.stringify(result));
         return result;
     } else {
         console.error("ERROR: message on SQS did not have a URL specified.");

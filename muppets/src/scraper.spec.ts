@@ -43,27 +43,29 @@ describe('Scraper Tests', function () {
         browserOptions: {
             ignoreHTTPSErrors: true
         },
-        retries: 0
+        retries: 0,
+        referer: ""
     };
 
     //commented code does not return as expected
-    it('check response', () => {
+    it('check response', async () => {
         let folder = path.join("output", "dnsbelgium.be", convertDate(new Date()), 'https', 'dnsbelgium.be', 'index.html', mockUuid);
-        return Scraper.websnap(params).then(scraperResult => {
-            expect(scraperResult).to.have.property('hostname', 'dnsbelgium.be');
-            expect(scraperResult).to.have.property('url', 'https://www.dnsbelgium.be/');
-            expect(scraperResult).to.have.property('request',);
-            expect(scraperResult.request).to.have.eql({ ...params });
-            // expect(scraperResult).to.have.property('referer', '');
-            expect(scraperResult).to.have.property('htmlLength');
-            expect(scraperResult).to.have.property('pageTitle');
-            expect(scraperResult).to.have.property('metrics');
-            // expect(scraperResult).to.have.property('folder', folder);
-            // expect(scraperResult).to.have.property('harFile', path.join(folder, 'dnsbelgium.be.har'));
-            // expect(scraperResult).to.have.property('htmlFile', path.join(folder, 'index.html'));
-            // expect(scraperResult).to.have.property('screenshot', path.join(folder, 'screenshot.png'));
-            // expect(scraperResult).to.have.property('retries', 1);
-        });
+        const scraperResult = await Scraper.websnap(params);
+
+        console.log(scraperResult.harFile);
+        expect(scraperResult).to.have.property('hostname', 'dnsbelgium.be');
+        expect(scraperResult).to.have.property('url', 'https://www.dnsbelgium.be/');
+        expect(scraperResult).to.have.property('request',);
+        expect(scraperResult.request).to.have.eql({...params});
+        expect(scraperResult.request).to.have.property('referer', '');
+        expect(scraperResult).to.have.property('htmlLength');
+        expect(scraperResult).to.have.property('pageTitle');
+        expect(scraperResult).to.have.property('metrics');
+        expect(scraperResult).to.have.property('bucket', folder);
+        expect(scraperResult).to.have.property('harFile', path.join(folder, 'dnsbelgium.be.har'));
+        expect(scraperResult).to.have.property('htmlFile', path.join(folder, 'index.html'));
+        expect(scraperResult).to.have.property('screenshotFile', path.join(folder, 'screenshot.png'));
+        expect(scraperResult).to.have.property('retries', 1);
     });
 
     it('S3 bucket upload fails due to html size', () => {
