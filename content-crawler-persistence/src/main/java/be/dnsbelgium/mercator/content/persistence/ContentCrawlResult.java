@@ -101,7 +101,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
 
     if (resolution.isScreenshotSkipped()) {
       contentCrawlResult.screenshotKey = null;
-      contentCrawlResult.screenshotStatus = Status.screenshotTooBig;
+      contentCrawlResult.screenshotStatus = Status.ScreenshotTooBig;
     }
 
     if (!resolution.isHarSkipped()) {

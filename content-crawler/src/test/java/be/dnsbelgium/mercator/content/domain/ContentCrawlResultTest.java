@@ -61,7 +61,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.screenshotTooBig);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.ScreenshotTooBig);
     assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.Ok);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
