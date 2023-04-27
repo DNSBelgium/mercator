@@ -30,10 +30,15 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   private String url;
   @Column(name = "ok")
   private boolean ok;
+
   @Column(name = "html_status")
-  private String htmlStatus;
+  @Convert(converter = StatusJpaConverter.class)
+  private Status htmlStatus;
+
   @Column(name = "screenshot_status")
-  private String screenshotStatus;
+  @Convert(converter = StatusJpaConverter.class)
+  private Status screenshotStatus;
+
   @Column(name = "problem")
   private String problem;
   @Column(name = "bucket")
@@ -67,8 +72,8 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     this.problem = problem;
     this.crawlTimestamp = ZonedDateTime.now();
     this.retries = retries;
-    this.htmlStatus = htmlStatus.getStatus();
-    this.screenshotStatus = screenshotStatus.getStatus();
+    this.htmlStatus = htmlStatus;
+    this.screenshotStatus = screenshotStatus;
   }
 
   public static ContentCrawlResult of(MuppetsResolution resolution) {
@@ -91,12 +96,12 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     if (resolution.isHtmlSkipped()) {
       contentCrawlResult.htmlKey = null;
       contentCrawlResult.htmlLength = null;
-      contentCrawlResult.htmlStatus = Status.HtmlTooBig.getStatus();
+      contentCrawlResult.htmlStatus = Status.HtmlTooBig;
     }
 
     if (resolution.isScreenshotSkipped()) {
       contentCrawlResult.screenshotKey = null;
-      contentCrawlResult.screenshotStatus = Status.screenshotTooBig.getStatus();
+      contentCrawlResult.screenshotStatus = Status.screenshotTooBig;
     }
 
     if (!resolution.isHarSkipped()) {
@@ -108,18 +113,18 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
 
   private static ContentCrawlResult convertErrorsToResult(MuppetsResolution resolution, ContentCrawlResult contentCrawlResult) {
     if (resolution.getErrors().contains("Navigation timeout")) {
-      contentCrawlResult.screenshotStatus = Status.TimeOut.getStatus();
-      contentCrawlResult.htmlStatus = Status.TimeOut.getStatus();
+      contentCrawlResult.screenshotStatus = Status.TimeOut;
+      contentCrawlResult.htmlStatus = Status.TimeOut;
     } else if (resolution.getErrors().contains("net::ERR_NAME_NOT_RESOLVED")) {
-      contentCrawlResult.screenshotStatus = Status.NameNotResolved.getStatus();
-      contentCrawlResult.htmlStatus = Status.NameNotResolved.getStatus();
+      contentCrawlResult.screenshotStatus = Status.NameNotResolved;
+      contentCrawlResult.htmlStatus = Status.NameNotResolved;
     } else if (resolution.getErrors().contains("Upload failed for html file") && resolution.getErrors().contains("Upload failed for screenshot file")) {
       // both html and screenshot not uploaded
-      contentCrawlResult.screenshotStatus = Status.UploadFailed.getStatus();
-      contentCrawlResult.htmlStatus = Status.UploadFailed.getStatus();
+      contentCrawlResult.screenshotStatus = Status.UploadFailed;
+      contentCrawlResult.htmlStatus = Status.UploadFailed;
     } else if (resolution.getErrors().contains("Upload failed for html file") && !(resolution.getErrors().contains("Upload failed for screenshot file"))) {
       // html not uploaded, screenshot did upload
-      contentCrawlResult.htmlStatus = Status.UploadFailed.getStatus();
+      contentCrawlResult.htmlStatus = Status.UploadFailed;
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.screenshotKey = resolution.getScreenshotFile();
       checkHar(resolution, contentCrawlResult);
@@ -127,7 +132,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
       contentCrawlResult.finalUrl = StringUtils.abbreviate(resolution.getFinalUrl(), 2100);
     } else if (!(resolution.getErrors().contains("Upload failed for html file")) && resolution.getErrors().contains("Upload failed for screenshot file")) {
       // html uploaded screenshot not uploaded
-      contentCrawlResult.screenshotStatus = Status.UploadFailed.getStatus();
+      contentCrawlResult.screenshotStatus = Status.UploadFailed;
       contentCrawlResult.bucket = resolution.getBucket();
       contentCrawlResult.htmlKey = resolution.getHtmlFile();
       contentCrawlResult.htmlLength = resolution.getHtmlLength();
@@ -137,8 +142,8 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
     } else {
       //unexpected error
       contentCrawlResult.problem = resolution.getErrors();
-      contentCrawlResult.screenshotStatus = Status.UnexpectedError.getStatus();
-      contentCrawlResult.htmlStatus = Status.UnexpectedError.getStatus();
+      contentCrawlResult.screenshotStatus = Status.UnexpectedError;
+      contentCrawlResult.htmlStatus = Status.UnexpectedError;
     }
     return contentCrawlResult;
   }

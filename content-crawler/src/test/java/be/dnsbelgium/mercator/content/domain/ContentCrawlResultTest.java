@@ -19,8 +19,8 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Html file too big");
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("succeeded");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.HtmlTooBig);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.Ok);
     assertThat(contentCrawlResult.getProblem()).isNull();
   }
   @Test
@@ -29,7 +29,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Upload failed");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.UploadFailed);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -39,7 +39,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Name not resolved");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.NameNotResolved);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -49,7 +49,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Time out error");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.TimeOut);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -61,8 +61,8 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Screenshot file too big");
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("succeeded");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.screenshotTooBig);
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.Ok);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -72,7 +72,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Upload failed");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.UploadFailed);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -81,7 +81,7 @@ class ContentCrawlResultTest {
     MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Name not resolved");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.NameNotResolved);
     assertThat(contentCrawlResult.getProblem()).isNull();
 
   }
@@ -91,7 +91,7 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Time out error");
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.TimeOut);
     assertThat(contentCrawlResult.getProblem()).isNull();
   }
 
@@ -101,8 +101,8 @@ class ContentCrawlResultTest {
 
     ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
 
-    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo("Failed: Unexpected error");
-    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo("Failed: Unexpected error");
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.UnexpectedError);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.UnexpectedError);
     assertThat(contentCrawlResult.getProblem()).isEqualTo(muppetsResolution.getErrors());
   }
 
