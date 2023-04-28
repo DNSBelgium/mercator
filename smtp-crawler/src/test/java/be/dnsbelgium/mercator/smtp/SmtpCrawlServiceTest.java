@@ -1,6 +1,8 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
@@ -17,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -80,5 +84,49 @@ class SmtpCrawlServiceTest {
     assertThat(found).isNotNull();
     assertThat(found.getDomainName()).isEqualTo(request.getDomainName());
     assertThat(found.getVisitId()).isEqualTo(uuid);
+  }
+
+  @Test
+  void saveTest(){
+    SmtpConversationEntity conversation1 = new SmtpConversationEntity();
+    conversation1.setIp("1.2.3.4");
+    conversation1.setIpVersion(4);
+
+    SmtpConversationEntity conversation2 = new SmtpConversationEntity();
+    conversation2.setIp("5.6.7.8");
+    conversation2.setIpVersion(4);
+
+    UUID visitId = UUID.randomUUID();
+    SmtpVisitEntity visit = new SmtpVisitEntity();
+    visit.setVisitId(visitId);
+    visit.setDomainName("dnsbelgium.be");
+    visit.setNumConversations(2);
+
+    SmtpHostEntity host = new SmtpHostEntity();
+    host.setConversation(conversation1);
+    host.setHostName("protection.outlook.com");
+    host.setPriority(0);
+    host.setFromMx(true);
+    host.setVisit(visit);
+
+    SmtpHostEntity host2 = new SmtpHostEntity();
+    host2.setConversation(conversation2);
+    host2.setHostName("protection.outlook.com");
+    host2.setPriority(0);
+    host2.setFromMx(true);
+    host2.setVisit(visit);
+
+    List<SmtpHostEntity> hosts = new ArrayList<>();
+    hosts.add(host);
+    hosts.add(host2);
+
+    visit.setHosts(hosts);
+
+    service.save(visit);
+
+    Optional<SmtpVisitEntity> savedVisit = repository.findByVisitId(visitId);
+    assertThat(savedVisit).isPresent();
+    SmtpVisitEntity visitEntity = savedVisit.get();
+    assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
   }
 }
