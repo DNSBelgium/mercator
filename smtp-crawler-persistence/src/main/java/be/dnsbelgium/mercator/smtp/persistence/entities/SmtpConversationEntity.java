@@ -57,7 +57,7 @@ public class SmtpConversationEntity {
   @Column(name = "ip_version")
   private int ipVersion;
 
-  // True if STARTTLS is supported  (TODO:  succesful or reported to be supported ?)
+  // True if STARTTLS is supported
   @Column(name = "start_tls_ok")
   private boolean startTlsOk = false;
 

@@ -43,7 +43,7 @@ public class SmtpConversation {
   // IP version (4 or 6)
   private int ipVersion;
 
-  // True if STARTTLS is supported  (TODO:  succesful or reported to be supported ?)
+  // True if STARTTLS is supported
   private boolean startTlsOk = false;
 
   // Reply code received after STARTTLS command
