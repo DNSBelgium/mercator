@@ -17,7 +17,7 @@ public class StatusJpaConverterTest {
     }
 
     @Test
-    public void testConvertToDatabaseColumn() {
+    public void testStatusConvertObjectToString() {
         Status status = Status.Ok;
         String dbData = converter.convertToDatabaseColumn(status);
         System.out.println("status: " + status);
@@ -26,7 +26,7 @@ public class StatusJpaConverterTest {
     }
 
     @Test
-    public void testConvertToEntityAttribute() {
+    public void testConvertStringToStatusObject() {
         String dbData = "Ok";
         Status status = converter.convertToEntityAttribute(dbData);
         System.out.println("dbData; " + dbData);
