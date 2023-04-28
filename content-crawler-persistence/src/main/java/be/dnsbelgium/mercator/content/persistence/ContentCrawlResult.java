@@ -59,9 +59,12 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   private String ipv4;
   @Column(name = "ipv6")
   private String ipv6;
-  @Column(name = "browser_version")   private String        browserVersion;
-  @Column(name = "final_url")         private String        finalUrl;
-  @Column(name = "retries")           private Integer       retries;
+  @Column(name = "browser_version")
+  private String browserVersion;
+  @Column(name = "final_url")
+  private String finalUrl;
+  @Column(name = "retries")
+  private Integer retries;
 
 
   public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries, Status htmlStatus, Status screenshotStatus) {
