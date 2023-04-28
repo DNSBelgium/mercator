@@ -17,7 +17,6 @@ import javax.transaction.Transactional;
 
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,6 +59,10 @@ public class SmtpCrawlService {
   @Transactional
   public void save(SmtpVisitEntity smtpVisit) {
     logger.debug("About to save SmtpVisitEntity for {}", smtpVisit.getDomainName());
+    for (SmtpHostEntity host : smtpVisit.getHosts()){
+      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
+      conversationEntity.ifPresent(host::setConversation);
+    }
     Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(smtpVisit);
     if (savedVisit.isEmpty()) {
       logger.info("was duplicate: {}", smtpVisit.getVisitId());
