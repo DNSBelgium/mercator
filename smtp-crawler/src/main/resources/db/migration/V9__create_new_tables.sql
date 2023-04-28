@@ -12,6 +12,7 @@ CREATE TABLE smtp_conversation
     start_tls_ok         BOOLEAN,
     start_tls_reply_code int,
     error_message        VARCHAR(256),
+    error_name           VARCHAR(64),
     connection_time_ms   bigint,
     software             VARCHAR(128),
     software_version     VARCHAR(128),
@@ -24,15 +25,18 @@ create table smtp_visit
     visit_id            UUID                primary key,
     domain_name         varchar(128)        not null,
     timestamp           timestamp           not null,
-    num_conversations   integer             not null
+    num_conversations   integer             not null,
+    crawl_status        VARCHAR(64)
 );
 
 create table smtp_host
 (
+    id                  serial          PRIMARY KEY,
     visit_id            UUID            NOT NULL        REFERENCES smtp_visit,
     from_mx             boolean         NOT NULL,
     host_name           VARCHAR(128)    NOT NULL,
     priority            int             NOT NULL,
     conversation        int             NOT NULL        REFERENCES smtp_conversation,
-    primary key(visit_id, host_name, conversation)
+    status              VARCHAR(64),
+    unique (visit_id, host_name, conversation)
 );

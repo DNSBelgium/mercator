@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpCrawlResultRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,6 @@ public class SmtpConversationRepositoryTest {
   @Autowired
   SmtpConversationRepository repository;
   @Autowired
-  SmtpCrawlResultRepository crawlResultRepository;
-  @Autowired
   ApplicationContext context;
   @Autowired
   JdbcTemplate jdbcTemplate;
@@ -47,6 +44,25 @@ public class SmtpConversationRepositoryTest {
   @DynamicPropertySource
   static void datasourceProperties(DynamicPropertyRegistry registry) {
     container.setDatasourceProperties(registry, "smtp_crawler");
+  }
+
+  @Test
+  void findRecentCrawlByIpFail() {
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("5.7.146.249");
+    conversation.setConnectReplyCode(220);
+    conversation.setIpVersion(4);
+    conversation.setBanner("my banner");
+    conversation.setConnectionTimeMs(123);
+    conversation.setStartTlsOk(false);
+    conversation.setCountry("Jamaica");
+    conversation.setAsnOrganisation("Happy Green grass");
+    conversation.setAsn(654L);
+    conversation.setTimestamp(ZonedDateTime.now().minusDays(5));
+    repository.save(conversation);
+    ZonedDateTime timestamp = ZonedDateTime.now().minus(recently);
+    Optional<SmtpConversationEntity> conversationEntity = repository.findRecentCrawlByIp("5.7.146.249", timestamp);
+    assertThat(conversationEntity.isPresent()).isEqualTo(false);
   }
 
   @Test
@@ -69,25 +85,6 @@ public class SmtpConversationRepositoryTest {
     assertThat(entity.getIp()).isEqualTo("1.2.3.4");
     assertThat(entity.getBanner()).isEqualTo("my banner");
     assertThat(entity.getTimestamp()).isAfter(timestamp);
-  }
-
-  @Test
-  void findRecentCrawlByIpFail() {
-    SmtpConversationEntity conversation = new SmtpConversationEntity();
-    conversation.setIp("1.2.3.4");
-    conversation.setConnectReplyCode(220);
-    conversation.setIpVersion(4);
-    conversation.setBanner("my banner");
-    conversation.setConnectionTimeMs(123);
-    conversation.setStartTlsOk(false);
-    conversation.setCountry("Jamaica");
-    conversation.setAsnOrganisation("Happy Green grass");
-    conversation.setAsn(654L);
-    conversation.setTimestamp(ZonedDateTime.now().minusDays(5));
-    repository.save(conversation);
-    ZonedDateTime timestamp = ZonedDateTime.now().minus(recently);
-    Optional<SmtpConversationEntity> conversationEntity = repository.findRecentCrawlByIp("1.2.3.4", timestamp);
-    assertThat(conversationEntity.isPresent()).isEqualTo(false);
   }
 
   @Test

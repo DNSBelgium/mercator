@@ -6,7 +6,7 @@ import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -44,7 +44,7 @@ public class SmtpCrawler implements Crawler {
     }
     setMDC(visitRequest);
     logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
-    Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
+    Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
     if (existingResult.isPresent()) {
       logger.info("visit {} already exists => skipping", visitRequest);
       return;
@@ -52,8 +52,8 @@ public class SmtpCrawler implements Crawler {
 
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
-      SmtpCrawlResult crawlResult = crawlService.retrieveSmtpInfo(visitRequest);
-      saveAndIgnoreDuplicate(visitRequest, crawlResult);
+      SmtpVisitEntity smtpVisitEntity = crawlService.retrieveSmtpInfo(visitRequest);
+      saveAndIgnoreDuplicate(visitRequest, smtpVisitEntity);
       ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
       logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
     } catch (Exception e) {
@@ -71,12 +71,12 @@ public class SmtpCrawler implements Crawler {
     }
   }
 
-  private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpCrawlResult smtpCrawlResult) throws UnexpectedRollbackException {
+  private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisitEntity smtpVisit) throws UnexpectedRollbackException {
     try {
-      crawlService.save(smtpCrawlResult);
+      crawlService.save(smtpVisit);
     } catch (UnexpectedRollbackException e) {
       logger.info("UnexpectedRollbackException: {}", e.getMessage());
-      Optional<SmtpCrawlResult> existingResult = crawlService.find(visitRequest.getVisitId());
+      Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
       if (existingResult.isPresent()) {
         logger.info("Save failed because SmtpCrawlResult already existed");
         // swallow exception so that message will be removed from SQS queue (and ack will be sent)

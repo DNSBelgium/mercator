@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
  * when reading data from the database.
  */
 @Data
-// TODO [codereview] Could that be named SmtpHostInfo or simply SmtpHost ? It is not just about the IP
 public class SmtpConversation {
 
   private Long id;
@@ -52,6 +51,8 @@ public class SmtpConversation {
 
   // Error message from crawler, in case something went wrong
   private String errorMessage;
+
+  private ErrorName errorName;
 
   // Time (ms) it took to create a connection
   private long connectionTimeMs = -1;

@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
+import be.dnsbelgium.mercator.smtp.dto.ErrorName;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.hubspot.smtp.client.ChannelClosedException;
@@ -67,7 +68,7 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
     }
 
     // for testing
-    protected SmtpConversation getSmtpHostIp() {
+    protected SmtpConversation getConversation() {
         return smtpConversation;
     }
 
@@ -183,6 +184,7 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
         Throwable rootCause = rootCause(throwable);
         if (rootCause instanceof ChannelClosedException) {
             smtpConversation.setErrorMessage("channel was closed while waiting for response");
+            smtpConversation.setErrorName(ErrorName.CHANNEL_CLOSED);
         } else {
             if (config.isLogStackTraces()) {
                 logger.debug("exception: ", throwable);
@@ -192,10 +194,76 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
                 errorMessage = rootCause.getClass().getSimpleName();
             }
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
+            errorMessage = cleanErrorMessage(errorMessage);
             smtpConversation.setErrorMessage(errorMessage);
+            String lowerCaseError = errorMessage.toLowerCase();
+            if (lowerCaseError.contains("timed out")){
+                smtpConversation.setErrorName(ErrorName.TIME_OUT);
+            }
+            else if (lowerCaseError.contains("connection")){
+                smtpConversation.setErrorName(ErrorName.CONNECTION_ERROR);
+            }
+            else if (lowerCaseError.contains("skipped")){
+                smtpConversation.setErrorName(ErrorName.SKIPPED);
+            }
+            else if (lowerCaseError.contains("notafter") ||
+                     lowerCaseError.contains("tls") ||
+                     lowerCaseError.contains("ssl") ||
+                     lowerCaseError.contains("certificate") ||
+                     lowerCaseError.contains("handshake message") ||
+                     lowerCaseError.contains("unable to find valid certification path")
+                     ){
+                smtpConversation.setErrorName(ErrorName.CERTIFICATE_ERROR);
+            }
+            else if (lowerCaseError.contains("unreachable")){
+                smtpConversation.setErrorName(ErrorName.HOST_UNREACHABLE);
+            }
+            else if (lowerCaseError.contains("channel")){
+                smtpConversation.setErrorName(ErrorName.CHANNEL_CLOSED);
+            }
+            else {
+                smtpConversation.setErrorName(ErrorName.OTHER);
+            }
         }
-        logger.debug("crawl done: smtpHostIp = {}", smtpConversation);
+        logger.debug("crawl done: smtpConversation = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
         return smtpConversation;
+    }
+
+    public String cleanErrorMessage(String errorMessage){
+        // TODO remove this comment
+        // Takes ip address out of error message, see https://stackoverflow.com/questions/5284147/validating-ipv4-addresses-with-regexp
+        //String cleanedErrorMessage = errorMessage.replaceAll("\\[?((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\\]? ?", "");
+        // Takes hostname out of error message
+        //cleanedErrorMessage = cleanedErrorMessage.replaceAll( hostName + ":? ?", "");
+        String cleanedErrorMessage;
+        if (errorMessage.contains("connection timed out:")){
+            cleanedErrorMessage = "Connection timed out";
+        }
+        else if (errorMessage.contains("Timed out waiting for a response to")){
+            cleanedErrorMessage = "Timed out waiting for a response";
+        }
+        else if (errorMessage.contains("NotAfter:")){
+            cleanedErrorMessage = "NotAfter";
+        }
+        else if (errorMessage.contains("Received fatal alert:")){
+            cleanedErrorMessage = "Received fatal alert";
+        }
+        else if (errorMessage.contains("not an SSL/TLS record:")){
+            cleanedErrorMessage = "Not an SSL/TLS record";
+        }
+        else if (errorMessage.contains("Received invalid line:")){
+            cleanedErrorMessage = "Received invalid line";
+        }
+        else if (errorMessage.contains("The size of the handshake message")){
+            cleanedErrorMessage = "Handshake message size exceeds maximum";
+        }
+        else if (errorMessage.contains("Usage constraint TLSServer check failed:")) {
+            cleanedErrorMessage = "Usage constraint TLSServer check failed";
+        }
+        else {
+            cleanedErrorMessage = errorMessage;
+        }
+        return cleanedErrorMessage;
     }
 }

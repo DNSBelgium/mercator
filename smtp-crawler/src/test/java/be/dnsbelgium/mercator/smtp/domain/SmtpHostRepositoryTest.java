@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.smtp.domain;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
@@ -51,20 +52,21 @@ public class SmtpHostRepositoryTest {
     conversation.setIp("4.5.6.7");
     conversation.setIpVersion(4);
     conversation.setCountry("Belgium");
-    SmtpConversationEntity conversationEntity = conversationRepository.save(conversation);
 
     UUID visitId = UUID.randomUUID();
+    SmtpVisitEntity vistEntity = new SmtpVisitEntity();
     SmtpHostEntity host = new SmtpHostEntity();
     host.setHostName("dns.be");
     host.setFromMx(true);
     host.setPriority(10);
-    host.setVisitId(visitId);
-    host.setConversation(conversationEntity);
+    host.setConversation(conversation);
+    vistEntity.setVisitId(visitId);
+    vistEntity.setDomainName("dnsbelgium.be");
+    vistEntity.add(host);
     SmtpHostEntity savedHost = repository.save(host);
     assertThat(savedHost.getHostName()).isEqualTo("dns.be");
     assertThat(savedHost.isFromMx()).isTrue();
     assertThat(savedHost.getPriority()).isEqualTo(10);
-    assertThat(savedHost.getVisitId()).isEqualTo(visitId);
-    assertThat(savedHost.getConversation()).isEqualTo(conversationEntity);
+    assertThat(savedHost.getConversation()).isEqualTo(conversation);
   }
 }

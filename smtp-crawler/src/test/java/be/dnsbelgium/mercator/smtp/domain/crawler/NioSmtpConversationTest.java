@@ -54,8 +54,8 @@ class NioSmtpConversationTest {
         when(sessionFactory.connect(sessionConfig)).thenReturn(response(session, 123, "my-test-banner"));
         CompletableFuture<SmtpClientResponse> connect = crawl.connect().toCompletableFuture();
         connect.get();
-        logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpConversation result = crawl.getSmtpHostIp();
+        logger.info("crawl: " + crawl.getConversation());
+        SmtpConversation result = crawl.getConversation();
         assertThat(result.getBanner()).isNull();
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
@@ -72,8 +72,8 @@ class NioSmtpConversationTest {
         CompletableFuture<SmtpClientResponse> response = sessionFactory.connect(sessionConfig);
         crawl.connect();
         crawl.sendEHLO(response.get());
-        logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpConversation result = crawl.getSmtpHostIp();
+        logger.info("crawl: " + crawl.getConversation());
+        SmtpConversation result = crawl.getConversation();
         assertThat(result.getBanner()).isEqualTo("123 my-test-banner");
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
@@ -92,8 +92,8 @@ class NioSmtpConversationTest {
         SmtpClientResponse connectResponse = response(session, 123, "my-test-banner").get();
         crawl.sendEHLO(connectResponse);
         crawl.startTLS(connectResponse);
-        logger.info("crawl: " + crawl.getSmtpHostIp());
-        SmtpConversation result = crawl.getSmtpHostIp();
+        logger.info("crawl: " + crawl.getConversation());
+        SmtpConversation result = crawl.getConversation();
         assertThat(result.getErrorMessage()).isNullOrEmpty();
         assertThat(result.getIp()).isEqualTo("10.20.30.40");
         assertThat(result.getIpVersion()).isEqualTo(4);
@@ -114,10 +114,33 @@ class NioSmtpConversationTest {
         when(sessionFactory.connect(sessionConfig)).thenReturn(future);
         CompletableFuture<SmtpConversation> crawlFuture = crawl.start();
         logger.info("crawl = {}", crawlFuture.get());
-        assertThat(crawl.getSmtpHostIp().getErrorMessage()).isNotBlank();
-        assertThat(crawl.getSmtpHostIp().getErrorMessage()).contains("TimeoutException");
+        assertThat(crawl.getConversation().getErrorMessage()).isNotBlank();
+        assertThat(crawl.getConversation().getErrorMessage()).contains("TimeoutException");
     }
 
+    @Test
+    public void cleanErrorMessageTimedOutWaitingForResponse(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "[104.47.11.10]: Timed out waiting for a response to [initial response]";
+        String cleanedErrorMessage = conversation.cleanErrorMessage(errorMessage);
+        assertThat(cleanedErrorMessage).isEqualTo("Timed out waiting for a response");
+    }
+
+    @Test
+    public void cleanErrorMessageNotAfter(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "NotAfter: Fri May 21 22:16:31 GMT 2021";
+        String cleanedErrorMessage = conversation.cleanErrorMessage(errorMessage);
+        assertThat(cleanedErrorMessage).isEqualTo("NotAfter");
+    }
+
+    @Test
+    public void cleanErrorMessageReceivedFatalAlert(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "Received fatal alert: handshake_failure";
+        String cleanedErrorMessage = conversation.cleanErrorMessage(errorMessage);
+        assertThat(cleanedErrorMessage).isEqualTo("Received fatal alert");
+    }
 
     private CompletableFuture<SmtpClientResponse> response(SmtpSession smtpSession, int reponseCode, CharSequence... details) {
         return CompletableFuture.completedFuture(new SmtpClientResponse(smtpSession, new DefaultSmtpResponse(reponseCode, details)));

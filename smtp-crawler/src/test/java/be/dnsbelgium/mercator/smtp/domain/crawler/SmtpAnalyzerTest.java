@@ -1,9 +1,10 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,8 @@ class SmtpAnalyzerTest {
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
   MXRecord mx2 = mxRecord(DOMAIN_NAME, 20, "smtp2.name.be");
 
+  //TODO refactor tests
+
   @BeforeEach
   public void beforeEach() {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false);
@@ -56,46 +59,44 @@ class SmtpAnalyzerTest {
   public void noDnsRecords() throws Exception {
     expectNoMxRecords();
     expectIpAddresses();
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(0);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(0);
   }
 
   @Test
   public void noMxButOneARecord() throws Exception {
     expectNoMxRecords();
     expectIpAddresses(ip1);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(1);
+    SmtpHostEntity server = result.getHosts().get(0);
     assertThat(server.getHostName()).isEqualTo(DOMAIN_NAME);
-    assertThat(server.getHosts().get(0)).isEqualTo(crawledIp1);
+    assertThat(server.getConversation().toSmtpConversation()).isEqualTo(crawledIp1);
   }
 
   @Test
   public void noMxButTwoARecords() throws Exception {
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(3);
+    SmtpHostEntity server = result.getHosts().get(0);
     assertThat(server.getHostName()).isEqualTo(DOMAIN_NAME);
-    assertThat(server.getHosts().size()).isEqualTo(3);
-    assertThat(server.getHosts().get(0)).isEqualTo(crawledIp1);
-    assertThat(server.getHosts().get(1)).isEqualTo(crawledIp2);
-    assertThat(server.getHosts().get(2)).isEqualTo(crawledIpv6);
+    assertThat(result.getHosts().get(0).getConversation().toSmtpConversation()).isEqualTo(crawledIp1);
+    assertThat(result.getHosts().get(1).getConversation().toSmtpConversation()).isEqualTo(crawledIp2);
+    assertThat(result.getHosts().get(2).getConversation().toSmtpConversation()).isEqualTo(crawledIpv6);
   }
 
   @Test
@@ -103,19 +104,18 @@ class SmtpAnalyzerTest {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, true);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(3);
+    SmtpHostEntity server = result.getHosts().get(0);
     assertThat(server.getHostName()).isEqualTo(DOMAIN_NAME);
-    assertThat(server.getHosts().size()).isEqualTo(3);
-    assertThat(server.getHosts().get(0)).isEqualTo(crawledIp1);
-    assertThat(server.getHosts().get(1)).isEqualTo(crawledIp2);
-    assertThat(server.getHosts().get(2).getIp()).isEqualTo(ipv6.getHostAddress());
-    assertThat(server.getHosts().get(2).getErrorMessage()).contains("conversation with IPv6 SMTP host skipped");
+    assertThat(result.getHosts().get(0).getConversation().toSmtpConversation()).isEqualTo(crawledIp1);
+    assertThat(result.getHosts().get(1).getConversation().toSmtpConversation()).isEqualTo(crawledIp2);
+    assertThat(result.getHosts().get(2).getConversation().toSmtpConversation().getIp()).isEqualTo(ipv6.getHostAddress());
+    assertThat(result.getHosts().get(2).getConversation().toSmtpConversation().getErrorMessage()).contains("conversation with IPv6 SMTP host skipped");
   }
 
   @Test
@@ -123,39 +123,38 @@ class SmtpAnalyzerTest {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, true, false);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(3);
+    SmtpHostEntity server = result.getHosts().get(0);
     assertThat(server.getHostName()).isEqualTo(DOMAIN_NAME);
-    assertThat(server.getHosts().size()).isEqualTo(3);
-    assertThat(server.getHosts().get(0).getErrorMessage()).isEqualTo("conversation with IPv4 SMTP host skipped");
-    assertThat(server.getHosts().get(1).getErrorMessage()).isEqualTo("conversation with IPv4 SMTP host skipped");
-    assertThat(server.getHosts().get(2)).isEqualTo(crawledIpv6);
+    assertThat(result.getHosts().get(0).getConversation().toSmtpConversation().getErrorMessage()).isEqualTo("conversation with IPv4 SMTP host skipped");
+    assertThat(result.getHosts().get(1).getConversation().toSmtpConversation().getErrorMessage()).isEqualTo("conversation with IPv4 SMTP host skipped");
+    assertThat(result.getHosts().get(2).getConversation().toSmtpConversation()).isEqualTo(crawledIpv6);
   }
 
   @Test
   public void invalidHostName() throws Exception {
     expect(MxLookupResult.invalidHostName());
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.INVALID_HOSTNAME);
-    assertThat(result.getServers().size()).isEqualTo(0);
+    assertThat(result.getHosts().size()).isEqualTo(0);
   }
 
   @Test
   public void queryFailed() throws Exception {
     expect(MxLookupResult.queryFailed());
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NETWORK_ERROR);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(0);
   }
 
   @Test
@@ -163,17 +162,16 @@ class SmtpAnalyzerTest {
     String mxTarget = mx1.getTarget().toString(true);
     expect(MxLookupResult.ok(List.of(mx1)));
     expectIpAddresses(mxTarget, ip1);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(1);
+    SmtpHostEntity server = result.getHosts().get(0);
     logger.info("server = {}", server);
     assertThat(server.getHostName()).isEqualTo(mxTarget);
-    assertThat(server.getHosts().size()).isEqualTo(1);
-    assertThat(server.getHosts().get(0)).isEqualTo(crawledIp1);
+    assertThat(result.getHosts().get(0).getConversation().toSmtpConversation()).isEqualTo(crawledIp1);
   }
 
   @Test
@@ -181,20 +179,19 @@ class SmtpAnalyzerTest {
     String mx1Target = mx1.getTarget().toString(true);
     expect(MxLookupResult.ok(List.of(mx1)));
     expectIpAddresses(mx1Target, localhost, privateIP);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
 
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(1);
-    SmtpServer server1 = result.getServers().get(0);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(2);
+    SmtpHostEntity server1 = result.getHosts().get(0);
     logger.info("server = {}", server1);
     assertThat(server1.getHostName()).isEqualTo(mx1Target);
-    assertThat(server1.getHosts().size()).isEqualTo(2);
 
-    SmtpConversation host1 = server1.getHosts().get(0);
-    SmtpConversation host2 = server1.getHosts().get(1);
+    SmtpConversationEntity host1 = result.getHosts().get(0).getConversation();
+    SmtpConversationEntity host2 = result.getHosts().get(1).getConversation();
 
     assertThat(host1.getErrorMessage()).isEqualTo("conversation with loopback address skipped");
     ;
@@ -210,25 +207,23 @@ class SmtpAnalyzerTest {
     expect(MxLookupResult.ok(List.of(mx1, mx2)));
     expectIpAddresses(mx1Target, ip1, ipv6);
     expectIpAddresses(mx2Target, ip2, ipv6);
-    SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getCrawlTimestamp()).isNotNull();
-    assertThat(result.getServers().size()).isEqualTo(2);
-    SmtpServer server1 = result.getServers().get(0);
-    SmtpServer server2 = result.getServers().get(1);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(4);
+    SmtpHostEntity server1 = result.getHosts().get(0);
+    SmtpHostEntity server2 = result.getHosts().get(2);
     logger.info("server = {}", server1);
     assertThat(server1.getHostName()).isEqualTo(mx1Target);
-    assertThat(server1.getHosts().size()).isEqualTo(2);
-    assertThat(server1.getHosts().get(0)).isEqualTo(crawledIp1);
-    assertThat(server1.getHosts().get(1)).isEqualTo(crawledIpv6);
+    assertThat(result.getHosts().get(0).getConversation().toSmtpConversation()).isEqualTo(crawledIp1);
+    assertThat(result.getHosts().get(1).getConversation().toSmtpConversation()).isEqualTo(crawledIpv6);
 
     logger.info("server = {}", server2);
     assertThat(server2.getHostName()).isEqualTo(mx2Target);
-    assertThat(server2.getHosts().size()).isEqualTo(2);
-    assertThat(server2.getHosts().get(0)).isEqualTo(crawledIp2);
-    assertThat(server2.getHosts().get(1)).isEqualTo(crawledIpv6);
+    assertThat(result.getHosts().get(2).getConversation().toSmtpConversation()).isEqualTo(crawledIp2);
+    assertThat(result.getHosts().get(3).getConversation().toSmtpConversation()).isEqualTo(crawledIpv6);
   }
 
   private void expectNoMxRecords() {

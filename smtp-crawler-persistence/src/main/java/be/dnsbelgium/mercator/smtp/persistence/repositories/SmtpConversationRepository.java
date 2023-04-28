@@ -17,4 +17,6 @@ public interface SmtpConversationRepository extends PagingAndSortingRepository<S
     "limit 1",
     nativeQuery = true)
   Optional<SmtpConversationEntity> findRecentCrawlByIp(@Param("ip") String ip, @Param("date_time") ZonedDateTime dateTime);
+
+  Optional<SmtpConversationEntity> findByIpAndTimestamp(String ip, ZonedDateTime timestamp);
 }

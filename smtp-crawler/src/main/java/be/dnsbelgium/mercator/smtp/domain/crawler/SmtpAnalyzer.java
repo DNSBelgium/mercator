@@ -1,11 +1,10 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.SmtpConversationService;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
-import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
+import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,9 +41,6 @@ public class SmtpAnalyzer {
   private static final Logger logger = getLogger(SmtpAnalyzer.class);
 
   @Autowired
-  private SmtpConversationService hostService;
-
-  @Autowired
   public SmtpAnalyzer(MeterRegistry meterRegistry, SmtpIpAnalyzer smtpIpAnalyzer, MxFinder mxFinder,
                       @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4, @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6) {
     this.meterRegistry = meterRegistry;
@@ -54,17 +51,17 @@ public class SmtpAnalyzer {
     logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
   }
 
-  public SmtpCrawlResult analyze(String domainName) throws Exception {
-    SmtpCrawlResult result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
+  public SmtpVisitEntity analyze(String domainName) throws Exception {
+    SmtpVisitEntity result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
     meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
     return result;
   }
 
-  private SmtpCrawlResult doCrawl(String domainName) {
+  private SmtpVisitEntity doCrawl(String domainName) {
     logger.debug("Starting SMTP crawl for domainName={}", domainName);
-    SmtpCrawlResult result = new SmtpCrawlResult();
+    SmtpVisitEntity result = new SmtpVisitEntity();
     result.setDomainName(domainName);
-    result.setCrawlTimestamp(ZonedDateTime.now());
+    result.setTimestamp(ZonedDateTime.now());
     MxLookupResult mxLookupResult = mxFinder.findMxRecordsFor(domainName);
     switch (mxLookupResult.getStatus()) {
       case INVALID_HOSTNAME: {
@@ -96,7 +93,14 @@ public class SmtpAnalyzer {
         meterRegistry.counter(MetricName.COUNTER_NO_MX_RECORDS_FOUND).increment();
         logger.debug("No MX records found for {} => finding address records", domainName);
         result.setCrawlStatus(CrawlStatus.OK);
-        createSmtpServer(domainName, 0).ifPresent(result::add);
+        Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(domainName, 0);
+        if(hosts.isPresent()){
+          for(SmtpHostEntity host : hosts.get()){
+            host.setFromMx(false);
+            //host.setHostName(host.getConversation().getIp());
+          }
+          result.add(hosts.get());
+        }
         return result;
       }
       case OK: {
@@ -104,7 +108,13 @@ public class SmtpAnalyzer {
         for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
           logger.debug("mxRecord = {}", mxRecord);
           String hostName = mxRecord.getTarget().toString(true);
-          createSmtpServer(hostName, mxRecord.getPriority()).ifPresent(result::add);
+          Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(hostName, mxRecord.getPriority());
+          if(hosts.isPresent()){
+            for(SmtpHostEntity host : hosts.get()){
+              host.setFromMx(true);
+            }
+            result.add(hosts.get());
+          }
         }
         result.setCrawlStatus(CrawlStatus.OK);
         logger.debug("DONE crawling for domain name {}", domainName);
@@ -115,21 +125,24 @@ public class SmtpAnalyzer {
     }
   }
 
-  private Optional<SmtpServer> createSmtpServer(String domainName, int priority) {
+  private Optional<List<SmtpHostEntity>> createSmtpHosts(String domainName, int priority) {
     List<InetAddress> addresses = mxFinder.findIpAddresses(domainName);
     if (addresses.size() == 0) {
       logger.debug("No addresses found for {}", domainName);
       return Optional.empty();
     }
     logger.debug("We found {} addresses for {}", addresses.size(), domainName);
-    SmtpServer server = new SmtpServer(domainName, priority);
+    List<SmtpHostEntity> hosts = new ArrayList<>();
     for (InetAddress address : addresses) {
-      SmtpConversation smtpConversation;
-      smtpConversation = crawl(address);
+      SmtpHostEntity host = new SmtpHostEntity();
+      host.setHostName(domainName);
+      host.setPriority(priority);
+      SmtpConversation smtpConversation = crawl(address);
       smtpConversation.clean();
-      server.addHost(smtpConversation);
+      host.setConversation(smtpConversation);
+      hosts.add(host);
     }
-    return Optional.of(server);
+    return Optional.of(hosts);
   }
 
   private SmtpConversation crawl(InetAddress address) {
@@ -147,17 +160,17 @@ public class SmtpAnalyzer {
     if (skipIPv6 && address instanceof Inet6Address) {
       return skip(address, "conversation with IPv6 SMTP host skipped");
     }
-    SmtpConversation hostIp = smtpIpAnalyzer.crawl(address);
+    SmtpConversation conversation = smtpIpAnalyzer.crawl(address);
     logger.debug("done crawling ip {}", address.toString());
-    return hostIp;
+    return conversation;
   }
 
   private SmtpConversation skip(InetAddress address, String message) {
     meterRegistry.counter(MetricName.COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
     logger.debug("{} : {}", message, address);
-    SmtpConversation hostIp = new SmtpConversation(address);
-    hostIp.setErrorMessage(message);
-    return hostIp;
+    SmtpConversation conversation = new SmtpConversation(address);
+    conversation.setErrorMessage(message);
+    return conversation;
   }
 
 }

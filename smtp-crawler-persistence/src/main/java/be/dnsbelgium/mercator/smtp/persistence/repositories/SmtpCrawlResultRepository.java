@@ -1,4 +1,6 @@
+/*TODO remove
 package be.dnsbelgium.mercator.smtp.persistence.repositories;
+
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,6 +27,7 @@ public interface SmtpCrawlResultRepository extends PagingAndSortingRepository<Sm
    * @return true if save failed because of unique constraint
    * throws DataIntegrityViolationException for other integrity constraint violations
    */
+/*
   default boolean saveAndIgnoreDuplicateKeys(SmtpCrawlResult smtpCrawlResult) {
     try {
       save(smtpCrawlResult);
@@ -41,3 +44,5 @@ public interface SmtpCrawlResultRepository extends PagingAndSortingRepository<Sm
     }
   }
 }
+
+ */

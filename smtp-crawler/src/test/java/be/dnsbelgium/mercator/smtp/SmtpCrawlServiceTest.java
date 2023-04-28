@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpCrawlResult;
-import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpCrawlResultRepository;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,7 @@ class SmtpCrawlServiceTest {
   @Autowired
   SmtpCrawlService service;
   @Autowired
-  SmtpCrawlResultRepository repository;
+  SmtpVisitRepository repository;
 
   @Container
   static PostgreSqlContainer pgsql = PostgreSqlContainer.getInstance();
@@ -71,15 +71,14 @@ class SmtpCrawlServiceTest {
   public void integrationTest() throws Exception {
     UUID uuid = UUID.randomUUID();
     VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
-    SmtpCrawlResult crawlResult = service.retrieveSmtpInfo(request);
-    service.save(crawlResult);
-    Optional<SmtpCrawlResult> find = repository.findFirstByVisitId(uuid);
+    SmtpVisitEntity visit = service.retrieveSmtpInfo(request);
+    service.save(visit);
+    Optional<SmtpVisitEntity> find = repository.findByVisitId(uuid);
     assertThat(find).isPresent();
-    SmtpCrawlResult found = find.get();
+    SmtpVisitEntity found = find.get();
     logger.info("found = {}", found);
     assertThat(found).isNotNull();
     assertThat(found.getDomainName()).isEqualTo(request.getDomainName());
     assertThat(found.getVisitId()).isEqualTo(uuid);
-    assertThat(found.getId()).isNotNull();
   }
 }

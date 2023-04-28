@@ -1,6 +1,6 @@
+/* TODO remove
 package be.dnsbelgium.mercator.smtp.persistence.entities;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpServer;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,7 +43,7 @@ public class SmtpCrawlResult {
 
   @Type(type = "jsonb")
   @Column(name = "servers", columnDefinition = "jsonb")
-  private List<SmtpServer> servers = new ArrayList<>();
+  private List<SmtpHost> servers = new ArrayList<>();
 
   private static final Logger logger = getLogger(SmtpCrawlResult.class);
 
@@ -54,7 +54,8 @@ public class SmtpCrawlResult {
     this.crawlTimestamp = ZonedDateTime.now();
   }
 
-  public void add(SmtpServer server) {
+  public void add(SmtpHost server) {
     servers.add(server);
   }
 }
+ */

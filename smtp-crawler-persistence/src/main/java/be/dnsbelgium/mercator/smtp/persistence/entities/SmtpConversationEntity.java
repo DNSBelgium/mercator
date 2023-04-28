@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.persistence.entities;
 
+import be.dnsbelgium.mercator.smtp.dto.ErrorName;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Getter;
@@ -9,10 +10,12 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -66,6 +69,10 @@ public class SmtpConversationEntity {
   @Column(name = "error_message")
   private String errorMessage;
 
+  @Column(name = "error_name")
+  @Enumerated(EnumType.STRING)
+  private ErrorName errorName;
+
   // Time (ms) it took to create a connection
   @Column(name = "connection_time_ms")
   private long connectionTimeMs = -1;
@@ -77,53 +84,72 @@ public class SmtpConversationEntity {
   @Column(name = "software_version")
   private String softwareVersion;
 
-  @OneToMany(mappedBy = "conversation", cascade = CascadeType.PERSIST)
+  @OneToMany(mappedBy = "conversation", fetch = FetchType.EAGER)
+  @ToString.Exclude
   private List<SmtpHostEntity> hosts = new ArrayList<>();
 
   private ZonedDateTime timestamp = ZonedDateTime.now();
 
-  public void addServer(SmtpHostEntity host) {
-    hosts.add(host);
-  }
+  @Transient
+  private final static String NULL_BYTE = "\u0000";
+  @Transient
+  private final static String EMPTY_STRING = "";
 
-  public SmtpConversationEntity fromSmtpHostIp(SmtpConversation host) {
-    this.setId(host.getId());
-    this.setIp(host.getIp());
-    this.setAsn(host.getAsn());
-    this.setCountry(host.getCountry());
-    this.setAsnOrganisation(host.getAsnOrganisation());
-    this.setBanner(host.getBanner());
-    this.setConnectOK(host.isConnectOK());
-    this.setConnectReplyCode(host.getConnectReplyCode());
-    this.setSupportedExtensions(host.getSupportedExtensions());
-    this.setIpVersion(host.getIpVersion());
-    this.setStartTlsOk(host.isStartTlsOk());
-    this.setErrorMessage(host.getErrorMessage());
-    this.setConnectionTimeMs(host.getConnectionTimeMs());
-    this.setSoftware(host.getSoftware());
-    this.setSoftwareVersion(host.getSoftwareVersion());
-    this.setTimestamp(host.getTimestamp());
+  public SmtpConversationEntity fromSmtpConversation(SmtpConversation conversation) {
+    this.setId(conversation.getId());
+    this.setIp(conversation.getIp());
+    this.setAsn(conversation.getAsn());
+    this.setCountry(conversation.getCountry());
+    this.setAsnOrganisation(conversation.getAsnOrganisation());
+    this.setBanner(conversation.getBanner());
+    this.setConnectOK(conversation.isConnectOK());
+    this.setConnectReplyCode(conversation.getConnectReplyCode());
+    this.setSupportedExtensions(conversation.getSupportedExtensions());
+    this.setIpVersion(conversation.getIpVersion());
+    this.setStartTlsOk(conversation.isStartTlsOk());
+    this.setErrorMessage(conversation.getErrorMessage());
+    this.setErrorName(conversation.getErrorName());
+    this.setConnectionTimeMs(conversation.getConnectionTimeMs());
+    this.setSoftware(conversation.getSoftware());
+    this.setSoftwareVersion(conversation.getSoftwareVersion());
+    this.setTimestamp(conversation.getTimestamp());
     return this;
   }
 
-  public SmtpConversation toSmtpHostIp() {
-    SmtpConversation hostIp = new SmtpConversation();
-    hostIp.setId(id);
-    hostIp.setIp(ip);
-    hostIp.setAsn(asn);
-    hostIp.setCountry(country);
-    hostIp.setAsnOrganisation(asnOrganisation);
-    hostIp.setBanner(banner);
-    hostIp.setConnectOK(connectOK);
-    hostIp.setConnectReplyCode(connectReplyCode);
-    hostIp.setSupportedExtensions(supportedExtensions);
-    hostIp.setIpVersion(ipVersion);
-    hostIp.setStartTlsOk(startTlsOk);
-    hostIp.setErrorMessage(errorMessage);
-    hostIp.setConnectionTimeMs(connectionTimeMs);
-    hostIp.setSoftware(software);
-    hostIp.setSoftwareVersion(softwareVersion);
-    hostIp.setTimestamp(timestamp);
-    return hostIp;
+  public SmtpConversation toSmtpConversation() {
+    SmtpConversation conversation = new SmtpConversation();
+    conversation.setId(id);
+    conversation.setIp(ip);
+    conversation.setAsn(asn);
+    conversation.setCountry(country);
+    conversation.setAsnOrganisation(asnOrganisation);
+    conversation.setBanner(banner);
+    conversation.setConnectOK(connectOK);
+    conversation.setConnectReplyCode(connectReplyCode);
+    conversation.setSupportedExtensions(supportedExtensions);
+    conversation.setIpVersion(ipVersion);
+    conversation.setStartTlsOk(startTlsOk);
+    conversation.setErrorMessage(errorMessage);
+    conversation.setErrorName(errorName);
+    conversation.setConnectionTimeMs(connectionTimeMs);
+    conversation.setSoftware(software);
+    conversation.setSoftwareVersion(softwareVersion);
+    conversation.setTimestamp(timestamp);
+    return conversation;
+  }
+
+  public void clean() {
+    this.country = clean(country);
+    this.softwareVersion = clean(softwareVersion);
+    this.software = clean(software);
+    this.banner = clean(banner);
+    this.asnOrganisation = clean(asnOrganisation);
+    this.errorMessage = clean(errorMessage);
+    this.ip = clean(ip);
+    this.supportedExtensions = supportedExtensions.stream().map(SmtpConversationEntity::clean).collect(Collectors.toSet());
+  }
+
+  private static String clean(String input) {
+    return StringUtils.replace(input, NULL_BYTE, EMPTY_STRING);
   }
 }
