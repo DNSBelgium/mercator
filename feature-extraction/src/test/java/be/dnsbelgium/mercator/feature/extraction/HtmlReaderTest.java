@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.feature.extraction;
 
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
+import be.dnsbelgium.mercator.content.dto.Status;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.Bucket;
@@ -56,7 +57,7 @@ class HtmlReaderTest {
 
   @Test
   public void read() throws IOException {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, "Success", "Success");
+    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey(HTML_KEY);
     crawlResult.setBucket(BUCKET_NAME);
     InputStream inputStream = htmlReader.read(crawlResult);
@@ -68,7 +69,7 @@ class HtmlReaderTest {
 
   @Test
   public void readNonExistingKey() {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, "Success", "Success");
+    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey("THIS-KEY_DOES-NOT-EXIST");
     crawlResult.setBucket(BUCKET_NAME);
     Exception exception = assertThrows(AmazonS3Exception.class, () -> htmlReader.read(crawlResult));
@@ -77,7 +78,7 @@ class HtmlReaderTest {
 
   @Test
   public void readFromWrongBucket() {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, "Success", "Success");
+    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey(HTML_KEY);
     crawlResult.setBucket("THIS-BUCKET_DOES-NOT-EXIST");
     Exception exception = assertThrows(AmazonS3Exception.class, () -> htmlReader.read(crawlResult));
