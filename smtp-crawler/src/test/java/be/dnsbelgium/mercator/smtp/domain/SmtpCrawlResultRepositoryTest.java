@@ -125,30 +125,29 @@ class SmtpCrawlResultRepositoryTest {
     }
   }
 
-  /*
-  TODO test onnodig?
+
   @Test
   public void saveAndIgnoreDuplicateKeys() {
     UUID uuid = randomUUID();
     @SuppressWarnings("SqlResolve")
     int rowsInserted = jdbcTemplate.update("" +
         " insert into smtp_visit\n" +
-        "        (crawl_timestamp, domain_name, visit_id) \n" +
+        "        (timestamp, domain_name, visit_id, num_conversations) \n" +
         "    values\n" +
-        "        (current_timestamp, ?, ?)"
-      , "abc.be", uuid
+        "        (current_timestamp, ?, ?, ?)"
+      , "abc.be", uuid, 0
     );
     logger.info("rowsInserted = {}", rowsInserted);
     Optional<SmtpVisitEntity> found = repository.findByVisitId(uuid);
-    logger.info("found = {}", found.size());
-    assertThat(found).hasSize(1);
+    logger.info("found = {}", found);
+    assertThat(found).isPresent();
     jdbcTemplate.execute("commit");
-    SmtpCrawlResult crawlResult = crawlResult(uuid);
-    boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult);
+    SmtpVisitEntity crawlResult = smtpVisit(uuid);
+    boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult).isPresent();
     logger.info("saveFailed = {}", saveFailed);
     assertThat(saveFailed).isTrue();
   }
-*/
+
   @Test
   public void otherDataIntegrityViolationExceptionNotIgnored() {
     SmtpVisitEntity crawlResult = smtpVisit(randomUUID());
