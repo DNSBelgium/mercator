@@ -12,7 +12,7 @@ public class StatusJpaConverter implements AttributeConverter<Status, String> {
         if (attribute == null) {
             return null;
         }
-        return attribute.getStatus();
+        return attribute.name();
     }
 
     @Override
@@ -20,11 +20,6 @@ public class StatusJpaConverter implements AttributeConverter<Status, String> {
         if (dbData == null) {
             return null;
         }
-        for (Status value : Status.values()) {
-            if (value.getStatus().equals(dbData)) {
-                return value;
-            }
-        }
-        throw new RuntimeException("status from db not defined in code.");
+        return Status.valueOf(dbData);
     }
 }

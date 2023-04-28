@@ -57,7 +57,9 @@ class HtmlReaderTest {
 
   @Test
   public void read() throws IOException {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
+    ContentCrawlResult crawlResult = new ContentCrawlResult(
+            UUID.randomUUID(), "abc.be", "http://abc.be",
+            true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey(HTML_KEY);
     crawlResult.setBucket(BUCKET_NAME);
     InputStream inputStream = htmlReader.read(crawlResult);
@@ -69,7 +71,9 @@ class HtmlReaderTest {
 
   @Test
   public void readNonExistingKey() {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
+    ContentCrawlResult crawlResult = new ContentCrawlResult(
+            UUID.randomUUID(), "abc.be", "http://abc.be",
+            true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey("THIS-KEY_DOES-NOT-EXIST");
     crawlResult.setBucket(BUCKET_NAME);
     Exception exception = assertThrows(AmazonS3Exception.class, () -> htmlReader.read(crawlResult));
@@ -78,7 +82,9 @@ class HtmlReaderTest {
 
   @Test
   public void readFromWrongBucket() {
-    ContentCrawlResult crawlResult = new ContentCrawlResult(UUID.randomUUID(), "abc.be", "http://abc.be", true, null, 0, Status.Ok, Status.Ok);
+    ContentCrawlResult crawlResult = new ContentCrawlResult(
+            UUID.randomUUID(), "abc.be", "http://abc.be",
+            true, null, 0, Status.Ok, Status.Ok);
     crawlResult.setHtmlKey(HTML_KEY);
     crawlResult.setBucket("THIS-BUCKET_DOES-NOT-EXIST");
     Exception exception = assertThrows(AmazonS3Exception.class, () -> htmlReader.read(crawlResult));

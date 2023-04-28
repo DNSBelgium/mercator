@@ -28,6 +28,8 @@ const observe = [
     "Network.loadingFailed",
 ];
 
+const pngThreshold = 3 * 1024 * 1024;
+
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
 export interface ScraperParams {
     url: string;
@@ -237,7 +239,7 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
         return page.screenshot(params.screenshotOptions).then(screenshot => {
-            if (screenshot?.length > 3000000) {
+            if (screenshot?.length > pngThreshold) {
                 params.screenshotOptions.type = "webp";
                 params.screenshotOptions.quality = 100;
                 console.log("taking screenshot in webp")
