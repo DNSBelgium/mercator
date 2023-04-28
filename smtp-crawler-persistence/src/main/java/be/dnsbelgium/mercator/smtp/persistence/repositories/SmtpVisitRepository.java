@@ -17,7 +17,6 @@ public interface SmtpVisitRepository extends PagingAndSortingRepository<SmtpVisi
       SmtpVisitEntity visitEntity = save(smtpVisitEntity);
       return Optional.of(visitEntity);
     } catch (DataIntegrityViolationException e) {
-      //TODO test if "smtp_visit_pkey_uq" is the correct string
       if (e.getMessage() != null && e.getMessage().contains("smtp_visit_pkey_uq")) {
         // error is already logged by SqlExceptionHelper
         getLogger(SmtpVisitRepository.class).info("Acceptable DataIntegrityViolationException: {}", e.getMessage());

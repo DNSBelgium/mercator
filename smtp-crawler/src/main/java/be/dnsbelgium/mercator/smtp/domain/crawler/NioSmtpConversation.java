@@ -231,11 +231,6 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
     }
 
     public String cleanErrorMessage(String errorMessage){
-        // TODO remove this comment
-        // Takes ip address out of error message, see https://stackoverflow.com/questions/5284147/validating-ipv4-addresses-with-regexp
-        //String cleanedErrorMessage = errorMessage.replaceAll("\\[?((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}\\]? ?", "");
-        // Takes hostname out of error message
-        //cleanedErrorMessage = cleanedErrorMessage.replaceAll( hostName + ":? ?", "");
         String cleanedErrorMessage;
         if (errorMessage.contains("connection timed out:")){
             cleanedErrorMessage = "Connection timed out";

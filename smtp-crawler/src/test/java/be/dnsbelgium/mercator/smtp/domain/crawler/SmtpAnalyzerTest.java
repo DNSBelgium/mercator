@@ -45,8 +45,6 @@ class SmtpAnalyzerTest {
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
   MXRecord mx2 = mxRecord(DOMAIN_NAME, 20, "smtp2.name.be");
 
-  //TODO refactor tests
-
   @BeforeEach
   public void beforeEach() {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false);

@@ -53,8 +53,6 @@ class SmtpCrawlResultRepositoryTest {
     container.setDatasourceProperties(registry, "smtp_crawler");
   }
 
-  //TODO refactor
-
   @Test
   void addVisitTest(){
     UUID visitId = UUID.randomUUID();
@@ -116,7 +114,6 @@ class SmtpCrawlResultRepositoryTest {
   public void savingBinaryDataFails() {
     SmtpVisitEntity visitEntity = smtpVisitWithBinaryData();
     try {
-      //TODO potentieel fix nodig
       SmtpVisitEntity visit = repository.save(visitEntity);
       //noinspection ResultOfMethodCallIgnored
       fail("Binary data should throw DataIntegrityViolationException");

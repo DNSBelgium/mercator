@@ -60,7 +60,6 @@ public class SmtpCrawlService {
   @Transactional
   public void save(SmtpVisitEntity smtpVisit) {
     logger.debug("About to save SmtpVisitEntity for {}", smtpVisit.getDomainName());
-    //TODO see if savedVisit is necessary
     Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(smtpVisit);
     if (savedVisit.isEmpty()) {
       logger.info("was duplicate: {}", smtpVisit.getVisitId());
