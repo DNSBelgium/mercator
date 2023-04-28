@@ -196,34 +196,7 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
             errorMessage = cleanErrorMessage(errorMessage);
             smtpConversation.setErrorMessage(errorMessage);
-            String lowerCaseError = errorMessage.toLowerCase();
-            if (lowerCaseError.contains("timed out")){
-                smtpConversation.setErrorName(ErrorName.TIME_OUT);
-            }
-            else if (lowerCaseError.contains("connection")){
-                smtpConversation.setErrorName(ErrorName.CONNECTION_ERROR);
-            }
-            else if (lowerCaseError.contains("skipped")){
-                smtpConversation.setErrorName(ErrorName.SKIPPED);
-            }
-            else if (lowerCaseError.contains("notafter") ||
-                     lowerCaseError.contains("tls") ||
-                     lowerCaseError.contains("ssl") ||
-                     lowerCaseError.contains("certificate") ||
-                     lowerCaseError.contains("handshake message") ||
-                     lowerCaseError.contains("unable to find valid certification path")
-                     ){
-                smtpConversation.setErrorName(ErrorName.CERTIFICATE_ERROR);
-            }
-            else if (lowerCaseError.contains("unreachable")){
-                smtpConversation.setErrorName(ErrorName.HOST_UNREACHABLE);
-            }
-            else if (lowerCaseError.contains("channel")){
-                smtpConversation.setErrorName(ErrorName.CHANNEL_CLOSED);
-            }
-            else {
-                smtpConversation.setErrorName(ErrorName.OTHER);
-            }
+            smtpConversation.setErrorName(getErrorNameFromErrorMessage(errorMessage));
         }
         logger.debug("crawl done: smtpConversation = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
@@ -260,5 +233,38 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
             cleanedErrorMessage = errorMessage;
         }
         return cleanedErrorMessage;
+    }
+
+    public ErrorName getErrorNameFromErrorMessage(String errorMessage){
+        String lowerCaseError = errorMessage.toLowerCase();
+        ErrorName errorName;
+        if (lowerCaseError.contains("timed out")){
+            errorName = ErrorName.TIME_OUT;
+        }
+        else if (lowerCaseError.contains("connection")){
+            errorName = ErrorName.CONNECTION_ERROR;
+        }
+        else if (lowerCaseError.contains("skipped")){
+            errorName = ErrorName.SKIPPED;
+        }
+        else if (lowerCaseError.contains("notafter") ||
+          lowerCaseError.contains("tls") ||
+          lowerCaseError.contains("ssl") ||
+          lowerCaseError.contains("certificate") ||
+          lowerCaseError.contains("handshake message") ||
+          lowerCaseError.contains("unable to find valid certification path")
+        ){
+            errorName = ErrorName.CERTIFICATE_ERROR;
+        }
+        else if (lowerCaseError.contains("unreachable")){
+            errorName = ErrorName.HOST_UNREACHABLE;
+        }
+        else if (lowerCaseError.contains("channel")){
+            errorName = ErrorName.CHANNEL_CLOSED;
+        }
+        else {
+            errorName = ErrorName.OTHER;
+        }
+        return errorName;
     }
 }
