@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.feature.extraction;
 
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.content.dto.Status;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import be.dnsbelgium.mercator.feature.extraction.metrics.MetricName;
@@ -229,7 +230,7 @@ class FeatureServiceTest {
   public static ContentCrawlResult randomContentCrawlResult(String domainName) {
     String url = "https://" + RandomStringUtils.randomAlphabetic(5).toLowerCase() + "." + domainName;
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(UUID.randomUUID(),domainName, url, true, null, 0);
+            new ContentCrawlResult(UUID.randomUUID(), domainName, url, true, null, 0, Status.Ok, Status.Ok);
     contentCrawlResult.setBucket(RandomStringUtils.randomAlphabetic(10));
     contentCrawlResult.setHarKey(RandomStringUtils.randomAlphabetic(10) +  ".har");
     contentCrawlResult.setHtmlKey(RandomStringUtils.randomAlphabetic(10) + ".html");
