@@ -97,7 +97,7 @@ public class SmtpAnalyzer {
         if(hosts.isPresent()){
           for(SmtpHostEntity host : hosts.get()){
             host.setFromMx(false);
-            //host.setHostName(host.getConversation().getIp());
+            host.setHostName(host.getConversation().getIp());
           }
           result.add(hosts.get());
         }
