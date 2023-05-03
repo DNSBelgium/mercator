@@ -25,6 +25,7 @@ data:
 {{- if .Values.sqs_output_queue }}
   SQS_OUTPUT_QUEUE: "{{ .Values.sqs_output_queue }}"
 {{- end }}
+  MAX_CONTENT_LENGTH: {{ .Values.limits.max_content_length }}
 ---
 apiVersion: v1
 kind: ConfigMap

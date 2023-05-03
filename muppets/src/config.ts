@@ -11,7 +11,7 @@ interface MuppetsConfiguration {
 
 const MAX_CONTENT_LENGTH_DEFAULT = "10485760"
 
-const env_config: MuppetsConfiguration  = {
+const env_config: MuppetsConfiguration = {
     s3_endpoint: process.env.S3_ENDPOINT || null,
     s3_bucket_name: process.env.S3_BUCKET || "mercator-muppets",
     sqs_endpoint: process.env.SQS_ENDPOINT || null,
