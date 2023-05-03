@@ -9,6 +9,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.tls.domain.certificates.Certificate.convertBigIntegerToHexString;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -94,12 +95,9 @@ class CertificateTest {
   }
 
   @Test
-  public void convertBigIntegerToHexStringTest() throws CertificateException, IOException {
-    X509Certificate certificate = readTestCertificate("dnsbelgium.be.pem");
-    Certificate info = Certificate.from(certificate);
-
+  public void convertBigIntegerToHexStringTest() {
     BigInteger bigint = new BigInteger("5050505");
-    String hexString = info.convertBigIntegerToHexString(bigint);
+    String hexString = convertBigIntegerToHexString(bigint);
     assertThat(hexString).isEqualTo("4d:10:89");
   }
 }
