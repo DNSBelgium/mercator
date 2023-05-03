@@ -8,6 +8,7 @@ data:
   SERVER_PORT: "8080"
   AWS_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
+  MAX_CONTENT_LENGTH: "{{ .Values.limits.max_content_length }}"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -25,7 +26,6 @@ data:
 {{- if .Values.sqs_output_queue }}
   SQS_OUTPUT_QUEUE: "{{ .Values.sqs_output_queue }}"
 {{- end }}
-  MAX_CONTENT_LENGTH: "{{ .Values.limits.max_content_length }}"
 ---
 apiVersion: v1
 kind: ConfigMap

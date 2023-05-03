@@ -28,6 +28,7 @@ const observe = [
     "Network.loadingFailed",
 ];
 
+// TODO: remove as magic number
 const pngThreshold = 3 * 1024 * 1024;
 
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
@@ -69,8 +70,8 @@ export interface ScraperResult {
     errors: string[];
     screenshotType: string;
     htmlSkipped: boolean;
-    screenshotSkipped:boolean;
-    harSkipped:boolean;
+    screenshotSkipped: boolean;
+    harSkipped: boolean;
 }
 
 let browser: puppeteer.Browser;
@@ -323,7 +324,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
         if (params.retries) {
             console.log("Easing conditions as this is a retry");
-            await page.goto(params.url, {waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT});
+            await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
         } else {
             await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
         }
