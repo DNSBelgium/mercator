@@ -126,7 +126,6 @@ const TLSCard = (props) => {
     }
 
     const renderCertificate = (type, certificate, crawlResult) => {
-        console.log(certificate);
         return (
             <Table size="sm" borderless className={type === "additional" ? "certificates-chain" : ""}>
                 <tbody>
