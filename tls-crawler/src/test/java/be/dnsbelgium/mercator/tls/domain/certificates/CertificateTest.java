@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -92,4 +93,13 @@ class CertificateTest {
     assertThat(subjectAlternativeNames).contains("www.vidmar.com", "www.protoindustrial.com", "americanpride.dewalt.com");
   }
 
+  @Test
+  public void convertBigIntegerToHexStringTest() throws CertificateException, IOException {
+    X509Certificate certificate = readTestCertificate("dnsbelgium.be.pem");
+    Certificate info = Certificate.from(certificate);
+
+    BigInteger bigint = new BigInteger("5050505");
+    String hexString = info.convertBigIntegerToHexString(bigint);
+    assertThat(hexString).isEqualTo("4d:10:89");
+  }
 }
