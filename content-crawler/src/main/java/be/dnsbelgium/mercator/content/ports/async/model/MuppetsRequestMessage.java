@@ -32,7 +32,7 @@ public class MuppetsRequestMessage implements RequestMessage {
   }
 
   enum ScreenshotType {
-    png, jpeg
+    png, jpeg, webp
   }
 
   @Data

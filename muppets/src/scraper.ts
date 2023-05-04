@@ -28,10 +28,13 @@ const observe = [
     "Network.loadingFailed",
 ];
 
+// TODO: remove as magic number
+const pngThreshold = 3 * 1024 * 1024;
+
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
 export interface ScraperParams {
     url: string;
-    referer?: string;
+    referer: string | null;
 
     visitId: string;
 
@@ -65,6 +68,10 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    screenshotType: string;
+    htmlSkipped: boolean;
+    screenshotSkipped: boolean;
+    harSkipped: boolean;
 }
 
 let browser: puppeteer.Browser;
@@ -229,12 +236,21 @@ function saveHar(params: ScraperParams, events: Event[]) {
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-
         params.screenshotOptions.type = params.screenshotOptions.type || "png";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
+        return page.screenshot(params.screenshotOptions).then(screenshot => {
+            if (screenshot?.length > pngThreshold) {
+                params.screenshotOptions.type = "webp";
+                params.screenshotOptions.quality = 100;
+                console.log("taking screenshot in webp")
+                return page.screenshot(params.screenshotOptions)
+            } else {
+                console.log("taking screenshot in png")
+                return screenshot;
+            }
+        });
 
-        return page.screenshot(params.screenshotOptions);
     } else {
         return Promise.reject("Not taking a screenshot");
     }
@@ -274,6 +290,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        screenshotType: params.screenshotOptions.type ?? "png",
+        harSkipped: false,
+        screenshotSkipped: false,
+        htmlSkipped: false,
     };
 
     let timeoutId;
@@ -282,8 +302,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         const url = new URL(params.url);
         console.log("url = [%s]", url);
 
-        // Setup a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
-        new Promise((resolve) => { timeoutId = setTimeout(resolve, 60000); })
+        // Set up a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
+        new Promise((resolve) => {
+            timeoutId = setTimeout(resolve, 60000);
+        })
             .then(() => console.error(`[${url}] timed out!`))
             .then(() => page.close())
             .then(() => browser.close());
@@ -291,7 +313,8 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         // TODO: Should that be from url or final url ?
         result.hostname = url.hostname;
 
-        params.referer && await setReferer(page, params.referer);
+        if (params.referer)
+            await setReferer(page, params.referer);
 
         // list of events for converting to HAR
         const events: Event[] = [];
@@ -321,6 +344,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             takeScreenshot(params, page).then(output => { result.screenshotData = output; })
         ]);
 
+        result.screenshotType = params.screenshotOptions.type ?? "png";
         await page.close();
 
         console.log("Snap finished");
@@ -329,7 +353,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
     } catch (e) {
         if (e instanceof Error) {
-            console.error("Error catched [%s]", e.message);
+            console.error("Error caught [%s]", e.message);
             if (e.message === `Navigation timeout of ${GOTO_TIMEOUT} ms exceeded`) {
                 metrics.getDomainTimeOuts().inc();
             }

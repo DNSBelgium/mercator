@@ -3,11 +3,12 @@ kind: ConfigMap
 metadata:
   name: {{ include "muppets.fullname" . }}
   labels:
-  {{- include "muppets.labels" . | nindent 4 }}
+    {{- include "muppets.labels" . | nindent 4 }}
 data:
   SERVER_PORT: "8080"
   AWS_REGION: "{{ .Values.global.region }}"
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
+  MAX_CONTENT_LENGTH: "{{ .Values.limits.max_content_length }}"
 ---
 apiVersion: v1
 kind: ConfigMap

@@ -60,7 +60,7 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
     }
   }
 
-  private void performRetry(MuppetsRequestMessage request) {;
+  private void performRetry(MuppetsRequestMessage request) {
     UUID visitId = request.getVisitId();
     logger.info("Retrying visit {} and domainName = {} (retry #{})", visitId, request.getDomainName(), request.getRetries());
 
@@ -82,12 +82,12 @@ public class MuppetsResolutionListener implements ContentResolutionListener<Mupp
                                          true, null, response.getUrl(), response.getBucket(),
                                          response.getScreenshotFile(), response.getHtmlFile(), response.getHtmlLength(),
                                          response.getHarFile(), objectMapper.writeValueAsString(response.getMetrics()),
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries(), response.isHtmlSkipped(), response.isScreenshotSkipped(), response.isHarSkipped());
     } else {
       resolution = new MuppetsResolution(visitId, response.getRequest().getDomainName(), response.getRequest().getUrl(), false,
                                          objectMapper.writeValueAsString(response.getErrors()), response.getUrl(),
                                          null, null, null, null, null, null,
-                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries());
+                                         response.getIpv4(), response.getIpv6(), response.getBrowserVersion(), response.getRequest().getRetries(), response.isHtmlSkipped(), response.isScreenshotSkipped(), response.isHarSkipped());
     }
 
     return resolution;
