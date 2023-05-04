@@ -53,7 +53,7 @@
     "prom-client": "^14.1.0",
     "sqs-consumer": "6.2.1",
     "sqs-producer": "3.1.1",
-    "wappalyzer": "6.10.55",
-    "uuid" : "9.0.0"
+    "wappalyzer": "6.10.62",
+    "uuid": "9.0.0"
   }
 }
