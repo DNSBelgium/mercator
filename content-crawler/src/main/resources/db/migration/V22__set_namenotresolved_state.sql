@@ -1,5 +1,5 @@
 
-UPDATE content_crawler.content_crawl_result
+UPDATE content_crawl_result
 SET html_status='NameNotResolved', screenshot_status='NameNotResolved'
 WHERE ok = false
   AND html_status is NULL
