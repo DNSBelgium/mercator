@@ -1,15 +1,52 @@
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import { Row, Col, Table, Card } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import {Row, Col, Table, Card} from "react-bootstrap";
+import {useEffect, useState} from "react";
 import api from "../../services/api";
-import { renderDataBoolean } from '../../services/Util';
+import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
+import modal from "bootstrap/js/src/modal";
+import popover from "bootstrap/js/src/popover";
 
 const ContentCrawlCard = (props) => {
-
     const visitId = props.visitId
 
     const [data, setData] = useState([]);
+    const [showImage, setShowImage] = useState(false);
+
+    const imageContainer = document.getElementById('previewScreenshot');
+
+    function previewScreenshot(imgSrc) {
+        const image = new Image();
+        image.onload = function () {
+            imageContainer.appendChild(image);
+            imageContainer.style.display = 'block';
+        };
+        image.src = imgSrc;
+    }
+
+    function previewRawHtml(RawHtmlSrc) {
+
+    }
+
+    const showScreenshot = (item) => {
+        // URL for development / local environment.
+        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+        const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
+
+        if (item.screenshotKey !== null) {
+            return (
+                <img
+                    className="timeline-image"
+                    src={`${LOCAL_URL}/${item.screenshotKey}`}
+                    alt={`Thumbnail of ${item.visitId}`}
+                >
+                </img>
+            )
+        }
+        return (
+            <p>No image found</p>
+        );
+    }
 
     useEffect(() => {
         const handlerData = async () => {
@@ -17,13 +54,13 @@ const ContentCrawlCard = (props) => {
             const url = `/contentCrawlResults/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
-                    if(resp.status === 200) {
+                    if (resp.status === 200) {
                         setData(resp === undefined ? null : resp.data._embedded.contentCrawlResults);
                     }
                 })
                 .catch((ex) => {
                     console.log(ex);
-                });      
+                });
         };
 
         handlerData();
@@ -31,11 +68,13 @@ const ContentCrawlCard = (props) => {
 
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
-    const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
+    // const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
+    const prefix = "http://localhost:4566/mercator-muppets"
     const title = <Card.Header as="h2" className="h5">Content crawl</Card.Header>;
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
+
         if (!data.length || data.length === 0) {
             return (
                 <Row>
@@ -50,6 +89,7 @@ const ContentCrawlCard = (props) => {
         }
 
         return (
+
             <>
                 {
                     data.map((data) => {
@@ -153,23 +193,42 @@ const ContentCrawlCard = (props) => {
                                                 </tbody>
                                             </Table>
 
+
                                             <div className="mb-4 mt-4 ml-4">
 
-                                                <button 
+
+                                                <button
+                                                    id="previewScreenshotBTN"
+                                                    className="mr-5 ml-5 content-card-link-button"
+                                                    onClick={() => setShowImage(state => !state)}
+                                                >
+                                                    Screenshot preview
+                                                </button>
+
+
+                                                <button
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.screenshotKey)}
                                                 >
                                                     Screenshot
                                                 </button>
 
-                                                <button 
+                                                <button
+                                                    id="previewRawHtmlBTN"
+                                                    className="mr-5 ml-5 content-card-link-button"
+                                                    onClick={() => previewScreenshot()}
+                                                >
+                                                    HTML raw data
+                                                </button>
+
+                                                <button
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.htmlKey)}
                                                 >
-                                                        HTML
+                                                    HTML
                                                 </button>
 
-                                                <button 
+                                                <button
                                                     className="ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.harKey)}
                                                 >
@@ -178,11 +237,18 @@ const ContentCrawlCard = (props) => {
 
                                             </div>
 
+                                            {
+                                                showImage && (
+                                                    showScreenshot(data)
+                                                )
+                                            }
+
+
                                             <div id='wappalyzer'>
                                                 <Wappalyzer
-                                                    visitId={visitId} 
+                                                    visitId={visitId}
                                                     openTechnologies={openTechnologies}
-                                                    setOpenTechnologies={setOpenTechnologies} 
+                                                    setOpenTechnologies={setOpenTechnologies}
                                                     openUrls={openUrls}
                                                     setOpenUrls={setOpenUrls}
                                                 />
