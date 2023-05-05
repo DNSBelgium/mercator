@@ -56,6 +56,8 @@ services:
       - AWS_SECRET_ACCESS_KEY=secretKey
       - AWS_REGION=eu-west-1
       - SERVER_PORT=8080
+      - MAX_CONTENT_LENGTH=100000
+      - PNG_THRESHOLD=10000000
     depends_on:
       localstack:
         condition: service_healthy
@@ -103,14 +105,14 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
-#  prometheus:
-#    image: prom/prometheus:v2.12.0
-#    command: '--config.file=/etc/prometheus/prometheus.yml'
-#    volumes:
-#      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
-#      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
-#    ports:
-#      - "9090:9090"
+  #  prometheus:
+  #    image: prom/prometheus:v2.12.0
+  #    command: '--config.file=/etc/prometheus/prometheus.yml'
+  #    volumes:
+  #      - ${PWD}/observability/prometheus/prometheus_crawler_local.yml:/etc/prometheus/prometheus.yml
+  #      - ${PWD}/observability/prometheus/sd:/etc/prometheus/sd
+  #    ports:
+  #      - "9090:9090"
 
   #  grafana:
   #    environment:
@@ -327,5 +329,3 @@ services:
     depends_on:
       db:
         condition: service_started
-
-

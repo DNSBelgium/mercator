@@ -11,7 +11,7 @@ interface MuppetsConfiguration {
 };
 
 const png_threshold = process.env.PNG_THRESHOLD;
-if (!png_threshold) {
+if (png_threshold === undefined) {
     console.error("PNG_THRESHOLD not provided");
     process.exit(1);
 }

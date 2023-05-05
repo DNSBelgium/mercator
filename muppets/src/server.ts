@@ -1,8 +1,8 @@
-import { createConsumer, createHandler, createProducer, getQueueUrl } from "./websnapper";
-import { config } from "./config";
+import { createConsumer, createHandler, createProducer, getQueueUrl } from "./websnapper.js";
+import { config } from "./config.js";
 import express from "express";
-import * as metrics from "./metrics";
-import { isBrowserConnected, shutdown } from "./scraper";
+import * as metrics from "./metrics.js";
+import { isBrowserConnected, shutdown } from "./scraper.js";
 
 let server;
 let consumer;

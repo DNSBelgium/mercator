@@ -1,12 +1,12 @@
 import * as Scraper from './scraper';
-import {IFileUploader, uploadScrapedData} from './websnapper';
-import { ScraperParams } from './scraper';
+import { IFileUploader, uploadScrapedData } from './websnapper.js';
+import { ScraperParams } from './scraper.js';
 import { expect } from 'chai';
 import { v4 as uuid } from 'uuid';
 import * as path from "path";
-import { convertDate } from "./util";
+import { convertDate } from "./util.js";
 import * as sinon from "sinon";
-import { config } from './config';
+import { config } from './config.js';
 
 class MockFileUploader implements IFileUploader {
     private called: number = 0;
@@ -55,7 +55,7 @@ describe('Scraper Tests', function () {
         expect(scraperResult).to.have.property('hostname', 'dnsbelgium.be');
         expect(scraperResult).to.have.property('url', 'https://www.dnsbelgium.be/');
         expect(scraperResult).to.have.property('request',);
-        expect(scraperResult.request).to.have.eql({...params});
+        expect(scraperResult.request).to.have.eql({ ...params });
         expect(scraperResult.request).to.have.property('referer', '');
         expect(scraperResult).to.have.property('htmlLength');
         expect(scraperResult).to.have.property('pageTitle');

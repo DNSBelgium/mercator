@@ -1,5 +1,5 @@
-import {convertDate, getDomainName} from './util';
-import {expect} from 'chai';
+import { convertDate, getDomainName } from './util.js';
+import { expect } from 'chai';
 
 describe('Util functions', () => {
 
