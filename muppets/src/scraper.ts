@@ -4,8 +4,9 @@ import { URL } from "url";
 import { v4 as uuid } from "uuid";
 import treekill from "tree-kill";
 import { publicIpv4, publicIpv6 } from "public-ip";
+import { config } from './config';
 
-import * as metrics from "./metrics.js";
+import * as metrics from "./metrics";
 
 import { harFromMessages } from "chrome-har";
 
@@ -27,9 +28,6 @@ const observe = [
     "Network.loadingFinished",
     "Network.loadingFailed",
 ];
-
-// TODO: remove as magic number
-const pngThreshold = 3 * 1024 * 1024;
 
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
 export interface ScraperParams {
@@ -240,7 +238,7 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
         return page.screenshot(params.screenshotOptions).then(screenshot => {
-            if (screenshot?.length > pngThreshold) {
+            if (screenshot?.length > config.png_threshold) {
                 params.screenshotOptions.type = "webp";
                 params.screenshotOptions.quality = 100;
                 console.log("taking screenshot in webp")

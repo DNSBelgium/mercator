@@ -2,10 +2,10 @@ import AWS from "aws-sdk";
 import { ServiceConfigurationOptions } from "aws-sdk/lib/service";
 import { Consumer } from "sqs-consumer";
 import Producer from "sqs-producer";
-import * as metrics from "./metrics.js";
-import * as scraper from "./scraper.js";
-import config from "./config.js";
-import { computePath } from "./util.js";
+import * as metrics from "./metrics";
+import * as scraper from "./scraper";
+import { config } from "./config";
+import { computePath } from "./util";
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {

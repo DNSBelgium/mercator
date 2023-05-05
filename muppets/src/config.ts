@@ -6,12 +6,19 @@ interface MuppetsConfiguration {
     sqs_output_queue: string,
     server_port: number,
     verbose: boolean,
-    max_content_length: number
+    max_content_length: number,
+    png_threshold: number,
+};
+
+const png_threshold = process.env.PNG_THRESHOLD;
+if (!png_threshold) {
+    console.error("PNG_THRESHOLD not provided");
+    process.exit(1);
 }
 
-const MAX_CONTENT_LENGTH_DEFAULT = "10485760"
+const MAX_CONTENT_LENGTH_DEFAULT = "10485760";
 
-const env_config: MuppetsConfiguration = {
+const config: MuppetsConfiguration = {
     s3_endpoint: process.env.S3_ENDPOINT || null,
     s3_bucket_name: process.env.S3_BUCKET || "mercator-muppets",
     sqs_endpoint: process.env.SQS_ENDPOINT || null,
@@ -20,9 +27,10 @@ const env_config: MuppetsConfiguration = {
     server_port: parseInt(process.env.SERVER_PORT || "8085"),
     verbose: (process.env.VERBOSE !== undefined && process.env.VERBOSE.toLowerCase() == 'true'),
     max_content_length: parseInt(process.env.MAX_CONTENT_LENGTH || MAX_CONTENT_LENGTH_DEFAULT),
+    png_threshold: parseInt(png_threshold),
 };
 
 console.log(`Using configuration:`);
-console.log(env_config);
+console.log(config);
 
-export default env_config;
+export { config };

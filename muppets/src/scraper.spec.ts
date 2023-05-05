@@ -6,7 +6,7 @@ import { v4 as uuid } from 'uuid';
 import * as path from "path";
 import { convertDate } from "./util";
 import * as sinon from "sinon";
-import config from './config';
+import { config } from './config';
 
 class MockFileUploader implements IFileUploader {
     private called: number = 0;
