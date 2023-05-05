@@ -4,8 +4,7 @@ import {Row, Col, Table, Card} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
-import modal from "bootstrap/js/src/modal";
-import popover from "bootstrap/js/src/popover";
+
 
 const ContentCrawlCard = (props) => {
     const visitId = props.visitId
@@ -24,10 +23,6 @@ const ContentCrawlCard = (props) => {
         image.src = imgSrc;
     }
 
-    function previewRawHtml(RawHtmlSrc) {
-
-    }
-
     const showScreenshot = (item) => {
         // URL for development / local environment.
         const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
@@ -36,8 +31,8 @@ const ContentCrawlCard = (props) => {
         if (item.screenshotKey !== null) {
             return (
                 <img
-                    className="timeline-image"
-                    src={`${LOCAL_URL}/${item.screenshotKey}`}
+                    className="screenshotImagePreview"
+                    src={`${DEV_URL}/${item.screenshotKey}`}
                     alt={`Thumbnail of ${item.visitId}`}
                 >
                 </img>
@@ -68,8 +63,8 @@ const ContentCrawlCard = (props) => {
 
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
-    // const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
-    const prefix = "http://localhost:4566/mercator-muppets"
+    const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
+    // const prefix = "http://localhost:4566/mercator-muppets/"
     const title = <Card.Header as="h2" className="h5">Content crawl</Card.Header>;
 
     // Writing HTML on a function base so we can define logic more easily.
@@ -205,7 +200,6 @@ const ContentCrawlCard = (props) => {
                                                     Screenshot preview
                                                 </button>
 
-
                                                 <button
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.screenshotKey)}
@@ -237,12 +231,13 @@ const ContentCrawlCard = (props) => {
 
                                             </div>
 
-                                            {
-                                                showImage && (
-                                                    showScreenshot(data)
-                                                )
-                                            }
-
+                                            <div id="previewScreenshotWrapper">
+                                                {
+                                                    showImage && (
+                                                        showScreenshot(data)
+                                                    )
+                                                }
+                                            </div>
 
                                             <div id='wappalyzer'>
                                                 <Wappalyzer

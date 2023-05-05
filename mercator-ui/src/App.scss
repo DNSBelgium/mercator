@@ -4,6 +4,17 @@
   This prevents accidental overwriting and limits the use of !important.
 */
 
+#previewScreenshotWrapper {
+  display: flex;
+  //flex-wrap: wrap; maybe for when we integrate
+  justify-content: center;
+}
+
+#previewScreenshotWrapper > img {
+  width: 85vw; //equal to max-width of .app
+}
+
+
 $clickables-color: #007bff;
 $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
 
@@ -290,6 +301,7 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
   th {
     width: 350px;
   }
+
 
   /* All 'More info' buttons within Details Cards */
   .more-info {
