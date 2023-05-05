@@ -100,4 +100,10 @@ class CertificateTest {
     String hexString = convertBigIntegerToHexString(bigint);
     assertThat(hexString).isEqualTo("4d:10:89");
   }
+
+  @Test
+  public void convertBigIntegerToHexStringNull(){
+    String hexString = convertBigIntegerToHexString(null);
+    assertThat(hexString).isEqualTo(null);
+  }
 }

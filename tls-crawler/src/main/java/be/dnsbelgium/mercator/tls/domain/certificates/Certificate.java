@@ -209,6 +209,9 @@ public class Certificate {
   }
 
   public static String convertBigIntegerToHexString(BigInteger bigInteger){
+    if (bigInteger == null){
+      return null;
+    }
     String hexString = bigInteger.toString(16);
     if (hexString.length() % 2 == 1){
       hexString = "0" + hexString;
