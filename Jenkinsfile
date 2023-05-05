@@ -7,8 +7,6 @@ pipeline {
   tools {
     jdk "OpenJDK 17"
   }
-  environment {
-  }
   options {
     buildDiscarder(logRotator(numToKeepStr: "10"))
     ansiColor("xterm")
