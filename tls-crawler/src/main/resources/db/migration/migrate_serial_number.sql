@@ -24,4 +24,4 @@ END;
 $$;
 
 update tls_crawler.certificate set serial_number_hex = mercator_to_hex(serial_number)
-where serial_number_hex is null;
+where serial_number_hex is null and serial_number not like '-%';

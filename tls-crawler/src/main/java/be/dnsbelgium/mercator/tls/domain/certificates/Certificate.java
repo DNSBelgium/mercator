@@ -209,7 +209,7 @@ public class Certificate {
   }
 
   public static String convertBigIntegerToHexString(BigInteger bigInteger){
-    if (bigInteger == null){
+    if (bigInteger == null || bigInteger.compareTo(BigInteger.valueOf(0)) < 0){
       return null;
     }
     String hexString = bigInteger.toString(16);
