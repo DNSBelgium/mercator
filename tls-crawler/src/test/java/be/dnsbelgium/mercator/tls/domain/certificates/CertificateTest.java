@@ -4,10 +4,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.tls.domain.certificates.Certificate.convertBigIntegerToHexString;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -92,4 +94,16 @@ class CertificateTest {
     assertThat(subjectAlternativeNames).contains("www.vidmar.com", "www.protoindustrial.com", "americanpride.dewalt.com");
   }
 
+  @Test
+  public void convertBigIntegerToHexStringTest() {
+    BigInteger bigint = new BigInteger("5050505");
+    String hexString = convertBigIntegerToHexString(bigint);
+    assertThat(hexString).isEqualTo("4d:10:89");
+  }
+
+  @Test
+  public void convertBigIntegerToHexStringNull(){
+    String hexString = convertBigIntegerToHexString(null);
+    assertThat(hexString).isEqualTo(null);
+  }
 }
