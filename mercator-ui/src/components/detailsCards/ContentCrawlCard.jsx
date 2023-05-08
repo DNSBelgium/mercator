@@ -11,16 +11,39 @@ const ContentCrawlCard = (props) => {
 
     const [data, setData] = useState([]);
     const [showImage, setShowImage] = useState(false);
+    const [showHtml, setShowHtml] = useState(false);
+    const [showRawHtml, setShowRawHtml] = useState(false);
 
-    const imageContainer = document.getElementById('previewScreenshot');
+    const showPopup = (item) => {
+        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
 
-    function previewScreenshot(imgSrc) {
-        const image = new Image();
-        image.onload = function () {
-            imageContainer.appendChild(image);
-            imageContainer.style.display = 'block';
-        };
-        image.src = imgSrc;
+        if (item.htmlKey !== null) {
+            return (
+                <>
+                    <h6>Do you want to open and render the html in a new tab ?</h6>
+                    <div>
+                        <button
+                            id="acceptHtmlNewTab"
+                            className="mr-5 ml-5 content-card-link-button"
+                            onClick={() => window.open(DEV_URL + "/" + item.htmlKey)}
+                        >
+                            Yes
+                        </button>
+
+                        <button
+                            id="declineHtmlNewTab"
+                            className="mr-5 ml-5 content-card-link-button"
+                            onClick={() => setShowHtml(state => !state)}
+                        >
+                            No
+                        </button>
+                    </div>
+                </>
+            )
+        }
+        return (
+            <p>No html found</p>
+        );
     }
 
     const showScreenshot = (item) => {
@@ -40,6 +63,21 @@ const ContentCrawlCard = (props) => {
         }
         return (
             <p>No image found</p>
+        );
+    }
+
+    const showHtmlPreview = (item) => {
+        // URL for development / local environment.
+        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+        const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
+
+        if (item.screenshotKey !== null) {
+            return (
+                <iframe src={`${DEV_URL}/${item.htmlKey}`} frameborder="0"></iframe>
+            )
+        }
+        return (
+            <p>No html found</p>
         );
     }
 
@@ -210,14 +248,14 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="previewRawHtmlBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => previewScreenshot()}
+                                                    onClick={() => setShowRawHtml(state => !state)}
                                                 >
                                                     HTML raw data
                                                 </button>
 
                                                 <button
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.htmlKey)}
+                                                    onClick={() => setShowHtml(state => !state)}
                                                 >
                                                     HTML
                                                 </button>
@@ -231,13 +269,30 @@ const ContentCrawlCard = (props) => {
 
                                             </div>
 
-                                            <div id="previewScreenshotWrapper">
+                                            <div id="previewScreenshotWrapper ">
                                                 {
                                                     showImage && (
                                                         showScreenshot(data)
                                                     )
                                                 }
                                             </div>
+
+                                            <div id="previewPopupWrapper">
+                                                {
+                                                    showHtml && (
+                                                        showPopup(data)
+                                                    )
+                                                }
+                                            </div>
+
+                                            <div id="previewRawHtmlWrapper">
+                                                {
+                                                    showRawHtml && (
+                                                        showHtmlPreview(data)
+                                                    )
+                                                }
+                                            </div>
+
 
                                             <div id='wappalyzer'>
                                                 <Wappalyzer

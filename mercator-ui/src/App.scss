@@ -4,14 +4,26 @@
   This prevents accidental overwriting and limits the use of !important.
 */
 
-#previewScreenshotWrapper {
+#previewPopupWrapper {
+  width: 85vw;
   display: flex;
-  //flex-wrap: wrap; maybe for when we integrate
+  //justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+#previewRawHtmlWrapper { // TODO make scrollable if height > 850
+  display: flex;
   justify-content: center;
 }
 
-#previewScreenshotWrapper > img {
-  width: 85vw; //equal to max-width of .app
+#previewScreenshotWrapper { // TODO make scrollable if height > 850
+  display: flex;
+  justify-content: center;
+}
+
+#previewScreenshotWrapper\  > img {
+  width: 81vw; //equal to max-width of .app
 }
 
 
