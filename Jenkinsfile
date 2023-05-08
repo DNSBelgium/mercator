@@ -24,6 +24,9 @@ pipeline {
           withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
             env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
           }
+          if (${hotfix_branch} != '') {
+            git checkout ${hotfix_branch}
+          }
         }
       }
     }
