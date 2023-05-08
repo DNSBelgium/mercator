@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.dto;
 
-public enum ErrorName {
+public enum Error {
   TIME_OUT,
   CONNECTION_ERROR,
   CERTIFICATE_ERROR,

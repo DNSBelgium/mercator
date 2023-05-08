@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.ErrorName;
+import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.hubspot.smtp.client.ChannelClosedException;
@@ -184,7 +184,7 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
         Throwable rootCause = rootCause(throwable);
         if (rootCause instanceof ChannelClosedException) {
             smtpConversation.setErrorMessage("channel was closed while waiting for response");
-            smtpConversation.setErrorName(ErrorName.CHANNEL_CLOSED);
+            smtpConversation.setError(Error.CHANNEL_CLOSED);
         } else {
             if (config.isLogStackTraces()) {
                 logger.debug("exception: ", throwable);
@@ -196,7 +196,7 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
             errorMessage = cleanErrorMessage(errorMessage);
             smtpConversation.setErrorMessage(errorMessage);
-            smtpConversation.setErrorName(getErrorNameFromErrorMessage(errorMessage));
+            smtpConversation.setError(getErrorNameFromErrorMessage(errorMessage));
         }
         logger.debug("crawl done: smtpConversation = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
@@ -235,17 +235,17 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
         return cleanedErrorMessage;
     }
 
-    public ErrorName getErrorNameFromErrorMessage(String errorMessage){
+    public Error getErrorNameFromErrorMessage(String errorMessage){
         String lowerCaseError = errorMessage.toLowerCase();
-        ErrorName errorName;
+        Error error;
         if (lowerCaseError.contains("timed out")){
-            errorName = ErrorName.TIME_OUT;
+            error = Error.TIME_OUT;
         }
         else if (lowerCaseError.contains("connection")){
-            errorName = ErrorName.CONNECTION_ERROR;
+            error = Error.CONNECTION_ERROR;
         }
         else if (lowerCaseError.contains("skipped")){
-            errorName = ErrorName.SKIPPED;
+            error = Error.SKIPPED;
         }
         else if (lowerCaseError.contains("notafter") ||
           lowerCaseError.contains("tls") ||
@@ -254,17 +254,17 @@ public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.c
           lowerCaseError.contains("handshake message") ||
           lowerCaseError.contains("unable to find valid certification path")
         ){
-            errorName = ErrorName.CERTIFICATE_ERROR;
+            error = Error.CERTIFICATE_ERROR;
         }
         else if (lowerCaseError.contains("unreachable")){
-            errorName = ErrorName.HOST_UNREACHABLE;
+            error = Error.HOST_UNREACHABLE;
         }
         else if (lowerCaseError.contains("channel")){
-            errorName = ErrorName.CHANNEL_CLOSED;
+            error = Error.CHANNEL_CLOSED;
         }
         else {
-            errorName = ErrorName.OTHER;
+            error = Error.OTHER;
         }
-        return errorName;
+        return error;
     }
 }

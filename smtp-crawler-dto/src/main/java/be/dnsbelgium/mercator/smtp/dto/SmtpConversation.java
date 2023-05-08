@@ -52,7 +52,7 @@ public class SmtpConversation {
   // Error message from crawler, in case something went wrong
   private String errorMessage;
 
-  private ErrorName errorName;
+  private Error error;
 
   // Time (ms) it took to create a connection
   private long connectionTimeMs = -1;

@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.persistence.entities;
 
-import be.dnsbelgium.mercator.smtp.dto.ErrorName;
+import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Getter;
@@ -69,9 +69,9 @@ public class SmtpConversationEntity {
   @Column(name = "error_message")
   private String errorMessage;
 
-  @Column(name = "error_name")
+  @Column(name = "error")
   @Enumerated(EnumType.STRING)
-  private ErrorName errorName;
+  private Error error;
 
   // Time (ms) it took to create a connection
   @Column(name = "connection_time_ms")
@@ -108,7 +108,7 @@ public class SmtpConversationEntity {
     this.setIpVersion(conversation.getIpVersion());
     this.setStartTlsOk(conversation.isStartTlsOk());
     this.setErrorMessage(conversation.getErrorMessage());
-    this.setErrorName(conversation.getErrorName());
+    this.setError(conversation.getError());
     this.setConnectionTimeMs(conversation.getConnectionTimeMs());
     this.setSoftware(conversation.getSoftware());
     this.setSoftwareVersion(conversation.getSoftwareVersion());
@@ -130,7 +130,7 @@ public class SmtpConversationEntity {
     conversation.setIpVersion(ipVersion);
     conversation.setStartTlsOk(startTlsOk);
     conversation.setErrorMessage(errorMessage);
-    conversation.setErrorName(errorName);
+    conversation.setError(error);
     conversation.setConnectionTimeMs(connectionTimeMs);
     conversation.setSoftware(software);
     conversation.setSoftwareVersion(softwareVersion);

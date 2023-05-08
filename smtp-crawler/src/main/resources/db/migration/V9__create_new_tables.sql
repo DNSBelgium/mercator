@@ -12,7 +12,7 @@ CREATE TABLE smtp_conversation
     start_tls_ok         BOOLEAN,
     start_tls_reply_code int,
     error_message        VARCHAR(256),
-    error_name           VARCHAR(64),
+    error                VARCHAR(64),
     connection_time_ms   bigint,
     software             VARCHAR(128),
     software_version     VARCHAR(128),
