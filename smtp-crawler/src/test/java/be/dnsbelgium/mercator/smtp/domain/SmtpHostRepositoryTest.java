@@ -36,7 +36,7 @@ public class SmtpHostRepositoryTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
-  private static final Logger logger = getLogger(SmtpCrawlResultRepositoryTest.class);
+  private static final Logger logger = getLogger(SmtpHostRepositoryTest.class);
 
   @Container
   static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
