@@ -33,7 +33,7 @@ public class SmtpVisitEntity {
   private ZonedDateTime timestamp = ZonedDateTime.now();
 
   @Column(name = "num_conversations")
-  private int numConversations;
+  private int numConversations = 0;
 
   @OneToMany(mappedBy = "visit", fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @ToString.Exclude
@@ -54,6 +54,7 @@ public class SmtpVisitEntity {
   public void add(SmtpHostEntity host) {
     host.setVisit(this);
     hosts.add(host);
+    numConversations++;
   }
 
   public void add(List<SmtpHostEntity> smtpHostEntities) {
