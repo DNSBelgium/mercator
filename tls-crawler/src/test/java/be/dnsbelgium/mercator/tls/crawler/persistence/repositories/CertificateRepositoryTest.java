@@ -57,7 +57,7 @@ public class CertificateRepositoryTest {
         .notAfter(Instant.now().plus(5, ChronoUnit.DAYS))
         .publicKeyLength(2048)
         .publicKeySchema("SHA-256")
-        .serialNumber("4545454545645645454545645")
+        .serialNumberHex("70:ed:8d:46:88:9d:90:7f:0d:e5:04:1e")
         .subjectAltNames(List.of("abc.be", "xyz.com"))
         .signatureHashAlgorithm("")
         .version(3)

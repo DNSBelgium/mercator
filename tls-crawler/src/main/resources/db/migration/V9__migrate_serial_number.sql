@@ -23,5 +23,11 @@ BEGIN
 END;
 $$;
 
-update tls_crawler.certificate set serial_number_hex = mercator_to_hex(serial_number)
-where serial_number_hex is null and serial_number not like '-%';
+update tls_crawler.certificate
+set serial_number_hex = mercator_to_hex(serial_number)
+where serial_number_hex is null
+  and serial_number not like '-%';
+
+drop function if exists mercator_to_hex;
+
+alter table tls_crawler.certificate drop column serial_number;

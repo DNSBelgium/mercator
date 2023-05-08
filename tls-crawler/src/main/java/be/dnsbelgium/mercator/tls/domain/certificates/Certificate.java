@@ -30,7 +30,6 @@ public class Certificate {
 
   // The serial number is an integer assigned by the certification authority to each certificate.
   // It must be unique for each certificate issued by a given CA
-  private final BigInteger serialNumber;
   private String serialNumberHex;
 
   // in DB we have these values:
@@ -81,7 +80,6 @@ public class Certificate {
         .publicKeySchema(pubKey.getAlgorithm())
         .publicKeyLength(getKeyLength(pubKey))
         .signatureHashAlgorithm(x509Certificate.getSigAlgName())
-        .serialNumber(x509Certificate.getSerialNumber())
         .serialNumberHex(convertBigIntegerToHexString(x509Certificate.getSerialNumber()))
         .build();
   }
@@ -90,7 +88,7 @@ public class Certificate {
     return new StringJoiner(",\n ", Certificate.class.getSimpleName() + "[\n", "]")
         .add("sha256Fingerprint=" + sha256Fingerprint)
         .add("version=" + version)
-        .add("serialNumber=" + serialNumber)
+        .add("serialNumberHex=" + serialNumberHex)
         .add("publicKeySchema='" + publicKeySchema + "'")
         .add("publicKeyLength=" + publicKeyLength)
         .add("notBefore=" + notBefore)
@@ -195,7 +193,6 @@ public class Certificate {
         .sha256fingerprint(this.getSha256Fingerprint())
         .version(this.getVersion())
         .subjectAltNames(this.getSubjectAlternativeNames())
-        .serialNumber(this.getSerialNumber().toString())
         .serialNumberHex(this.getSerialNumberHex())
         .signatureHashAlgorithm(this.getSignatureHashAlgorithm())
         .notBefore(this.getNotBefore())

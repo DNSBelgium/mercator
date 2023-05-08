@@ -30,7 +30,7 @@ class CertificateTest {
       assertThat(info.getPublicKeyLength()).isEqualTo(2048);
       assertThat(info.getNotBefore()).isEqualTo("2021-12-16T09:46:13Z");
       assertThat(info.getNotAfter()).isEqualTo("2023-01-17T09:46:13Z");
-      assertThat(info.getSerialNumber()).isEqualTo("10290817708216518963613984878");
+      assertThat(info.getSerialNumberHex()).isEqualTo("21:40:5d:69:cb:87:3f:c1:88:88:e8:6e");
       assertThat(info.getVersion()).isEqualTo(3);
       assertThat(info.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
       assertThat(info.getSha256Fingerprint()).isEqualTo("0aa3423012f58713ffcff9aefe875eb308c53305a713128e41d80f3bc45a5aff");
@@ -61,7 +61,7 @@ class CertificateTest {
     assertThat(info.getPublicKeyLength()).isEqualTo(256);
     assertThat(info.getNotBefore()).isEqualTo("2022-11-21T00:00:00Z");
     assertThat(info.getNotAfter()).isEqualTo("2023-11-21T23:59:59Z");
-    assertThat(info.getSerialNumber()).isEqualTo("15968221808264138213884411823837304062");
+    assertThat(info.getSerialNumberHex()).isEqualTo("0c:03:5e:1e:91:26:8b:8a:9d:cd:c8:46:03:6e:54:fe");
     assertThat(info.getVersion()).isEqualTo(3);
     assertThat(info.getSignatureHashAlgorithm()).isEqualTo("SHA256withRSA");
   }
@@ -73,7 +73,7 @@ class CertificateTest {
     logger.info("peerCertificate = {}", peerCertificate);
     // matches with what python based ssl-crawler found.
     assertThat(peerCertificate.getVersion()).isEqualTo(3);
-    assertThat(peerCertificate.getSerialNumber()).isEqualTo("118877526832461658454248843048988289064");
+    assertThat(peerCertificate.getSerialNumberHex()).isEqualTo("59:6e:fa:96:d7:00:9e:4d:30:e1:92:6e:c3:5d:a8:28");
     assertThat(peerCertificate.getPublicKeySchema()).isEqualTo("RSA");
     assertThat(peerCertificate.getPublicKeyLength()).isEqualTo(2048);
     assertThat(peerCertificate.getNotBefore()).isEqualTo("2022-01-26T00:00:00Z");
