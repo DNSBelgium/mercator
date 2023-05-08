@@ -14,7 +14,6 @@ pipeline {
   }
   parameters {
     string(name: "aws_region", defaultValue: "eu-west-1", description: "region to deploy to")
-    string(name: "hotfix_commit", defaultValue: "", description: "Enter the name of the commit if this build is for a hotfix release, leave empty otherwise")
   }
   stages {
 
@@ -23,9 +22,6 @@ pipeline {
         script {
           withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
             env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
-          }
-          if (${hotfix_branch} != '') {
-            git checkout ${hotfix_branch}
           }
         }
       }
@@ -141,9 +137,6 @@ pipeline {
     }
 
     stage("Deploy to dev") {
-      when {
-        expression env.hotfix_branch != ""
-      }
       steps {
         build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: GIT_COMMIT.take(7)),]
       }
