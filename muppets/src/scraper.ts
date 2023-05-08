@@ -4,6 +4,7 @@ import { URL } from "url";
 import { v4 as uuid } from "uuid";
 import treekill from "tree-kill";
 import { publicIpv4, publicIpv6 } from "public-ip";
+import { config } from './config.js';
 
 import * as metrics from "./metrics.js";
 
@@ -31,7 +32,7 @@ const observe = [
 // See be.dnsbelgium.mercator.content.ports.async.model.ResolveContentRequestMessage
 export interface ScraperParams {
     url: string;
-    referer?: string;
+    referer: string | null;
 
     visitId: string;
 
@@ -58,13 +59,17 @@ export interface ScraperResult {
     pageTitle?: string;
     harData?: string;
     harFile?: string;
-    screenshotData?: string | void | Buffer;
+    screenshotData?: void | Buffer;
     screenshotFile?: string;
     browserVersion?: string;
     ipv4: string;
     ipv6: string;
     request: ScraperParams;
     errors: string[];
+    screenshotType: string;
+    htmlSkipped: boolean;
+    screenshotSkipped: boolean;
+    harSkipped: boolean;
 }
 
 let browser: puppeteer.Browser;
@@ -226,15 +231,28 @@ function saveHar(params: ScraperParams, events: Event[]) {
     }
 }
 
-function takeScreenshot(params: ScraperParams, page: puppeteer.Page) {
+function takeScreenshot(params: ScraperParams, page: puppeteer.Page): Promise<Buffer> {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-
         params.screenshotOptions.type = params.screenshotOptions.type || "png";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
+        params.screenshotOptions.encoding = "binary";
+        return page.screenshot(params.screenshotOptions).then(screenshot => {
+            // Because we use encoding binary, this will never be a string
+            const screenshot_buffer = screenshot as Buffer;
+            if (screenshot_buffer.length > config.png_threshold) {
+                params.screenshotOptions.type = "webp";
+                params.screenshotOptions.quality = 100;
+                console.log("taking screenshot in webp")
+                // Because we use encoding binary, this will never be a string
+                return page.screenshot(params.screenshotOptions).then(s => s as Buffer);
+            } else {
+                console.log("taking screenshot in png")
+                return screenshot_buffer;
+            }
+        });
 
-        return page.screenshot(params.screenshotOptions);
     } else {
         return Promise.reject("Not taking a screenshot");
     }
@@ -274,6 +292,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        screenshotType: params.screenshotOptions.type ?? "png",
+        harSkipped: false,
+        screenshotSkipped: false,
+        htmlSkipped: false,
     };
 
     let timeoutId;
@@ -282,8 +304,10 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         const url = new URL(params.url);
         console.log("url = [%s]", url);
 
-        // Setup a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
-        new Promise((resolve) => { timeoutId = setTimeout(resolve, 60000); })
+        // Set up a timeout in which muppets should be able to snap the website. Otherwise, trigger an error.
+        new Promise((resolve) => {
+            timeoutId = setTimeout(resolve, 60000);
+        })
             .then(() => console.error(`[${url}] timed out!`))
             .then(() => page.close())
             .then(() => browser.close());
@@ -291,7 +315,8 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         // TODO: Should that be from url or final url ?
         result.hostname = url.hostname;
 
-        params.referer && await setReferer(page, params.referer);
+        if (params.referer)
+            await setReferer(page, params.referer);
 
         // list of events for converting to HAR
         const events: Event[] = [];
@@ -318,9 +343,12 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             page.title().then(output => { result.pageTitle = output; }),
             page.browser().version().then(output => { result.browserVersion = output; }),
             saveHtml(params, page).then(output => { result.htmlData = output; result.htmlLength = result.htmlData ? result.htmlData.length : 0 }),
-            takeScreenshot(params, page).then(output => { result.screenshotData = output; })
+            takeScreenshot(params, page).then(output => { result.screenshotData = output })
         ]);
 
+        console.log(result);
+
+        result.screenshotType = params.screenshotOptions.type ?? "png";
         await page.close();
 
         console.log("Snap finished");
@@ -329,7 +357,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
 
     } catch (e) {
         if (e instanceof Error) {
-            console.error("Error catched [%s]", e.message);
+            console.error("Error caught [%s]", e.message);
             if (e.message === `Navigation timeout of ${GOTO_TIMEOUT} ms exceeded`) {
                 metrics.getDomainTimeOuts().inc();
             }

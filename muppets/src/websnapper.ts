@@ -2,10 +2,9 @@ import AWS from "aws-sdk";
 import { ServiceConfigurationOptions } from "aws-sdk/lib/service";
 import { Consumer } from "sqs-consumer";
 import Producer from "sqs-producer";
-
 import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
-import config from "./config.js";
+import { config } from "./config.js";
 import { computePath } from "./util.js";
 
 const sqsOptions: ServiceConfigurationOptions = {};
@@ -64,40 +63,71 @@ function clean(result: scraper.ScraperResult) {
     return result;
 }
 
-function s3UploadFile(data: string | void | Buffer, filename: string, prefix: string, contentType?: string) {
-    if (!data)
-        return Promise.resolve("");
+export class S3FileUploader implements IFileUploader {
+    async upload(data: string | void | Buffer, filename: string, prefix: string, uploadFileFormat: string, contentType?: string): Promise<string> {
+        if (!data)
+            return Promise.resolve("");
 
-    const params = {
-        Bucket: config.s3_bucket_name,
-        Key: prefix + "/" + filename,
-        Body: data,
-        ContentType: contentType
-    };
+        const params = {
+            Bucket: config.s3_bucket_name,
+            Key: prefix + "/" + filename,
+            Body: data,
+            ContentType: contentType
+        };
 
-    console.log("Uploading item [%s]", params.Key);
+        console.log("Uploading item [%s]", params.Key);
 
-    return s3.upload(params).promise().then(putObjectPromise => {
-        console.log("Key = [%s]", putObjectPromise.Key);
-        return putObjectPromise.Key;
-    }).catch(err => {
-        throw new Error(`Upload failed for file [${params.Key}] : [${JSON.stringify(err)}]`);
-    });
+        return s3.upload(params).promise().then(putObjectPromise => {
+            console.log("Key = [%s]", putObjectPromise.Key);
+            return putObjectPromise.Key;
+        }).catch(err => {
+            throw new Error(`Upload failed for ${uploadFileFormat} file [${params.Key}] : [${JSON.stringify(err)}]`);
+        });
+    }
 }
 
-function uploadToS3(result: scraper.ScraperResult) {
-    const url = new URL(result.request.url);
+export interface IFileUploader {
+    upload(data: string | void | Buffer, filename: string, prefix: string, uploadFileFormat: string, contentType?: string): Promise<string>;
+}
+
+export async function uploadScrapedData(result: scraper.ScraperResult, uploader: IFileUploader = new S3FileUploader) {
+    const url: URL = new URL(result.request.url);
     result.bucket = config.s3_bucket_name;
-    const prefix = computePath(url);
+    const prefix: string = computePath(url);
+    const s3UploadResults: Promise<string>[] = [];
 
     console.log("Uploading to S3 [%s]", prefix);
+    if (result.screenshotData !== undefined) {
+        metrics.getScreenshotsSizes().observe((result.screenshotData?.length / 1024) / 1024);
+        if (result.screenshotData.length < config.max_content_length) {
+            s3UploadResults.push(uploader.upload(result.screenshotData, "screenshot." + result.screenshotType, prefix, "screenshot", "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => {
+                result.errors.push(err.message);
+                return Promise.reject()
+            }));
+            result.screenshotSkipped = false
+        } else {
+            metrics.getBigScreenshotCounter().inc()
+            result.screenshotSkipped = true
+        }
+    }
 
-    return Promise.all([
-        s3UploadFile(result.screenshotData, "screenshot.png", prefix, "image/png").then(key => result.screenshotFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.htmlData, result.pathname || "index.html", prefix, "text/html").then(key => result.htmlFile = key).catch((err) => result.errors.push(err.message)),
-        s3UploadFile(result.harData, result.hostname + ".har", prefix, "application/json").then(key => result.harFile = key).catch((err) => result.errors.push(err.message)),
-    ])
-        .then(() => result);
+    if (result.htmlLength !== undefined) {
+        if (result.htmlLength < config.max_content_length) {
+            s3UploadResults.push(uploader.upload(result.htmlData, result.pathname || "index.html", prefix, "html", "text/html").then(key => result.htmlFile = key).catch((err) => {
+                result.errors.push(err.message);
+                return Promise.reject();
+            }));
+            result.htmlSkipped = false;
+        } else {
+            result.htmlSkipped = true
+        }
+    }
+
+    s3UploadResults.push(uploader.upload(result.harData, result.hostname + ".har", prefix, "har", "application/json").then(key => result.harFile = key).catch((err) => {
+        result.errors.push(err.message);
+        return Promise.reject();
+    }));
+    return Promise.all(s3UploadResults).then(() => result);
 }
 
 export async function handleMessage(message: AWS.SQS.Types.Message) {
@@ -105,7 +135,7 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
 
     if (params.url) {
         const result = await scraper.websnap(params)
-            .then(result => uploadToS3(result))
+            .then(result => uploadScrapedData(result))
             .then(result => clean(result));
 
         if (result.errors.length)

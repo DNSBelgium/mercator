@@ -30,7 +30,7 @@ public class Certificate {
 
   // The serial number is an integer assigned by the certification authority to each certificate.
   // It must be unique for each certificate issued by a given CA
-  private final BigInteger serialNumber;
+  private String serialNumberHex;
 
   // in DB we have these values:
   // RSAPublicKey,  EllipticCurvePublicKey, DSAPublicKey, Ed25519PublicKey
@@ -80,7 +80,7 @@ public class Certificate {
         .publicKeySchema(pubKey.getAlgorithm())
         .publicKeyLength(getKeyLength(pubKey))
         .signatureHashAlgorithm(x509Certificate.getSigAlgName())
-        .serialNumber(x509Certificate.getSerialNumber())
+        .serialNumberHex(convertBigIntegerToHexString(x509Certificate.getSerialNumber()))
         .build();
   }
 
@@ -88,7 +88,7 @@ public class Certificate {
     return new StringJoiner(",\n ", Certificate.class.getSimpleName() + "[\n", "]")
         .add("sha256Fingerprint=" + sha256Fingerprint)
         .add("version=" + version)
-        .add("serialNumber=" + serialNumber)
+        .add("serialNumberHex=" + serialNumberHex)
         .add("publicKeySchema='" + publicKeySchema + "'")
         .add("publicKeyLength=" + publicKeyLength)
         .add("notBefore=" + notBefore)
@@ -193,7 +193,7 @@ public class Certificate {
         .sha256fingerprint(this.getSha256Fingerprint())
         .version(this.getVersion())
         .subjectAltNames(this.getSubjectAlternativeNames())
-        .serialNumber(this.getSerialNumber().toString())
+        .serialNumberHex(this.getSerialNumberHex())
         .signatureHashAlgorithm(this.getSignatureHashAlgorithm())
         .notBefore(this.getNotBefore())
         .notAfter(this.getNotAfter())
@@ -203,6 +203,21 @@ public class Certificate {
         .subject(this.getSubject())
         .signedBySha256(signedBy)
         .build();
+  }
+
+  public static String convertBigIntegerToHexString(BigInteger bigInteger){
+    if (bigInteger == null || bigInteger.compareTo(BigInteger.valueOf(0)) < 0){
+      return null;
+    }
+    String hexString = bigInteger.toString(16);
+    if (hexString.length() % 2 == 1){
+      hexString = "0" + hexString;
+    }
+    hexString = hexString.replaceAll("(.{2})", "$1:");
+    if (hexString.endsWith(":")){
+      hexString = hexString.substring(0, hexString.length() - 1);
+    }
+    return hexString;
   }
 
 }

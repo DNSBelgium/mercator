@@ -32,8 +32,8 @@ public class CertificateEntity {
   @Column(name = "version")
   private int version;
 
-  @Column(name = "serial_number")
-  private String serialNumber;
+  @Column(name = "serial_number_hex")
+  private String serialNumberHex;
 
   @Column(name = "public_key_schema")
   private String publicKeySchema;

@@ -6,11 +6,6 @@ pipeline {
   }
   tools {
     jdk "OpenJDK 17"
-    nodejs "NodeJS 16.18.0"
-  }
-  environment {
-    NODEJS_HOME = "${tool 'NodeJS 16.18.0'}"
-    PATH = "${env.NODEJS_HOME}/bin:${env.PATH}"
   }
   options {
     buildDiscarder(logRotator(numToKeepStr: "10"))

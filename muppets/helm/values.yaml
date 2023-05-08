@@ -65,6 +65,14 @@ affinity: {}
 s3_bucket:
 sqs_input_queue:
 sqs_output_queue:
+limits:
+  # Max length in bytes.
+  # TODO: split for html and image?
+  max_content_length: 10485760
+  # When to try taking a webp instead of a png
+  # 3 mebibyte
+  png_threshold: 3145728
+
 extraEnv: {}
 
 global:

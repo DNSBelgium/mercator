@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.content.domain;
 
 import be.dnsbelgium.mercator.content.domain.content.ContentResolutionTest;
+import be.dnsbelgium.mercator.content.dto.Status;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,100 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ContentCrawlResultTest {
+
+  //html status tests
+  @Test
+  void testHtmlStatusTooBig(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlFailTooBig();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.HtmlTooBig);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.Ok);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+  }
+  @Test
+  void testHtmlUploadFail(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestHtmlUploadFail();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.UploadFailed);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+  @Test
+  void testHtmlStatusNameNotFound(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.NameNotResolved);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+  @Test
+  void testHtmlTimeOut(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestTimeOut();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.TimeOut);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+
+  //screenshot status tests
+  @Test
+  void testScreenhsotStatusTooBig() {
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestScreenshotFailTooBig();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.ScreenshotTooBig);
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.Ok);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+  @Test
+  void testScreenshotUploadFail(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestScreenshotUploadFail();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.UploadFailed);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+  @Test
+  void testScreenshotStatusNameNotFound(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestNameNotResolved();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.NameNotResolved);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+
+  }
+  @Test
+  void testScreenshotTimeOut(){
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestTimeOut();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.TimeOut);
+    assertThat(contentCrawlResult.getProblem()).isNull();
+  }
+
+  @Test
+  void testUnexpectedError() {
+    MuppetsResolution muppetsResolution = ContentResolutionTest.contentResolutionTestUnexpectedError();
+
+    ContentCrawlResult contentCrawlResult = ContentCrawlResult.of(muppetsResolution);
+
+    assertThat(contentCrawlResult.getHtmlStatus()).isEqualTo(Status.UnexpectedError);
+    assertThat(contentCrawlResult.getScreenshotStatus()).isEqualTo(Status.UnexpectedError);
+    assertThat(contentCrawlResult.getProblem()).isEqualTo(muppetsResolution.getErrors());
+  }
 
   @Test
   void testOfContentResolution() {
@@ -41,7 +136,7 @@ class ContentCrawlResultTest {
 
   public static ContentCrawlResult contentCrawlResult(UUID visitId, String url) {
     ContentCrawlResult contentCrawlResult =
-        new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0);
+            new ContentCrawlResult(visitId, "dnsbelgium.be", url, true, null, 0, Status.Ok, Status.Ok);
     contentCrawlResult.setBucket("MyBucket");
     contentCrawlResult.setBrowserVersion("Blabla 1.2");
     contentCrawlResult.setHarKey("file.har");

@@ -66,15 +66,6 @@ const TLSCard = (props) => {
         handlerData();
     }, [visitId])
 
-    const serialNumberToHexString = (serialNumber) => {
-        //Converts serial number to int to be able to convert to hex, then adds : after every 2nd char
-        const string = parseInt(serialNumber).toString(16).replace(/(.{2})/g, "$1\:");
-        if (string.charAt(string.length - 1) === ":") {
-            return string.slice(0, -1);
-        }
-        return string;
-    }
-
     const dateIsBefore = (date1, date2) => {
         const firstDate = new Date(date1);
         const secondDate = new Date(date2);
@@ -179,7 +170,7 @@ const TLSCard = (props) => {
                 </tr>
                 <tr>
                     <th>Serial number</th>
-                    <td>{serialNumberToHexString(certificate.serialNumber)}</td>
+                    <td>{certificate.serialNumberHex}</td>
                 </tr>
                 {type === "leaf" ?
                     <tr>
