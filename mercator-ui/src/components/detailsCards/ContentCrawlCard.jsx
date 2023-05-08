@@ -3,48 +3,68 @@ import moment from "moment";
 import {Row, Col, Table, Card} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
+import PopupComponent from "../Warning";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
+
+//js enum for visibility state
+export const VisibiltyState = Object.freeze({
+    None: 'false',
+    Screenshot: 'Screenshot',
+    RawHtml: 'RawHtml',
+    WarningPopup: 'WarningPopup',
+})
 
 
 const ContentCrawlCard = (props) => {
     const visitId = props.visitId
 
+    const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
-    const [showImage, setShowImage] = useState(false);
-    const [showHtml, setShowHtml] = useState(false);
-    const [showRawHtml, setShowRawHtml] = useState(false);
 
-    const showPopup = (item) => {
-        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-
-        if (item.htmlKey !== null) {
-            return (
-                <>
-                    <h6>Do you want to open and render the html in a new tab ?</h6>
-                    <div>
-                        <button
-                            id="acceptHtmlNewTab"
-                            className="mr-5 ml-5 content-card-link-button"
-                            onClick={() => window.open(DEV_URL + "/" + item.htmlKey)}
-                        >
-                            Yes
-                        </button>
-
-                        <button
-                            id="declineHtmlNewTab"
-                            className="mr-5 ml-5 content-card-link-button"
-                            onClick={() => setShowHtml(state => !state)}
-                        >
-                            No
-                        </button>
-                    </div>
-                </>
-            )
-        }
-        return (
-            <p>No html found</p>
-        );
+    function toggleVisibilityWarningMessage() {
+        setVisible(VisibiltyState.None)
     }
+
+    function toggleVisibility(state) {
+        if (visibility === state) {
+            setVisible(VisibiltyState.None)
+        } else {
+            setVisible(state)
+        }
+    }
+
+
+    // const showPopup = (item) => {
+    //     const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+    //
+    //     if (item.htmlKey !== null) {
+    //         return (
+    //             <>
+    //                 <h6>Do you want to open and render the html in a new tab ?</h6>
+    //                 <div>
+    //                     <button
+    //                         id="acceptHtmlNewTab"
+    //                         className="mr-5 ml-5 content-card-link-button"
+    //                         onClick={() => window.open(DEV_URL + "/" + item.htmlKey)}
+    //                     >
+    //                         Yes
+    //                     </button>
+    //
+    //                     <button
+    //                         id="declineHtmlNewTab"
+    //                         className="mr-5 ml-5 content-card-link-button"
+    //                         onClick={() => setShowHtml(state => !state)}
+    //                     >
+    //                         No
+    //                     </button>
+    //                 </div>
+    //             </>
+    //         )
+    //     }
+    //     return (
+    //         <p>No html found</p>
+    //     );
+    // }
 
     const showScreenshot = (item) => {
         // URL for development / local environment.
@@ -233,7 +253,7 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="previewScreenshotBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => setShowImage(state => !state)}
+                                                    onClick={() => toggleVisibility(VisibiltyState.Screenshot)}
                                                 >
                                                     Screenshot preview
                                                 </button>
@@ -248,14 +268,14 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="previewRawHtmlBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => setShowRawHtml(state => !state)}
+                                                    onClick={() => toggleVisibility(VisibiltyState.RawHtml)}
                                                 >
                                                     HTML raw data
                                                 </button>
 
                                                 <button
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => setShowHtml(state => !state)}
+                                                    onClick={() => toggleVisibility(VisibiltyState.WarningPopup)}
                                                 >
                                                     HTML
                                                 </button>
@@ -271,7 +291,7 @@ const ContentCrawlCard = (props) => {
 
                                             <div id="previewScreenshotWrapper ">
                                                 {
-                                                    showImage && (
+                                                    visibility === VisibiltyState.Screenshot && (
                                                         showScreenshot(data)
                                                     )
                                                 }
@@ -279,15 +299,16 @@ const ContentCrawlCard = (props) => {
 
                                             <div id="previewPopupWrapper">
                                                 {
-                                                    showHtml && (
-                                                        showPopup(data)
+                                                    visibility === VisibiltyState.WarningPopup && (
+                                                        <PopupComponent item={data}
+                                                                        onClickCancel={toggleVisibilityWarningMessage}/>
                                                     )
                                                 }
                                             </div>
 
                                             <div id="previewRawHtmlWrapper">
                                                 {
-                                                    showRawHtml && (
+                                                    visibility === VisibiltyState.RawHtml && (
                                                         showHtmlPreview(data)
                                                     )
                                                 }
