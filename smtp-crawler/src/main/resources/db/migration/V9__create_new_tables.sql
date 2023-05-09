@@ -33,7 +33,7 @@ create table smtp_host
 (
     id                  serial          PRIMARY KEY,
     visit_id            UUID            NOT NULL        REFERENCES smtp_visit,
-    from_mx             boolean         NOT NULL,
+    from_mx             boolean,
     host_name           VARCHAR(128)    NOT NULL,
     priority            int             NOT NULL,
     conversation        int             NOT NULL        REFERENCES smtp_conversation,
