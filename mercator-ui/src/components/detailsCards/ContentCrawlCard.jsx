@@ -63,7 +63,11 @@ const ContentCrawlCard = (props) => {
                 try {
                     if (htmlKey !== null) {
                         const response = await fetch(`${DEV_URL}/${htmlKey}`, {
-                            mode: 'cors'
+                            mode: 'cors',
+                            headers: {
+                                'Accept': 'text/plain',
+                                'Content-Type': 'text/plain',
+                            }
                         });
                         const htmlContent = await response.text();
                         setHtml(htmlContent);
@@ -90,8 +94,15 @@ const ContentCrawlCard = (props) => {
         }
 
         const pre = document.createElement("pre")
+
+        const encodedHtml = encodeURIComponent(html);
+        const newWindow = window.open(`data:text/plain;charset=utf-8,${encodedHtml}`);
+        newWindow.document.title = "Raw HTML";
+        newWindow.document.body.append(pre)
+
         pre.innerHTML = html;
         pre.id = "generatedPreForHtml";
+        pre.textContent = html
 
         return <pre>{pre.textContent}</pre>
     };
@@ -151,93 +162,93 @@ const ContentCrawlCard = (props) => {
                                             <Table size='sm' borderless>
                                                 <tbody className='text-left'>
 
-                                                    <tr>
-                                                        <th scope='row'>
-                                                            Id
-                                                        </th>
-                                                        <td>
-                                                            {data.id}
-                                                        </td>
-                                                    </tr>
+                                                <tr>
+                                                    <th scope='row'>
+                                                        Id
+                                                    </th>
+                                                    <td>
+                                                        {data.id}
+                                                    </td>
+                                                </tr>
 
-                                                    <tr>
-                                                        <th scope='row'>
-                                                            Metrics Json
-                                                        </th>
-                                                        <td>
-                                                            {
-                                                                data.metricsJson ? // metricsJson exists? render, else empty string.
-                                                                    <>
-                                                                        <button 
-                                                                            className='more-info'
-                                                                            onClick={() => setOpenMetrics(openMetrics => !openMetrics)} // Toggle openMetrics boolean
-                                                                        > 
-                                                                            More info
-                                                                        </button>
+                                                <tr>
+                                                    <th scope='row'>
+                                                        Metrics Json
+                                                    </th>
+                                                    <td>
+                                                        {
+                                                            data.metricsJson ? // metricsJson exists? render, else empty string.
+                                                                <>
+                                                                    <button
+                                                                        className='more-info'
+                                                                        onClick={() => setOpenMetrics(openMetrics => !openMetrics)} // Toggle openMetrics boolean
+                                                                    >
+                                                                        More info
+                                                                    </button>
 
-                                                                        {   // if openMetrics === true, render
-                                                                            openMetrics && (
-                                                                                <div id='metrics-json-content'>
-                                                                                    <ul className="mb-2 mt-2">
-                                                                                        {
-                                                                                            Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
-                                                                                                return (
-                                                                                                    <li key={index}>
+                                                                    {   // if openMetrics === true, render
+                                                                        openMetrics && (
+                                                                            <div id='metrics-json-content'>
+                                                                                <ul className="mb-2 mt-2">
+                                                                                    {
+                                                                                        Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
+                                                                                            return (
+                                                                                                <li key={index}>
                                                                                                         <span
                                                                                                             className='font-weight-bold'
                                                                                                         >
-                                                                                                            { item[0] }:
+                                                                                                            {item[0]}:
                                                                                                         </span>
-                                                                                                        <span> { item[1] }</span>
-                                                                                                    </li>
-                                                                                                )
-                                                                                            })
-                                                                                        }
-                                                                                    </ul>
-                                                                                </div>
-                                                                            )
-                                                                        }
-                                                                    </> :
-                                                                    "" // metricsJson exists? render, else empty string.
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">URL</th>
-                                                        <td>{data.url}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Ok</th>
-                                                        { renderDataBoolean(data.ok) }
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Problem</th>
-                                                        <td className="defined-error">{data.problem}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Final Url</th>
-                                                        <td>{data.finalUrl}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">HTML length</th>
-                                                        <td>{data.htmlLength}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Crawl Timestamp</th>
-                                                        <td>{data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Retries</th>
-                                                        <td>{data.retries}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Crawled from</th>
-                                                        <td>ipv4: {data.ipv4}, ipv6: {data.ipv6}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Browser version</th>
-                                                        <td>{data.browserVersion}</td>
-                                                    </tr>
+                                                                                                    <span> {item[1]}</span>
+                                                                                                </li>
+                                                                                            )
+                                                                                        })
+                                                                                    }
+                                                                                </ul>
+                                                                            </div>
+                                                                        )
+                                                                    }
+                                                                </> :
+                                                                "" // metricsJson exists? render, else empty string.
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">URL</th>
+                                                    <td>{data.url}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Ok</th>
+                                                    {renderDataBoolean(data.ok)}
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Problem</th>
+                                                    <td className="defined-error">{data.problem}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Final Url</th>
+                                                    <td>{data.finalUrl}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">HTML length</th>
+                                                    <td>{data.htmlLength}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Crawl Timestamp</th>
+                                                    <td>{data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Retries</th>
+                                                    <td>{data.retries}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Crawled from</th>
+                                                    <td>ipv4: {data.ipv4}, ipv6: {data.ipv6}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Browser version</th>
+                                                    <td>{data.browserVersion}</td>
+                                                </tr>
                                                 </tbody>
                                             </Table>
 
