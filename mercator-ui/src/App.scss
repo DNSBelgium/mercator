@@ -11,21 +11,23 @@
   flex-direction: column;
   align-items: center;
 }
-
 #previewRawHtmlWrapper { // TODO make scrollable if height > 850
+  width: 82vw;
   display: flex;
   justify-content: center;
 }
-
 #previewScreenshotWrapper { // TODO make scrollable if height > 850
   display: flex;
   justify-content: center;
 }
 
 #previewScreenshotWrapper\  > img {
-  width: 81vw; //equal to max-width of .app
+  width: 82vw;
 }
 
+#previewRawHtmlWrapper > pre {
+  width: 82vw;
+}
 
 $clickables-color: #007bff;
 $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);

@@ -54,30 +54,6 @@ const ContentCrawlCard = (props) => {
         );
     }
 
-
-    // const showHtmlPreview = async(item) => {
-    //     const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-    //     const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
-    //     let html = "";
-    //
-    //     try {
-    //         if (item.htmlKey !== null) {
-    //             const response = await fetch(`${DEV_URL}/${item.htmlKey}`, {
-    //                 mode: 'cors'
-    //             });
-    //             html = await response.text();
-    //             console.log(html)
-    //             // {html}
-    //             return <p>this should display the html</p>;
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //         return <p> There was an error try again </p>;
-    //     }
-    //
-    //     return <p>No html found</p>;
-    // }
-
     const useHtmlContent = (htmlKey) => {
         const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
         const [html, setHtml] = useState(null);
@@ -103,6 +79,9 @@ const ContentCrawlCard = (props) => {
         return html;
     };
 
+    //TODO beatify loading html
+    //use the react way to get the div
+    //TODO beautify the popup to display nore like a real warning
     const ShowHtmlPreview = ({htmlKey}) => {
         console.log(htmlKey)
         const html = useHtmlContent(htmlKey);
@@ -111,7 +90,12 @@ const ContentCrawlCard = (props) => {
             return <p>Loading html...</p>;
         }
 
-        return <div dangerouslySetInnerHTML={{__html: html}}></div>;
+        const pre = document.createElement("pre")
+        pre.innerHTML = html;
+        pre.id = "generatedPreForHtml";
+
+        return <pre>{pre.textContent}</pre>
+        // return <div>{div.textContent}</div>;
     };
 
     useEffect(() => {
