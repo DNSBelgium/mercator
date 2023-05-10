@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import api from "../../services/api";
 import PopupComponent from "../Warning";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
+// import DOMPurify from 'dompurify';
 
 //js enum for visibility state
 export const VisibiltyState = Object.freeze({
@@ -33,39 +34,6 @@ const ContentCrawlCard = (props) => {
         }
     }
 
-
-    // const showPopup = (item) => {
-    //     const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-    //
-    //     if (item.htmlKey !== null) {
-    //         return (
-    //             <>
-    //                 <h6>Do you want to open and render the html in a new tab ?</h6>
-    //                 <div>
-    //                     <button
-    //                         id="acceptHtmlNewTab"
-    //                         className="mr-5 ml-5 content-card-link-button"
-    //                         onClick={() => window.open(DEV_URL + "/" + item.htmlKey)}
-    //                     >
-    //                         Yes
-    //                     </button>
-    //
-    //                     <button
-    //                         id="declineHtmlNewTab"
-    //                         className="mr-5 ml-5 content-card-link-button"
-    //                         onClick={() => setShowHtml(state => !state)}
-    //                     >
-    //                         No
-    //                     </button>
-    //                 </div>
-    //             </>
-    //         )
-    //     }
-    //     return (
-    //         <p>No html found</p>
-    //     );
-    // }
-
     const showScreenshot = (item) => {
         // URL for development / local environment.
         const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
@@ -86,20 +54,65 @@ const ContentCrawlCard = (props) => {
         );
     }
 
-    const showHtmlPreview = (item) => {
-        // URL for development / local environment.
-        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-        const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
 
-        if (item.screenshotKey !== null) {
-            return (
-                <iframe src={`${DEV_URL}/${item.htmlKey}`} frameborder="0"></iframe>
-            )
+    // const showHtmlPreview = async(item) => {
+    //     const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+    //     const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
+    //     let html = "";
+    //
+    //     try {
+    //         if (item.htmlKey !== null) {
+    //             const response = await fetch(`${DEV_URL}/${item.htmlKey}`, {
+    //                 mode: 'cors'
+    //             });
+    //             html = await response.text();
+    //             console.log(html)
+    //             // {html}
+    //             return <p>this should display the html</p>;
+    //         }
+    //     } catch (error) {
+    //         console.error(error);
+    //         return <p> There was an error try again </p>;
+    //     }
+    //
+    //     return <p>No html found</p>;
+    // }
+
+    const useHtmlContent = (htmlKey) => {
+        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+        const [html, setHtml] = useState(null);
+
+        useEffect(() => {
+            const fetchHtml = async () => {
+                try {
+                    if (htmlKey !== null) {
+                        const response = await fetch(`${DEV_URL}/${htmlKey}`, {
+                            mode: 'cors'
+                        });
+                        const htmlContent = await response.text();
+                        setHtml(htmlContent);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+
+            fetchHtml();
+        }, [htmlKey]);
+
+        return html;
+    };
+
+    const ShowHtmlPreview = ({htmlKey}) => {
+        console.log(htmlKey)
+        const html = useHtmlContent(htmlKey);
+
+        if (html === null) {
+            return <p>Loading html...</p>;
         }
-        return (
-            <p>No html found</p>
-        );
-    }
+
+        return <div dangerouslySetInnerHTML={{__html: html}}></div>;
+    };
 
     useEffect(() => {
         const handlerData = async () => {
@@ -306,12 +319,18 @@ const ContentCrawlCard = (props) => {
                                                 }
                                             </div>
 
+                                            {/*<div id="previewRawHtmlWrapper">*/}
+                                            {/*    {*/}
+                                            {/*        visibility === VisibiltyState.RawHtml && (*/}
+                                            {/*            ShowHtmlPreview({data})*/}
+                                            {/*        )*/}
+                                            {/*    }*/}
+                                            {/*</div>*/}
+
                                             <div id="previewRawHtmlWrapper">
-                                                {
-                                                    visibility === VisibiltyState.RawHtml && (
-                                                        showHtmlPreview(data)
-                                                    )
-                                                }
+                                                {visibility === VisibiltyState.RawHtml && (
+                                                    <ShowHtmlPreview htmlKey={data.htmlKey}/>
+                                                )}
                                             </div>
 
 
