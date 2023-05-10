@@ -12,11 +12,16 @@
   align-items: center;
 }
 #previewRawHtmlWrapper { // TODO make scrollable if height > 850
+  overflow: auto;
+  max-height: 150vh;
   width: 82vw;
   display: flex;
   justify-content: center;
 }
-#previewScreenshotWrapper { // TODO make scrollable if height > 850
+
+#previewScreenshotWrapper {
+  overflow: auto;
+  max-height: 150vh;
   display: flex;
   justify-content: center;
 }

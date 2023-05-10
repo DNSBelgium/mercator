@@ -83,7 +83,6 @@ const ContentCrawlCard = (props) => {
     //use the react way to get the div
     //TODO beautify the popup to display nore like a real warning
     const ShowHtmlPreview = ({htmlKey}) => {
-        console.log(htmlKey)
         const html = useHtmlContent(htmlKey);
 
         if (html === null) {
@@ -95,7 +94,6 @@ const ContentCrawlCard = (props) => {
         pre.id = "generatedPreForHtml";
 
         return <pre>{pre.textContent}</pre>
-        // return <div>{div.textContent}</div>;
     };
 
     useEffect(() => {
