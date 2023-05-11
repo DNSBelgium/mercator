@@ -337,6 +337,28 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       text-decoration: underline;
     }
 
+    #previewScreenshotBTN {
+      margin-right: 8px !important;
+    }
+
+    #newTabScreenshotBTN {
+      margin-left: 0 !important;
+    }
+
+    #contentCrawlContentLinks {
+      display: flex;
+      justify-content: space-around;
+      margin-left: 0 !important;
+    }
+
+    #harContentNewTab {
+      margin-right: 3rem !important;
+    }
+
+    #newTabScreenshotBTN > svg {
+      padding-bottom: 3px;
+    }
+
     /*preview */
     #previewWrapper {
       width: 85vw;
