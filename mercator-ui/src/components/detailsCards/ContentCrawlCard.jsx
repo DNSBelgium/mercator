@@ -57,9 +57,7 @@ const ContentCrawlCard = (props) => {
 
         const pre = document.createElement("pre")
 
-        const encodedHtml = encodeURIComponent(html);
-        const newWindow = window.open(`data:text/plain;charset=utf-8,${encodedHtml}`);
-
+        const newWindow = window.open();
         newWindow.document.title = "Raw HTML";
         newWindow.document.body.append(pre)
 
