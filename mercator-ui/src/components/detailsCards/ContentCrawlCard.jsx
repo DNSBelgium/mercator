@@ -11,7 +11,6 @@ import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util'
 export const VisibiltyState = Object.freeze({
     None: 'false',
     Screenshot: 'Screenshot',
-    RawHtml: 'RawHtml',
     WarningPopup: 'WarningPopup',
 })
 
@@ -34,6 +33,41 @@ const ContentCrawlCard = (props) => {
         }
     }
 
+    async function fetchRawHtml(htmlKey) {
+        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+        const fetchHtml = async () => {
+            try {
+                if (htmlKey !== null) {
+                    const response = await fetch(`${DEV_URL}/${htmlKey}`, {
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'text/plain',
+                            'Content-Type': 'text/plain',
+                        }
+                    });
+                    const htmlContent = await response.text();
+                    return htmlContent
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const html = await fetchHtml()
+
+        const pre = document.createElement("pre")
+
+        const encodedHtml = encodeURIComponent(html);
+        const newWindow = window.open(`data:text/plain;charset=utf-8,${encodedHtml}`);
+
+        newWindow.document.title = "Raw HTML";
+        newWindow.document.body.append(pre)
+
+        pre.innerHTML = html;
+        pre.id = "generatedPreForHtml";
+        pre.textContent = html;
+    }
+
     const showScreenshot = (item) => {
         // URL for development / local environment.
         const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
@@ -42,7 +76,7 @@ const ContentCrawlCard = (props) => {
         if (item.screenshotKey !== null) {
             return (
                 <img
-                    className="screenshotImagePreview"
+                    id="screenshotPreview"
                     src={`${DEV_URL}/${item.screenshotKey}`}
                     alt={`Thumbnail of ${item.visitId}`}
                 >
@@ -53,59 +87,6 @@ const ContentCrawlCard = (props) => {
             <p>No image found</p>
         );
     }
-
-    const useHtmlContent = (htmlKey) => {
-        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-        const [html, setHtml] = useState(null);
-
-        useEffect(() => {
-            const fetchHtml = async () => {
-                try {
-                    if (htmlKey !== null) {
-                        const response = await fetch(`${DEV_URL}/${htmlKey}`, {
-                            mode: 'cors',
-                            headers: {
-                                'Accept': 'text/plain',
-                                'Content-Type': 'text/plain',
-                            }
-                        });
-                        const htmlContent = await response.text();
-                        setHtml(htmlContent);
-                    }
-                } catch (error) {
-                    console.error(error);
-                }
-            };
-
-            fetchHtml();
-        }, [htmlKey]);
-
-        return html;
-    };
-
-    //TODO beatify loading html
-    //use the react way to get the div
-    //TODO beautify the popup to display nore like a real warning
-    const ShowHtmlPreview = ({htmlKey}) => {
-        const html = useHtmlContent(htmlKey);
-
-        if (html === null) {
-            return <p>Loading html...</p>;
-        }
-
-        const pre = document.createElement("pre")
-
-        const encodedHtml = encodeURIComponent(html);
-        const newWindow = window.open(`data:text/plain;charset=utf-8,${encodedHtml}`);
-        newWindow.document.title = "Raw HTML";
-        newWindow.document.body.append(pre)
-
-        pre.innerHTML = html;
-        pre.id = "generatedPreForHtml";
-        pre.textContent = html
-
-        return <pre>{pre.textContent}</pre>
-    };
 
     useEffect(() => {
         const handlerData = async () => {
@@ -148,7 +129,6 @@ const ContentCrawlCard = (props) => {
         }
 
         return (
-
             <>
                 {
                     data.map((data) => {
@@ -252,9 +232,7 @@ const ContentCrawlCard = (props) => {
                                                 </tbody>
                                             </Table>
 
-
                                             <div className="mb-4 mt-4 ml-4">
-
 
                                                 <button
                                                     id="previewScreenshotBTN"
@@ -274,7 +252,7 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="previewRawHtmlBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.RawHtml)}
+                                                    onClick={() => fetchRawHtml(data.htmlKey)}
                                                 >
                                                     HTML raw data
                                                 </button>
@@ -295,15 +273,12 @@ const ContentCrawlCard = (props) => {
 
                                             </div>
 
-                                            <div id="previewScreenshotWrapper ">
+                                            <div id="previewWrapper">
                                                 {
                                                     visibility === VisibiltyState.Screenshot && (
                                                         showScreenshot(data)
                                                     )
                                                 }
-                                            </div>
-
-                                            <div id="previewPopupWrapper">
                                                 {
                                                     visibility === VisibiltyState.WarningPopup && (
                                                         <PopupComponent item={data}
@@ -311,21 +286,6 @@ const ContentCrawlCard = (props) => {
                                                     )
                                                 }
                                             </div>
-
-                                            {/*<div id="previewRawHtmlWrapper">*/}
-                                            {/*    {*/}
-                                            {/*        visibility === VisibiltyState.RawHtml && (*/}
-                                            {/*            ShowHtmlPreview({data})*/}
-                                            {/*        )*/}
-                                            {/*    }*/}
-                                            {/*</div>*/}
-
-                                            <div id="previewRawHtmlWrapper">
-                                                {visibility === VisibiltyState.RawHtml && (
-                                                    <ShowHtmlPreview htmlKey={data.htmlKey}/>
-                                                )}
-                                            </div>
-
 
                                             <div id='wappalyzer'>
                                                 <Wappalyzer
