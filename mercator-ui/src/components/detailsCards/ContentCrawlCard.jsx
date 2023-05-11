@@ -63,8 +63,8 @@ const ContentCrawlCard = (props) => {
         newWindow.document.title = "Raw HTML";
         newWindow.document.body.append(pre)
 
-        pre.innerHTML = html;
         pre.id = "generatedPreForHtml";
+        pre.innerHTML = html;
         pre.textContent = html;
     }
 
