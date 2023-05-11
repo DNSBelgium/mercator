@@ -5,7 +5,6 @@ import {useEffect, useState} from "react";
 import api from "../../services/api";
 import PopupComponent from "../Warning";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
-// import DOMPurify from 'dompurify';
 
 //js enum for visibility state
 export const VisibiltyState = Object.freeze({
@@ -13,7 +12,6 @@ export const VisibiltyState = Object.freeze({
     Screenshot: 'Screenshot',
     WarningPopup: 'WarningPopup',
 })
-
 
 const ContentCrawlCard = (props) => {
     const visitId = props.visitId
@@ -107,7 +105,7 @@ const ContentCrawlCard = (props) => {
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
-    // const prefix = "http://localhost:4566/mercator-muppets/"
+    const prefixLocal = "http://localhost:4566/mercator-muppets/"
     const title = <Card.Header as="h2" className="h5">Content crawl</Card.Header>;
 
     // Writing HTML on a function base so we can define logic more easily.

@@ -4,42 +4,6 @@
   This prevents accidental overwriting and limits the use of !important.
 */
 
-/*preview */
-#previewWrapper {
-  width: 85vw;
-  display: grid;
-  overflow: auto;
-  max-height: 150vh;
-}
-
-/*screenshot*/
-#screenshotPreview {
-  width: 82vw;
-  align-self: flex-start;
-  justify-self: flex-start;
-}
-
-/*warning*/
-#warningWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-self: center;
-  justify-content: center;
-  background-color: lightgray;
-  width: 500px;
-  height: 150px;
-  border-radius: 5px;
-}
-
-#warningWrapper > svg {
-  margin-bottom: 5px;
-}
-
-.warningButton {
-  background-color: lightgray !important;
-}
-
 $clickables-color: #007bff;
 $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
 
@@ -373,6 +337,42 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       text-decoration: underline;
     }
 
+    /*preview */
+    #previewWrapper {
+      width: 85vw;
+      display: grid;
+      overflow: auto;
+      max-height: 150vh;
+    }
+
+    /*screenshot*/
+    #screenshotPreview {
+      width: 82vw;
+      align-self: flex-start;
+      justify-self: flex-start;
+    }
+
+    /*warning for html*/
+    #warningWrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-self: center;
+      justify-content: center;
+      background-color: lightgray;
+      width: 500px;
+      height: 150px;
+      border-radius: 5px;
+    }
+
+    #warningWrapper > svg {
+      margin-bottom: 5px;
+    }
+
+    .warningButton {
+      background-color: lightgray !important;
+    }
+
     /* Wappalyzer.jsx */
     #wappalyzer {
       #technologies-list {
@@ -398,6 +398,7 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
         list-style-type: none;
       }
     }
+
   }
 
   /* DNSCard.jsx */
