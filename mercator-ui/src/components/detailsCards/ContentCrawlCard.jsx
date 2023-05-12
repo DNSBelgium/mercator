@@ -3,24 +3,28 @@ import moment from "moment";
 import {Row, Col, Table, Card} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
-import PopupComponent from "../Warning";
+import HtmlRenderWarning from "../HtmlRenderWarning";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
 
 //js enum for visibility state
 export const VisibiltyState = Object.freeze({
     None: 'false',
     Screenshot: 'Screenshot',
-    WarningPopup: 'WarningPopup',
+    HtmlRenderWarning: 'WarningPopup',
 })
 
 const ContentCrawlCard = (props) => {
     const visitId = props.visitId
-
+    const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
     const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
 
     function toggleVisibilityWarningMessage() {
         setVisible(VisibiltyState.None)
+    }
+
+    function openHtmlInNewTab(item) {
+        window.open(DEV_URL + "/" + item.htmlKey)
     }
 
     function toggleVisibility(state) {
@@ -236,14 +240,14 @@ const ContentCrawlCard = (props) => {
                                                         className="mr-5 ml-5 content-card-link-button"
                                                         onClick={() => toggleVisibility(VisibiltyState.Screenshot)}
                                                     >
-                                                        Screenshot preview
+                                                        View screenshot
                                                     </button>
 
                                                     <button
                                                         id="newTabScreenshotBTN"
                                                         className="mr-5 ml-5 content-card-link-button"
                                                         onClick={() => window.open(prefix + data.screenshotKey)}
-                                                    >
+                                                    >Open screenshot
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                              width="24" height="24">
                                                             <path
@@ -251,6 +255,7 @@ const ContentCrawlCard = (props) => {
                                                             <path
                                                                 d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
                                                         </svg>
+
                                                     </button>
                                                 </div>
 
@@ -259,14 +264,14 @@ const ContentCrawlCard = (props) => {
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => fetchRawHtml(data.htmlKey)}
                                                 >
-                                                    HTML raw data
+                                                    Open raw html
                                                 </button>
 
                                                 <button
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.WarningPopup)}
+                                                    onClick={() => toggleVisibility(VisibiltyState.HtmlRenderWarning)}
                                                 >
-                                                    HTML
+                                                    View page
                                                 </button>
 
                                                 <button
@@ -274,7 +279,7 @@ const ContentCrawlCard = (props) => {
                                                     className="ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.harKey)}
                                                 >
-                                                    Har
+                                                    Open har
                                                 </button>
 
                                             </div>
@@ -286,9 +291,11 @@ const ContentCrawlCard = (props) => {
                                                     )
                                                 }
                                                 {
-                                                    visibility === VisibiltyState.WarningPopup && (
-                                                        <PopupComponent item={data}
-                                                                        onClickCancel={toggleVisibilityWarningMessage}/>
+                                                    visibility === VisibiltyState.HtmlRenderWarning && (
+                                                        data.htmlKey !== null ?
+                                                            <HtmlRenderWarning onClickYes={() => openHtmlInNewTab(data)}
+                                                                               onClickNo={toggleVisibilityWarningMessage}/>
+                                                            : <p>No html found</p>
                                                     )
                                                 }
                                             </div>
