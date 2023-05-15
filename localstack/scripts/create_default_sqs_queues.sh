@@ -15,7 +15,5 @@ awslocal sqs create-queue --queue-name mercator-dispatcher-output
 awslocal sqs create-queue --queue-name mercator-dispatcher-ack
 awslocal sqs create-queue --queue-name mercator-smtp-crawler-input
 awslocal sqs create-queue --queue-name mercator-vat-crawler-input
-awslocal sqs create-queue --queue-name mercator-ssl-crawler-input
-awslocal sqs create-queue --queue-name mercator-ssl-crawler-output
 awslocal sqs create-queue --queue-name mercator-tls-crawler-input
 echo "Finished"
