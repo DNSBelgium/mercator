@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
 import javax.persistence.*;
+import java.net.IDN;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -69,7 +70,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
 
   public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries, Status htmlStatus, Status screenshotStatus) {
     this.visitId = visitId;
-    this.domainName = domainName;
+    this.domainName = IDN.toUnicode(domainName);
     this.url = url;
     this.ok = ok;
     this.problem = problem;

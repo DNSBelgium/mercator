@@ -16,6 +16,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.net.IDN;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -46,9 +47,9 @@ public class WappalyzerResult extends AbstractAggregateRoot<WappalyzerResult> {
   @Column(name = "error") private String error;
 
   public static WappalyzerResult of(WappalyzerResolution resolution) {
-    return new WappalyzerResult(resolution.getVisitId(), resolution.getDomainName(), resolution.getUrl(),
-                                resolution.isOk(), resolution.getUrls(), resolution.getTechnologies(),
-                                resolution.getError());
+    return new WappalyzerResult(resolution.getVisitId(), IDN.toUnicode(resolution.getDomainName()), resolution.getUrl(),
+            resolution.isOk(), resolution.getUrls(), resolution.getTechnologies(),
+            resolution.getError());
   }
 
 }

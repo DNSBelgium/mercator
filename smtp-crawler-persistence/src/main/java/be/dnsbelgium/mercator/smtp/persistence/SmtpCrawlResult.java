@@ -12,6 +12,7 @@ import org.hibernate.annotations.TypeDefs;
 import org.slf4j.Logger;
 
 import javax.persistence.*;
+import java.net.IDN;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,9 +44,9 @@ public class SmtpCrawlResult {
     private static final Logger logger = getLogger(SmtpCrawlResult.class);
 
     public SmtpCrawlResult(UUID visitId, String domainName) {
-        logger.debug("Creating new SmtpCrawlResult with visitId={} and domainName={}", visitId, domainName);
+        logger.debug("Creating new SmtpCrawlResult with visitId={} and domainName={}", visitId, IDN.toASCII(domainName));
         this.visitId = visitId;
-        this.domainName = domainName;
+        this.domainName = IDN.toUnicode(domainName);
         this.crawlTimestamp = ZonedDateTime.now();
     }
 

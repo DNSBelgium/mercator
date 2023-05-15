@@ -312,7 +312,7 @@ services:
       - "8090:8080"
     environment:
       - MERCATOR_API_SCHEME=http
-      - MERCATOR_API_HOST=mercator-api
+      - MERCATOR_API_HOST=api
       - MERCATOR_API_PORT=8089
       - REACT_APP_MUPPETS_HOST=http://localhost:8080
     depends_on:

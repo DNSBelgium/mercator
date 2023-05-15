@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
+import java.net.IDN;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class DispatcherEvent implements Persistable<UUID> {
 
   public DispatcherEvent(UUID visitId, String domainName, List<String> labels) {
     this.visitId = visitId;
-    this.domainName = domainName;
+    this.domainName = IDN.toUnicode(domainName);
     this.labels = labels;
     this.requestTimestamp = ZonedDateTime.now();
     this.acks = new HashMap<>();
