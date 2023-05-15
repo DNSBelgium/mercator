@@ -13,7 +13,7 @@ export default function HtmlRenderWarning({onClickYes, onClickNo}) {
                 <div>
                     <button
                         id="acceptHtmlNewTab"
-                        className="mr-5 ml-5 content-card-link-button warningButton"
+                        className="mr-5 ml-5 btn btn-secondary"
                         onClick={onClickYes}
                     >
                         Yes
@@ -21,7 +21,7 @@ export default function HtmlRenderWarning({onClickYes, onClickNo}) {
 
                     <button
                         id="declineHtmlNewTab"
-                        className="mr-5 ml-5 content-card-link-button warningButton"
+                        className="mr-5 ml-5 btn btn-secondary"
                         onClick={onClickNo}
                     >
                         No

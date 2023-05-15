@@ -337,14 +337,6 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       text-decoration: underline;
     }
 
-    #previewScreenshotBTN {
-      margin-right: 8px !important;
-    }
-
-    #newTabScreenshotBTN {
-      margin-left: 0 !important;
-    }
-
     #contentCrawlContentLinks {
       display: flex;
       justify-content: space-around;
@@ -383,16 +375,8 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       justify-content: center;
       background-color: lightgray;
       width: 500px;
-      height: 150px;
+      height: 160px;
       border-radius: 5px;
-    }
-
-    #warningWrapper > svg {
-      margin-bottom: 5px;
-    }
-
-    .warningButton {
-      background-color: lightgray !important;
     }
 
     /* Wappalyzer.jsx */
