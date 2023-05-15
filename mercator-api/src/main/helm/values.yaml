@@ -102,8 +102,6 @@ database:
     schema: "feature_extraction"
   vat:
     schema: "vat_crawler"
-  ssl:
-    schema: "ssl_crawler"
   tls:
     schema: "tls_crawler"
 extraEnv: {}
