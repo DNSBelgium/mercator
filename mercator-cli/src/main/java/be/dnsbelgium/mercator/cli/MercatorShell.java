@@ -87,7 +87,6 @@ public class MercatorShell implements PromptProvider {
     WAPPALYZER,
     SMTP,
     VAT,
-    SSL,
     TLS,
     ALL  // to send acks for every module
   }
