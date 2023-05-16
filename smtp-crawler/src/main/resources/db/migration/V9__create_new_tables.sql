@@ -5,7 +5,7 @@ CREATE TABLE smtp_conversation
     asn                  bigint,
     country              VARCHAR(256),
     asn_organisation     VARCHAR(128),
-    banner               VARCHAR(256),
+    banner               VARCHAR(512),
     connect_ok           BOOLEAN,
     connect_reply_code   int,
     ip_version           smallint,
@@ -38,5 +38,5 @@ create table smtp_host
     priority            int             NOT NULL,
     conversation        int             NOT NULL        REFERENCES smtp_conversation,
     status              VARCHAR(64),
-    unique (visit_id, host_name, conversation)
+    unique (visit_id, host_name, conversation, priority)
 );
