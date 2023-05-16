@@ -10,8 +10,6 @@ public enum CrawlerModule {
   SMTP(),
   VAT(),
   TLS(),
-  // we need this enum value as long as there corresponding rows in dispatcher.dispatcher_event_acks
-  SSL(false),
   ;
 
   // this allows us to already use a new enum value in the code without having to deploy the corresponding module
