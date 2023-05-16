@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.content.persistence;
 
+import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
 import be.dnsbelgium.mercator.content.dto.WappalyzerResolution;
 import be.dnsbelgium.mercator.content.dto.wappalyzer.WappalyzerReport;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -47,7 +48,7 @@ public class WappalyzerResult extends AbstractAggregateRoot<WappalyzerResult> {
   @Column(name = "error") private String error;
 
   public static WappalyzerResult of(WappalyzerResolution resolution) {
-    return new WappalyzerResult(resolution.getVisitId(), IDN.toUnicode(resolution.getDomainName()), resolution.getUrl(),
+    return new WappalyzerResult(resolution.getVisitId(), IDN2008.toUnicode(resolution.getDomainName()), resolution.getUrl(),
             resolution.isOk(), resolution.getUrls(), resolution.getTechnologies(),
             resolution.getError());
   }

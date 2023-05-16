@@ -10,7 +10,9 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
 import javax.persistence.*;
-import java.net.IDN;
+
+import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +48,8 @@ public class VatCrawlResult {
   private List<String> visitedUrls = new ArrayList<>();
 
   public void abbreviateData() {
-    domainName = IDN.toUnicode(StringUtils.abbreviate(domainName, 255));
-    startUrl = StringUtils.abbreviate(startUrl, 255);
+      domainName = IDN2008.toUnicode(StringUtils.abbreviate(domainName, 255));
+      startUrl = StringUtils.abbreviate(startUrl, 255);
     matchingUrl = StringUtils.abbreviate(matchingUrl, 255);
   }
 }

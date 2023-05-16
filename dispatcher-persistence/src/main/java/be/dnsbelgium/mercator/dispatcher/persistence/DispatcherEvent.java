@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dispatcher.persistence;
 
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
+import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,6 @@ import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.*;
-import java.net.IDN;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -50,9 +50,9 @@ public class DispatcherEvent implements Persistable<UUID> {
   }
 
   public DispatcherEvent(UUID visitId, String domainName, List<String> labels) {
-    this.visitId = visitId;
-    this.domainName = IDN.toUnicode(domainName);
-    this.labels = labels;
+      this.visitId = visitId;
+      this.domainName = IDN2008.toUnicode(domainName);
+      this.labels = labels;
     this.requestTimestamp = ZonedDateTime.now();
     this.acks = new HashMap<>();
   }

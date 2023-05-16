@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Entity
@@ -46,7 +48,7 @@ public class SmtpCrawlResult {
     public SmtpCrawlResult(UUID visitId, String domainName) {
         logger.debug("Creating new SmtpCrawlResult with visitId={} and domainName={}", visitId, IDN.toASCII(domainName));
         this.visitId = visitId;
-        this.domainName = IDN.toUnicode(domainName);
+        this.domainName = IDN2008.toUnicode(domainName);
         this.crawlTimestamp = ZonedDateTime.now();
     }
 
