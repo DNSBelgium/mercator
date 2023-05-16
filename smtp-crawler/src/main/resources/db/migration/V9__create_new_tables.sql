@@ -36,7 +36,7 @@ create table smtp_host
     from_mx             boolean,
     host_name           VARCHAR(128)    NOT NULL,
     priority            int             NOT NULL,
-    conversation        int             NOT NULL        REFERENCES smtp_conversation,
+    conversation        int                             REFERENCES smtp_conversation,
     status              VARCHAR(64),
     unique (visit_id, host_name, conversation, priority)
 );
