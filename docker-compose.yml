@@ -26,7 +26,7 @@ services:
     image: pottava/s3-proxy
     mem_limit: 50M
     ports:
-      - 8080:80
+      - 8081:80
     environment:
       - AWS_API_ENDPOINT=http://localstack:4566
       - AWS_REGION=eu-west-1
@@ -38,6 +38,10 @@ services:
       - DIRECTORY_LISTINGS_FORMAT=html
       - GET_ALL_PAGES_IN_DIR=true
       - HEALTHCHECK_PATH=/health
+      - CORS_ALLOW_ORIGIN=*
+      - CORS_ALLOW_METHODS=GET,FETCH,OPTIONS,HEAD
+      - CORS_ALLOW_HEADERS="*"
+      - CORS_MAX_AGE=600
     container_name: s3-proxy
 
   muppets:
@@ -312,7 +316,7 @@ services:
       - "8090:8080"
     environment:
       - MERCATOR_API_SCHEME=http
-      - MERCATOR_API_HOST=mercator-api
+      - MERCATOR_API_HOST=api
       - MERCATOR_API_PORT=8089
       - REACT_APP_MUPPETS_HOST=http://localhost:8080
     depends_on:
@@ -329,3 +333,11 @@ services:
     depends_on:
       db:
         condition: service_started
+
+  s3proxyproxy:
+    image: nginx:1-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./muppets/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+
