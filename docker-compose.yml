@@ -295,7 +295,6 @@ services:
       - SPRING_DATASOURCE_DNS_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
       - SPRING_DATASOURCE_SMTP_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=smtp_crawler
       - SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=feature_extraction
-      - SPRING_DATASOURCE_SSL_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ssl_crawler
       - SPRING_DATASOURCE_VAT_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=vat_crawler
       - SPRING_DATASOURCE_TLS_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=tls_crawler
     depends_on:
