@@ -334,7 +334,6 @@ services:
       db:
         condition: service_started
 
-
   s3proxyproxy:
     image: nginx:1-alpine
     ports:

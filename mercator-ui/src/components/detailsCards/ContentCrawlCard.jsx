@@ -15,7 +15,7 @@ export const VisibiltyState = Object.freeze({
 
 const ContentCrawlCard = (props) => {
     const visitId = props.visitId
-    const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
+    const URL = window._env_.REACT_APP_MUPPETS_HOST;
     const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
 
@@ -24,7 +24,7 @@ const ContentCrawlCard = (props) => {
     }
 
     function openHtmlInNewTab(item) {
-        window.open(DEV_URL + "/" + item.htmlKey)
+        window.open(URL + "/" + item.htmlKey)
     }
 
     function toggleVisibility(state) {
@@ -36,11 +36,10 @@ const ContentCrawlCard = (props) => {
     }
 
     async function fetchRawHtml(htmlKey) {
-        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
         const fetchHtml = async () => {
             try {
                 if (htmlKey !== null) {
-                    const response = await fetch(`${DEV_URL}/${htmlKey}`, {
+                    const response = await fetch(`${URL}/${htmlKey}`, {
                         mode: 'cors',
                         headers: {
                             'Accept': 'text/plain',
@@ -69,15 +68,11 @@ const ContentCrawlCard = (props) => {
     }
 
     const showScreenshot = (item) => {
-        // URL for development / local environment.
-        const DEV_URL = window._env_.REACT_APP_MUPPETS_HOST;
-        const LOCAL_URL = 'http://localhost:4566/mercator-muppets';
-
         if (item.screenshotKey !== null) {
             return (
                 <img
                     id="screenshotPreview"
-                    src={`${DEV_URL}/${item.screenshotKey}`}
+                    src={`${URL}/${item.screenshotKey}`}
                     alt={`Thumbnail of ${item.visitId}`}
                 >
                 </img>
@@ -109,7 +104,6 @@ const ContentCrawlCard = (props) => {
     // Variables for HTML
     const {openMetrics, setOpenMetrics, openTechnologies, setOpenTechnologies, openUrls, setOpenUrls} = props; // Used deciding open/close of Accordions.
     const prefix = window._env_.REACT_APP_MUPPETS_HOST + "/" || '';
-    const prefixLocal = "http://localhost:4566/mercator-muppets/"
     const title = <Card.Header as="h2" className="h5">Content crawl</Card.Header>;
 
     // Writing HTML on a function base so we can define logic more easily.
