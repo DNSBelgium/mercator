@@ -40,9 +40,6 @@ public class SmtpHostEntity {
   @ToString.Exclude
   private SmtpConversationEntity conversation;
 
-  @Enumerated(EnumType.STRING)
-  private HostStatus status;
-
   public SmtpHostEntity(String hostName){
     this.hostName = hostName;
   }
