@@ -1,6 +1,6 @@
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import {Row, Col, Table, Card} from "react-bootstrap";
+import {Row, Col, Table, Card, Modal, Button} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
 import HtmlRenderWarning from "../HtmlRenderWarning";
@@ -18,10 +18,10 @@ const ContentCrawlCard = (props) => {
     const URL = window._env_.REACT_APP_MUPPETS_HOST;
     const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
+    const [show, setShow] = useState(false);
 
-    function toggleVisibilityWarningMessage() {
-        setVisible(VisibiltyState.None)
-    }
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
 
     function openHtmlInNewTab(item) {
         window.open(URL + "/" + item.htmlKey)
@@ -238,7 +238,10 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="newTabScreenshotBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.screenshotKey)}
+                                                    onClick={() => {
+                                                        window.open(prefix + data.screenshotKey);
+                                                        setVisible(VisibiltyState.None)
+                                                    }}
                                                 >
                                                     Open screenshot
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -253,14 +256,17 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="previewRawHtmlBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => fetchRawHtml(data.htmlKey)}
+                                                    onClick={() => {
+                                                        fetchRawHtml(data.htmlKey);
+                                                        setVisible(VisibiltyState.None)
+                                                    }}
                                                 >
                                                     Open raw html
                                                 </button>
 
                                                 <button
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.HtmlRenderWarning)}
+                                                    onClick={() => handleShow()}
                                                 >
                                                     View page
                                                 </button>
@@ -268,7 +274,10 @@ const ContentCrawlCard = (props) => {
                                                 <button
                                                     id="harContentNewTab"
                                                     className="ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.harKey)}
+                                                    onClick={() => {
+                                                        window.open(prefix + data.harKey);
+                                                        setVisible(VisibiltyState.None)
+                                                    }}
                                                 >
                                                     Open har
                                                 </button>
@@ -281,14 +290,28 @@ const ContentCrawlCard = (props) => {
                                                         showScreenshot(data)
                                                     )
                                                 }
-                                                {
-                                                    visibility === VisibiltyState.HtmlRenderWarning && (
-                                                        data.htmlKey !== null ?
-                                                            <HtmlRenderWarning onClickYes={() => openHtmlInNewTab(data)}
-                                                                               onClickNo={toggleVisibilityWarningMessage}/>
-                                                            : <p>No html found</p>
-                                                    )
-                                                }
+
+                                                <Modal
+                                                    show={show}
+                                                    onHide={handleClose}
+                                                    onShow={() => setVisible(VisibiltyState.None)}
+                                                >
+                                                    <Modal.Header closeButton>
+                                                        <Modal.Title>Render the html in a new tab ?</Modal.Title>
+                                                    </Modal.Header>
+                                                    <Modal.Body>this could be harmful please check out the raw html
+                                                        before proceeding </Modal.Body>
+                                                    <Modal.Footer>
+                                                        <Button variant="secondary" onClick={handleClose}>
+                                                            No
+                                                        </Button>
+                                                        <Button variant="secondary"
+                                                                onClick={() => openHtmlInNewTab(data)}>
+                                                            Yes
+                                                        </Button>
+                                                    </Modal.Footer>
+                                                </Modal>
+
                                             </div>
 
                                             <div id='wappalyzer'>
