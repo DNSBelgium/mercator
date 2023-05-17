@@ -46,7 +46,6 @@ select
      , cast(start_tls_ok as boolean)
      , cast(start_tls_reply_code as int)
      , error_message
-     , null
      , cast(connection_time_ms as bigint)
      , software
      , software_version
