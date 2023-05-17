@@ -1,8 +1,14 @@
 drop table smtp_crawler.smtp_data;
 
+create table smtp_crawler.ids_per_day as
+select  min(id) min_id, max(id) max_id, count(1) rowcount, date_trunc('day', crawl_timestamp) as day
+from smtp_crawler.smtp_crawl_result
+group by date_trunc('day', crawl_timestamp);
+
 create table smtp_crawler.smtp_data
 as
-with conversations as (select
+with min_max as (select min(min_id) as min_id, max(max_id) as max_id from smtp_crawler.ids_per_day where day > '2021-06-29 00:00:00.000000 +00:00')
+    , conversations as (select
                            id
                             , domain_name
                             , crawl_status
@@ -26,6 +32,8 @@ with conversations as (select
                             , jsonb_array_elements(jsonb_array_elements(servers) -> 'hosts') ->> 'softwareVersion' as software_version
                             , jsonb_array_elements(jsonb_array_elements(servers) -> 'hosts') -> 'supportedExtensions' as extensions
                        from smtp_crawler.smtp_crawl_result r
+                       where id between (select min_id from min_max) and (select max_id from min_max)
+                       order by crawl_timestamp
 )
 select
       id
