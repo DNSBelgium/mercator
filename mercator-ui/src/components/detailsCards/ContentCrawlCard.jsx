@@ -1,15 +1,87 @@
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import { Row, Col, Table, Card } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import {Row, Col, Table, Card} from "react-bootstrap";
+import {useEffect, useState} from "react";
 import api from "../../services/api";
-import { renderDataBoolean } from '../../services/Util';
+import HtmlRenderWarning from "../HtmlRenderWarning";
+import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
+
+//js enum for visibility state
+export const VisibiltyState = Object.freeze({
+    None: 'false',
+    Screenshot: 'Screenshot',
+    HtmlRenderWarning: 'WarningPopup',
+})
 
 const ContentCrawlCard = (props) => {
-
     const visitId = props.visitId
-
+    const URL = window._env_.REACT_APP_MUPPETS_HOST;
+    const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
+
+    function toggleVisibilityWarningMessage() {
+        setVisible(VisibiltyState.None)
+    }
+
+    function openHtmlInNewTab(item) {
+        window.open(URL + "/" + item.htmlKey)
+    }
+
+    function toggleVisibility(state) {
+        if (visibility === state) {
+            setVisible(VisibiltyState.None)
+        } else {
+            setVisible(state)
+        }
+    }
+
+    async function fetchRawHtml(htmlKey) {
+        const fetchHtml = async () => {
+            try {
+                if (htmlKey !== null) {
+                    const response = await fetch(`${URL}/${htmlKey}`, {
+                        mode: 'cors',
+                        headers: {
+                            'Accept': 'text/plain',
+                            'Content-Type': 'text/plain',
+                        }
+                    });
+                    const htmlContent = await response.text();
+                    return htmlContent
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const html = await fetchHtml()
+
+        const pre = document.createElement("pre")
+
+        const newWindow = window.open();
+        newWindow.document.title = "Raw HTML";
+        newWindow.document.body.append(pre)
+
+        pre.id = "generatedPreForHtml";
+        pre.innerHTML = html;
+        pre.textContent = html;
+    }
+
+    const showScreenshot = (item) => {
+        if (item.screenshotKey !== null) {
+            return (
+                <img
+                    id="screenshotPreview"
+                    src={`${URL}/${item.screenshotKey}`}
+                    alt={`Thumbnail of ${item.visitId}`}
+                >
+                </img>
+            )
+        }
+        return (
+            <p>No image found</p>
+        );
+    }
 
     useEffect(() => {
         const handlerData = async () => {
@@ -17,13 +89,13 @@ const ContentCrawlCard = (props) => {
             const url = `/contentCrawlResults/search/findByVisitId?visitId=${visitId}`;
             await api.get(url)
                 .then((resp) => {
-                    if(resp.status === 200) {
+                    if (resp.status === 200) {
                         setData(resp === undefined ? null : resp.data._embedded.contentCrawlResults);
                     }
                 })
                 .catch((ex) => {
                     console.log(ex);
-                });      
+                });
         };
 
         handlerData();
@@ -36,6 +108,7 @@ const ContentCrawlCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
+
         if (!data.length || data.length === 0) {
             return (
                 <Row>
@@ -63,126 +136,166 @@ const ContentCrawlCard = (props) => {
                                             <Table size='sm' borderless>
                                                 <tbody className='text-left'>
 
-                                                    <tr>
-                                                        <th scope='row'>
-                                                            Id
-                                                        </th>
-                                                        <td>
-                                                            {data.id}
-                                                        </td>
-                                                    </tr>
+                                                <tr>
+                                                    <th scope='row'>
+                                                        Id
+                                                    </th>
+                                                    <td>
+                                                        {data.id}
+                                                    </td>
+                                                </tr>
 
-                                                    <tr>
-                                                        <th scope='row'>
-                                                            Metrics Json
-                                                        </th>
-                                                        <td>
-                                                            {
-                                                                data.metricsJson ? // metricsJson exists? render, else empty string.
-                                                                    <>
-                                                                        <button 
-                                                                            className='more-info'
-                                                                            onClick={() => setOpenMetrics(openMetrics => !openMetrics)} // Toggle openMetrics boolean
-                                                                        > 
-                                                                            More info
-                                                                        </button>
+                                                <tr>
+                                                    <th scope='row'>
+                                                        Metrics Json
+                                                    </th>
+                                                    <td>
+                                                        {
+                                                            data.metricsJson ? // metricsJson exists? render, else empty string.
+                                                                <>
+                                                                    <button
+                                                                        className='more-info'
+                                                                        onClick={() => setOpenMetrics(openMetrics => !openMetrics)} // Toggle openMetrics boolean
+                                                                    >
+                                                                        More info
+                                                                    </button>
 
-                                                                        {   // if openMetrics === true, render
-                                                                            openMetrics && (
-                                                                                <div id='metrics-json-content'>
-                                                                                    <ul className="mb-2 mt-2">
-                                                                                        {
-                                                                                            Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
-                                                                                                return (
-                                                                                                    <li key={index}>
+                                                                    {   // if openMetrics === true, render
+                                                                        openMetrics && (
+                                                                            <div id='metrics-json-content'>
+                                                                                <ul className="mb-2 mt-2">
+                                                                                    {
+                                                                                        Object.entries(JSON.parse(data.metricsJson)).map((item, index) => {
+                                                                                            return (
+                                                                                                <li key={index}>
                                                                                                         <span
                                                                                                             className='font-weight-bold'
                                                                                                         >
-                                                                                                            { item[0] }:
+                                                                                                            {item[0]}:
                                                                                                         </span>
-                                                                                                        <span> { item[1] }</span>
-                                                                                                    </li>
-                                                                                                )
-                                                                                            })
-                                                                                        }
-                                                                                    </ul>
-                                                                                </div>
-                                                                            )
-                                                                        }
-                                                                    </> :
-                                                                    "" // metricsJson exists? render, else empty string.
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">URL</th>
-                                                        <td>{data.url}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Ok</th>
-                                                        { renderDataBoolean(data.ok) }
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Problem</th>
-                                                        <td className="defined-error">{data.problem}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Final Url</th>
-                                                        <td>{data.finalUrl}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">HTML length</th>
-                                                        <td>{data.htmlLength}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Crawl Timestamp</th>
-                                                        <td>{data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Retries</th>
-                                                        <td>{data.retries}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Crawled from</th>
-                                                        <td>ipv4: {data.ipv4}, ipv6: {data.ipv6}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">Browser version</th>
-                                                        <td>{data.browserVersion}</td>
-                                                    </tr>
+                                                                                                    <span> {item[1]}</span>
+                                                                                                </li>
+                                                                                            )
+                                                                                        })
+                                                                                    }
+                                                                                </ul>
+                                                                            </div>
+                                                                        )
+                                                                    }
+                                                                </> :
+                                                                "" // metricsJson exists? render, else empty string.
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">URL</th>
+                                                    <td>{data.url}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Ok</th>
+                                                    {renderDataBoolean(data.ok)}
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Problem</th>
+                                                    <td className="defined-error">{data.problem}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Final Url</th>
+                                                    <td>{data.finalUrl}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">HTML length</th>
+                                                    <td>{data.htmlLength}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Crawl Timestamp</th>
+                                                    <td>{data.crawlTimestamp ? moment(data.crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Retries</th>
+                                                    <td>{data.retries}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Crawled from</th>
+                                                    <td>ipv4: {data.ipv4}, ipv6: {data.ipv6}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Browser version</th>
+                                                    <td>{data.browserVersion}</td>
+                                                </tr>
                                                 </tbody>
                                             </Table>
 
-                                            <div className="mb-4 mt-4 ml-4">
+                                            <div id="contentCrawlContentLinks" className="mb-4 mt-4 ml-4">
+                                                <button
+                                                    id="previewScreenshotBTN"
+                                                    className="mr-5 ml-5 content-card-link-button"
+                                                    onClick={() => toggleVisibility(VisibiltyState.Screenshot)}
+                                                >
+                                                    View screenshot
+                                                </button>
 
-                                                <button 
+                                                <button
+                                                    id="newTabScreenshotBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.screenshotKey)}
                                                 >
-                                                    Screenshot
+                                                    Open screenshot
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                         width="24" height="24">
+                                                        <path
+                                                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75Z"></path>
+                                                        <path
+                                                            d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
+                                                    </svg>
                                                 </button>
 
-                                                <button 
+                                                <button
+                                                    id="previewRawHtmlBTN"
                                                     className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.htmlKey)}
+                                                    onClick={() => fetchRawHtml(data.htmlKey)}
                                                 >
-                                                        HTML
+                                                    Open raw html
                                                 </button>
 
-                                                <button 
+                                                <button
+                                                    className="mr-5 ml-5 content-card-link-button"
+                                                    onClick={() => toggleVisibility(VisibiltyState.HtmlRenderWarning)}
+                                                >
+                                                    View page
+                                                </button>
+
+                                                <button
+                                                    id="harContentNewTab"
                                                     className="ml-5 content-card-link-button"
                                                     onClick={() => window.open(prefix + data.harKey)}
                                                 >
-                                                    Har
+                                                    Open har
                                                 </button>
 
                                             </div>
 
+                                            <div id="previewWrapper">
+                                                {
+                                                    visibility === VisibiltyState.Screenshot && (
+                                                        showScreenshot(data)
+                                                    )
+                                                }
+                                                {
+                                                    visibility === VisibiltyState.HtmlRenderWarning && (
+                                                        data.htmlKey !== null ?
+                                                            <HtmlRenderWarning onClickYes={() => openHtmlInNewTab(data)}
+                                                                               onClickNo={toggleVisibilityWarningMessage}/>
+                                                            : <p>No html found</p>
+                                                    )
+                                                }
+                                            </div>
+
                                             <div id='wappalyzer'>
                                                 <Wappalyzer
-                                                    visitId={visitId} 
+                                                    visitId={visitId}
                                                     openTechnologies={openTechnologies}
-                                                    setOpenTechnologies={setOpenTechnologies} 
+                                                    setOpenTechnologies={setOpenTechnologies}
                                                     openUrls={openUrls}
                                                     setOpenUrls={setOpenUrls}
                                                 />
