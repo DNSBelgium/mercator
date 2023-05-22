@@ -128,5 +128,8 @@ class SmtpCrawlServiceTest {
     assertThat(savedVisit).isPresent();
     SmtpVisitEntity visitEntity = savedVisit.get();
     assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
+    assertThat(visitEntity.getHosts().size()).isEqualTo(2);
+    assertThat(visitEntity.getHosts().get(0).getHostName()).isEqualTo("protection.outlook.com");
+    assertThat(visitEntity.getHosts().get(0).getConversation().getIp()).isEqualTo("1.2.3.4");
   }
 }
