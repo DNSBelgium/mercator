@@ -20,6 +20,29 @@ const ContentCrawlCard = (props) => {
     const [data, setData] = useState([]);
     const [show, setShow] = useState(false);
 
+    const ContentCrawlLinkButton = ({id, text, onClickHandler, hasIcon}) => {
+        const handleClick = () => {
+            if (onClickHandler) {
+                onClickHandler();
+            }
+        };
+
+        return (
+            <button
+                id={id}
+                className="mr-5 ml-5 content-card-link-button"
+                onClick={handleClick}
+            >
+                {text}
+                {hasIcon && (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                        <path
+                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75ZM2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"/>
+                    </svg>
+                )}
+            </button>
+        );
+    };
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
@@ -225,76 +248,54 @@ const ContentCrawlCard = (props) => {
                                                 </tr>
                                                 </tbody>
                                             </Table>
-
                                             <div id="contentCrawlContentLinks" className="mb-4 mt-4 ml-4">
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="previewScreenshotBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.Screenshot)}
-                                                >
-                                                    View screenshot
-                                                </button>
-
-                                                <button
-                                                    id="newTabScreenshotBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => {
-                                                        window.open(prefix + data.screenshotKey);
-                                                        setVisible(VisibiltyState.None)
+                                                    text="View screenshot"
+                                                    onClickHandler={() => {
+                                                        toggleVisibility(VisibiltyState.Screenshot)
                                                     }}
-                                                >
-                                                    Open screenshot
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                         width="24" height="24">
-                                                        <path
-                                                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75Z"></path>
-                                                        <path
-                                                            d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
-                                                    </svg>
-                                                </button>
+                                                    hasIcon={false}
+                                                />
 
-                                                <button
+                                                <ContentCrawlLinkButton
+                                                    id="newTabScreenshotBTN"
+                                                    text="Open screenshot"
+                                                    onClickHandler={() => {
+                                                        window.open(prefix + data.screenshotKey);
+                                                        setVisible(VisibiltyState.None);
+                                                    }}
+                                                    hasIcon={true}
+                                                />
+
+                                                <ContentCrawlLinkButton
                                                     id="previewRawHtmlBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => {
+                                                    text="Open raw html"
+                                                    onClickHandler={() => {
                                                         fetchRawHtml(data.htmlKey);
                                                         setVisible(VisibiltyState.None)
                                                     }}
-                                                >
-                                                    Open raw html
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                         width="24" height="24">
-                                                        <path
-                                                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75Z"></path>
-                                                        <path
-                                                            d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
-                                                    </svg>
-                                                </button>
+                                                    hasIcon={true}
+                                                />
 
-                                                <button
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => handleShow()}
-                                                >
-                                                    View page
-                                                </button>
+                                                <ContentCrawlLinkButton
+                                                    id="openRenderWarning"
+                                                    text=" View page"
+                                                    onClickHandler={() => {
+                                                        handleShow()
+                                                    }}
+                                                    hasIcon={false}
+                                                />
 
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="harContentNewTab"
-                                                    className="ml-5 content-card-link-button"
-                                                    onClick={() => {
+                                                    text="Open har"
+                                                    onClickHandler={() => {
                                                         window.open(prefix + data.harKey);
                                                         setVisible(VisibiltyState.None)
                                                     }}
-                                                >
-                                                    Open har
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                         width="24" height="24">
-                                                        <path
-                                                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75Z"></path>
-                                                        <path
-                                                            d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
-                                                    </svg>
-                                                </button>
+                                                    hasIcon={true}
+                                                />
 
                                             </div>
 
