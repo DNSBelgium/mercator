@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.smtp.persistence.repositories;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import java.util.UUID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public interface SmtpVisitRepository extends PagingAndSortingRepository<SmtpVisitEntity, Long> {
-  Optional<SmtpVisitEntity> findByVisitId(UUID visitId);
+  Optional<SmtpVisitEntity> findByVisitId(@Param("visitId") UUID visitId);
 
   default Optional<SmtpVisitEntity> saveAndIgnoreDuplicateKeys(SmtpVisitEntity smtpVisitEntity) {
     try {

@@ -18,6 +18,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,4 +70,27 @@ public class SmtpHostRepositoryTest {
     assertThat(savedHost.getPriority()).isEqualTo(10);
     assertThat(savedHost.getConversation()).isEqualTo(conversation);
   }
+
+  @Test
+  void findAllByVisitIdTest(){
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("4.5.6.7");
+    conversation.setIpVersion(4);
+    conversation.setCountry("Belgium");
+
+    UUID visitId = UUID.randomUUID();
+    SmtpVisitEntity vistEntity = new SmtpVisitEntity();
+    SmtpHostEntity host = new SmtpHostEntity();
+    host.setHostName("dns.be");
+    host.setFromMx(true);
+    host.setPriority(10);
+    host.setConversation(conversation);
+    vistEntity.setVisitId(visitId);
+    vistEntity.setDomainName("dnsbelgium.be");
+    vistEntity.add(host);
+    repository.save(host);
+    List<SmtpHostEntity> hosts = repository.findAllByVisitId(visitId);
+    assertThat(hosts.size()).isEqualTo(1);
+  }
+
 }

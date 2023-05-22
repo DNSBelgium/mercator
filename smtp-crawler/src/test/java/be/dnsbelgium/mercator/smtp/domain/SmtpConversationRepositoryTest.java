@@ -1,8 +1,12 @@
 package be.dnsbelgium.mercator.smtp.domain;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
+import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +33,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SmtpConversationRepositoryTest {
   @Autowired
   SmtpConversationRepository repository;
+  @Autowired
+  SmtpHostRepository hostRepository;
   @Autowired
   ApplicationContext context;
   @Autowired
@@ -127,5 +133,27 @@ public class SmtpConversationRepositoryTest {
     assertThat(conversationEntity.getSoftwareVersion()).isEqualTo("1.3");
     assertThat(conversationEntity.getCountry()).isEqualTo("Belgium");
     assertThat(conversationEntity.getSupportedExtensions()).isEqualTo(extensions);
+  }
+
+  @Test
+  void findAllByVisitId(){
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("4.5.6.7");
+    conversation.setIpVersion(4);
+    conversation.setCountry("Belgium");
+
+    UUID visitId = UUID.randomUUID();
+    SmtpVisitEntity vistEntity = new SmtpVisitEntity();
+    SmtpHostEntity host = new SmtpHostEntity();
+    host.setHostName("dns.be");
+    host.setFromMx(true);
+    host.setPriority(10);
+    host.setConversation(conversation);
+    vistEntity.setVisitId(visitId);
+    vistEntity.setDomainName("dnsbelgium.be");
+    vistEntity.add(host);
+    hostRepository.save(host);
+    List<SmtpConversationEntity> conversations = repository.findAllByVisitId(visitId);
+    Assertions.assertThat(conversations.size()).isEqualTo(1);
   }
 }
