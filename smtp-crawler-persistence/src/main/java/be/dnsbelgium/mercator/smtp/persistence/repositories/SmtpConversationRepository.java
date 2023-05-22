@@ -1,12 +1,10 @@
 package be.dnsbelgium.mercator.smtp.persistence.repositories;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import com.vladmihalcea.hibernate.type.interval.PostgreSQLIntervalType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
