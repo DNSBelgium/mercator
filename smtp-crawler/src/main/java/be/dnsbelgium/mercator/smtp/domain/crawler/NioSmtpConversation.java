@@ -28,7 +28,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * A stateful class to represents the conversation with one IP of an SMTP server.
  */
-public class NioSmtpConversation implements be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation {
+public class NioSmtpConversation implements ISmtpConversation {
 
     private final SmtpConversation smtpConversation;
     private long connectionStart;

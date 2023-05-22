@@ -34,9 +34,9 @@ class DefaultSmtpIpAnalyzerTest {
     public void testCaching() {
         InetAddress ip1 = ip("10.20.30.40");
         InetAddress ip2 = ip("10.66.66.66");
-        be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation conversation1 = mock(be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation.class);
-        be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation conversation2 = mock(be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation.class);
-        be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation conversation3 = mock(be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation.class);
+        ISmtpConversation conversation1 = mock(ISmtpConversation.class);
+        ISmtpConversation conversation2 = mock(ISmtpConversation.class);
+        ISmtpConversation conversation3 = mock(ISmtpConversation.class);
 
         when(conversation1.talk()).thenReturn(new SmtpConversation(ip1));
         when(conversation2.talk()).thenReturn(new SmtpConversation(ip2));
@@ -69,7 +69,7 @@ class DefaultSmtpIpAnalyzerTest {
         InetAddress ip = ip("10.20.30.40");
         when(geoIPService.lookupASN(ip.getHostAddress())).thenReturn(Optional.of(Pair.of(123, "ASN 123")));
         when(geoIPService.lookupCountry(ip.getHostAddress())).thenReturn(Optional.of("Test Country"));
-        be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation conversation1 = mock(be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation.class);
+        ISmtpConversation conversation1 = mock(ISmtpConversation.class);
         when(conversationFactory.create(ip)).thenReturn(conversation1);
         when(conversation1.talk()).thenReturn(new SmtpConversation(ip));
         SmtpConversation found = analyzer.crawl(ip);

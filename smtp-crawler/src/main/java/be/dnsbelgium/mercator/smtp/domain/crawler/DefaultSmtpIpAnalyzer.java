@@ -71,7 +71,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private SmtpConversation doCrawl(InetAddress ip) {
     logger.debug("About to talk SMTP with {}", ip);
-    be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversation conversation = conversationFactory.create(ip);
+    ISmtpConversation conversation = conversationFactory.create(ip);
     return conversation.talk();
   }
 
