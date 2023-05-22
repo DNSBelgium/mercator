@@ -1,9 +1,10 @@
 import Wappalyzer from "./Wappalyzer";
 import moment from "moment";
-import {Row, Col, Table, Card} from "react-bootstrap";
+import {Row, Col, Table, Card, Modal, Button} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import api from "../../services/api";
 import HtmlRenderWarning from "../HtmlRenderWarning";
+import ContentCrawlLinkButton from "../ContentCrawlLinkButton";
 import {differenceBetweenTwoDates, renderDataBoolean} from '../../services/Util';
 
 //js enum for visibility state
@@ -18,10 +19,10 @@ const ContentCrawlCard = (props) => {
     const URL = window._env_.REACT_APP_MUPPETS_HOST;
     const [visibility, setVisible] = useState(VisibiltyState.None)
     const [data, setData] = useState([]);
+    const [show, setShow] = useState(false);
 
-    function toggleVisibilityWarningMessage() {
-        setVisible(VisibiltyState.None)
-    }
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
 
     function openHtmlInNewTab(item) {
         window.open(URL + "/" + item.htmlKey)
@@ -225,53 +226,54 @@ const ContentCrawlCard = (props) => {
                                                 </tr>
                                                 </tbody>
                                             </Table>
-
                                             <div id="contentCrawlContentLinks" className="mb-4 mt-4 ml-4">
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="previewScreenshotBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.Screenshot)}
-                                                >
-                                                    View screenshot
-                                                </button>
+                                                    text="View screenshot"
+                                                    onClickHandler={() => {
+                                                        toggleVisibility(VisibiltyState.Screenshot)
+                                                    }}
+                                                    hasIcon={false}
+                                                />
 
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="newTabScreenshotBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.screenshotKey)}
-                                                >
-                                                    Open screenshot
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                         width="24" height="24">
-                                                        <path
-                                                            d="M15.5 2.25a.75.75 0 0 1 .75-.75h5.5a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-1.5 0V4.06l-6.22 6.22a.75.75 0 1 1-1.06-1.06L19.94 3h-3.69a.75.75 0 0 1-.75-.75Z"></path>
-                                                        <path
-                                                            d="M2.5 4.25c0-.966.784-1.75 1.75-1.75h8.5a.75.75 0 0 1 0 1.5h-8.5a.25.25 0 0 0-.25.25v15.5c0 .138.112.25.25.25h15.5a.25.25 0 0 0 .25-.25v-8.5a.75.75 0 0 1 1.5 0v8.5a1.75 1.75 0 0 1-1.75 1.75H4.25a1.75 1.75 0 0 1-1.75-1.75V4.25Z"></path>
-                                                    </svg>
-                                                </button>
+                                                    text="Open screenshot"
+                                                    onClickHandler={() => {
+                                                        window.open(prefix + data.screenshotKey);
+                                                        setVisible(VisibiltyState.None);
+                                                    }}
+                                                    hasIcon={true}
+                                                />
 
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="previewRawHtmlBTN"
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => fetchRawHtml(data.htmlKey)}
-                                                >
-                                                    Open raw html
-                                                </button>
+                                                    text="Open raw html"
+                                                    onClickHandler={() => {
+                                                        fetchRawHtml(data.htmlKey);
+                                                        setVisible(VisibiltyState.None)
+                                                    }}
+                                                    hasIcon={true}
+                                                />
 
-                                                <button
-                                                    className="mr-5 ml-5 content-card-link-button"
-                                                    onClick={() => toggleVisibility(VisibiltyState.HtmlRenderWarning)}
-                                                >
-                                                    View page
-                                                </button>
+                                                <ContentCrawlLinkButton
+                                                    id="openRenderWarning"
+                                                    text=" View page"
+                                                    onClickHandler={() => {
+                                                        handleShow()
+                                                    }}
+                                                    hasIcon={false}
+                                                />
 
-                                                <button
+                                                <ContentCrawlLinkButton
                                                     id="harContentNewTab"
-                                                    className="ml-5 content-card-link-button"
-                                                    onClick={() => window.open(prefix + data.harKey)}
-                                                >
-                                                    Open har
-                                                </button>
+                                                    text="Open har"
+                                                    onClickHandler={() => {
+                                                        window.open(prefix + data.harKey);
+                                                        setVisible(VisibiltyState.None)
+                                                    }}
+                                                    hasIcon={true}
+                                                />
 
                                             </div>
 
@@ -281,14 +283,31 @@ const ContentCrawlCard = (props) => {
                                                         showScreenshot(data)
                                                     )
                                                 }
-                                                {
-                                                    visibility === VisibiltyState.HtmlRenderWarning && (
-                                                        data.htmlKey !== null ?
-                                                            <HtmlRenderWarning onClickYes={() => openHtmlInNewTab(data)}
-                                                                               onClickNo={toggleVisibilityWarningMessage}/>
-                                                            : <p>No html found</p>
-                                                    )
-                                                }
+
+                                                <Modal
+                                                    show={show}
+                                                    onHide={handleClose}
+                                                    onShow={() => setVisible(VisibiltyState.None)}
+                                                >
+                                                    <Modal.Header closeButton>
+                                                        <Modal.Title>Render the html in a new tab ?</Modal.Title>
+                                                    </Modal.Header>
+                                                    <Modal.Body>this could be harmful please check out the raw html
+                                                        before proceeding </Modal.Body>
+                                                    <Modal.Footer>
+                                                        <Button variant="secondary" onClick={handleClose}>
+                                                            No
+                                                        </Button>
+                                                        <Button variant="secondary"
+                                                                onClick={() => {
+                                                                    openHtmlInNewTab(data);
+                                                                    handleClose()
+                                                                }}>
+                                                            Yes
+                                                        </Button>
+                                                    </Modal.Footer>
+                                                </Modal>
+
                                             </div>
 
                                             <div id='wappalyzer'>
