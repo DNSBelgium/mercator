@@ -239,40 +239,40 @@ public class NioSmtpConversation implements ISmtpConversation {
     public Error getErrorFromErrorMessage(String errorMessage){
         Error error;
         if (errorMessage.equals("Connection timed out") ||
-          errorMessage.equals("Timed out waiting for a response")) {
+            errorMessage.equals("Timed out waiting for a response")) {
             error = Error.TIME_OUT;
         }
         else if (errorMessage.equals("Connection reset by peer") ||
-          errorMessage.equals("Connection refused") ||
-          errorMessage.equals("Connection reset")) {
+                 errorMessage.equals("Connection refused") ||
+                 errorMessage.equals("Connection reset")) {
             error = Error.CONNECTION_ERROR;
         }
         else if (errorMessage.equals("conversation with loopback address skipped") ||
-          errorMessage.equals("conversation with site local address skipped") ||
-          errorMessage.equals("conversation with IPv6 SMTP host skipped") ||
-          errorMessage.equals("conversation with IPv4 SMTP host skipped")) {
+                 errorMessage.equals("conversation with site local address skipped") ||
+                 errorMessage.equals("conversation with IPv6 SMTP host skipped") ||
+                 errorMessage.equals("conversation with IPv4 SMTP host skipped")) {
             error = Error.SKIPPED;
         }
         else if (errorMessage.equals("NotAfter") ||
-          errorMessage.equals("Not an SSL/TLS record") ||
-          errorMessage.equals("Usage constraint TLSServer check failed") ||
-          errorMessage.equals("Empty issuer DN not allowed in X509Certificates") ||
-          errorMessage.equals("Handshake message size exceeds maximum") ||
-          errorMessage.matches("handshake timed out after .*") ||
-          errorMessage.equals("unable to find valid certification path to requested target") ||
-          errorMessage.matches("The server selected protocol version .* is not accepted by client preferences .*") ||
-          errorMessage.equals("no more data allowed for version 1 certificate") ||
-          errorMessage.matches("X.509 Certificate is incomplete:.*")) {
+                 errorMessage.equals("Not an SSL/TLS record") ||
+                 errorMessage.equals("Usage constraint TLSServer check failed") ||
+                 errorMessage.equals("Empty issuer DN not allowed in X509Certificates") ||
+                 errorMessage.equals("Handshake message size exceeds maximum") ||
+                 errorMessage.matches("handshake timed out after .*") ||
+                 errorMessage.equals("unable to find valid certification path to requested target") ||
+                 errorMessage.matches("The server selected protocol version .* is not accepted by client preferences .*") ||
+                 errorMessage.equals("no more data allowed for version 1 certificate") ||
+                 errorMessage.matches("X.509 Certificate is incomplete:.*")) {
             error = Error.TLS_ERROR;
         }
         else if (errorMessage.equals("No route to host") ||
-          errorMessage.equals("Network is unreachable") ||
-          errorMessage.equals("Host is unreachable") ||
-          errorMessage.equals("Network unreachable")){
+                 errorMessage.equals("Network is unreachable") ||
+                 errorMessage.equals("Host is unreachable") ||
+                 errorMessage.equals("Network unreachable")){
             error = Error.HOST_UNREACHABLE;
         }
         else if (errorMessage.equals("ClosedChannelException") ||
-          errorMessage.equals("channel was closed while waiting for response")){
+                 errorMessage.equals("channel was closed while waiting for response")){
             error = Error.CHANNEL_CLOSED;
         }
         else {
