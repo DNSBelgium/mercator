@@ -26,7 +26,7 @@ services:
     image: pottava/s3-proxy
     mem_limit: 50M
     ports:
-      - 8080:80
+      - 8081:80
     environment:
       - AWS_API_ENDPOINT=http://localstack:4566
       - AWS_REGION=eu-west-1
@@ -38,6 +38,10 @@ services:
       - DIRECTORY_LISTINGS_FORMAT=html
       - GET_ALL_PAGES_IN_DIR=true
       - HEALTHCHECK_PATH=/health
+      - CORS_ALLOW_ORIGIN=*
+      - CORS_ALLOW_METHODS=GET,FETCH,OPTIONS,HEAD
+      - CORS_ALLOW_HEADERS="*"
+      - CORS_MAX_AGE=600
     container_name: s3-proxy
 
   muppets:
@@ -291,7 +295,6 @@ services:
       - SPRING_DATASOURCE_DNS_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=dns_crawler
       - SPRING_DATASOURCE_SMTP_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=smtp_crawler
       - SPRING_DATASOURCE_FEATURE_EXTRACTION_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=feature_extraction
-      - SPRING_DATASOURCE_SSL_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=ssl_crawler
       - SPRING_DATASOURCE_VAT_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=vat_crawler
       - SPRING_DATASOURCE_TLS_JDBC_URL=jdbc:postgresql://db:5432/postgres?currentSchema=tls_crawler
     depends_on:
@@ -329,3 +332,11 @@ services:
     depends_on:
       db:
         condition: service_started
+
+  s3proxyproxy:
+    image: nginx:1-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./muppets/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+

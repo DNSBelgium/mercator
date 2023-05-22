@@ -37,7 +37,6 @@ dependencies {
 	implementation project(':feature-extraction-persistence')
 	implementation project(':vat-crawler-persistence')
 	implementation project(':tls-crawler-persistence')
-	implementation project(':ssl-crawler-persistence')
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
