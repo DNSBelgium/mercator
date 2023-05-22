@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.Temporal;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -196,7 +197,7 @@ public class NioSmtpConversation implements ISmtpConversation {
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
             errorMessage = cleanErrorMessage(errorMessage);
             smtpConversation.setErrorMessage(errorMessage);
-            smtpConversation.setError(getErrorNameFromErrorMessage(errorMessage));
+            smtpConversation.setError(getErrorFromErrorMessage(errorMessage));
         }
         logger.debug("crawl done: smtpConversation = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
@@ -235,31 +236,43 @@ public class NioSmtpConversation implements ISmtpConversation {
         return cleanedErrorMessage;
     }
 
-    public Error getErrorNameFromErrorMessage(String errorMessage){
-        String lowerCaseError = errorMessage.toLowerCase();
+    public Error getErrorFromErrorMessage(String errorMessage){
         Error error;
-        if (lowerCaseError.contains("timed out")){
+        if (errorMessage.equals("Connection timed out") ||
+          errorMessage.equals("Timed out waiting for a response")) {
             error = Error.TIME_OUT;
         }
-        else if (lowerCaseError.contains("connection")){
+        else if (errorMessage.equals("Connection reset by peer") ||
+          errorMessage.equals("Connection refused") ||
+          errorMessage.equals("Connection reset")) {
             error = Error.CONNECTION_ERROR;
         }
-        else if (lowerCaseError.contains("skipped")){
+        else if (errorMessage.equals("conversation with loopback address skipped") ||
+          errorMessage.equals("conversation with site local address skipped") ||
+          errorMessage.equals("conversation with IPv6 SMTP host skipped") ||
+          errorMessage.equals("conversation with IPv4 SMTP host skipped")) {
             error = Error.SKIPPED;
         }
-        else if (lowerCaseError.contains("notafter") ||
-          lowerCaseError.contains("tls") ||
-          lowerCaseError.contains("ssl") ||
-          lowerCaseError.contains("certificate") ||
-          lowerCaseError.contains("handshake message") ||
-          lowerCaseError.contains("unable to find valid certification path")
-        ){
-            error = Error.CERTIFICATE_ERROR;
+        else if (errorMessage.equals("NotAfter") ||
+          errorMessage.equals("Not an SSL/TLS record") ||
+          errorMessage.equals("Usage constraint TLSServer check failed") ||
+          errorMessage.equals("Empty issuer DN not allowed in X509Certificates") ||
+          errorMessage.equals("Handshake message size exceeds maximum") ||
+          errorMessage.matches("handshake timed out after .*") ||
+          errorMessage.equals("unable to find valid certification path to requested target") ||
+          errorMessage.matches("The server selected protocol version .* is not accepted by client preferences .*") ||
+          errorMessage.equals("no more data allowed for version 1 certificate") ||
+          errorMessage.matches("X.509 Certificate is incomplete:.*")) {
+            error = Error.TLS_ERROR;
         }
-        else if (lowerCaseError.contains("unreachable")){
+        else if (errorMessage.equals("No route to host") ||
+          errorMessage.equals("Network is unreachable") ||
+          errorMessage.equals("Host is unreachable") ||
+          errorMessage.equals("Network unreachable")){
             error = Error.HOST_UNREACHABLE;
         }
-        else if (lowerCaseError.contains("channel")){
+        else if (errorMessage.equals("ClosedChannelException") ||
+          errorMessage.equals("channel was closed while waiting for response")){
             error = Error.CHANNEL_CLOSED;
         }
         else {

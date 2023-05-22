@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
+import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.hubspot.smtp.client.*;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -140,6 +141,38 @@ class NioSmtpConversationTest {
         String errorMessage = "Received fatal alert: handshake_failure";
         String cleanedErrorMessage = conversation.cleanErrorMessage(errorMessage);
         assertThat(cleanedErrorMessage).isEqualTo("Received fatal alert");
+    }
+
+    @Test
+    public void getErrorFromErrorMessageTimedOutWaitingForResponse(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "Timed out waiting for a response";
+        Error error = conversation.getErrorFromErrorMessage(errorMessage);
+        assertThat(error).isEqualTo(Error.TIME_OUT);
+    }
+
+    @Test
+    public void getErrorFromErrorMessageNotAfter(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "NotAfter";
+        Error error = conversation.getErrorFromErrorMessage(errorMessage);
+        assertThat(error).isEqualTo(Error.TLS_ERROR);
+    }
+
+    @Test
+    public void getErrorFromErrorMessageHostIsUnreachable(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "Host is unreachable";
+        Error error = conversation.getErrorFromErrorMessage(errorMessage);
+        assertThat(error).isEqualTo(Error.HOST_UNREACHABLE);
+    }
+
+    @Test
+    public void getErrorFromErrorMessageConnectionRefused(){
+        NioSmtpConversation conversation = makeCrawl();
+        String errorMessage = "Connection refused";
+        Error error = conversation.getErrorFromErrorMessage(errorMessage);
+        assertThat(error).isEqualTo(Error.CONNECTION_ERROR);
     }
 
     private CompletableFuture<SmtpClientResponse> response(SmtpSession smtpSession, int reponseCode, CharSequence... details) {
