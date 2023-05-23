@@ -6,6 +6,8 @@ import javax.persistence.*;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,6 +30,7 @@ public class CrawlResultEntity {
   private String hostName;
 
   @Column(name = "domain_name")
+  @Convert(converter = ULabelConverter.class)
   private String domainName;
 
   @Column(name = "crawl_timestamp")

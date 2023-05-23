@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.dispatcher.persistence;
 
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
-import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +29,7 @@ public class DispatcherEvent implements Persistable<UUID> {
   UUID visitId;
 
   @Column(name = "domain_name")
+  @Convert(converter = ULabelConverter.class)
   String domainName;
 
   @ElementCollection
@@ -50,9 +51,9 @@ public class DispatcherEvent implements Persistable<UUID> {
   }
 
   public DispatcherEvent(UUID visitId, String domainName, List<String> labels) {
-      this.visitId = visitId;
-      this.domainName = IDN2008.toUnicode(domainName);
-      this.labels = labels;
+    this.visitId = visitId;
+    this.domainName = domainName;
+    this.labels = labels;
     this.requestTimestamp = ZonedDateTime.now();
     this.acks = new HashMap<>();
   }

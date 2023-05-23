@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.content.persistence;
 
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
 import be.dnsbelgium.mercator.content.dto.Status;
 import lombok.Getter;
@@ -9,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
 import javax.persistence.*;
-
-import be.dnsbelgium.mercator.common.messaging.idn.IDN2008;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -27,8 +26,11 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
   private Long id;
   @Column(name = "visit_id")
   private UUID visitId;
+
   @Column(name = "domain_name")
+  @Convert(converter = ULabelConverter.class)
   private String domainName;
+
   @Column(name = "url")
   private String url;
   @Column(name = "ok")
@@ -72,7 +74,7 @@ public class ContentCrawlResult extends AbstractAggregateRoot<ContentCrawlResult
 
   public ContentCrawlResult(UUID visitId, String domainName, String url, boolean ok, String problem, int retries, Status htmlStatus, Status screenshotStatus) {
     this.visitId = visitId;
-    this.domainName = IDN2008.toUnicode(domainName);
+    this.domainName = domainName;
     this.url = url;
     this.ok = ok;
     this.problem = problem;
