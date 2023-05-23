@@ -52,7 +52,7 @@ public class SmtpCrawlResult {
     private static final Logger logger = getLogger(SmtpCrawlResult.class);
 
     public SmtpCrawlResult(UUID visitId, String domainName) {
-        logger.debug("Creating new SmtpCrawlResult with visitId={} and domainName={}", visitId, IDN.toASCII(domainName));
+        logger.debug("Creating new SmtpCrawlResult with visitId={} and domainName={}", visitId, domainName);
         this.visitId = visitId;
         this.domainName = domainName;
         this.crawlTimestamp = ZonedDateTime.now();
