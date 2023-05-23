@@ -5,7 +5,6 @@
 //    /*
 //     * need privileges to create a new column, read and update the db
 //     */
-//    //    TODO har, html & screenshot key still have old label
 //
 ////  content_crawler.content_crawl_result, dispatcher.dispatcher_event, dns_crawler.request, smpt_crawler.smpt_crawl_result, vat_crawler.vat_crawl_result, feature_extraction.html_features
 //    static String tableName = "content_crawler.content_crawl_result";
@@ -42,6 +41,7 @@
 //                String unicode = convertPunycodeToUnicode(punycode);
 //                System.out.println("unicode: "+unicode);
 //                updateUnicodeValue(connection, punycode, unicode, tableName);
+// //             updateUnicodeValueDomainName(connection, punycode, unicode, tableName);
 //            }
 //
 //            resultSet.close();
@@ -55,6 +55,7 @@
 //        return IDN2008.toUnicode(punycode);
 //    }
 //
+// // safe way make separate column
 //    private static void updateUnicodeValue(Connection connection, String punycode, String unicode, String tableName) throws SQLException {
 //        String updateQuery = String.format("UPDATE %s SET converted_domain_names = ? WHERE domain_name = ?;",tableName);
 //        PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
@@ -68,4 +69,18 @@
 //        CreateNewColumnConvertedDomainNames(tableName);
 //        GetALabelDomainNamesAndConvert(tableName);
 //    }
+//
+// // direct way alter
+// //   private static void updateUnicodeValueDomainName(Connection connection, String punycode, String unicode, String tableName) throws SQLException {
+// //       String updateQuery = String.format("UPDATE %s SET domain_name = ? WHERE domain_name = ?;",tableName);
+// //       PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+// //       preparedStatement.setString(1, unicode);
+// //       preparedStatement.setString(2, punycode);
+// //       preparedStatement.executeUpdate();
+// //       preparedStatement.close();
+//    }
+
+// //    public static void main(String[] args){
+// //       GetALabelDomainNamesAndConvert(tableName);
+// //   }
 //}
