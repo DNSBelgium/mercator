@@ -24,7 +24,7 @@ public class ULabelConverter implements AttributeConverter<String, String> {
         if (dbData == null) {
             return null;
         }
-        return toUnicode(dbData);
+        return dbData;
     }
 
     private String toUnicode(String input) {

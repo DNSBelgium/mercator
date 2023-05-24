@@ -35,7 +35,7 @@ public class UlabelConverterTest {
     @Test
     void convertToEntityAttribute_withValidDbData_shouldReturnUnicodeString() {
         String dbData = "xn--dnsbelgi-01a.be";
-        String expectedUnicode = "dnsbelgië.be";
+        String expectedUnicode = "xn--dnsbelgi-01a.be";
         assertEquals(expectedUnicode, converter.convertToEntityAttribute(dbData));
     }
 
