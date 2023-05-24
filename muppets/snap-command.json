@@ -5,7 +5,7 @@
   "url": "http://${domain}",
   "referer" : "https://google.com/",
   "screenshotOptions": {
-    "type": "png",
+    "type": "webp",
     "fullPage": true,
     "omitBackground": false,
     "encoding": "binary"

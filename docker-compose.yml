@@ -60,8 +60,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=secretKey
       - AWS_REGION=eu-west-1
       - SERVER_PORT=8080
-      - MAX_CONTENT_LENGTH=100000
-      - PNG_THRESHOLD=10000000
+      - MAX_CONTENT_LENGTH=10485760
     depends_on:
       localstack:
         condition: service_healthy
