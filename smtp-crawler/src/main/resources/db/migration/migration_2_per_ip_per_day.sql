@@ -1,12 +1,12 @@
-drop table smtp_crawler.per_ip_per_day;
+--drop table smtp_crawler.per_ip_per_day;
 
-create table smtp_crawler.per_ip_per_day
+create table per_ip_per_day
 as
 with per_day
          as (select
                  s.*
                   , date_trunc('day', timestamp) as day
-             from smtp_crawler.smtp_data s
+             from smtp_data s
     )
         , data as (
     select pd.*

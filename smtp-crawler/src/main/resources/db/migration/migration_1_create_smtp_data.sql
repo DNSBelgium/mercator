@@ -1,13 +1,15 @@
-drop table smtp_crawler.smtp_data;
+--drop table smtp_crawler.smtp_data;
 
-create table smtp_crawler.ids_per_day as
-select  min(id) min_id, max(id) max_id, count(1) rowcount, date_trunc('day', crawl_timestamp) as day
-from smtp_crawler.smtp_crawl_result
-group by date_trunc('day', crawl_timestamp);
-
-create table smtp_crawler.smtp_data
+/*
+create table smtp_crawl_result_per_month
 as
-with min_max as (select min(min_id) as min_id, max(max_id) as max_id from smtp_crawler.ids_per_day where day > '2021-06-29 00:00:00.000000 +00:00')
+select  min(id) min_id, max(id) max_id, count(1) rowcount, date_trunc('month', crawl_timestamp) as month
+from smtp_crawler.smtp_crawl_result
+group by date_trunc('month', crawl_timestamp);
+*/
+create table smtp_data
+as
+with min_max as (select min(min_id) as min_id, max(max_id) as max_id from smtp_crawl_result_per_month)--where month = '2021-06-29 00:00:00.000000 +00:00')
     , conversations as (select
                            id
                             , domain_name

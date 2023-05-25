@@ -1,6 +1,6 @@
-delete from smtp_crawler.smtp_visit;
+--delete from smtp_crawler.smtp_visit;
 
-insert into smtp_crawler.smtp_visit(visit_id, domain_name, timestamp, num_conversations, crawl_status)
+insert into smtp_visit(visit_id, domain_name, timestamp, num_conversations, crawl_status)
 select
     d.visit_id, d.domain_name, d.timestamp, count(1)
      , case
@@ -15,11 +15,11 @@ select
            when crawl_status = 15 then 'NO_IP_ADDRESS'
            when crawl_status = 99 then 'INTERNAL_ERROR'
     end as crawl_status
-from smtp_crawler.smtp_data d
+from smtp_data d
 group by d.visit_id, d.domain_name, d.timestamp, d.crawl_status
 ;
-
-insert into smtp_crawler.smtp_visit(visit_id, domain_name, timestamp, num_conversations, crawl_status)
+---
+insert into smtp_visit(visit_id, domain_name, timestamp, num_conversations, crawl_status)
 select
     d.visit_id, d.domain_name, d.crawl_timestamp, 0 as num_conversations
      , case

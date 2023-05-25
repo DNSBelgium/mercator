@@ -1,6 +1,6 @@
-delete from smtp_crawler.smtp_host;
+--delete from smtp_crawler.smtp_host;
 
-insert into smtp_crawler.smtp_host(visit_id, from_mx, host_name, priority, conversation)
+insert into smtp_host(visit_id, from_mx, host_name, priority, conversation)
 select
     d.visit_id
      ,    case
@@ -11,6 +11,6 @@ select
      , d.hostname
      , d.priority
      , c.id as conversation
-from smtp_crawler.per_ip_per_day d
-    join smtp_crawler.smtp_conversation c on c.ip = d.ip and d.min_timestamp_per_ip_per_day = c.timestamp
+from per_ip_per_day d
+    join smtp_conversation c on c.ip = d.ip and d.min_timestamp_per_ip_per_day = c.timestamp
 ;
