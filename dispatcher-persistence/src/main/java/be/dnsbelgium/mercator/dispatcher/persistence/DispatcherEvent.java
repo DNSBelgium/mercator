@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dispatcher.persistence;
 
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.DispatcherRequest;
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,7 @@ public class DispatcherEvent implements Persistable<UUID> {
   UUID visitId;
 
   @Column(name = "domain_name")
+  @Convert(converter = ULabelConverter.class)
   String domainName;
 
   @ElementCollection

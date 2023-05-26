@@ -15,6 +15,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     // JSONB support
     implementation 'com.vladmihalcea:hibernate-types-52:2.9.7'
+    implementation project(':common-messaging')
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'

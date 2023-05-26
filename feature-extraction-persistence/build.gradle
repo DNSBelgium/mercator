@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation project(':common-messaging')
 
   // Lombok
   compileOnly 'org.projectlombok:lombok'
