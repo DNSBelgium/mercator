@@ -1,14 +1,13 @@
 import puppeteer from "puppeteer";
 import * as path from "path";
-import { URL } from "url";
-import { v4 as uuid } from "uuid";
+import {URL} from "url";
+import {v4 as uuid} from "uuid";
 import treekill from "tree-kill";
-import { publicIpv4, publicIpv6 } from "public-ip";
-import { config } from './config.js';
+import {publicIpv4, publicIpv6} from "public-ip";
 
 import * as metrics from "./metrics.js";
 
-import { harFromMessages } from "chrome-har";
+import {harFromMessages} from "chrome-har";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
@@ -233,15 +232,14 @@ function saveHar(params: ScraperParams, events: Event[]) {
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page): Promise<Buffer> {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-        params.screenshotOptions.type = "webp";
+        params.screenshotOptions.type = params.screenshotOptions.type || "webp";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
-        params.screenshotOptions.encoding = "binary";
-        params.screenshotOptions.quality = 100;
+        params.screenshotOptions.encoding = params.screenshotOptions.encoding || "binary";
+        params.screenshotOptions.quality = params.screenshotOptions.quality || 100;
         return page.screenshot(params.screenshotOptions).then(screenshot => {
             // Because we use encoding binary, this will never be a string
-            const screenshot_buffer = screenshot as Buffer;
-                return screenshot_buffer;
+            return screenshot as Buffer;
         });
     } else {
         return Promise.reject("Not taking a screenshot");

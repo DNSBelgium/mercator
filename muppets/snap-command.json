@@ -8,7 +8,8 @@
     "type": "webp",
     "fullPage": true,
     "omitBackground": false,
-    "encoding": "binary"
+    "encoding": "binary",
+    "quality": 100
   },
   "browserOptions": {
     "headless": true,
@@ -18,4 +19,3 @@
     }
   }
 }
-
