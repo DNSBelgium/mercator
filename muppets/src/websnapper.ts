@@ -72,7 +72,7 @@ export class S3FileUploader implements IFileUploader {
             Bucket: config.s3_bucket_name,
             Key: prefix + "/" + filename,
             Body: data,
-            ContentType: contentType
+            // ContentType: contentType
         };
 
         console.log("Uploading item [%s]", params.Key);
