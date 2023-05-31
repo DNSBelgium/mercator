@@ -1,4 +1,5 @@
 package be.dnsbelgium.mercator.content.persistence;
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
 import be.dnsbelgium.mercator.content.dto.WappalyzerResolution;
 import be.dnsbelgium.mercator.content.dto.wappalyzer.WappalyzerReport;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
@@ -29,7 +30,7 @@ public class WappalyzerResult extends AbstractAggregateRoot<WappalyzerResult> {
   @Column(name = "visit_id")
   private UUID visitId;
   @Column(name = "domain_name")
-  @Convert(converter = StatusJpaConverter.class)
+  @Convert(converter = ULabelConverter.class)
   private String domainName;
   @Column(name = "url")
   private String url;
