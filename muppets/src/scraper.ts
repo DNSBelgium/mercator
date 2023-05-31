@@ -68,6 +68,7 @@ export interface ScraperResult {
     htmlSkipped: boolean;
     screenshotSkipped: boolean;
     harSkipped: boolean;
+    screenshotType: string;
 }
 
 let browser: puppeteer.Browser;
@@ -280,6 +281,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
+        screenshotType: params.screenshotOptions.type ?? "webp",
         harSkipped: false,
         screenshotSkipped: false,
         htmlSkipped: false,
@@ -334,7 +336,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ]);
 
         console.log(result);
-
+        result.screenshotType = params.screenshotOptions.type ?? "webp";
         await page.close();
 
         console.log("Snap finished");

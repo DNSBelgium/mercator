@@ -72,7 +72,7 @@ export class S3FileUploader implements IFileUploader {
             Bucket: config.s3_bucket_name,
             Key: prefix + "/" + filename,
             Body: data,
-            // ContentType: contentType
+            ContentType: contentType
         };
 
         console.log("Uploading item [%s]", params.Key);
@@ -100,7 +100,7 @@ export async function uploadScrapedData(result: scraper.ScraperResult, uploader:
     if (result.screenshotData !== undefined) {
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length / 1024) / 1024);
         if (result.screenshotData.length < config.max_content_length) {
-            s3UploadResults.push(uploader.upload(result.screenshotData, "screenshot.webp", prefix, "screenshot", "image/webp").then(key => result.screenshotFile = key).catch((err) => {
+            s3UploadResults.push(uploader.upload(result.screenshotData, "screenshot." + result.screenshotType, prefix, "screenshot", "image/" + result.screenshotType).then(key => result.screenshotFile = key).catch((err) => {
                 result.errors.push(err.message);
                 return Promise.reject()
             }));
