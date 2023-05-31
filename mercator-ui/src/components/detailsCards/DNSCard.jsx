@@ -2,7 +2,8 @@ import {useEffect, useState} from "react";
 import {Card, Col, Row, Table} from "react-bootstrap";
 import moment from "moment";
 import api from "../../services/api";
-import { checkObjectIsFalsy, renderDataBoolean } from "../../services/Util";
+import {checkObjectIsFalsy, renderDataBoolean} from "../../services/Util";
+import DnsRequestDataTable from "../DnsRequestTableBody";
 
 const DNSCard = (props) => {
     const visitId = props.visitId
@@ -138,83 +139,61 @@ const DNSCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
+
         if(checkObjectIsFalsy(data)) {
             return (<Card.Body>No data for this visit.</Card.Body>)
         }
 
         return (
             <Card.Body className="dns-table">
+
                 <Table
                     size="sm"
                     borderless
                 >
-                    <tbody className="text-left">
-                        
-                        <tr>
-                            <th scope="row">
-                                rcode
-                            </th>
-                            <td>
-                                { data[0].rcode }
-                            </td>
-                        </tr>
 
-                        <tr>
-                            <th scope="row">
-                                OK
-                            </th>
-                            {
-                                renderDataBoolean(data[0].ok) // td element
-                            }
-                        </tr>                            
-
-                        <tr>
-                            <th scope="row">
-                                Problem
-                            </th>
-                            <td className="defined-error">
-                                { data[0].problem }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th scope="row">
-                                Crawl timestamp
-                            </th>
-                            <td>
-                                { data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : '' }
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th scope='row'>
-                                Record data and Geo IP's
-                            </th>
-                            <td>
-                                {
-                                    checkDataHasResponses(data) ? ( // Don't render 'More Info' button if there are is no response data.
-                                        <button
-                                            className="more-info"
-                                            onClick={() => setOpenRecords(openRecords => !openRecords)} // Toggle openRecords boolean
-                                        > 
-                                            More info
-                                        </button>
-                                    ) : (
-                                        <></>
-                                    )
-                                }
-                            </td>
-                        </tr>
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            prefix
+                        </th>
+                        <th>
+                            result
+                        </th>
+                        <th>
+                            record type
+                        </th>
+                        <th>
+                            ttl
+                        </th>
+                        <th>
+                            record data
+                        </th>
+                        <th>
+                            country
+                        </th>
+                        <th>
+                            adn
+                        </th>
+                        <th>
+                            adn organisation
+                        </th>
+                        <th>
+                            ip
+                        </th>
+                        <th>
+                            ip version
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {data.map((item, index) => (
+                        <DnsRequestDataTable request={item} index={index}>
+                        </DnsRequestDataTable>
+                    ))}
                     </tbody>
                 </Table>
 
-                {
-                    openRecords && ( // if openRecords === true, render
-                        <div>
-                            { renderRecords() }
-                        </div>
-                    )
-                }
             </Card.Body>
         );
     }
