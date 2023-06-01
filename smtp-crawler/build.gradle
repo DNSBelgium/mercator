@@ -30,6 +30,7 @@ dependencies {
 
     implementation 'org.springframework.integration:spring-integration-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // DB
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -57,6 +58,8 @@ dependencies {
     implementation 'com.github.ben-manes.caffeine:caffeine:2.8.2'
     
     implementation 'com.maxmind.geoip2:geoip2:2.12.0'
+
+    implementation 'redis.clients:jedis:4.3.1'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
     implementation 'org.apache.commons:commons-compress:1.21'

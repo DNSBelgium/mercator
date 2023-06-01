@@ -208,6 +208,8 @@ services:
         condition: service_healthy
       db:
         condition: service_started
+      cache:
+        condition: service_started
     healthcheck:
       test: "rm -f health && wget -q localhost:8083/actuator/health && grep UP health > /dev/null"
       interval: 5s
@@ -340,3 +342,7 @@ services:
     volumes:
       - ./muppets/nginx.dev.conf:/etc/nginx/nginx.conf:ro
 
+  cache:
+    image: redis:7.0.11
+    ports:
+      - "6379:6379"

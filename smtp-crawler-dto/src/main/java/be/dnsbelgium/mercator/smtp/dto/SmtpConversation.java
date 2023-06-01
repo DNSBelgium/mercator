@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
@@ -63,6 +64,7 @@ public class SmtpConversation {
   // SMTP software version detected from banner (wild guess, easy to spoof)
   private String softwareVersion;
 
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ")
   private ZonedDateTime timestamp = ZonedDateTime.now();
 
   private final static String NULL_BYTE = "\u0000";
