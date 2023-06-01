@@ -24,7 +24,6 @@ export default function DnsResponseDataTable({request, response, first}) {
         return totalRows;
     }
 
-
     function firstrow(resp) {
         return (
             <>
@@ -77,7 +76,6 @@ export default function DnsResponseDataTable({request, response, first}) {
                 ))}
             </>)
     }
-
-    return <>{response ? (first ? firstrow(response) : otherrow(response)) : null}</>;
+    return <>{response ? ((first === 0) ? firstrow(response) : otherrow(response)) : null}</>;
 }
 

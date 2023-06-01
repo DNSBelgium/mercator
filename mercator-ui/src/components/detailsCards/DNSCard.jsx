@@ -149,10 +149,9 @@ const DNSCard = (props) => {
 
                 <Table
                     size="sm"
-                    borderless
                 >
 
-                    <thead class="thead-dark">
+                    <thead>
                     <tr>
                         <th>
                             prefix
