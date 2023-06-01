@@ -23,7 +23,7 @@ public class MuppetsRequestMessage implements RequestMessage {
 
   @Data
   static class ScreenshotOptions {
-    ScreenshotType type = ScreenshotType.png;
+    ScreenshotType type = ScreenshotType.webp;
     Integer quality;
     Boolean fullPage;
     BoundingBox clip;
