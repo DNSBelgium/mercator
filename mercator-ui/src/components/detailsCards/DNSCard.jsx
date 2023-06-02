@@ -28,16 +28,6 @@ const DNSCard = (props) => {
         fetchData();
     }, [visitId]);
 
-    let distinctPrefixes = [];
-    for (let i = 0; i < data.length; i++) {
-
-        if (!distinctPrefixes.includes(data[i].prefix) && data[i].responses.length >= 1) {
-            distinctPrefixes.push(data[i].prefix);
-        }
-        console.log(distinctPrefixes)
-    }
-
-
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
 
