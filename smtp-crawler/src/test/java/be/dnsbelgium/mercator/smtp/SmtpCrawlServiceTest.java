@@ -7,6 +7,7 @@ import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
+import be.dnsbelgium.mercator.test.RedisContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -47,6 +48,8 @@ class SmtpCrawlServiceTest {
 
   @Container
   static LocalstackContainer localstack = new LocalstackContainer();
+  @Container
+  static RedisContainer redisContainer = new RedisContainer();
 
   @DynamicPropertySource
   static void datasourceProperties(DynamicPropertyRegistry registry) {

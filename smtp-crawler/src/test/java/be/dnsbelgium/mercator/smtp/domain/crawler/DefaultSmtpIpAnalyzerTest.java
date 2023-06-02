@@ -3,11 +3,14 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
+import be.dnsbelgium.mercator.test.RedisContainer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.net.InetAddress;
 import java.util.Optional;
@@ -24,10 +27,15 @@ class DefaultSmtpIpAnalyzerTest {
     private final GeoIPService geoIPService = mock(GeoIPService.class);
     private SmtpIpAnalyzer analyzer;
     private final SmtpConversationFactory conversationFactory = mock(SmtpConversationFactory.class);
+    private static final RedisContainer redisContainer = new RedisContainer();
 
     @BeforeEach
     public void init() {
-        analyzer = new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, geoIPService, 10, 20, 1);
+        analyzer = new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, geoIPService,  1, redisContainer.getHost(), redisContainer.getPort());
+        JedisPool jedisPool = new JedisPool(redisContainer.getHost(), redisContainer.getPort());
+        try (Jedis jedis = jedisPool.getResource()){
+            jedis.flushDB();
+        }
     }
 
     @Test
@@ -52,8 +60,8 @@ class DefaultSmtpIpAnalyzerTest {
         logger.info("two   = {}", two);
         logger.info("three = {}", three);
 
-        assertThat(one).isSameAs(three);
-        assertThat(one).isNotSameAs(two);
+        assertThat(one).isEqualTo(three);
+        assertThat(one).isNotEqualTo(two);
 
         verify(conversation1, times(1)).talk();
         verify(conversation2, times(1)).talk();
