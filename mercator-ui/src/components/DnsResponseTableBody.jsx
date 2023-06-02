@@ -25,9 +25,12 @@ export default function DnsResponseDataTable({request, response, first}) {
     }
 
     function firstrow(resp) {
+        // const renderPrefix = shouldRenderPrefix(request);
+        // console.log(renderPrefix)
         return (
             <>
                 <tr>
+
                     <td rowSpan={countRowsRequest(request)}>
                         {request.prefix}
                     </td>

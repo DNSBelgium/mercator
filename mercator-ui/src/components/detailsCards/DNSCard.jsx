@@ -1,9 +1,9 @@
 import {useEffect, useState} from "react";
 import {Card, Col, Row, Table} from "react-bootstrap";
-import moment from "moment";
 import api from "../../services/api";
-import {checkObjectIsFalsy, renderDataBoolean} from "../../services/Util";
+import {checkObjectIsFalsy} from "../../services/Util";
 import DnsRequestDataTable from "../DnsRequestTableBody";
+import moment from "moment";
 
 const DNSCard = (props) => {
     const visitId = props.visitId
@@ -22,120 +22,21 @@ const DNSCard = (props) => {
                 })
                 .catch((ex) => {
                     console.log(ex);
-                })            
+                })
         };
-        
+
         fetchData();
     }, [visitId]);
 
-    const {openRecords, setOpenRecords} = props;
+    let distinctPrefixes = [];
+    for (let i = 0; i < data.length; i++) {
 
-    // Handles rendering of data[x].responses[x].responseGeoIps list.
-    const renderGeoIps = (geoIpList) => { // Inside li element.
-        if(!checkObjectIsFalsy(geoIpList)) {
-            return(
-                <div className="geo-ip-data">
-                    {
-                        geoIpList.map((geoIp, index) => {
-                            return (
-                                <p key={index}>
-                                    IPv: { geoIp.ipVersion } <br/>
-                                    Country: { geoIp.country } <br/>
-                                    ASN: { geoIp.asn } <br/>
-                                    ASN Organisation: { geoIp.asnOrganisation }
-                                </p>
-                            )
-                        })
-                    }
-                </div>
-            );
+        if (!distinctPrefixes.includes(data[i].prefix) && data[i].responses.length >= 1) {
+            distinctPrefixes.push(data[i].prefix);
         }
+        console.log(distinctPrefixes)
     }
 
-    // Define some logic for incoming data[x]'s response and responseGeoIps data.
-    const renderResponses = (request) => { // Inside ul element.
-        return(
-            <>
-                {
-                    request.responses.map((response, index) => {
-                        return(
-                            <li key={index}>
-                                { response.recordData }
-                                <br/>
-                                TTL: { response.ttl }
-                                {
-                                    renderGeoIps(response.responseGeoIps) 
-                                } 
-                            </li>
-                        )
-                    })
-                }
-            </>
-        );
-    }
-
-    // Handles rendering of a prefix and its corresponding recordTypes and recordData from data[x].
-    const renderDataPerPrefix = (prefix) => { // Inside section element.
-        return(
-            data.map((request, index) => {
-                return(
-                    <div key={index}>
-                        {
-                            request.prefix === prefix && request.responses.length >= 1 && (
-                                <div className="prefix-data-div">
-                                    <p>
-                                        { request.recordType }
-                                    </p>
-                                    
-                                    <ul className="mb-3"> 
-                                        { renderResponses(request) }
-                                    </ul>
-                                </div>
-                            )
-                        }
-                    </div>
-                );
-            })
-        );
-    }
-
-    // Handles creating separate divs per unique prefix from data[x].prefix
-    const renderRecords = () => { // Inside div element
-        let distinctPrefixes = [];
-        for(let i = 0; i < data.length; i++) {
-
-            // If a new prefix is found and it has responses then add it to the array.
-            // This is to 'filter out' empty data.
-            if(!distinctPrefixes.includes(data[i].prefix) && data[i].responses.length >= 1) {
-                    distinctPrefixes.push(data[i].prefix);
-            }
-        }
-
-        return(
-            distinctPrefixes.map((prefix, index) => {
-                return(
-                    <div 
-                        key={index} 
-                        className="ml-3"
-                        id="prefix-div"
-                    >
-                        <span>{ prefix }</span>
-
-                        <section>
-                            { renderDataPerPrefix(prefix) }
-                        </section>
-                    </div>
-                );
-            })
-        );
-    }
-
-    const checkDataHasResponses = (data) => {
-        for(let i = 0; i < data.length; i++) {
-            if (data[i].responses.length >= 1) return true;
-        }
-        return false;
-    }
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
@@ -146,11 +47,13 @@ const DNSCard = (props) => {
 
         return (
             <Card.Body className="dns-table">
-
+                <br/>
+                <h5>Crawl time stamp
+                    : {data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</h5>
+                <br/>
                 <Table
                     size="sm"
                 >
-
                     <thead>
                     <tr>
                         <th>
@@ -186,13 +89,12 @@ const DNSCard = (props) => {
                     </tr>
                     </thead>
                     <tbody>
-                    {data.map((item, index) => (
-                        <DnsRequestDataTable request={item} index={index}>
+                    {data.map((request, index) => (
+                        <DnsRequestDataTable request={request} index={index}>
                         </DnsRequestDataTable>
                     ))}
                     </tbody>
                 </Table>
-
             </Card.Body>
         );
     }
