@@ -6,6 +6,8 @@ import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import redis.clients.jedis.JedisPool;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -25,6 +28,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private final SmtpConversationFactory conversationFactory;
+
+  /* I could not get the @Cacheable working so using an explicit cache instead, which allows us to send metrics to micrometer */
+  private final Cache<InetAddress, SmtpConversation> cache;
   private final MeterRegistry meterRegistry;
   private final GeoIPService geoIPService;
   private final JedisPool jedisPool;
@@ -37,14 +43,23 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
       MeterRegistry meterRegistry,
       SmtpConversationFactory conversationFactory,
       GeoIPService geoIPService,
-      @Value("${smtp.crawler.ip.cache.ttl.hours:24}") int ttlHours,
-      @Value("${smtp.crawler.ip.cache.host:cache}") String cacheHost,
-      @Value("${smtp.crawler.ip.cache.port:6379}") int cachePort) {
+      @Value("${smtp.crawler.ip.cache.size.initial:2000}") int initialCacheSize,
+      @Value("${smtp.crawler.ip.cache.size.max:50000}") int maxCacheSize,
+      @Value("${smtp.crawler.ip.cache.ttl.hours:24}") int ttlHours) {
     this.conversationFactory = conversationFactory;
     this.meterRegistry = meterRegistry;
     this.geoIPService = geoIPService;
-    logger.info("ttl={} hours", ttlHours);
-    this.jedisPool = new JedisPool(cacheHost, cachePort);
+    logger.info("initialCacheSize={} maxCacheSize={} ttl={} hours", initialCacheSize, maxCacheSize, ttlHours);
+    if (maxCacheSize == 0) {
+      logger.warn("maxCacheSize=0 => caching is actually disabled!!");
+    }
+    this.cache = Caffeine.newBuilder()
+        .initialCapacity(initialCacheSize)
+        .maximumSize(maxCacheSize)
+        .expireAfterWrite(ttlHours, TimeUnit.HOURS)
+        .recordStats()
+        .build();
+    this.jedisPool = new JedisPool("cache", 6379);
     this.ttlHours = ttlHours;
   }
 
@@ -68,7 +83,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
         } catch (IOException e) {
           e.printStackTrace();
         }
-        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, jedis.dbSize());
+        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
       } else {
         try {
           smtpConversation = objectMapper.readValue(jedisResponse, SmtpConversation.class);

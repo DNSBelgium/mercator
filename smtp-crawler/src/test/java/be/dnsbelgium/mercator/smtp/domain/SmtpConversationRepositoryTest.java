@@ -39,6 +39,8 @@ public class SmtpConversationRepositoryTest {
   ApplicationContext context;
   @Autowired
   JdbcTemplate jdbcTemplate;
+  @Value("${smtp.crawler.recently}")
+  Duration recently;
 
   private static final Logger logger = getLogger(SmtpConversationRepositoryTest.class);
 
@@ -48,6 +50,47 @@ public class SmtpConversationRepositoryTest {
   @DynamicPropertySource
   static void datasourceProperties(DynamicPropertyRegistry registry) {
     container.setDatasourceProperties(registry, "smtp_crawler");
+  }
+
+  @Test
+  void findRecentCrawlByIpFail() {
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("5.7.146.249");
+    conversation.setConnectReplyCode(220);
+    conversation.setIpVersion(4);
+    conversation.setBanner("my banner");
+    conversation.setConnectionTimeMs(123);
+    conversation.setStartTlsOk(false);
+    conversation.setCountry("Jamaica");
+    conversation.setAsnOrganisation("Happy Green grass");
+    conversation.setAsn(654L);
+    conversation.setTimestamp(ZonedDateTime.now().minusDays(5));
+    repository.save(conversation);
+    ZonedDateTime timestamp = ZonedDateTime.now().minus(recently);
+    Optional<SmtpConversationEntity> conversationEntity = repository.findRecentCrawlByIp("5.7.146.249", timestamp);
+    assertThat(conversationEntity.isPresent()).isEqualTo(false);
+  }
+
+  @Test
+  void findRecentCrawlByIp() {
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("1.2.3.4");
+    conversation.setConnectReplyCode(220);
+    conversation.setIpVersion(4);
+    conversation.setBanner("my banner");
+    conversation.setConnectionTimeMs(123);
+    conversation.setStartTlsOk(false);
+    conversation.setCountry("Jamaica");
+    conversation.setAsnOrganisation("Happy Green grass");
+    conversation.setAsn(654L);
+    repository.save(conversation);
+    ZonedDateTime timestamp = ZonedDateTime.now().minus(recently);
+    Optional<SmtpConversationEntity> hostEntity = repository.findRecentCrawlByIp("1.2.3.4", timestamp);
+    assertThat(hostEntity.isPresent()).isEqualTo(true);
+    SmtpConversationEntity entity = hostEntity.get();
+    assertThat(entity.getIp()).isEqualTo("1.2.3.4");
+    assertThat(entity.getBanner()).isEqualTo("my banner");
+    assertThat(entity.getTimestamp()).isAfter(timestamp);
   }
 
   @Test
