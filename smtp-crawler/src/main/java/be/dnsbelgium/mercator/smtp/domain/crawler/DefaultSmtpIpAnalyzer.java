@@ -3,9 +3,6 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -14,10 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +27,6 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   private final Cache<InetAddress, SmtpConversation> cache;
   private final MeterRegistry meterRegistry;
   private final GeoIPService geoIPService;
-  private final JedisPool jedisPool;
-  private final int ttlHours;
 
   private static final Logger logger = getLogger(DefaultSmtpIpAnalyzer.class);
 
@@ -59,39 +51,20 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
         .expireAfterWrite(ttlHours, TimeUnit.HOURS)
         .recordStats()
         .build();
-    this.jedisPool = new JedisPool("cache", 6379);
-    this.ttlHours = ttlHours;
   }
 
   @Override
   public SmtpConversation crawl(InetAddress ip) {
-    SmtpConversation smtpConversation = null;
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule()).disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-    try (Jedis jedis = jedisPool.getResource()){
-      String jedisResponse = jedis.get(ip.getHostAddress());
-      logger.debug("cache for {} = {}", ip, jedisResponse);
-      if (jedisResponse == null) {
-        meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
-        smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
-        geoIP(smtpConversation);
-        try {
-          String conversation = objectMapper.writeValueAsString(smtpConversation);
-          jedis.set(ip.getHostAddress(), conversation);
-          int ttlSeconds = ttlHours * 60 * 60;
-          jedis.expire(ip.getHostAddress(), ttlSeconds);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
-      } else {
-        try {
-          smtpConversation = objectMapper.readValue(jedisResponse, SmtpConversation.class);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-        meterRegistry.counter(MetricName.COUNTER_CACHE_HITS).increment();
-      }
+    SmtpConversation smtpConversation = cache.getIfPresent(ip);
+    logger.debug("cache for {} = {}", ip, smtpConversation);
+    if (smtpConversation == null) {
+      meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
+      smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
+      geoIP(smtpConversation);
+      cache.put(ip, smtpConversation);
+      meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
+    } else {
+      meterRegistry.counter(MetricName.COUNTER_CACHE_HITS).increment();
     }
     return smtpConversation;
   }
