@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -27,9 +29,15 @@ public class HtmlFeatures {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   public Long id;
 
-  @Column(name = "visit_id") public UUID visitId;
-  @Column(name = "crawl_timestamp") public ZonedDateTime crawlTimestamp;
-  @Column(name = "domain_name") public String domainName;
+  @Column(name = "visit_id")
+  public UUID visitId;
+  @Column(name = "crawl_timestamp")
+  public ZonedDateTime crawlTimestamp;
+
+  @Column(name = "domain_name")
+  @Convert(converter = ULabelConverter.class)
+  public String domainName;
+
   public String url;
 
   // using public fields and the same names as the python code did

@@ -37,7 +37,7 @@ describe('Scraper Tests', function () {
         screenshotOptions: {
             fullPage: true,
             encoding: "binary",
-            type: "png"
+            type: "webp"
         },
         browserOptions: {
             ignoreHTTPSErrors: true

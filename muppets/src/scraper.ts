@@ -1,14 +1,13 @@
 import puppeteer from "puppeteer";
 import * as path from "path";
-import { URL } from "url";
-import { v4 as uuid } from "uuid";
+import {URL} from "url";
+import {v4 as uuid} from "uuid";
 import treekill from "tree-kill";
-import { publicIpv4, publicIpv6 } from "public-ip";
-import { config } from './config.js';
+import {publicIpv4, publicIpv6} from "public-ip";
 
 import * as metrics from "./metrics.js";
 
-import { harFromMessages } from "chrome-har";
+import {harFromMessages} from "chrome-har";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
@@ -66,10 +65,10 @@ export interface ScraperResult {
     ipv6: string;
     request: ScraperParams;
     errors: string[];
-    screenshotType: string;
     htmlSkipped: boolean;
     screenshotSkipped: boolean;
     harSkipped: boolean;
+    screenshotType: string;
 }
 
 let browser: puppeteer.Browser;
@@ -234,25 +233,15 @@ function saveHar(params: ScraperParams, events: Event[]) {
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page): Promise<Buffer> {
     console.log("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
     if (params.saveScreenshot && params.screenshotOptions) {
-        params.screenshotOptions.type = params.screenshotOptions.type || "png";
+        params.screenshotOptions.type = params.screenshotOptions.type || "webp";
         params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
         params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
-        params.screenshotOptions.encoding = "binary";
+        params.screenshotOptions.encoding = params.screenshotOptions.encoding || "binary";
+        params.screenshotOptions.quality = params.screenshotOptions.quality || 100;
         return page.screenshot(params.screenshotOptions).then(screenshot => {
             // Because we use encoding binary, this will never be a string
-            const screenshot_buffer = screenshot as Buffer;
-            if (screenshot_buffer.length > config.png_threshold) {
-                params.screenshotOptions.type = "webp";
-                params.screenshotOptions.quality = 100;
-                console.log("taking screenshot in webp")
-                // Because we use encoding binary, this will never be a string
-                return page.screenshot(params.screenshotOptions).then(s => s as Buffer);
-            } else {
-                console.log("taking screenshot in png")
-                return screenshot_buffer;
-            }
+            return screenshot as Buffer;
         });
-
     } else {
         return Promise.reject("Not taking a screenshot");
     }
@@ -292,7 +281,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ipv6: ipv6,
         request: params,
         errors: [],
-        screenshotType: params.screenshotOptions.type ?? "png",
+        screenshotType: params.screenshotOptions.type ?? "webp",
         harSkipped: false,
         screenshotSkipped: false,
         htmlSkipped: false,
@@ -347,8 +336,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         ]);
 
         console.log(result);
-
-        result.screenshotType = params.screenshotOptions.type ?? "png";
+        result.screenshotType = params.screenshotOptions.type ?? "webp";
         await page.close();
 
         console.log("Snap finished");
