@@ -2,6 +2,9 @@ import DnsGeoIpResponseDataTable from "./DnsGeoIpResponseDataTable";
 import RecordData from "./RecordData";
 
 export default function DnsResponseDataTable({request, requestIndex, response, responseIndex}) {
+
+    const colSpanResponselessRequest = 7;
+
     function countRowsResponse(response) {
         if (!response || !response.responseGeoIps || response.responseGeoIps.length === 0) {
             return 1;
@@ -30,6 +33,7 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
 
     const responseKey = requestIndex + "." + responseIndex;
 
+    // rename functions to be clearer
     function firstrow(req, resp) {
         return (
             <>
@@ -44,7 +48,7 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
                     <td key={requestIndex} rowSpan={countRowsRequest(req)}>
                         {req.recordType}
                     </td>
-                    {resp !== null && (
+                    {resp !== null ? (
                         <>
                             <td key={responseKey} rowSpan={countRowsResponse(resp)}>
                                 {resp.ttl || ""}
@@ -53,7 +57,10 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
                                         rowSpan={countRowsResponse(resp)}/>
                             <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
                         </>
+                    ) : (
+                        <td colSpan={colSpanResponselessRequest}></td>
                     )}
+                    {/*/colspqn empty td lenth ==  */}
                 </tr>
                 {resp !== null && (
                     resp.responseGeoIps.map((item, index) => (
@@ -92,6 +99,7 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
         {request !== null ? (
             response === null ? firstrow(request, response) : (responseIndex === 0 ? firstrow(request, response) : otherrow(response))
         ) : null}
+        {/*    in functie wetten en dewe retunenen*/}
     </>;
 }
 
