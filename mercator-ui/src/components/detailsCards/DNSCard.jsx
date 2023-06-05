@@ -58,7 +58,7 @@ const DNSCard = (props) => {
                         <th>
                             ttl
                         </th>
-                        <th>
+                        <th className="record-data">
                             record data
                         </th>
                         <th>
@@ -80,7 +80,7 @@ const DNSCard = (props) => {
                     </thead>
                     <tbody>
                     {data.map((request, index) => (
-                        <DnsRequestDataTable request={request} index={index}>
+                        <DnsRequestDataTable request={request} requestIndex={index}>
                         </DnsRequestDataTable>
                     ))}
                     </tbody>

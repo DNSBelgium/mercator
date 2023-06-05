@@ -287,6 +287,21 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
     max-width: 650px;
   }
 
+  /* DNS-crawler table record data*/
+  td.record-data {
+    max-width: 300px;
+  }
+
+  td.record-data > div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  td.record-data > div > div.record-data-content {
+    height: 50px;
+    overflow: hidden;
+  }
+
   th {
     width: 350px;
   }
@@ -510,6 +525,7 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       height: 25px;
     }
 
+    //TODO  for dns recordData
     .copy-btn:hover {
       cursor: pointer;
       color: #e3f5ff;
