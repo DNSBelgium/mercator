@@ -35,18 +35,21 @@ public class SmtpAnalyzer {
     private final MxFinder mxFinder;
     private final boolean skipIPv4;
     private final boolean skipIPv6;
+    private final int smtpHostLimit;
 
     private static final Logger logger = getLogger(SmtpAnalyzer.class);
 
     @Autowired
     public SmtpAnalyzer(MeterRegistry meterRegistry, SmtpIpAnalyzer smtpIpAnalyzer, MxFinder mxFinder,
-                        @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4, @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6) {
+                        @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4, @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6,
+                        @Value("${smtp.crawler.hosts-limit:2}") int smtpHostLimit) {
         this.meterRegistry = meterRegistry;
         this.smtpIpAnalyzer = smtpIpAnalyzer;
         this.mxFinder = mxFinder;
         this.skipIPv4 = skipIPv4;
         this.skipIPv6 = skipIPv6;
         logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
+        this.smtpHostLimit = smtpHostLimit;
     }
 
     public SmtpCrawlResult analyze(String domainName) throws Exception {
@@ -96,7 +99,12 @@ public class SmtpAnalyzer {
             }
             case OK: {
                 logger.debug("We found {} MX records for {}", mxLookupResult.getMxRecords().size(), domainName);
-                for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
+                List<MXRecord> mxRecords = mxLookupResult.getMxRecords();
+                for (int i = 0; i < mxRecords.size(); i++) {
+                    if (i == smtpHostLimit){
+                        break;
+                    }
+                    MXRecord mxRecord = mxRecords.get(i);
                     logger.debug("mxRecord = {}", mxRecord);
                     String hostName = mxRecord.getTarget().toString(true);
                     createSmtpServer(hostName, mxRecord.getPriority()).ifPresent(result::add);

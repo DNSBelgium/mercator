@@ -8,6 +8,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.xbill.DNS.MXRecord;
 
 import java.net.InetAddress;
@@ -20,7 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
-
+@SpringBootTest
+@ActiveProfiles({"test", "local"})
 class SmtpAnalyzerTest {
 
     MxFinder mxFinder = mock(MxFinder.class);
@@ -29,6 +33,8 @@ class SmtpAnalyzerTest {
     SmtpAnalyzer analyzer;
     private static final String DOMAIN_NAME = "some-random-name.be";
     private static final Logger logger = getLogger(SmtpAnalyzerTest.class);
+    @Value("${smtp.crawler.hosts-limit:2}")
+    private int smtpHostLimit;
 
     InetAddress ip1 = ip("100.20.30.40");
     InetAddress ip2 = ip("100.20.30.44");
@@ -46,7 +52,7 @@ class SmtpAnalyzerTest {
 
     @BeforeEach
     public void beforeEach() {
-        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false);
+        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false, smtpHostLimit);
         when(ipAnalyzer.crawl(ip1)).thenReturn(crawledIp1);
         when(ipAnalyzer.crawl(ip2)).thenReturn(crawledIp2);
         when(ipAnalyzer.crawl(ipv6)).thenReturn(crawledIpv6);
@@ -100,7 +106,7 @@ class SmtpAnalyzerTest {
 
     @Test
     public void skipv6() throws Exception {
-        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, true);
+        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, true, smtpHostLimit);
         expectNoMxRecords();
         expectIpAddresses(ip1, ip2, ipv6);
         SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
@@ -120,7 +126,7 @@ class SmtpAnalyzerTest {
 
     @Test
     public void skipv4() throws Exception {
-        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, true, false);
+        analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, true, false, smtpHostLimit);
         expectNoMxRecords();
         expectIpAddresses(ip1, ip2, ipv6);
         SmtpCrawlResult result = analyzer.analyze(DOMAIN_NAME);
