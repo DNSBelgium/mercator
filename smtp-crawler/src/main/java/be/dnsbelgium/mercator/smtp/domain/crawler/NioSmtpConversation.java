@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.Error;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.hubspot.smtp.client.ChannelClosedException;
 import com.hubspot.smtp.client.SmtpClientResponse;
@@ -16,6 +17,7 @@ import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.Temporal;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -27,9 +29,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * A stateful class to represents the conversation with one IP of an SMTP server.
  */
-public class NioSmtpConversation implements SmtpConversation {
+public class NioSmtpConversation implements ISmtpConversation {
 
-    private final SmtpHostIp smtpHostIp;
+    private final SmtpConversation smtpConversation;
     private long connectionStart;
     private long connectionTimeMs = -1;
     private Temporal ehloSent;
@@ -63,17 +65,17 @@ public class NioSmtpConversation implements SmtpConversation {
         this.sessionFactory = sessionFactory;
         this.sessionConfig = sessionConfig;
         this.config = config;
-        this.smtpHostIp = new SmtpHostIp(ipAddress);
+        this.smtpConversation = new SmtpConversation(ipAddress);
     }
 
     // for testing
-    protected SmtpHostIp getSmtpHostIp() {
-        return smtpHostIp;
+    protected SmtpConversation getConversation() {
+        return smtpConversation;
     }
 
     // TODO: now that we decided to block on every SMTP conversation we can consider using another SMTP client library
     @Override
-    public SmtpHostIp talk() {
+    public SmtpConversation talk() {
         try {
             return start().get();
         } catch (ExecutionException | InterruptedException e) {
@@ -83,8 +85,8 @@ public class NioSmtpConversation implements SmtpConversation {
         }
     }
 
-    public CompletableFuture<SmtpHostIp> start() {
-        logger.debug("Starting SMTP crawl of {}", smtpHostIp.getIp());
+    public CompletableFuture<SmtpConversation> start() {
+        logger.debug("Starting SMTP crawl of {}", smtpConversation.getIp());
         CompletionStage<SmtpClientResponse> connected = this.connect();
         logger.debug("connected = {}", connected);
         return
@@ -93,7 +95,7 @@ public class NioSmtpConversation implements SmtpConversation {
                 .thenCompose(this::startTLS)
                 .thenCompose(this::tlsCompleted)
                 .thenCompose(this::closeSession)
-                .thenCompose(aVoid -> CompletableFuture.completedFuture(smtpHostIp))
+                .thenCompose(aVoid -> CompletableFuture.completedFuture(smtpConversation))
                 .exceptionally(this::handleException)
                 .toCompletableFuture();
     }
@@ -108,12 +110,12 @@ public class NioSmtpConversation implements SmtpConversation {
         logger.debug("received banner: {}", response.toString());
         connectionTimeMs = System.currentTimeMillis() - connectionStart;
         meterRegistry.timer(MetricName.TIMER_SMTP_CONNECT).record(connectionTimeMs, TimeUnit.MILLISECONDS);
-        smtpHostIp.setConnectionTimeMs(connectionTimeMs);
-        smtpHostIp.setConnectOK(!response.containsError());
+        smtpConversation.setConnectionTimeMs(connectionTimeMs);
+        smtpConversation.setConnectOK(!response.containsError());
         final String banner = StringUtils.abbreviate(response.toString(), MAX_REPLY_LENGTH);
-        smtpHostIp.setBanner(banner);
-        logger.debug("Connected to {}. connectOK={}", smtpHostIp.getIp(), smtpHostIp.isConnectOK());
-        smtpHostIp.setConnectReplyCode(getReplyCode(response));
+        smtpConversation.setBanner(banner);
+        logger.debug("Connected to {}. connectOK={}", smtpConversation.getIp(), smtpConversation.isConnectOK());
+        smtpConversation.setConnectReplyCode(getReplyCode(response));
         DefaultSmtpRequest ehloCommand = new DefaultSmtpRequest(SmtpCommand.EHLO, config.getEhloDomain());
         ehloSent = now();
         return response.getSession().send(ehloCommand);
@@ -123,17 +125,17 @@ public class NioSmtpConversation implements SmtpConversation {
         logger.debug("EHLO response received: {}", response);
         ehloResponseReceived = now();
         meterRegistry.timer(MetricName.TIMER_EHLO_RESPONSE_RECEIVED).record(Duration.between(ehloSent, ehloResponseReceived));
-        smtpHostIp.setSupportedExtensions(response.getSession().getEhloResponse().getSupportedExtensions());
+        smtpConversation.setSupportedExtensions(response.getSession().getEhloResponse().getSupportedExtensions());
         return response.getSession().startTls();
     }
 
     private CompletableFuture<SmtpClientResponse> tlsCompleted(SmtpClientResponse response) {
         logger.debug("STARTTLS: {}", response);
         meterRegistry.timer(MetricName.TIMER_STARTTLS_COMPLETED).record(Duration.between(ehloResponseReceived, now()));
-        smtpHostIp.setStartTlsReplyCode(getReplyCode(response));
+        smtpConversation.setStartTlsReplyCode(getReplyCode(response));
         logger.debug("session is encrypted: {}", response.getSession().isEncrypted());
         // response.getSession().getSSLSession().ifPresent(certificateProcessor::process);
-        smtpHostIp.setStartTlsOk(response.getSession().isEncrypted());
+        smtpConversation.setStartTlsOk(response.getSession().isEncrypted());
         return sendQuit(response);
     }
 
@@ -173,16 +175,17 @@ public class NioSmtpConversation implements SmtpConversation {
         return (smtpClientResponse.getResponses().isEmpty() ? NO_RESPONSE_CODE : smtpClientResponse.getResponses().get(0).code());
     }
 
-    private SmtpHostIp handleException(Throwable throwable) {
+    private SmtpConversation handleException(Throwable throwable) {
         Instant start = now();
         // also set time to connect in case of Connection time-out => allows us to see how long we waited
         if (connectionTimeMs == -1) {
             connectionTimeMs = System.currentTimeMillis() - connectionStart;
-            smtpHostIp.setConnectionTimeMs(connectionTimeMs);
+            smtpConversation.setConnectionTimeMs(connectionTimeMs);
         }
         Throwable rootCause = rootCause(throwable);
         if (rootCause instanceof ChannelClosedException) {
-            smtpHostIp.setErrorMessage("channel was closed while waiting for response");
+            smtpConversation.setErrorMessage("channel was closed while waiting for response");
+            smtpConversation.setError(Error.CHANNEL_CLOSED);
         } else {
             if (config.isLogStackTraces()) {
                 logger.debug("exception: ", throwable);
@@ -192,10 +195,87 @@ public class NioSmtpConversation implements SmtpConversation {
                 errorMessage = rootCause.getClass().getSimpleName();
             }
             logger.debug("Conversation with {} failed: {}", sessionConfig.getRemoteAddress(), errorMessage);
-            smtpHostIp.setErrorMessage(errorMessage);
+            errorMessage = cleanErrorMessage(errorMessage);
+            smtpConversation.setErrorMessage(errorMessage);
+            smtpConversation.setError(getErrorFromErrorMessage(errorMessage));
         }
-        logger.debug("crawl done: smtpHostIp = {}", smtpHostIp);
+        logger.debug("crawl done: smtpConversation = {}", smtpConversation);
         meterRegistry.timer(MetricName.TIMER_HANDLE_CONVERSATION_EXCEPTION).record(Duration.between(start, now()));
-        return smtpHostIp;
+        return smtpConversation;
+    }
+
+    public String cleanErrorMessage(String errorMessage){
+        String cleanedErrorMessage;
+        if (errorMessage.contains("connection timed out:")){
+            cleanedErrorMessage = "Connection timed out";
+        }
+        else if (errorMessage.contains("Timed out waiting for a response to")){
+            cleanedErrorMessage = "Timed out waiting for a response";
+        }
+        else if (errorMessage.contains("NotAfter:")){
+            cleanedErrorMessage = "NotAfter";
+        }
+        else if (errorMessage.contains("Received fatal alert:")){
+            cleanedErrorMessage = "Received fatal alert";
+        }
+        else if (errorMessage.contains("not an SSL/TLS record:")){
+            cleanedErrorMessage = "Not an SSL/TLS record";
+        }
+        else if (errorMessage.contains("Received invalid line:")){
+            cleanedErrorMessage = "Received invalid line";
+        }
+        else if (errorMessage.contains("The size of the handshake message")){
+            cleanedErrorMessage = "Handshake message size exceeds maximum";
+        }
+        else if (errorMessage.contains("Usage constraint TLSServer check failed:")) {
+            cleanedErrorMessage = "Usage constraint TLSServer check failed";
+        }
+        else {
+            cleanedErrorMessage = errorMessage;
+        }
+        return cleanedErrorMessage;
+    }
+
+    public Error getErrorFromErrorMessage(String errorMessage){
+        if (errorMessage.equals("Connection timed out") ||
+            errorMessage.equals("Timed out waiting for a response")) {
+            return Error.TIME_OUT;
+        }
+        else if (errorMessage.equals("Connection reset by peer") ||
+                 errorMessage.equals("Connection refused") ||
+                 errorMessage.equals("Connection reset")) {
+            return Error.CONNECTION_ERROR;
+        }
+        else if (errorMessage.equals("conversation with loopback address skipped") ||
+                 errorMessage.equals("conversation with site local address skipped") ||
+                 errorMessage.equals("conversation with IPv6 SMTP host skipped") ||
+                 errorMessage.equals("conversation with IPv4 SMTP host skipped")) {
+            return Error.SKIPPED;
+        }
+        else if (errorMessage.equals("NotAfter") ||
+                 errorMessage.equals("Not an SSL/TLS record") ||
+                 errorMessage.equals("Usage constraint TLSServer check failed") ||
+                 errorMessage.equals("Empty issuer DN not allowed in X509Certificates") ||
+                 errorMessage.equals("Handshake message size exceeds maximum") ||
+                 errorMessage.matches("handshake timed out after .*") ||
+                 errorMessage.equals("unable to find valid certification path to requested target") ||
+                 errorMessage.matches("The server selected protocol version .* is not accepted by client preferences .*") ||
+                 errorMessage.equals("no more data allowed for version 1 certificate") ||
+                 errorMessage.matches("X.509 Certificate is incomplete:.*")) {
+            return Error.TLS_ERROR;
+        }
+        else if (errorMessage.equals("No route to host") ||
+                 errorMessage.equals("Network is unreachable") ||
+                 errorMessage.equals("Host is unreachable") ||
+                 errorMessage.equals("Network unreachable")){
+            return Error.HOST_UNREACHABLE;
+        }
+        else if (errorMessage.equals("ClosedChannelException") ||
+                 errorMessage.equals("channel was closed while waiting for response")){
+            return Error.CHANNEL_CLOSED;
+        }
+        else {
+            return Error.OTHER;
+        }
     }
 }
