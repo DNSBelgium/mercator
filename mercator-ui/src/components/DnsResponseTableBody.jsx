@@ -2,7 +2,6 @@ import DnsGeoIpResponseDataTable from "./DnsGeoIpResponseDataTable";
 import RecordData from "./RecordData";
 
 export default function DnsResponseDataTable({request, response, first}) {
-    // console.log(request)
     function countRowsResponse(response) {
         if (!response || !response.responseGeoIps || response.responseGeoIps.length === 0) {
             return 1;
@@ -11,8 +10,6 @@ export default function DnsResponseDataTable({request, response, first}) {
     }
 
     function countRowsRequest(request) {
-        console.log("in function request prefix " + request)
-        console.log(request)
         let totalRows = 0;
         if (request && request.responses) {
             if (request.responses.length > 0) {
@@ -35,7 +32,6 @@ export default function DnsResponseDataTable({request, response, first}) {
         return (
             <>
                 <tr>
-
                     <td rowSpan={countRowsRequest(req)}>
                         {req.prefix}
                     </td>
@@ -43,18 +39,15 @@ export default function DnsResponseDataTable({request, response, first}) {
                         {req.rcode === 0 ? "Successful (0)" : req.problem + " ( " + req.rcode + " )"}
                     </td>
                     {/*change with component*/}
-                    <RecordData recordType={req.recordType} rowSpan={countRowsRequest(req)}/>
-                    {/*<td rowSpan={countRowsRequest(req)}>*/}
-                    {/*    {req.recordType}*/}
-                    {/*</td>*/}
+                    <td rowSpan={countRowsRequest(req)}>
+                        {req.recordType}
+                    </td>
                     {resp !== null && (
                         <>
                             <td rowSpan={countRowsResponse(resp)}>
                                 {resp.ttl || ""}
                             </td>
-                            <td rowSpan={countRowsResponse(resp)}>
-                                {resp.recordData || ""}
-                            </td>
+                            <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
                             <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
                         </>
                     )}

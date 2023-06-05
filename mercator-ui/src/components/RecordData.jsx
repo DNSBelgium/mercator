@@ -1,7 +1,8 @@
-export default function RecordData({recordType, rowSpan}) {
+export default function RecordData({recordData, rowSpan}) {
+    console.log(recordData)
     return (
         <td rowSpan={rowSpan}>
-            {recordType}
+            {recordData}
         </td>
     )
 }
