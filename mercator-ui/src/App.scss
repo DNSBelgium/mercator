@@ -287,7 +287,11 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
     max-width: 650px;
   }
 
-  /* DNS-crawler table record data*/
+  /* DNS-crawler table */
+  thead.dns-table-head {
+    background-color: rgba(0, 0, 0, .03);
+  }
+
   td.record-data {
     max-width: 300px;
   }
@@ -302,10 +306,23 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
     overflow: hidden;
   }
 
+  td.record-data > div > div.record-data-content:hover {
+    min-height: 50px;
+    height: auto;
+  }
+
+  td.record-data > div > div.record-data-copy-btn:hover {
+    cursor: pointer;
+    color: #e3f5ff;
+  }
+
+  td.empty {
+    background-color: rgba(0, 0, 0, .03);
+  }
+
   th {
     width: 350px;
   }
-
 
   /* All 'More info' buttons within Details Cards */
   .more-info {
@@ -525,7 +542,6 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
       height: 25px;
     }
 
-    //TODO  for dns recordData
     .copy-btn:hover {
       cursor: pointer;
       color: #e3f5ff;

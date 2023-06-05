@@ -44,7 +44,7 @@ const DNSCard = (props) => {
                 <Table
                     size="sm"
                 >
-                    <thead>
+                    <thead className="dns-table-head">
                     <tr>
                         <th>
                             prefix
@@ -58,7 +58,7 @@ const DNSCard = (props) => {
                         <th>
                             ttl
                         </th>
-                        <th className="record-data">
+                        <th>
                             record data
                         </th>
                         <th>

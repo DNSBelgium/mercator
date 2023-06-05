@@ -2,6 +2,9 @@ import DnsGeoIpResponseDataTable from "./DnsGeoIpResponseDataTable";
 import RecordData from "./RecordData";
 
 export default function DnsResponseDataTable({request, requestIndex, response, responseIndex}) {
+
+    const colSpanResponselessRequest = 7;
+
     function countRowsResponse(response) {
         if (!response || !response.responseGeoIps || response.responseGeoIps.length === 0) {
             return 1;
@@ -30,7 +33,19 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
 
     const responseKey = requestIndex + "." + responseIndex;
 
-    function firstrow(req, resp) {
+    function dataSorting(req, resp, responseIndex) {
+        if (!req) {
+            return null
+        } else if (!resp) {
+            return requestRowPrimary(req, resp)
+        } else if (responseIndex === 0) {
+            return requestRowPrimary(req, resp)
+        } else {
+            return secondaryRows(resp)
+        }
+    }
+
+    function requestRowPrimary(req, resp) {
         return (
             <>
                 <tr>
@@ -44,7 +59,7 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
                     <td key={requestIndex} rowSpan={countRowsRequest(req)}>
                         {req.recordType}
                     </td>
-                    {resp !== null && (
+                    {resp !== null ? (
                         <>
                             <td key={responseKey} rowSpan={countRowsResponse(resp)}>
                                 {resp.ttl || ""}
@@ -53,6 +68,8 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
                                         rowSpan={countRowsResponse(resp)}/>
                             <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
                         </>
+                    ) : (
+                        <td colSpan={colSpanResponselessRequest} className="empty"></td>
                     )}
                 </tr>
                 {resp !== null && (
@@ -67,7 +84,7 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
             </>)
     }
 
-    function otherrow(resp) {
+    function secondaryRows(resp) {
         return (
             <>
                 <tr>
@@ -89,9 +106,8 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
     }
 
     return <>
-        {request !== null ? (
-            response === null ? firstrow(request, response) : (responseIndex === 0 ? firstrow(request, response) : otherrow(response))
-        ) : null}
-    </>;
+        {dataSorting(request, response, responseIndex)}
+    </>
+
 }
 

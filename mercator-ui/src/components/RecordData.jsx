@@ -3,7 +3,7 @@ export default function RecordData({responseKey, recordData, rowSpan}) {
         <td className="record-data" key={responseKey} rowSpan={rowSpan}>
             <div className="record-data-container">
                 <div className="record-data-content">
-                    {recordData}
+                    {recordData || ""}
                 </div>
                 <div className="record-data-copy-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"

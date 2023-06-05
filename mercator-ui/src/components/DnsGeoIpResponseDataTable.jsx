@@ -1,5 +1,14 @@
 export default function DnsGeoIpResponseDataTable({geoIpResponse, first}) {
-    function firstrow(geoIp) {
+    const colSpanGeoiIplessResponse = 5;
+
+    function primaryRow(geoIp) {
+        if (!geoIp) {
+            return (
+                <>
+                    <td colSpan={colSpanGeoiIplessResponse} className="empty"></td>
+                </>
+            )
+        }
         return (
             <>
                 <td>
@@ -20,7 +29,14 @@ export default function DnsGeoIpResponseDataTable({geoIpResponse, first}) {
             </>)
     }
 
-    function otherrow(geoIp) {
+    function secondaryRow(geoIp) {
+        if (!geoIp) {
+            return (
+                <>
+                    <td colSpan={colSpanGeoiIplessResponse} className="empty"></td>
+                </>
+            )
+        }
         return (
             <>
                 <tr>
@@ -43,5 +59,5 @@ export default function DnsGeoIpResponseDataTable({geoIpResponse, first}) {
             </>)
     }
 
-    return <>{geoIpResponse ? (first ? firstrow(geoIpResponse) : otherrow(geoIpResponse)) : null}</>;
+    return <>{first ? primaryRow(geoIpResponse) : secondaryRow(geoIpResponse)}</>;
 }
