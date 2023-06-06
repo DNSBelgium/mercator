@@ -9,6 +9,9 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.xbill.DNS.MXRecord;
 
 import java.net.InetAddress;
@@ -22,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@SpringBootTest
+@ActiveProfiles({"test", "local"})
 class SmtpAnalyzerTest {
 
   MxFinder mxFinder = mock(MxFinder.class);
@@ -45,9 +50,14 @@ class SmtpAnalyzerTest {
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
   MXRecord mx2 = mxRecord(DOMAIN_NAME, 20, "smtp2.name.be");
 
+  @Value("${smtp.crawler.hosts-limit:5}")
+  private int smtpHostLimit;
+  @Value("${smtp.crawler.mx-limit:5}")
+  private int smtpMxLimit;
+
   @BeforeEach
   public void beforeEach() {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false);
+    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false, smtpHostLimit, smtpMxLimit);
     when(ipAnalyzer.crawl(ip1)).thenReturn(crawledIp1);
     when(ipAnalyzer.crawl(ip2)).thenReturn(crawledIp2);
     when(ipAnalyzer.crawl(ipv6)).thenReturn(crawledIpv6);
@@ -119,7 +129,7 @@ class SmtpAnalyzerTest {
 
   @Test
   public void skipv6() throws Exception {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, true);
+    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, true, smtpHostLimit, smtpMxLimit);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
     SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
@@ -142,7 +152,7 @@ class SmtpAnalyzerTest {
 
   @Test
   public void skipv4() throws Exception {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, true, false);
+    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, true, false, smtpHostLimit, smtpMxLimit);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
     SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
@@ -250,6 +260,38 @@ class SmtpAnalyzerTest {
     assertThat(server2.getHostName()).isEqualTo(mx2Target);
     assertThat(result.getHosts().get(2).getConversation().toSmtpConversation()).isEqualTo(crawledIp2);
     assertThat(result.getHosts().get(3).getConversation().toSmtpConversation()).isEqualTo(crawledIpv6);
+  }
+
+  @Test
+  public void smtpMxLimitTest() throws Exception {
+    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false, smtpHostLimit, 1);
+    String mx1Target = mx1.getTarget().toString(true);
+    String mx2Target = mx2.getTarget().toString(true);
+    expect(MxLookupResult.ok(List.of(mx1, mx2)));
+    expectIpAddresses(mx1Target, ip1, ipv6);
+    expectIpAddresses(mx2Target, ip2, ipv6);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
+    logger.info("result = {}", result);
+    assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
+    assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(2);
+  }
+
+  @Test
+  public void smtpHostLimitTest() throws Exception {
+    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, false, false, 1, smtpMxLimit);
+    String mx1Target = mx1.getTarget().toString(true);
+    String mx2Target = mx2.getTarget().toString(true);
+    expect(MxLookupResult.ok(List.of(mx1, mx2)));
+    expectIpAddresses(mx1Target, ip1, ipv6);
+    expectIpAddresses(mx2Target, ip2, ipv6);
+    SmtpVisitEntity result = analyzer.analyze(DOMAIN_NAME);
+    logger.info("result = {}", result);
+    assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
+    assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getHosts().size()).isEqualTo(2);
   }
 
   private void expectNoMxRecords() {

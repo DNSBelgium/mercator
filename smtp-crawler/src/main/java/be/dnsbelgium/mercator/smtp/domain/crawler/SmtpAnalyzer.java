@@ -37,18 +37,25 @@ public class SmtpAnalyzer {
   private final MxFinder mxFinder;
   private final boolean skipIPv4;
   private final boolean skipIPv6;
+  private final int smtpHostLimit;
+  private final int smtpMxLimit;
 
   private static final Logger logger = getLogger(SmtpAnalyzer.class);
 
   @Autowired
   public SmtpAnalyzer(MeterRegistry meterRegistry, SmtpIpAnalyzer smtpIpAnalyzer, MxFinder mxFinder,
-                      @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4, @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6) {
+                      @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4,
+                      @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6,
+                      @Value("${smtp.crawler.hosts-limit:5}") int smtpHostLimit,
+                      @Value("${smtp.crawler.mx-limit:5}") int smtpMxLimit) {
     this.meterRegistry = meterRegistry;
     this.smtpIpAnalyzer = smtpIpAnalyzer;
     this.mxFinder = mxFinder;
     this.skipIPv4 = skipIPv4;
     this.skipIPv6 = skipIPv6;
     logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
+    this.smtpHostLimit = smtpHostLimit;
+    this.smtpMxLimit = smtpMxLimit;
   }
 
   public SmtpVisitEntity analyze(String domainName) throws Exception {
@@ -105,7 +112,12 @@ public class SmtpAnalyzer {
       }
       case OK: {
         logger.debug("We found {} MX records for {}", mxLookupResult.getMxRecords().size(), domainName);
-        for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
+        List<MXRecord> mxRecords = mxLookupResult.getMxRecords();
+        for (int i = 0; i < mxRecords.size(); i++) {
+          if (i == smtpMxLimit){
+            break;
+          }
+          MXRecord mxRecord = mxRecords.get(i);
           logger.debug("mxRecord = {}", mxRecord);
           String hostName = mxRecord.getTarget().toString(true);
           Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(hostName, mxRecord.getPriority());
@@ -133,11 +145,14 @@ public class SmtpAnalyzer {
     }
     logger.debug("We found {} addresses for {}", addresses.size(), domainName);
     List<SmtpHostEntity> hosts = new ArrayList<>();
-    for (InetAddress address : addresses) {
+    for (int i = 0; i < addresses.size(); i++) {
+      if (i == smtpHostLimit){
+        break;
+      }
       SmtpHostEntity host = new SmtpHostEntity();
       host.setHostName(domainName);
       host.setPriority(priority);
-      SmtpConversation smtpConversation = crawl(address);
+      SmtpConversation smtpConversation = crawl(addresses.get(i));
       smtpConversation.clean();
       host.setConversation(smtpConversation);
       hosts.add(host);
