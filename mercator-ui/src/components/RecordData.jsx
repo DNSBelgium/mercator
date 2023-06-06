@@ -1,6 +1,6 @@
-export default function RecordData({responseKey, recordData, rowSpan}) {
+export default function RecordData({recordData, rowSpan}) {
     return (
-        <td className="record-data" key={responseKey} rowSpan={rowSpan}>
+        <td className="record-data" rowSpan={rowSpan}>
             <div className="record-data-container">
                 <div className="record-data-content">
                     {recordData || ""}

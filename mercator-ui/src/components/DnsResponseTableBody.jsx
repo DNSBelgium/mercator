@@ -1,7 +1,7 @@
 import DnsGeoIpResponseDataTable from "./DnsGeoIpResponseDataTable";
 import RecordData from "./RecordData";
 
-export default function DnsResponseDataTable({request, requestIndex, response, responseIndex}) {
+export default function DnsResponseDataTable({request, response, responseIndex}) {
 
     const colSpanResponselessRequest = 7;
 
@@ -31,8 +31,6 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
         return totalRows;
     }
 
-    const responseKey = requestIndex + "." + responseIndex;
-
     function dataSorting(req, resp, responseIndex) {
         if (!req) {
             return null
@@ -49,23 +47,22 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
         return (
             <>
                 <tr>
-                    <td key={requestIndex} rowSpan={countRowsRequest(req)}>
+                    <td rowSpan={countRowsRequest(req)}>
                         {req.prefix}
                     </td>
-                    <td key={requestIndex} rowSpan={countRowsRequest(req)}>
+                    <td rowSpan={countRowsRequest(req)}>
                         {req.rcode === 0 ? "Successful (0)" : req.problem + " (" + req.rcode + ")"}
                     </td>
                     {/*change with component*/}
-                    <td key={requestIndex} rowSpan={countRowsRequest(req)}>
+                    <td rowSpan={countRowsRequest(req)}>
                         {req.recordType}
                     </td>
                     {resp !== null ? (
                         <>
-                            <td key={responseKey} rowSpan={countRowsResponse(resp)}>
+                            <td rowSpan={countRowsResponse(resp)}>
                                 {resp.ttl || ""}
                             </td>
-                            <RecordData responseKey={responseKey} recordData={resp.recordData}
-                                        rowSpan={countRowsResponse(resp)}/>
+                            <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
                             <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
                         </>
                     ) : (
@@ -88,10 +85,10 @@ export default function DnsResponseDataTable({request, requestIndex, response, r
         return (
             <>
                 <tr>
-                    <td key={responseKey} rowSpan={countRowsResponse(resp)}>
+                    <td rowSpan={countRowsResponse(resp)}>
                         {resp.ttl || ""}
                     </td>
-                    <RecordData responseKey={responseKey} recordData={resp.recordData}
+                    <RecordData recordData={resp.recordData}
                                 rowSpan={countRowsResponse(resp)}/>
                     <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
                 </tr>

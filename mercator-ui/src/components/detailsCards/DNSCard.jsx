@@ -9,6 +9,7 @@ const DNSCard = (props) => {
     const visitId = props.visitId
 
     const [data, setData] = useState({});
+    console.log(data)
 
     useEffect(() => {
 
@@ -27,6 +28,7 @@ const DNSCard = (props) => {
 
         fetchData();
     }, [visitId]);
+
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
@@ -79,10 +81,25 @@ const DNSCard = (props) => {
                     </tr>
                     </thead>
                     <tbody>
-                    {data.map((request, index) => (
-                        <DnsRequestDataTable request={request} requestIndex={index}>
-                        </DnsRequestDataTable>
+                    {/*{console.log(data)}*/}
+                    {/*sort data first by prefix then by Rcode*/}
+                    {/*check alternative */}
+                    {Object.values(data).sort((a, b) => {
+                        if (a.prefix < b.prefix) {
+                            return -1;
+                        }
+                        if (a.prefix > b.prefix) {
+                            return 1;
+                        }
+                        return a.rcode - b.rcode;
+                    }).map((request, index) => (
+                        <DnsRequestDataTable request={request} requestIndex={index} key={request.id}/>
                     ))}
+
+                    {/*{data.map((request, index) => (*/}
+                    {/*    <DnsRequestDataTable request={request} requestIndex={index}>*/}
+                    {/*    </DnsRequestDataTable>*/}
+                    {/*))}*/}
                     </tbody>
                 </Table>
             </Card.Body>
