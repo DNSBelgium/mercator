@@ -38,7 +38,7 @@ public class SearchController {
             logger.debug(ex.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         } catch (ExecutionException | InterruptedException ex) {
-            logger.error("Something wrong happened: {}", ex.getMessage());
+            logger.error("Something wrong happened: " + ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
         }
     }
