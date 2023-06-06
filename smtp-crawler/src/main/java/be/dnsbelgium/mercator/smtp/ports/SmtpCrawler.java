@@ -14,6 +14,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.UnexpectedRollbackException;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,6 +38,7 @@ public class SmtpCrawler implements Crawler {
 
   @Override
   @JmsListener(destination = "${smtp.crawler.input.queue.name}")
+  @Transactional
   public void process(VisitRequest visitRequest) throws Exception {
     if (visitRequest == null || visitRequest.getVisitId() == null || visitRequest.getDomainName() == null) {
       logger.info("Received visitRequest without visitId or domain name. visitRequest={} => ignoring", visitRequest);
