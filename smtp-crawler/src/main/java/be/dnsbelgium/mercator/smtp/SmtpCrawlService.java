@@ -60,7 +60,7 @@ public class SmtpCrawlService {
   public void save(SmtpVisitEntity smtpVisit) {
     logger.debug("About to save SmtpVisitEntity for {}", smtpVisit.getDomainName());
     for (SmtpHostEntity host : smtpVisit.getHosts()){
-      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
+      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findFirstByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
       conversationEntity.ifPresent(host::setConversation);
     }
     Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(smtpVisit);
