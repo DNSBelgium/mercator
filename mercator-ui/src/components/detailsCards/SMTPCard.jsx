@@ -8,23 +8,41 @@ const SMTPCard = (props) => {
 
     const visitId = props.visitId
 
-    const [data, setData] = useState({});
+    const [visit, setVisit] = useState({});
+    const [host, setHost] = useState([]);
+    const [conversation, setConversation] = useState({});
     const [openHosts, setOpenHosts] = useState(false);
     const [openExtension, setOpenExtension] = useState([]);
 
     // api SMTP
     useEffect(() => {
         const handlerData = async () => {
-
-            const url = `/smtpCrawlResults/search/findFirstByVisitId?visitId=${visitId}`;
-            await api.get(url)
+            const smtpVisitEntityUrl = `/smtpVisitEntities/search/findByVisitId?visitId=${visitId}`;
+            await api.get(smtpVisitEntityUrl)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp === undefined ? null : resp.data);
+                        setVisit(resp.data);
                     }
-                })
-                .catch((ex) => {
-                    console.log(ex);
+                });
+
+            const smtpHostUrl = `/smtpHostEntities/search/findAllByVisitId?visit_id=${visitId}`;
+            await api.get(smtpHostUrl)
+                .then(async (resp) => {
+                    if (resp.status === 200) {
+                        let hosts = resp.data._embedded.smtpHostEntities;
+                        let conversations = {};
+                        setHost(hosts);
+                        for (let i = 0; i < hosts.length; i++) {
+                            const smtpConversationUrl = `/smtpConversationEntities/search/findByHostId?host_id=${hosts[i].id}`;
+                            await api.get(smtpConversationUrl)
+                                .then((resp) => {
+                                    if (resp.status === 200) {
+                                        conversations[hosts[i].id] = resp.data;
+                                    }
+                                });
+                        }
+                        setConversation(resp === undefined ? null : conversations);
+                    }
                 });
         };
         
@@ -64,10 +82,10 @@ const SMTPCard = (props) => {
                     openExtension[index] && ( // if openHosts[index] === true, render
                         <ul>
                             {
-                                extensions.map((data, index) => {
+                                extensions.map((visit, index) => {
                                     return (
                                         <li key={index}>
-                                            { data }
+                                            { visit }
                                         </li>
                                     )
                                 })
@@ -80,8 +98,8 @@ const SMTPCard = (props) => {
     }
 
     // Render data.servers[index].hosts
-    const renderItemHosts = (hosts) => { // Inside li element
-        if(!hosts || !hosts.length) {
+    const renderConversations = (conversation) => { // Inside li element
+        if(checkObjectIsFalsy(conversation)) {
             return (
                 ""
             );
@@ -92,122 +110,125 @@ const SMTPCard = (props) => {
                     className='more-info'
                     onClick={() => setOpenHosts(openHosts => !openHosts)} // Toggle openHosts boolean
                 > 
-                    Hosts
+                    Conversation
                 </button>
 
                 {
                     openHosts && ( // if openHosts === true, render
                         <ul>
-                            {
-                                hosts.map((data, index) => {
-                                    return(
-                                        <div key={index} id='SMTP-Hosts-Card'>
+
+                                        <div id='SMTP-Hosts-Card'>
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Ip:&nbsp;
                                                 </span>
-                                                { data.ip }
+                                                { conversation.ip }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Asn:&nbsp;
                                                 </span>
-                                                { data.asn }
+                                                { conversation.asn }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Country:&nbsp;
                                                 </span>
-                                                { data.country }
+                                                { conversation.country }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     AsnOrganisation:&nbsp;
                                                 </span>
-                                                { data.asnOrganisation }
+                                                { conversation.asnOrganisation }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Banner:&nbsp;
                                                 </span>
-                                                { data.banner }
+                                                { conversation.banner }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     ConnectOK:&nbsp;
                                                 </span>
-                                                { data.connectOK }
+                                                { conversation.connectOK ? "Yes" : "No"}
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     ConnectReplyCode:&nbsp;
                                                 </span>
-                                                { data.connectReplyCode }
+                                                { conversation.connectReplyCode }
                                             </li>
 
                                             {
-                                                renderExtensions(data.supportedExtensions, index)
+                                                renderExtensions(conversation.supportedExtensions)
                                             }
-                                            
+
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Ipversion:&nbsp;
                                                 </span>
-                                                { data.ipVersion }
+                                                { conversation.ipVersion }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
-                                                    StartLsOk:&nbsp; 
+                                                    StartLsOk:&nbsp;
                                                 </span>
-                                                { data.startTlsOk }
+                                                { conversation.startTlsOk ? "Yes" : "No"}
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     StarTLsReplyCode:
                                                 </span>
-                                                { data.startTlsReplyCode }
+                                                { conversation.startTlsReplyCode }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     ErrorMessage:&nbsp;
                                                 </span>
-                                                { data.err }
+                                                { conversation.errorMessage }
+                                            </li>
+
+                                            <li>
+                                                <span className="font-weight-bold">
+                                                    Error:&nbsp;
+                                                </span>
+                                                { conversation.error }
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     ConnectionTime:&nbsp;
                                                 </span>
-                                                { data.connectionTimeMs }
+                                                { conversation.connectionTimeMs } ms
                                             </li>
 
                                             <li>
                                                 <span className="font-weight-bold">
                                                     Software:&nbsp;
                                                 </span>
-                                                { data.software }
+                                                { conversation.software }
                                             </li>
 
                                             <li className="mb-3">
                                                 <span className="font-weight-bold">
                                                     SoftwareVersion:&nbsp;
                                                 </span>
-                                                { data.softwareVersion }
+                                                { conversation.softwareVersion }
                                             </li>
-                                            
+
                                         </div>
-                                    )
-                                })
-                            }
+
                         </ul>
                     )
                 }
@@ -216,7 +237,7 @@ const SMTPCard = (props) => {
     } 
 
     // Render data.servers
-    const renderDataServers = (servers) => { // Inside td element 
+    const renderHosts = (servers) => { // Inside td element
         if(!servers || !servers.length) {
             return (
                 ""
@@ -244,6 +265,13 @@ const SMTPCard = (props) => {
                                                 </span>
                                                 { item.hostName }
                                             </li>
+
+                                            <li>
+                                                <span className="font-weight-bold">
+                                                    From mx:&nbsp;
+                                                </span>
+                                                { item.fromMx ? "Yes" : "No" }
+                                            </li>
             
                                             <li>
                                                 <span className="font-weight-bold">
@@ -253,7 +281,7 @@ const SMTPCard = (props) => {
                                             </li>
             
                                             <li>
-                                                { renderItemHosts(item.hosts) }
+                                                { renderConversations(conversation[item.id]) }
                                             </li>
             
                                         </ul>
@@ -269,7 +297,7 @@ const SMTPCard = (props) => {
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
-        if(checkObjectIsFalsy(data)) {
+        if(checkObjectIsFalsy(visit)) {
             return (
                 <>No data for this visit.</>
             );
@@ -285,8 +313,8 @@ const SMTPCard = (props) => {
                             </th>
                             <td>
                             { // Ternary
-                                data.crawlTimestamp ? 
-                                    moment(data.crawlTimestamp).format("YYYY-MM-DD HH:mm:ss") : 
+                                visit.timestamp ?
+                                    moment(visit.timestamp).format("YYYY-MM-DD HH:mm:ss") :
                                     '' 
                             }
                             </td>
@@ -297,16 +325,16 @@ const SMTPCard = (props) => {
                                 Crawl status
                             </th>
                             <td>
-                                { data.crawlStatus }
+                                { visit.crawlStatus }
                             </td>
                         </tr>
                         
                         <tr>
                             <th scope='row'>
-                                Server
+                                Hosts
                             </th>
                             <td>
-                                { renderDataServers(data.servers) }
+                                { renderHosts(host) }
                             </td>
                         </tr>
                     </tbody>

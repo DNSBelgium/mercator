@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -30,13 +30,13 @@ class NioSmtpConversationFactoryTest {
         NioSmtpConversation conversation = factory.create(ip("134.58.240.3"));
         logger.info("conversation = {}", conversation);
         long start = System.currentTimeMillis();
-        CompletableFuture<SmtpHostIp> result = conversation.start();
+        CompletableFuture<SmtpConversation> result = conversation.start();
         logger.info("result = {}", result);
         logger.info("waiting until done ...");
-        SmtpHostIp smtpHostIp = result.get();
+        SmtpConversation smtpConversation = result.get();
         long millis = System.currentTimeMillis() - start;
         logger.info("Conversation took {} ms", millis);
-        logger.info("smtpHostIp = {}", smtpHostIp);
+        logger.info("smtpHostIp = {}", smtpConversation);
     }
 
     /*
