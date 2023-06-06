@@ -2,14 +2,13 @@ import {useEffect, useState} from "react";
 import {Card, Col, Row, Table} from "react-bootstrap";
 import api from "../../services/api";
 import {checkObjectIsFalsy} from "../../services/Util";
-import DnsRequestDataTable from "../DnsRequestTableBody";
 import moment from "moment";
+import DnsRequestDataTable from "../DnsRequestTableBody";
 
 const DNSCard = (props) => {
     const visitId = props.visitId
 
     const [data, setData] = useState({});
-    console.log(data)
 
     useEffect(() => {
 
@@ -18,7 +17,9 @@ const DNSCard = (props) => {
             await api.get(url)
                 .then((resp) => {
                     if(resp.status === 200) {
-                        setData(resp.data._embedded.requests);
+                        setData(resp.data._embedded.requests.map(item => {
+                            return {...item, key: item.id};
+                        }));
                     }
                 })
                 .catch((ex) => {
@@ -81,9 +82,6 @@ const DNSCard = (props) => {
                     </tr>
                     </thead>
                     <tbody>
-                    {/*{console.log(data)}*/}
-                    {/*sort data first by prefix then by Rcode*/}
-                    {/*check alternative */}
                     {Object.values(data).sort((a, b) => {
                         if (a.prefix < b.prefix) {
                             return -1;
@@ -95,11 +93,6 @@ const DNSCard = (props) => {
                     }).map((request, index) => (
                         <DnsRequestDataTable request={request} requestIndex={index} key={request.id}/>
                     ))}
-
-                    {/*{data.map((request, index) => (*/}
-                    {/*    <DnsRequestDataTable request={request} requestIndex={index}>*/}
-                    {/*    </DnsRequestDataTable>*/}
-                    {/*))}*/}
                     </tbody>
                 </Table>
             </Card.Body>

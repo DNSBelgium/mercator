@@ -2,7 +2,6 @@ import DnsGeoIpResponseDataTable from "./DnsGeoIpResponseDataTable";
 import RecordData from "./RecordData";
 
 export default function DnsResponseDataTable({request, response, responseIndex}) {
-
     const colSpanResponselessRequest = 7;
 
     function countRowsResponse(response) {
@@ -25,7 +24,7 @@ export default function DnsResponseDataTable({request, response, responseIndex})
                     }
                 });
             } else {
-                totalRows = 1
+                totalRows = 1;
             }
         }
         return totalRows;
@@ -33,13 +32,13 @@ export default function DnsResponseDataTable({request, response, responseIndex})
 
     function dataSorting(req, resp, responseIndex) {
         if (!req) {
-            return null
+            return null;
         } else if (!resp) {
-            return requestRowPrimary(req, resp)
+            return requestRowPrimary(req, resp);
         } else if (responseIndex === 0) {
-            return requestRowPrimary(req, resp)
+            return requestRowPrimary(req, resp);
         } else {
-            return secondaryRows(resp)
+            return secondaryRows(resp);
         }
     }
 
@@ -47,64 +46,57 @@ export default function DnsResponseDataTable({request, response, responseIndex})
         return (
             <>
                 <tr>
-                    <td rowSpan={countRowsRequest(req)}>
-                        {req.prefix}
-                    </td>
+                    <td rowSpan={countRowsRequest(req)}>{req.prefix}</td>
                     <td rowSpan={countRowsRequest(req)}>
                         {req.rcode === 0 ? "Successful (0)" : req.problem + " (" + req.rcode + ")"}
                     </td>
-                    {/*change with component*/}
-                    <td rowSpan={countRowsRequest(req)}>
-                        {req.recordType}
-                    </td>
+                    <td rowSpan={countRowsRequest(req)}>{req.recordType}</td>
                     {resp !== null ? (
                         <>
-                            <td rowSpan={countRowsResponse(resp)}>
-                                {resp.ttl || ""}
-                            </td>
+                            <td rowSpan={countRowsResponse(resp)}>{resp.ttl || ""}</td>
                             <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
-                            <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
+                            <DnsGeoIpResponseDataTable
+                                geoIpResponse={resp.responseGeoIps[0]}
+                                first={true}
+                            />
                         </>
                     ) : (
                         <td colSpan={colSpanResponselessRequest} className="empty"></td>
                     )}
                 </tr>
-                {resp !== null && (
-                    resp.responseGeoIps.map((item, index) => (
-                        <>
-                            {index > 0 &&
-                                <DnsGeoIpResponseDataTable geoIpResponse={item} first={false}/>
-                            }
-                        </>
-                    ))
-                )}
-            </>)
+                {resp !== null &&
+                    resp.responseGeoIps.slice(1).map((item, index) => (
+                        <DnsGeoIpResponseDataTable
+                            geoIpResponse={item}
+                            first={false}
+                            key={index}
+                        />
+                    ))}
+            </>
+        );
     }
 
     function secondaryRows(resp) {
         return (
             <>
                 <tr>
-                    <td rowSpan={countRowsResponse(resp)}>
-                        {resp.ttl || ""}
-                    </td>
-                    <RecordData recordData={resp.recordData}
-                                rowSpan={countRowsResponse(resp)}/>
-                    <DnsGeoIpResponseDataTable geoIpResponse={resp.responseGeoIps[0]} first={true}/>
+                    <td rowSpan={countRowsResponse(resp)}>{resp.ttl || ""}</td>
+                    <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
+                    <DnsGeoIpResponseDataTable
+                        geoIpResponse={resp.responseGeoIps[0]}
+                        first={true}
+                    />
                 </tr>
-                {resp.responseGeoIps.map((item, index) => (
-                    <>
-                        {index > 0 &&
-                            <DnsGeoIpResponseDataTable geoIpResponse={item} first={false}/>
-                        }
-                    </>
+                {resp.responseGeoIps.slice(1).map((item, index) => (
+                    <DnsGeoIpResponseDataTable
+                        geoIpResponse={item}
+                        first={false}
+                        key={index}
+                    />
                 ))}
-            </>)
+            </>
+        );
     }
 
-    return <>
-        {dataSorting(request, response, responseIndex)}
-    </>
-
+    return <>{dataSorting(request, response, responseIndex)}</>;
 }
-
