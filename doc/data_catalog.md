@@ -313,138 +313,58 @@ example:  [https://www.wappalyzer.com/technologies/cms/wordpress/](https://www.w
 
 ## SMTP crawler
 
-![](img/db_smtp_crawler.png)
+### SMTP visit
 
-| Column name     | Description                                                                  | Example                              |
-|-----------------|------------------------------------------------------------------------------|--------------------------------------|
-| id              | primary key                                                                  | 10663036                             |
-| visit_id        | Unique id (UUID) per visit. All modules share the same visit_id. primary key | bcd90704-2f51-40e2-9c52-101dceca168e |
-| crawl_timestamp | Timestamp when the crawl was performed                                       | 2022-01-07 08:57:21.308303 +00:00    |
-| domain_name     | The domain name for which SMTP servers were searched and queried             | dnsbelgium.be                        |
-| servers         | JSON with SMTP server information. Details below                             |                                      |
-| crawl_status    | The status of the SMTP crawl.                                                | 0                                    |
+![](img/db_smtp_crawler_smtp_visit.png)
 
-### SMTP servers
+| Column name       | Description                                                                  | Example                              |
+|-------------------|------------------------------------------------------------------------------|--------------------------------------|
+| visit_id          | Unique id (UUID) per visit. All modules share the same visit_id. primary key | bcd90704-2f51-40e2-9c52-101dceca168e |
+| timestamp         | Timestamp when the crawl was performed                                       | 2022-01-07 08:57:21.308303 +00:00    |
+| domain_name       | The domain name for which SMTP servers were searched and queried             | dnsbelgium.be                        |
+| crawl_status      | The status of the SMTP crawl.                                                | OK                                   |
+| num_conversations | The number of conversations for this visit                                   | 2                                    |
 
-The JSON contains an array of hosts, with the following information for each host:
+### SMTP host
 
-| Attribuut           | Beschrijving                                                             |
-|---------------------|--------------------------------------------------------------------------|
-| ip                  | The IP address of the MX host                                            |
-| asn                 | The ASN to which the ip belongs                                          |
-| country             | Country code                                                             |
-| connectOK           | Whether we could connect to the SMTP server at this IP address           |
-| ipVersion           | IP version of this IP address (4 or 6)                                   |
-| startTlsOk          | Whether START_TLS is supported                                           |
-| errorMessage        | Error message when connecting to this SMTP server.                       |
-| asnOrganisation     | The organization belonging to the ASN of this IP (according to MaxMind). |
-| softwareVersion     | The detected version of the SMTP software.                               |
-| connectReplyCode    | The SMTP replyCode after connecting.                                     |
-| startTlsReplyCode   | The SMTP replyCode after sending START.                                  |
-| supportedExtensions | A list of supported SMTP extensions.                                     |
-| hostName            | The hostname.                                                            |
-| priority            | The priority of this host according to the MX record.                    |
+![](img/db_smtp_crawler_smtp_host.png)
 
-```json
-[
-  {
-    "hosts": [
-      {
-        "ip": "104.47.4.36",
-        "asn": 8075,
-        "banner": "220 AM5EUR02FT017.mail.protection.outlook.com Microsoft ESMTP MAIL Service ready at Fri, 7 Jan 2022 00:05:19 +0000",
-        "country": "NL",
-        "software": null,
-        "connectOK": true,
-        "ipVersion": 4,
-        "startTlsOk": true,
-        "errorMessage": null,
-        "asnOrganisation": "MICROSOFT-CORP-MSN-AS-BLOCK",
-        "softwareVersion": null,
-        "connectReplyCode": 220,
-        "connectionTimeMs": 1075,
-        "startTlsReplyCode": 220,
-        "supportedExtensions": [
-          "SMTPUTF8",
-          "SIZE 157286400",
-          "PIPELINING",
-          "AM5EUR02FT017.mail.protection.outlook.com Hello [54.155.99.171]",
-          "STARTTLS",
-          "8BITMIME",
-          "CHUNKING",
-          "DSN",
-          "ENHANCEDSTATUSCODES",
-          "BINARYMIME"
-        ]
-      },
-      {
-        "ip": "104.47.6.36",
-        "asn": 8075,
-        "banner": "220 VE1EUR02FT003.mail.protection.outlook.com Microsoft ESMTP MAIL Service ready at Fri, 7 Jan 2022 00:05:41 +0000",
-        "country": "AT",
-        "software": null,
-        "connectOK": true,
-        "ipVersion": 4,
-        "startTlsOk": true,
-        "errorMessage": null,
-        "asnOrganisation": "MICROSOFT-CORP-MSN-AS-BLOCK",
-        "softwareVersion": null,
-        "connectReplyCode": 220,
-        "connectionTimeMs": 1563,
-        "startTlsReplyCode": 220,
-        "supportedExtensions": [
-          "SMTPUTF8",
-          "SIZE 157286400",
-          "PIPELINING",
-          "VE1EUR02FT003.mail.protection.outlook.com Hello [54.155.99.171]",
-          "STARTTLS",
-          "8BITMIME",
-          "CHUNKING",
-          "DSN",
-          "ENHANCEDSTATUSCODES",
-          "BINARYMIME"
-        ]
-      },
-      {
-        "ip": "2a01:111:f400:7e06:0:0:0:10",
-        "asn": null,
-        "banner": null,
-        "country": null,
-        "software": null,
-        "connectOK": false,
-        "ipVersion": 6,
-        "startTlsOk": false,
-        "errorMessage": "conversation with IPv6 SMTP host skipped",
-        "asnOrganisation": null,
-        "softwareVersion": null,
-        "connectReplyCode": 0,
-        "connectionTimeMs": -1,
-        "startTlsReplyCode": 0,
-        "supportedExtensions": []
-      },
-      {
-        "ip": "2a01:111:f400:7e1e:0:0:0:10",
-        "asn": null,
-        "banner": null,
-        "country": null,
-        "software": null,
-        "connectOK": false,
-        "ipVersion": 6,
-        "startTlsOk": false,
-        "errorMessage": "conversation with IPv6 SMTP host skipped",
-        "asnOrganisation": null,
-        "softwareVersion": null,
-        "connectReplyCode": 0,
-        "connectionTimeMs": -1,
-        "startTlsReplyCode": 0,
-        "supportedExtensions": []
-      }
-    ],
-    "hostName": "dnsbelgium-be.mail.protection.outlook.com",
-    "priority": 0
-  }
-]
-```
+The combination of visit_id, host_name, priority and conversation needs to be unique.
+
+| Column name  | Description                                                                  | Example                                   |
+|--------------|------------------------------------------------------------------------------|-------------------------------------------|
+| id           | Primary key                                                                  | 549561                                    |
+| visit_id     | Foreign key pointing to smtp_visit                                           | bcd90704-2f51-40e2-9c52-101dceca168e      |
+| from_mx      | A boolean that indicates if the host came from an mx record.                 | true                                      |
+| host_name    | The host name.                                                               | dnsbelgium-be.mail.protection.outlook.com |
+| priority     | The priority of this host according to the MX record. 0 if from_mx is false. | 20                                        |
+| conversation | Foreign key pointing to smtp_conversation                                    | 25689                                     |
+
+### SMTP conversation
+
+![](img/db_smtp_crawler_smtp_conversation.png)
+
+| Column name          | Description                                                              | Example                                                                                                            |
+|----------------------|--------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+| id                   | Primary key                                                              | 4657887                                                                                                            |
+| ip                   | The IP address of the MX host                                            | 192.168.0.1                                                                                                        |
+| ip_version           | IP version of this IP address (4 or 6)                                   | 4                                                                                                                  |
+| asn                  | The ASN to which the ip belongs                                          | 456789                                                                                                             |
+| asn_organisation     | The organization belonging to the ASN of this IP (according to MaxMind). | MICROSOFT-CORP-MSN-AS-BLOCK                                                                                        |
+| banner               | The banner of the mail server                                            | 220 AM5EUR02FT017.mail.protection.outlook.com Microsoft ESMTP MAIL Service ready at Fri, 7 Jan 2022 00:05:19 +0000 |
+| connection_time_ms   | The connection time in ms                                                | 500                                                                                                                |
+| country              | The country code                                                         | BE                                                                                                                 |
+| connect_ok           | Whether we could connect to the SMTP server at this IP address           | true                                                                                                               |
+| connect_reply_code   | The SMTP replyCode after connecting.                                     | 0                                                                                                                  |
+| start_tls_ok         | Whether START_TLS is supported                                           | false                                                                                                              |
+| start_tls_reply_code | The SMTP replyCode after sending START.                                  | 0                                                                                                                  |
+| error_message        | Error message when connecting to this SMTP server.                       | Timed out while waiting for a response                                                                             |
+| error                | The category for the error message.                                      | TIME_OUT                                                                                                           |
+| software             | The detected software of the SMTP server                                 | null                                                                                                               |
+| software_version     | The detected version of the SMTP software.                               | null                                                                                                               |
+| extensions           | A list of supported SMTP extensions.                                     | {["SMTPUTF8", "STARTTLS"]}                                                                                         |
+| timestamp            | The time at which the server was contacted.                              | 2022-01-07 08:57:21.308303 +00:00                                                                                  |
+
 ## TLS crawler
 
 The TLS crawler will determine which TLS versions abd ciphers are supported by the website linked to the given domain name.

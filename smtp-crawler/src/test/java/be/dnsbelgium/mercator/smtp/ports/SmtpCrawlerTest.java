@@ -4,7 +4,7 @@ import be.dnsbelgium.mercator.common.messaging.ack.AckMessageService;
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
-import be.dnsbelgium.mercator.smtp.persistence.SmtpCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
@@ -19,64 +19,67 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringJUnitConfig({SmtpCrawler.class, MetricsAutoConfiguration.class,
-                    CompositeMeterRegistryAutoConfiguration.class})
+  CompositeMeterRegistryAutoConfiguration.class})
 class SmtpCrawlerTest {
 
-    @Autowired SmtpCrawler crawler;
+  @Autowired
+  SmtpCrawler crawler;
 
-    @MockBean SmtpCrawlService service;
+  @MockBean
+  SmtpCrawlService service;
 
-    @MockBean AckMessageService ackMessageService;
+  @MockBean
+  AckMessageService ackMessageService;
 
-    @Test
-    public void nullRequestIsIgnored() throws Exception {
-        crawler.process(null);
-        verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
-    }
+  @Test
+  public void nullRequestIsIgnored() throws Exception {
+    crawler.process(null);
+    verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
+  }
 
-    @Test
-    public void missingDomainNameIsIgnored() throws Exception {
-        VisitRequest request = new VisitRequest(UUID.randomUUID(), null);
-        crawler.process(request);
-        verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
-    }
+  @Test
+  public void missingDomainNameIsIgnored() throws Exception {
+    VisitRequest request = new VisitRequest(UUID.randomUUID(), null);
+    crawler.process(request);
+    verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
+  }
 
-    @Test
-    public void missingVisitIdIsIgnored() throws Exception {
-        VisitRequest request = new VisitRequest(null, "abc.be");
-        crawler.process(request);
-        verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
-    }
+  @Test
+  public void missingVisitIdIsIgnored() throws Exception {
+    VisitRequest request = new VisitRequest(null, "abc.be");
+    crawler.process(request);
+    verify(service, never()).retrieveSmtpInfo(any(VisitRequest.class));
+  }
 
-    @Test
-    public void happyPath() throws Exception {
-        VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
-        when(service.retrieveSmtpInfo(request)).thenReturn(new SmtpCrawlResult());
-        crawler.process(request);
-        verify(service, times(1)).retrieveSmtpInfo(request);
-    }
+  @Test
+  public void happyPath() throws Exception {
+    VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
+    when(service.retrieveSmtpInfo(request)).thenReturn(new SmtpVisitEntity());
+    crawler.process(request);
+    verify(service, times(1)).retrieveSmtpInfo(request);
+  }
 
-    @Test
-    public void oneFailure() throws Exception {
-        VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
-        doThrow(new RuntimeException("first failure")).when(service).retrieveSmtpInfo(request);
-        assertThrows(RuntimeException.class, () -> crawler.process(request));
-        verify(service, times(1)).retrieveSmtpInfo(request);
-    }
+  @Test
+  public void oneFailure() throws Exception {
+    VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
+    doThrow(new RuntimeException("first failure")).when(service).retrieveSmtpInfo(request);
+    assertThrows(RuntimeException.class, () -> crawler.process(request));
+    verify(service, times(1)).retrieveSmtpInfo(request);
+  }
 
-    @Test
-    public void duplicate() throws Exception {
-        UUID visitId = UUID.randomUUID();
-        VisitRequest request = new VisitRequest(visitId, "abc.be");
-        SmtpCrawlResult result = new SmtpCrawlResult();
-        when(service.retrieveSmtpInfo(request)).thenReturn(result);
-        when(service.find(visitId))
-            .thenReturn(Optional.empty())
-            .thenReturn(Optional.of(result));
-        crawler.process(request);
-        crawler.process(request);
-        verify(service).retrieveSmtpInfo(any(VisitRequest.class));
-        verify(ackMessageService).sendAck(any(VisitRequest.class), any(CrawlerModule.class));
-    }
+  @Test
+  public void duplicate() throws Exception {
+    UUID visitId = UUID.randomUUID();
+    VisitRequest request = new VisitRequest(visitId, "abc.be");
+    SmtpVisitEntity result = new SmtpVisitEntity();
+    when(service.retrieveSmtpInfo(request)).thenReturn(result);
+    when(service.find(visitId))
+      .thenReturn(Optional.empty())
+      .thenReturn(Optional.of(result));
+    crawler.process(request);
+    crawler.process(request);
+    verify(service).retrieveSmtpInfo(any(VisitRequest.class));
+    verify(ackMessageService).sendAck(any(VisitRequest.class), any(CrawlerModule.class));
+  }
 
 }

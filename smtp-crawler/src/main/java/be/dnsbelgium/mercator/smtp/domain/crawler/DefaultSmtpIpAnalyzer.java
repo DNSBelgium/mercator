@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.geoip.GeoIPService;
-import be.dnsbelgium.mercator.smtp.dto.SmtpHostIp;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -24,7 +24,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   private final SmtpConversationFactory conversationFactory;
 
   /* I could not get the @Cacheable working so using an explicit cache instead, which allows us to send metrics to micrometer */
-  private final Cache<InetAddress, SmtpHostIp> cache;
+  private final Cache<InetAddress, SmtpConversation> cache;
   private final MeterRegistry meterRegistry;
   private final GeoIPService geoIPService;
 
@@ -54,35 +54,35 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   }
 
   @Override
-  public SmtpHostIp crawl(InetAddress ip) {
-    SmtpHostIp smtpHostIp = cache.getIfPresent(ip);
-    logger.debug("cache for {} = {}", ip, smtpHostIp);
-    if (smtpHostIp == null) {
+  public SmtpConversation crawl(InetAddress ip) {
+    SmtpConversation smtpConversation = cache.getIfPresent(ip);
+    logger.debug("cache for {} = {}", ip, smtpConversation);
+    if (smtpConversation == null) {
       meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
-      smtpHostIp = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
-      geoIP(smtpHostIp);
-      cache.put(ip, smtpHostIp);
+      smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
+      geoIP(smtpConversation);
+      cache.put(ip, smtpConversation);
       meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
     } else {
       meterRegistry.counter(MetricName.COUNTER_CACHE_HITS).increment();
     }
-    return smtpHostIp;
+    return smtpConversation;
   }
 
-  private SmtpHostIp doCrawl(InetAddress ip) {
+  private SmtpConversation doCrawl(InetAddress ip) {
     logger.debug("About to talk SMTP with {}", ip);
-    SmtpConversation conversation = conversationFactory.create(ip);
+    ISmtpConversation conversation = conversationFactory.create(ip);
     return conversation.talk();
   }
 
-  private void geoIP(SmtpHostIp smtpHostIp) {
-    Optional<Pair<Integer, String>> asn = geoIPService.lookupASN(smtpHostIp.getIp());
+  private void geoIP(SmtpConversation smtpConversation) {
+    Optional<Pair<Integer, String>> asn = geoIPService.lookupASN(smtpConversation.getIp());
     if (asn.isPresent()) {
-      smtpHostIp.setAsn(asn.get().getKey());
-      smtpHostIp.setAsnOrganisation(asn.get().getValue());
+      smtpConversation.setAsn(Long.valueOf(asn.get().getKey()));
+      smtpConversation.setAsnOrganisation(asn.get().getValue());
     }
-    Optional<String> country = geoIPService.lookupCountry(smtpHostIp.getIp());
-    country.ifPresent(smtpHostIp::setCountry);
+    Optional<String> country = geoIPService.lookupCountry(smtpConversation.getIp());
+    country.ifPresent(smtpConversation::setCountry);
   }
 
 }
