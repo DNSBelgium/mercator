@@ -14,13 +14,13 @@ public interface SmtpConversationRepository extends PagingAndSortingRepository<S
 
   Optional<SmtpConversationEntity> findByIpAndTimestamp(String ip, ZonedDateTime timestamp);
 
-  @Query(value = "select * from smtp_crawler.smtp_conversation " +
-    "inner join smtp_crawler.smtp_host sh on smtp_conversation.id = sh.conversation " +
+  @Query(value = "select * from smtp_conversation " +
+    "inner join smtp_host sh on smtp_conversation.id = sh.conversation " +
     "where sh.visit_id = :visit_id", nativeQuery = true)
   List<SmtpConversationEntity> findAllByVisitId(@Param("visit_id") UUID visitId);
 
-  @Query(value = "select * from smtp_crawler.smtp_conversation c " +
-    "inner join smtp_crawler.smtp_host h on c.id = h.conversation " +
+  @Query(value = "select * from smtp_conversation c " +
+    "inner join smtp_host h on c.id = h.conversation " +
     "where h.id = ?1", nativeQuery = true)
   SmtpConversationEntity findByHostId(@Param("host_id") Long hostId);
 }

@@ -9,6 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SmtpHostRepository extends PagingAndSortingRepository<SmtpHostEntity, Long> {
-  @Query(value = "select * from smtp_crawler.smtp_host where visit_id = :visit_id", nativeQuery = true)
+  @Query(value = "select * from smtp_host where visit_id = :visit_id", nativeQuery = true)
   List<SmtpHostEntity> findAllByVisitId(@Param("visit_id") UUID visitId);
 }
