@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public interface SmtpConversationRepository extends PagingAndSortingRepository<SmtpConversationEntity, Long> {
 
-  Optional<SmtpConversationEntity> findByIpAndTimestamp(String ip, ZonedDateTime timestamp);
+  Optional<SmtpConversationEntity> findFirstByIpAndTimestamp(String ip, ZonedDateTime timestamp);
 
   @Query(value = "select * from smtp_conversation " +
     "inner join smtp_host sh on smtp_conversation.id = sh.conversation " +
