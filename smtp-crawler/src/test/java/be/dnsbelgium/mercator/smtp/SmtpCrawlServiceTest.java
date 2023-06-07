@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
@@ -75,8 +76,8 @@ class SmtpCrawlServiceTest {
   public void integrationTest() throws Exception {
     UUID uuid = UUID.randomUUID();
     VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
-    SmtpVisitEntity visit = service.retrieveSmtpInfo(request);
-    service.save(visit);
+    SmtpVisit visit = service.retrieveSmtpInfo(request);
+    service.save(visit.toEntity());
     Optional<SmtpVisitEntity> find = repository.findByVisitId(uuid);
     assertThat(find).isPresent();
     SmtpVisitEntity found = find.get();

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.net.InetAddress;
 import java.util.Optional;
@@ -59,6 +60,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
     logger.debug("cache for {} = {}", ip, smtpConversation);
     if (smtpConversation == null) {
       meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
+      logger.info("DefaultSmtpIpAnalyzer.crawl: tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
       smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
       if (smtpConversation != null) {
         geoIP(smtpConversation);
@@ -73,6 +75,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private SmtpConversation doCrawl(InetAddress ip) {
     logger.debug("About to talk SMTP with {}", ip);
+    logger.info("DefaultSmtpIpAnalyzer.doCrawl: tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     ISmtpConversation conversation = conversationFactory.create(ip);
     return conversation.talk();
   }

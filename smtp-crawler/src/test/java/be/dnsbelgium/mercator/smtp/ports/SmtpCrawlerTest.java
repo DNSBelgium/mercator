@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.common.messaging.ack.AckMessageService;
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,7 @@ class SmtpCrawlerTest {
   @Test
   public void happyPath() throws Exception {
     VisitRequest request = new VisitRequest(UUID.randomUUID(), "abc.be");
-    when(service.retrieveSmtpInfo(request)).thenReturn(new SmtpVisitEntity());
+    when(service.retrieveSmtpInfo(request)).thenReturn(new SmtpVisit());
     crawler.process(request);
     verify(service, times(1)).retrieveSmtpInfo(request);
   }
@@ -71,11 +72,11 @@ class SmtpCrawlerTest {
   public void duplicate() throws Exception {
     UUID visitId = UUID.randomUUID();
     VisitRequest request = new VisitRequest(visitId, "abc.be");
-    SmtpVisitEntity result = new SmtpVisitEntity();
+    SmtpVisit result = new SmtpVisit();
     when(service.retrieveSmtpInfo(request)).thenReturn(result);
     when(service.find(visitId))
       .thenReturn(Optional.empty())
-      .thenReturn(Optional.of(result));
+      .thenReturn(Optional.of(result.toEntity()));
     crawler.process(request);
     crawler.process(request);
     verify(service).retrieveSmtpInfo(any(VisitRequest.class));

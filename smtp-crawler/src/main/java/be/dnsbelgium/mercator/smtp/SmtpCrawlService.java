@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpAnalyzer;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
@@ -40,10 +41,10 @@ public class SmtpCrawlService {
   }
 
 
-  public SmtpVisitEntity retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
+  public SmtpVisit retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
     String fqdn = visitRequest.getDomainName();
     logger.debug("Retrieving SMTP info for domainName = {}", fqdn);
-    SmtpVisitEntity result = analyzer.analyze(fqdn);
+    SmtpVisit result = analyzer.analyze(fqdn);
     result.setVisitId(visitRequest.getVisitId());
     return result;
   }

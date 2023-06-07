@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -52,16 +53,16 @@ public class SmtpAnalyzer {
     logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
   }
 
-  public SmtpVisitEntity analyze(String domainName) throws Exception {
+  public SmtpVisit analyze(String domainName) throws Exception {
     logger.info("SmtpAnalyzer.analyze : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
-    SmtpVisitEntity result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
+    SmtpVisit result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
     meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
     return result;
   }
 
-  private SmtpVisitEntity doCrawl(String domainName) {
+  private SmtpVisit doCrawl(String domainName) {
     logger.debug("Starting SMTP crawl for domainName={}", domainName);
-    SmtpVisitEntity result = new SmtpVisitEntity();
+    SmtpVisit result = new SmtpVisit();
     result.setDomainName(domainName);
     result.setTimestamp(ZonedDateTime.now());
     MxLookupResult mxLookupResult = mxFinder.findMxRecordsFor(domainName);
@@ -95,11 +96,11 @@ public class SmtpAnalyzer {
         meterRegistry.counter(MetricName.COUNTER_NO_MX_RECORDS_FOUND).increment();
         logger.debug("No MX records found for {} => finding address records", domainName);
         result.setCrawlStatus(CrawlStatus.OK);
-        Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(domainName, 0);
+        Optional<List<SmtpHost>> hosts = createSmtpHosts(domainName, 0);
         if (hosts.isPresent()) {
-          for (SmtpHostEntity host : hosts.get()){
+          for (SmtpHost host : hosts.get()){
             host.setFromMx(false);
-            host.setHostName(host.getConversation().getIp());
+            host.setHostName(host.getSmtpConversation().getIp());
           }
           result.add(hosts.get());
         }
@@ -110,12 +111,12 @@ public class SmtpAnalyzer {
         for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
           logger.debug("mxRecord = {}", mxRecord);
           String hostName = mxRecord.getTarget().toString(true);
-          Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(hostName, mxRecord.getPriority());
+          Optional<List<SmtpHost>> hosts = createSmtpHosts(hostName, mxRecord.getPriority());
           if (hosts.isPresent()) {
-            for(SmtpHostEntity host : hosts.get()){
+            for(SmtpHost host : hosts.get()){
               host.setFromMx(true);
               // TODO: check error
-              host.getConversation().getError();
+              host.getSmtpConversationEntity().getError();
             }
             result.add(hosts.get());
           }
@@ -130,21 +131,24 @@ public class SmtpAnalyzer {
     }
   }
 
-  private Optional<List<SmtpHostEntity>> createSmtpHosts(String domainName, int priority) {
+  private Optional<List<SmtpHost>> createSmtpHosts(String domainName, int priority) {
     List<InetAddress> addresses = mxFinder.findIpAddresses(domainName);
     if (addresses.size() == 0) {
       logger.debug("No addresses found for {}", domainName);
       return Optional.empty();
     }
     logger.debug("We found {} addresses for {}", addresses.size(), domainName);
-    List<SmtpHostEntity> hosts = new ArrayList<>();
+    List<SmtpHost> hosts = new ArrayList<>();
     for (InetAddress address : addresses) {
-      SmtpHostEntity host = new SmtpHostEntity();
-      host.setHostName(domainName);
-      host.setPriority(priority);
+      SmtpHost host = new SmtpHost();
       SmtpConversation smtpConversation = crawl(address);
       smtpConversation.clean();
-      host.setConversation(smtpConversation);
+      if (smtpConversation.getId() != null){
+        host = host.fromCache(null, null, domainName, priority, new SmtpConversationEntity().fromSmtpConversation(smtpConversation));
+      }
+      else {
+        host = host.fromCrawl(null, null, domainName, priority, smtpConversation);
+      }
       hosts.add(host);
     }
     return Optional.of(hosts);

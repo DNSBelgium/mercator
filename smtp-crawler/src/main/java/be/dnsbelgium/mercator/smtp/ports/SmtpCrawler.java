@@ -5,11 +5,17 @@ import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.UnexpectedRollbackException;
@@ -17,6 +23,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.transaction.Transactional;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -30,11 +37,25 @@ public class SmtpCrawler implements Crawler {
   private final SmtpCrawlService crawlService;
   private final AtomicInteger concurrentVisits = new AtomicInteger();
   private final AckMessageService ackMessageService;
+  private final Cache<String, SmtpConversationEntity> cache;
 
-  public SmtpCrawler(MeterRegistry meterRegistry, SmtpCrawlService crawlService, AckMessageService ackMessageService) {
+  public SmtpCrawler(MeterRegistry meterRegistry, SmtpCrawlService crawlService, AckMessageService ackMessageService,
+                     @Value("${smtp.crawler.ip.cache.size.initial:2000}") int initialCacheSize,
+                     @Value("${smtp.crawler.ip.cache.size.max:50000}") int maxCacheSize,
+                     @Value("${smtp.crawler.ip.cache.ttl.hours:24}") int ttlHours) {
     this.meterRegistry = meterRegistry;
     this.crawlService = crawlService;
     this.ackMessageService = ackMessageService;
+    logger.info("initialCacheSize={} maxCacheSize={} ttl={} hours", initialCacheSize, maxCacheSize, ttlHours);
+    if (maxCacheSize == 0) {
+      logger.warn("maxCacheSize=0 => caching is actually disabled!!");
+    }
+    this.cache = Caffeine.newBuilder()
+      .initialCapacity(initialCacheSize)
+      .maximumSize(maxCacheSize)
+      .expireAfterWrite(ttlHours, TimeUnit.HOURS)
+      .recordStats()
+      .build();
   }
 
   @Override
@@ -55,9 +76,9 @@ public class SmtpCrawler implements Crawler {
 
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
-      SmtpVisitEntity smtpVisitEntity = crawlService.retrieveSmtpInfo(visitRequest);
+      SmtpVisit smtpVisit = crawlService.retrieveSmtpInfo(visitRequest);
       logger.info("SmtpCrawler.process (after retrieveSmtpInfo): tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
-      saveAndIgnoreDuplicate(visitRequest, smtpVisitEntity);
+      saveAndIgnoreDuplicate(visitRequest, smtpVisit);
       ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
       logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
     } catch (Exception e) {
@@ -75,11 +96,17 @@ public class SmtpCrawler implements Crawler {
     }
   }
 
-  private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisitEntity smtpVisit) throws UnexpectedRollbackException {
+  private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisit smtpVisit) throws UnexpectedRollbackException {
     logger.info("SmtpCrawler.saveAndIgnoreDuplicate : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     try {
-      crawlService.save(smtpVisit);
+      crawlService.save(smtpVisit.toEntity());
       logger.info("SmtpCrawler.saveAndIgnoreDuplicate after save : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
+      //TODO if smtp_conversation is fresh, insert into cache
+      for (SmtpHost smtpHost : smtpVisit.getHosts()){
+        if (smtpHost.isFresh()){
+          cache.put(smtpHost.getSmtpConversationEntity().getIp(), smtpHost.getSmtpConversationEntity());
+        }
+      }
     } catch (UnexpectedRollbackException e) {
       logger.info("UnexpectedRollbackException: {}", e.getMessage());
       Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
