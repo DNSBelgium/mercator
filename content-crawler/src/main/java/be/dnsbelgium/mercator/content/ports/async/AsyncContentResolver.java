@@ -47,11 +47,11 @@ public class AsyncContentResolver implements ContentResolver {
           logger.info("Putting message {} on queue {}", request, queueName.getKey());
           queueClient.convertAndSend(queueName.getValue(), request);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+          meterRegistry.counter(MetricName.MESSAGES_FAILED).increment();
           logger.error("{} is not a correct argument, cannot find the associated RequestMessage class", key, e);
         }
       }
       meterRegistry.counter(MetricName.MESSAGES_OUT).increment();
     }
   }
-
 }
