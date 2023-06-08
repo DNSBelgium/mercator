@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
@@ -77,7 +78,7 @@ class SmtpCrawlServiceTest {
     UUID uuid = UUID.randomUUID();
     VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
     SmtpVisit visit = service.retrieveSmtpInfo(request);
-    service.save(visit.toEntity());
+    service.save(visit);
     Optional<SmtpVisitEntity> find = repository.findByVisitId(uuid);
     assertThat(find).isPresent();
     SmtpVisitEntity found = find.get();
@@ -98,26 +99,26 @@ class SmtpCrawlServiceTest {
     conversation2.setIpVersion(4);
 
     UUID visitId = UUID.randomUUID();
-    SmtpVisitEntity visit = new SmtpVisitEntity();
+    SmtpVisit visit = new SmtpVisit();
     visit.setVisitId(visitId);
     visit.setDomainName("dnsbelgium.be");
     visit.setNumConversations(2);
 
-    SmtpHostEntity host = new SmtpHostEntity();
-    host.setConversation(conversation1);
+    SmtpHost host = new SmtpHost();
+    host.setSmtpConversationEntity(conversation1);
     host.setHostName("protection.outlook.com");
     host.setPriority(0);
     host.setFromMx(true);
     host.setVisit(visit);
 
-    SmtpHostEntity host2 = new SmtpHostEntity();
-    host2.setConversation(conversation2);
+    SmtpHost host2 = new SmtpHost();
+    host2.setSmtpConversationEntity(conversation2);
     host2.setHostName("protection.outlook.com");
     host2.setPriority(0);
     host2.setFromMx(true);
     host2.setVisit(visit);
 
-    List<SmtpHostEntity> hosts = new ArrayList<>();
+    List<SmtpHost> hosts = new ArrayList<>();
     hosts.add(host);
     hosts.add(host2);
 

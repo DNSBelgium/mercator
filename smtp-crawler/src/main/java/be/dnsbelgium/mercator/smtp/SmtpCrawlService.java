@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.smtp;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpAnalyzer;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
@@ -18,6 +19,8 @@ import javax.transaction.Transactional;
 
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +47,7 @@ public class SmtpCrawlService {
   public SmtpVisit retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
     String fqdn = visitRequest.getDomainName();
     logger.debug("Retrieving SMTP info for domainName = {}", fqdn);
+    logger.info("SmtpCrawlService.retrieveSmtpInfo: tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     SmtpVisit result = analyzer.analyze(fqdn);
     result.setVisitId(visitRequest.getVisitId());
     return result;
@@ -57,13 +61,20 @@ public class SmtpCrawlService {
   }
 
   @Transactional
-  public void save(SmtpVisitEntity smtpVisit) {
+  public List<SmtpConversation> save(SmtpVisit smtpVisit) {
     logger.debug("About to save SmtpVisitEntity for {}", smtpVisit.getDomainName());
-    for (SmtpHostEntity host : smtpVisit.getHosts()) {
-      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findFirstByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
-      conversationEntity.ifPresent(host::setConversation);
+    SmtpVisitEntity visitEntity = smtpVisit.toEntity();
+    List<SmtpConversation> newSavedConversations = new ArrayList<>();
+    for (SmtpHostEntity host : visitEntity.getHosts()) {
+      if (host.getConversation().getId() != null){
+        Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findById(host.getConversation().getId());
+        conversationEntity.ifPresent(host::setConversation);
+      }
+      else {
+        newSavedConversations.add(conversationRepository.save(host.getConversation()).toSmtpConversation());
+      }
     }
-    Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(smtpVisit);
+    Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(visitEntity);
     if (savedVisit.isEmpty()) {
       logger.info("was duplicate: {}", smtpVisit.getVisitId());
       meterRegistry.counter(MetricName.COUNTER_DUPLICATE_KEYS).increment();
@@ -83,6 +94,7 @@ public class SmtpCrawlService {
       logger.debug("Saved SmtpVisitEntity for {} with visitId={}",
         smtpVisit.getDomainName(), smtpVisit.getVisitId());
     }
+    return newSavedConversations;
   }
 
 }

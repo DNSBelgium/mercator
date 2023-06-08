@@ -31,7 +31,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  * and talking with all corresponding SMTP servers
  */
 @Component
-@Transactional
 public class SmtpAnalyzer {
 
   private final MeterRegistry meterRegistry;

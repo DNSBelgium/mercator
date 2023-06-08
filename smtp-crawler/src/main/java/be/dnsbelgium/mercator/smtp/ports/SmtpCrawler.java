@@ -5,8 +5,10 @@ import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
@@ -15,6 +17,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -22,6 +25,7 @@ import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,25 +41,14 @@ public class SmtpCrawler implements Crawler {
   private final SmtpCrawlService crawlService;
   private final AtomicInteger concurrentVisits = new AtomicInteger();
   private final AckMessageService ackMessageService;
-  private final Cache<String, SmtpConversationEntity> cache;
-
-  public SmtpCrawler(MeterRegistry meterRegistry, SmtpCrawlService crawlService, AckMessageService ackMessageService,
-                     @Value("${smtp.crawler.ip.cache.size.initial:2000}") int initialCacheSize,
-                     @Value("${smtp.crawler.ip.cache.size.max:50000}") int maxCacheSize,
-                     @Value("${smtp.crawler.ip.cache.ttl.hours:24}") int ttlHours) {
+  private final SmtpConversationCache cache;
+  @Autowired
+  public SmtpCrawler(MeterRegistry meterRegistry, SmtpCrawlService crawlService, AckMessageService ackMessageService
+    , SmtpConversationCache cache) {
     this.meterRegistry = meterRegistry;
     this.crawlService = crawlService;
     this.ackMessageService = ackMessageService;
-    logger.info("initialCacheSize={} maxCacheSize={} ttl={} hours", initialCacheSize, maxCacheSize, ttlHours);
-    if (maxCacheSize == 0) {
-      logger.warn("maxCacheSize=0 => caching is actually disabled!!");
-    }
-    this.cache = Caffeine.newBuilder()
-      .initialCapacity(initialCacheSize)
-      .maximumSize(maxCacheSize)
-      .expireAfterWrite(ttlHours, TimeUnit.HOURS)
-      .recordStats()
-      .build();
+    this.cache = cache;
   }
 
   @Override
@@ -99,13 +92,10 @@ public class SmtpCrawler implements Crawler {
   private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisit smtpVisit) throws UnexpectedRollbackException {
     logger.info("SmtpCrawler.saveAndIgnoreDuplicate : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     try {
-      crawlService.save(smtpVisit.toEntity());
+      List<SmtpConversation> newConversations = crawlService.save(smtpVisit);
       logger.info("SmtpCrawler.saveAndIgnoreDuplicate after save : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
-      //TODO if smtp_conversation is fresh, insert into cache
-      for (SmtpHost smtpHost : smtpVisit.getHosts()){
-        if (smtpHost.isFresh()){
-          cache.put(smtpHost.getSmtpConversationEntity().getIp(), smtpHost.getSmtpConversationEntity());
-        }
+      for (SmtpConversation conversation : newConversations){
+        cache.add(conversation.getIp(), conversation);
       }
     } catch (UnexpectedRollbackException e) {
       logger.info("UnexpectedRollbackException: {}", e.getMessage());

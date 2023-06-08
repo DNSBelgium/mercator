@@ -25,7 +25,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   private final SmtpConversationFactory conversationFactory;
 
   /* I could not get the @Cacheable working so using an explicit cache instead, which allows us to send metrics to micrometer */
-  private final Cache<InetAddress, SmtpConversation> cache;
+  private final SmtpConversationCache cache;
   private final MeterRegistry meterRegistry;
   private final GeoIPService geoIPService;
 
@@ -33,30 +33,19 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   @Autowired
   public DefaultSmtpIpAnalyzer(
-      MeterRegistry meterRegistry,
-      SmtpConversationFactory conversationFactory,
-      GeoIPService geoIPService,
-      @Value("${smtp.crawler.ip.cache.size.initial:2000}") int initialCacheSize,
-      @Value("${smtp.crawler.ip.cache.size.max:50000}") int maxCacheSize,
-      @Value("${smtp.crawler.ip.cache.ttl.hours:24}") int ttlHours) {
+    MeterRegistry meterRegistry,
+    SmtpConversationFactory conversationFactory,
+    GeoIPService geoIPService,
+    SmtpConversationCache cache) {
     this.conversationFactory = conversationFactory;
     this.meterRegistry = meterRegistry;
     this.geoIPService = geoIPService;
-    logger.info("initialCacheSize={} maxCacheSize={} ttl={} hours", initialCacheSize, maxCacheSize, ttlHours);
-    if (maxCacheSize == 0) {
-      logger.warn("maxCacheSize=0 => caching is actually disabled!!");
-    }
-    this.cache = Caffeine.newBuilder()
-        .initialCapacity(initialCacheSize)
-        .maximumSize(maxCacheSize)
-        .expireAfterWrite(ttlHours, TimeUnit.HOURS)
-        .recordStats()
-        .build();
+    this.cache = cache;
   }
 
   @Override
   public SmtpConversation crawl(InetAddress ip) {
-    SmtpConversation smtpConversation = cache.getIfPresent(ip);
+    SmtpConversation smtpConversation = cache.get(ip.getHostAddress());
     logger.debug("cache for {} = {}", ip, smtpConversation);
     if (smtpConversation == null) {
       meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
@@ -64,8 +53,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
       smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
       if (smtpConversation != null) {
         geoIP(smtpConversation);
-        cache.put(ip, smtpConversation);
-        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
+        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.size());
       }
     } else {
       meterRegistry.counter(MetricName.COUNTER_CACHE_HITS).increment();

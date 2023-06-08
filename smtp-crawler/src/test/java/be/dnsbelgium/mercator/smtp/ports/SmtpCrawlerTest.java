@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.common.messaging.ack.AckMessageService;
 import be.dnsbelgium.mercator.common.messaging.ack.CrawlerModule;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
+import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringJUnitConfig({SmtpCrawler.class, MetricsAutoConfiguration.class,
-  CompositeMeterRegistryAutoConfiguration.class})
+  CompositeMeterRegistryAutoConfiguration.class, SmtpConversationCache.class})
 class SmtpCrawlerTest {
 
   @Autowired

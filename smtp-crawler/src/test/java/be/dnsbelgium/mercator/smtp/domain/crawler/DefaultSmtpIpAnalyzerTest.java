@@ -24,10 +24,11 @@ class DefaultSmtpIpAnalyzerTest {
     private final GeoIPService geoIPService = mock(GeoIPService.class);
     private SmtpIpAnalyzer analyzer;
     private final SmtpConversationFactory conversationFactory = mock(SmtpConversationFactory.class);
+    private final SmtpConversationCache cache = new SmtpConversationCache();
 
     @BeforeEach
     public void init() {
-        analyzer = new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, geoIPService, 10, 20, 1);
+        analyzer = new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, geoIPService, cache);
     }
 
     @Test
@@ -45,6 +46,7 @@ class DefaultSmtpIpAnalyzerTest {
         when(conversationFactory.create(ip2)).thenReturn(conversation2);
 
         SmtpConversation one = analyzer.crawl(ip1);
+        cache.add(one.getIp(), one);
         SmtpConversation two = analyzer.crawl(ip2);
         SmtpConversation three = analyzer.crawl(ip1);
 
