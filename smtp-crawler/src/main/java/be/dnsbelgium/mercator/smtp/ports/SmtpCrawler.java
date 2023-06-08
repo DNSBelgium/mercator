@@ -13,7 +13,9 @@ import org.slf4j.MDC;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.UnexpectedRollbackException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,6 +47,7 @@ public class SmtpCrawler implements Crawler {
     setMDC(visitRequest);
     logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
     Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
+    logger.info("SmtpCrawler.process (after find) : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     if (existingResult.isPresent()) {
       logger.info("visit {} already exists => skipping", visitRequest);
       return;
@@ -53,6 +56,7 @@ public class SmtpCrawler implements Crawler {
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
       SmtpVisitEntity smtpVisitEntity = crawlService.retrieveSmtpInfo(visitRequest);
+      logger.info("SmtpCrawler.process (after retrieveSmtpInfo): tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
       saveAndIgnoreDuplicate(visitRequest, smtpVisitEntity);
       ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
       logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
@@ -72,8 +76,10 @@ public class SmtpCrawler implements Crawler {
   }
 
   private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisitEntity smtpVisit) throws UnexpectedRollbackException {
+    logger.info("SmtpCrawler.saveAndIgnoreDuplicate : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     try {
       crawlService.save(smtpVisit);
+      logger.info("SmtpCrawler.saveAndIgnoreDuplicate after save : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     } catch (UnexpectedRollbackException e) {
       logger.info("UnexpectedRollbackException: {}", e.getMessage());
       Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());

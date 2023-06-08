@@ -28,18 +28,17 @@ public class SmtpCrawlService {
   private static final Logger logger = getLogger(SmtpCrawlService.class);
 
   private final SmtpVisitRepository repository;
-  private final SmtpHostRepository hostRepository;
   private final SmtpConversationRepository conversationRepository;
   private final SmtpAnalyzer analyzer;
   private final MeterRegistry meterRegistry;
 
-  public SmtpCrawlService(SmtpVisitRepository repository, SmtpHostRepository hostRepository, SmtpConversationRepository conversationRepository, SmtpAnalyzer analyzer, MeterRegistry meterRegistry) {
+  public SmtpCrawlService(SmtpVisitRepository repository, SmtpConversationRepository conversationRepository, SmtpAnalyzer analyzer, MeterRegistry meterRegistry) {
     this.repository = repository;
-    this.hostRepository = hostRepository;
     this.conversationRepository = conversationRepository;
     this.analyzer = analyzer;
     this.meterRegistry = meterRegistry;
   }
+
 
   public SmtpVisitEntity retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
     String fqdn = visitRequest.getDomainName();
@@ -59,8 +58,8 @@ public class SmtpCrawlService {
   @Transactional
   public void save(SmtpVisitEntity smtpVisit) {
     logger.debug("About to save SmtpVisitEntity for {}", smtpVisit.getDomainName());
-    for (SmtpHostEntity host : smtpVisit.getHosts()){
-      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
+    for (SmtpHostEntity host : smtpVisit.getHosts()) {
+      Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findFirstByIpAndTimestamp(host.getConversation().getIp(), host.getConversation().getTimestamp());
       conversationEntity.ifPresent(host::setConversation);
     }
     Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(smtpVisit);

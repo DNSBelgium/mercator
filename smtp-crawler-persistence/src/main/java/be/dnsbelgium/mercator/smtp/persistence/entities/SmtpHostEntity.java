@@ -22,6 +22,7 @@ public class SmtpHostEntity {
   @Column(name = "id")
   private Long id;
 
+  // TODO: check if we need this.
   @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "visit_id")
   @ToString.Exclude
