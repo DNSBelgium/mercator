@@ -10,7 +10,6 @@ import lombok.Setter;
 @Setter
 public class SmtpHost {
 
-  // TODO: check if we need this.
   private SmtpVisit visit;
   private Boolean fromMx;
   private String hostName;

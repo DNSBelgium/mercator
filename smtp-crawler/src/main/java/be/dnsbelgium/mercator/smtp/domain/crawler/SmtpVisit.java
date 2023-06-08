@@ -26,10 +26,9 @@ public class SmtpVisit {
   private CrawlStatus crawlStatus;
 
   public void add(SmtpHost host) {
-    //TODO kijken of de setVisit nodig is
     host.setVisit(this);
     hosts.add(host);
-    numConversations++;
+    ++numConversations;
   }
 
   public void add(List<SmtpHost> smtpHosts) {

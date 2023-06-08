@@ -65,7 +65,8 @@ public class SmtpCrawlService {
     List<SmtpConversation> newSavedConversations = new ArrayList<>();
     for (SmtpHostEntity host : visitEntity.getHosts()) {
       if (host.getConversation().getId() != null){
-        Optional<SmtpConversationEntity> conversationEntity = conversationRepository.findById(host.getConversation().getId());
+        Optional<SmtpConversationEntity> conversationEntity =
+          conversationRepository.findById(host.getConversation().getId());
         conversationEntity.ifPresent(host::setConversation);
       }
       else {

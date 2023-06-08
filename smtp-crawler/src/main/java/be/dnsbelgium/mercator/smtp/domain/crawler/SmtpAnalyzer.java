@@ -110,14 +110,19 @@ public class SmtpAnalyzer {
           if (hosts.isPresent()) {
             for(SmtpHost host : hosts.get()){
               host.setFromMx(true);
-              // TODO: check error
-              host.getSmtpConversationEntity().getError();
             }
             result.add(hosts.get());
           }
         }
-        // TODO: check if at least one host had no problems (else: status = NO_REACHABLE_SMTP_SERVERS")
-        result.setCrawlStatus(CrawlStatus.OK);
+
+        if (result.getHosts().stream().anyMatch(host -> host
+          .getSmtpConversationEntity()
+          .getError() == null)){
+          result.setCrawlStatus(CrawlStatus.OK);
+        }
+        else {
+          result.setCrawlStatus(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
+        }
         logger.debug("DONE crawling for domain name {}", domainName);
         return result;
       }

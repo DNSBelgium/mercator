@@ -54,7 +54,7 @@ public class SmtpVisitEntity {
   public void add(SmtpHostEntity host) {
     host.setVisit(this);
     hosts.add(host);
-    numConversations++;
+    ++numConversations;
   }
 
   public void add(List<SmtpHostEntity> smtpHostEntities) {
