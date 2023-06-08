@@ -50,7 +50,6 @@ public class SmtpAnalyzer {
   }
 
   public SmtpVisit analyze(String domainName) throws Exception {
-    logger.info("SmtpAnalyzer.analyze : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     SmtpVisit result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
     meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
     return result;

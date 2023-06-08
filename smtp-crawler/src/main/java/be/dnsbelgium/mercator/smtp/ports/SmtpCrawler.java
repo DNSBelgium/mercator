@@ -54,7 +54,6 @@ public class SmtpCrawler implements Crawler {
     setMDC(visitRequest);
     logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
     Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
-    logger.info("SmtpCrawler.process (after find) : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     if (existingResult.isPresent()) {
       logger.info("visit {} already exists => skipping", visitRequest);
       return;
@@ -63,7 +62,6 @@ public class SmtpCrawler implements Crawler {
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
       SmtpVisit smtpVisit = crawlService.retrieveSmtpInfo(visitRequest);
-      logger.info("SmtpCrawler.process (after retrieveSmtpInfo): tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
       saveAndIgnoreDuplicate(visitRequest, smtpVisit);
       ackMessageService.sendAck(visitRequest, CrawlerModule.SMTP);
       logger.info("retrieveSmtpInfo done for domainName={}", visitRequest.getDomainName());
@@ -83,10 +81,8 @@ public class SmtpCrawler implements Crawler {
   }
 
   private void saveAndIgnoreDuplicate(VisitRequest visitRequest, SmtpVisit smtpVisit) throws UnexpectedRollbackException {
-    logger.info("SmtpCrawler.saveAndIgnoreDuplicate : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     try {
       List<SmtpConversation> newConversations = crawlService.save(smtpVisit);
-      logger.info("SmtpCrawler.saveAndIgnoreDuplicate after save : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
       for (SmtpConversation conversation : newConversations){
         cache.add(conversation.getIp(), conversation);
       }

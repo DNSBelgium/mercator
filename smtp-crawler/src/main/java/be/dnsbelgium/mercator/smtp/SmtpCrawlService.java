@@ -46,7 +46,6 @@ public class SmtpCrawlService {
   public SmtpVisit retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
     String fqdn = visitRequest.getDomainName();
     logger.debug("Retrieving SMTP info for domainName = {}", fqdn);
-    logger.info("SmtpCrawlService.retrieveSmtpInfo: tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     SmtpVisit result = analyzer.analyze(fqdn);
     result.setVisitId(visitRequest.getVisitId());
     return result;
@@ -78,7 +77,6 @@ public class SmtpCrawlService {
       logger.info("was duplicate: {}", smtpVisit.getVisitId());
       meterRegistry.counter(MetricName.COUNTER_DUPLICATE_KEYS).increment();
       // note that transaction will be rolled back by Hibernate
-      logger.info("TransactionSynchronizationManager.isActualTransactionActive() = {}", TransactionSynchronizationManager.isActualTransactionActive());
       // even though we return here without an exception,
       // spring will throw an UnexpectedRollbackException ("Transaction silently rolled back because it has been marked as rollback-only")
       // to the calling code, probably because of the @Transactional
