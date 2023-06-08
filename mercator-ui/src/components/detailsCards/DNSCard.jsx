@@ -11,39 +11,57 @@ const DNSCard = (props) => {
     const [data, setData] = useState({});
 
     useEffect(() => {
-
         const fetchData = async () => {
             const url = `/requests/search/findByVisitId?visitId=${visitId}`;
-            await api.get(url)
+            await api
+                .get(url)
                 .then((resp) => {
-                    if(resp.status === 200) {
-                        setData(resp.data._embedded.requests.map(item => {
-                            return {...item, key: item.id};
-                        }));
+                    if (resp.status === 200) {
+                        const sortedData = resp.data._embedded.requests.sort(sortByPrefixAndRcode);
+                        setData(sortedData);
                     }
                 })
                 .catch((ex) => {
                     console.log(ex);
-                })
+                });
         };
 
         fetchData();
     }, [visitId]);
 
+    function sortByPrefixAndRcode(a, b) {
+        if (a.prefix < b.prefix) {
+            return -1;
+        }
+        if (a.prefix > b.prefix) {
+            return 1;
+        }
+        if (a.rcode !== b.rcode) {
+            return a.rcode - b.rcode;
+        }
+        // Compare record types
+        if (a.recordType < b.recordType) {
+            return -1;
+        }
+        if (a.recordType > b.recordType) {
+            return 1;
+        }
+        return 0;
+    }
 
     // Writing HTML on a function base so we can define logic more easily.
     const renderHTML = () => {
 
-        if(checkObjectIsFalsy(data)) {
+        if (checkObjectIsFalsy(data)) {
             return (<Card.Body>No data for this visit.</Card.Body>)
         }
 
         return (
             <Card.Body className="dns-table">
                 <br/>
-                <h5>Crawl time stamp
-                    : {data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</h5>
-                <br/>
+                <p id={"crawlTimeStamp"}>Crawl time stamp
+                    : {data[0].crawlTimestamp ? moment(data[0].crawlTimestamp).format("DD/MM/YYYY HH:mm:ss") : ''}</p>
+
                 <Table
                     size="sm"
                 >
@@ -82,15 +100,7 @@ const DNSCard = (props) => {
                     </tr>
                     </thead>
                     <tbody>
-                    {Object.values(data).sort((a, b) => {
-                        if (a.prefix < b.prefix) {
-                            return -1;
-                        }
-                        if (a.prefix > b.prefix) {
-                            return 1;
-                        }
-                        return a.rcode - b.rcode;
-                    }).map((request, index) => (
+                    {data.map((request, index) => (
                         <DnsRequestDataTable request={request} requestIndex={index} key={request.id}/>
                     ))}
                     </tbody>

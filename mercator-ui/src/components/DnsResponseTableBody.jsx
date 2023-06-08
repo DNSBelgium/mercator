@@ -42,19 +42,26 @@ export default function DnsResponseDataTable({request, response, responseIndex})
         }
     }
 
+    const rowSpanRequest = countRowsRequest(request)
+
+    const rowSpanResponse = countRowsResponse(response) || null
+
+
     function requestRowPrimary(req, resp) {
+
+
         return (
             <>
                 <tr>
-                    <td rowSpan={countRowsRequest(req)}>{req.prefix}</td>
-                    <td rowSpan={countRowsRequest(req)}>
+                    <td rowSpan={rowSpanRequest}>{req.prefix}</td>
+                    <td rowSpan={rowSpanRequest}>
                         {req.rcode === 0 ? "Successful (0)" : req.problem + " (" + req.rcode + ")"}
                     </td>
-                    <td rowSpan={countRowsRequest(req)}>{req.recordType}</td>
+                    <td rowSpan={rowSpanRequest}>{req.recordType}</td>
                     {resp !== null ? (
                         <>
-                            <td rowSpan={countRowsResponse(resp)}>{resp.ttl || ""}</td>
-                            <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
+                            <td rowSpan={rowSpanResponse}>{resp.ttl || ""}</td>
+                            <RecordData recordData={resp.recordData} rowSpan={rowSpanResponse}/>
                             <DnsGeoIpResponseDataTable
                                 geoIpResponse={resp.responseGeoIps[0]}
                                 first={true}
@@ -80,8 +87,8 @@ export default function DnsResponseDataTable({request, response, responseIndex})
         return (
             <>
                 <tr>
-                    <td rowSpan={countRowsResponse(resp)}>{resp.ttl || ""}</td>
-                    <RecordData recordData={resp.recordData} rowSpan={countRowsResponse(resp)}/>
+                    <td rowSpan={rowSpanResponse}>{resp.ttl || ""}</td>
+                    <RecordData recordData={resp.recordData} rowSpan={rowSpanResponse}/>
                     <DnsGeoIpResponseDataTable
                         geoIpResponse={resp.responseGeoIps[0]}
                         first={true}
