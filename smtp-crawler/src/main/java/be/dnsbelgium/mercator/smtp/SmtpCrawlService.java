@@ -9,7 +9,6 @@ import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
-import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;

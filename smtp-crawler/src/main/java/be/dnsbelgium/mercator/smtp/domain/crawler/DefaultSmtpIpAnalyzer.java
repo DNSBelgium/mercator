@@ -3,19 +3,15 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.net.InetAddress;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 

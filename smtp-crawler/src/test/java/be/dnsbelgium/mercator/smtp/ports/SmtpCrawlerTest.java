@@ -6,7 +6,6 @@ import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;

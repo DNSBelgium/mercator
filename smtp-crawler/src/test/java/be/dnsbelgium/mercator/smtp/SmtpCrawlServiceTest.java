@@ -4,7 +4,6 @@ import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;

@@ -6,28 +6,21 @@ import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.common.messaging.work.Crawler;
 import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
-import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.slf4j.LoggerFactory.getLogger;

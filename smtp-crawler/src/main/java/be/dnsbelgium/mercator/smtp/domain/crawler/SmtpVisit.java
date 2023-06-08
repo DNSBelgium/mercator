@@ -5,10 +5,8 @@ import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.slf4j.Logger;
 
-import javax.persistence.*;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;

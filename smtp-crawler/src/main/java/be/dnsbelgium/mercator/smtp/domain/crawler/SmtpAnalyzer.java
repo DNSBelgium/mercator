@@ -4,15 +4,12 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xbill.DNS.MXRecord;
 
