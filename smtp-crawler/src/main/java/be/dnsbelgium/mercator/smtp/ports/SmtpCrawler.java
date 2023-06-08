@@ -15,12 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -107,6 +110,12 @@ public class SmtpCrawler implements Crawler {
   private void clearMDC() {
     MDC.remove("domainName");
     MDC.remove("visitId");
+  }
+
+  @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
+  public void clearCacheScheduled() {
+    logger.info("clearCacheScheduled: evicting entries older than 4 hours");
+    cache.evictEntriesOlderThan(Duration.ofHours(24));
   }
 
 }

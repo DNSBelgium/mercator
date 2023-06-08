@@ -13,12 +13,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Configuration
 @EnableConfigurationProperties({MaxMindConfig.class, SmtpConfig.class})
 @Import(AckConfig.class)
+@EnableScheduling
 public class SmtpCrawlerConfiguration implements JmsConfig {
 
   @Value("${crawler.smtp.geoIP.enabled}")
