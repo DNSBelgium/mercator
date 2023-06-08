@@ -60,9 +60,11 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
     if (smtpConversation == null) {
       meterRegistry.counter(MetricName.COUNTER_CACHE_MISSES).increment();
       smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
-      geoIP(smtpConversation);
-      cache.put(ip, smtpConversation);
-      meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
+      if (smtpConversation != null) {
+        geoIP(smtpConversation);
+        cache.put(ip, smtpConversation);
+        meterRegistry.gauge(MetricName.GAUGE_CACHE_SIZE, cache.estimatedSize());
+      }
     } else {
       meterRegistry.counter(MetricName.COUNTER_CACHE_HITS).increment();
     }

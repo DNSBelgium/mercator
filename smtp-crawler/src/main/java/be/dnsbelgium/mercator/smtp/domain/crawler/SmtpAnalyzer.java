@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xbill.DNS.MXRecord;
 
 import java.net.Inet4Address;
@@ -52,6 +53,7 @@ public class SmtpAnalyzer {
   }
 
   public SmtpVisitEntity analyze(String domainName) throws Exception {
+    logger.info("SmtpAnalyzer.analyze : tx active: {}", TransactionSynchronizationManager.isActualTransactionActive());
     SmtpVisitEntity result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
     meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
     return result;
@@ -94,8 +96,8 @@ public class SmtpAnalyzer {
         logger.debug("No MX records found for {} => finding address records", domainName);
         result.setCrawlStatus(CrawlStatus.OK);
         Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(domainName, 0);
-        if(hosts.isPresent()){
-          for(SmtpHostEntity host : hosts.get()){
+        if (hosts.isPresent()) {
+          for (SmtpHostEntity host : hosts.get()){
             host.setFromMx(false);
             host.setHostName(host.getConversation().getIp());
           }
@@ -109,13 +111,16 @@ public class SmtpAnalyzer {
           logger.debug("mxRecord = {}", mxRecord);
           String hostName = mxRecord.getTarget().toString(true);
           Optional<List<SmtpHostEntity>> hosts = createSmtpHosts(hostName, mxRecord.getPriority());
-          if(hosts.isPresent()){
+          if (hosts.isPresent()) {
             for(SmtpHostEntity host : hosts.get()){
               host.setFromMx(true);
+              // TODO: check error
+              host.getConversation().getError();
             }
             result.add(hosts.get());
           }
         }
+        // TODO: check if at least one host had no problems (else: status = NO_REACHABLE_SMTP_SERVERS")
         result.setCrawlStatus(CrawlStatus.OK);
         logger.debug("DONE crawling for domain name {}", domainName);
         return result;
@@ -161,7 +166,7 @@ public class SmtpAnalyzer {
       return skip(address, "conversation with IPv6 SMTP host skipped");
     }
     SmtpConversation conversation = smtpIpAnalyzer.crawl(address);
-    logger.debug("done crawling ip {}", address.toString());
+    logger.debug("done crawling ip {}", address);
     return conversation;
   }
 
