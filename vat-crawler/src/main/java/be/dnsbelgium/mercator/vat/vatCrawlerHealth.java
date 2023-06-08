@@ -1,27 +1,40 @@
 package be.dnsbelgium.mercator.vat;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class vatCrawlerHealth implements HealthIndicator {
+    private final MeterRegistry meterRegistry = Metrics.globalRegistry;
+
+    private Counter getCounter(String counterName) {
+        return meterRegistry.counter(counterName);
+    }
+
     @Override
     public Health health() {
         boolean contentCrawlerHealthParameters = true;
 
-        /**
-         * what needs to be true to give back up or otherwise
-         * database already checked done.
-         * queue connected ?
-         *
-         */
+        Counter vatVisitsCompleted = getCounter("vat.crawler.visits");
+        Counter vatVisitsFailed = getCounter("vat.crawler.failures");
 
-        Health.Builder status = Health.up();
-        if (!contentCrawlerHealthParameters) {
-            status = Health.down().withDetail("reason", "details about why it failed");
+        double visitsFailed = vatVisitsFailed.count();
+        double visitsCompleted = vatVisitsCompleted.count();
 
+        double failureRate = visitsFailed / (visitsCompleted + visitsFailed);
+
+
+        if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
+            return Health.down().withDetail("Failure Rate", failureRate).build();
+        } else {
+            return Health.up().withDetail("Failure rate: ", failureRate).build();
         }
-        return status.build();
     }
 }

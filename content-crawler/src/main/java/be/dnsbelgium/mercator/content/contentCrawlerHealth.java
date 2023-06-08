@@ -1,28 +1,39 @@
 package be.dnsbelgium.mercator.content;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.health.Status;
 import org.springframework.stereotype.Component;
+import java.util.Optional;
 
 @Component
 public class contentCrawlerHealth implements HealthIndicator {
+    private final MeterRegistry meterRegistry = Metrics.globalRegistry;
+
+    private Counter getCounter(String counterName) {
+        return meterRegistry.counter(counterName);
+    }
+
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
+        Counter contentCrawlerMuppetsMessagesIn = getCounter("content.crawler.muppets.messages.in");
+        Counter contentCrawlerWappalyserMessagesIn = getCounter("content.crawler.wappalyzer.messages.in");
+        Counter contentCrawlerMessagesOut = getCounter("content.crawler.messages.out");
+        Counter contentCrawlerMessagesFailed = getCounter("content.crawler.messages.failed");
 
-        /**
-         * what needs to be true to give back up or otherwise
-         * database already checked done.
-         * queue connected ?
-         *
-         */
+        double muppetsMessagesIn = contentCrawlerMuppetsMessagesIn.count();
+        double wappalyserMessagesIn = contentCrawlerWappalyserMessagesIn.count();
+        double contentMessagesOut = contentCrawlerMessagesOut.count();
+        double contentMessagesFailed = contentCrawlerMessagesFailed.count();
 
-        Health.Builder status = Health.up();
-        if (!contentCrawlerHealthParameters) {
-            status = Health.down().withDetail("reason", "details about why it failed");
+        double failureRate = contentMessagesFailed / (contentMessagesOut + contentMessagesFailed);
 
+        if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
+            return Health.down().withDetail("Failure Rate", failureRate).build();
+        } else {
+            return Health.up().withDetail("Failure rate: ", failureRate).build();
         }
-        return status.build();
     }
 }

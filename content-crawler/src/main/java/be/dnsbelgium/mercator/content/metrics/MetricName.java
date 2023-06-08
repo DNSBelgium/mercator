@@ -7,4 +7,5 @@ public interface MetricName {
   String MUPPETS_MESSAGES_IN = "content.crawler.muppets.messages.in";
   String WAPPALYZER_MESSAGES_IN = "content.crawler.wappalyzer.messages.in";
 
+  String MESSAGES_FAILED = "content.crawler.messages.failed";
 }
