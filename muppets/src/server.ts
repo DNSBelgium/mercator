@@ -45,7 +45,7 @@ process.on("SIGTERM", handle);
     consumer = createConsumer(inputQueueName!, handler);
 
     const app = express();
-
+    // health for  muppets checks browser
     app.get("/health", (req, res) => {
         if (isBrowserConnected()) {
             res.send("OK");
