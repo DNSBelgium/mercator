@@ -15,8 +15,6 @@ public class smtpCrawlerHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
-
         Counter smtpVisitsTotal = getCounter("smtp.analyzer.domains.done");
         Counter smtpVisitsFailed = getCounter("smtp.analyzer.failures");
 
@@ -24,7 +22,6 @@ public class smtpCrawlerHealth implements HealthIndicator {
         double visitsTotal = smtpVisitsTotal.count();
 
         double failureRate = visitsFailed / visitsTotal;
-
 
         if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
             return Health.down().withDetail("Failure Rate", failureRate).build();

@@ -17,8 +17,6 @@ public class featureExtractionHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
-
         Counter featureExtractionVisitsCompleted = getCounter("feature.extraction.visits.processed");
         Counter featureExtractionVisitsFailed = getCounter("feature.extraction.visits.failed");
 
@@ -26,7 +24,6 @@ public class featureExtractionHealth implements HealthIndicator {
         double visitsCompleted = featureExtractionVisitsCompleted.count();
 
         double failureRate = visitsFailed / (visitsCompleted + visitsFailed);
-
 
         if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
             return Health.down().withDetail("Failure Rate", failureRate).build();

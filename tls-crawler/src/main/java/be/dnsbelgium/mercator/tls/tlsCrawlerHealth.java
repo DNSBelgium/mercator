@@ -19,7 +19,6 @@ public class tlsCrawlerHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-
         Counter tlsVisitsCompleted = getCounter("tls.crawler.visits.completed");
         Counter tlsVisitsFailed = getCounter("tls.crawler.visits.failed");
 //      these should be counted but only the values within the last 24h

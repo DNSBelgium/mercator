@@ -17,8 +17,6 @@ public class dispatcherHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
-
         Counter dispatcherMessagesIn = getCounter("dispatcher.message.in");
         Counter dispatcherMessagesOut = getCounter("dispatcher.message.in");
         Counter dispatcherMessagesFailed = getCounter("dispatcher.message.failed");

@@ -15,8 +15,6 @@ public class dnsCrawlerHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
-
 //        todo create counters for visit succes and visist failed
         Counter dnsVisitsCompleted = getCounter("dns.visits.processed");
         Counter dnsVisitsFailed = getCounter("dns.visits.failed");
@@ -25,7 +23,6 @@ public class dnsCrawlerHealth implements HealthIndicator {
         double visitsCompleted = dnsVisitsCompleted.count();
 
         double failureRate = visitsFailed / (visitsCompleted + visitsFailed);
-
 
         if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
             return Health.down().withDetail("Failure Rate", failureRate).build();
