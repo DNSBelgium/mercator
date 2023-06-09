@@ -287,10 +287,42 @@ $clickables-secondary-color: #2a6485; //rgba(86, 86, 255, 0.755);
     max-width: 650px;
   }
 
+  /* DNS-crawler table */
+  thead.dns-table-head {
+    background-color: rgba(0, 0, 0, .03);
+  }
+
+  td.record-data {
+    max-width: 300px;
+  }
+
+  td.record-data > div {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  td.record-data > div > div.record-data-content {
+    height: 50px;
+    overflow: hidden;
+  }
+
+  td.record-data > div > div.record-data-content:hover {
+    min-height: 50px;
+    height: auto;
+  }
+
+  td.record-data > div > div.record-data-copy-btn:hover {
+    cursor: pointer;
+    color: #e3f5ff;
+  }
+
+  td.empty {
+    background-color: rgba(0, 0, 0, .03);
+  }
+
   th {
     width: 350px;
   }
-
 
   /* All 'More info' buttons within Details Cards */
   .more-info {
