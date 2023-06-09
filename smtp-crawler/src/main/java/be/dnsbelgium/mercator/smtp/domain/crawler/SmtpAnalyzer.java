@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xbill.DNS.MXRecord;
 
 import java.net.Inet4Address;
@@ -144,7 +143,9 @@ public class SmtpAnalyzer {
       SmtpConversation smtpConversation = crawl(address);
       smtpConversation.clean();
       if (smtpConversation.getId() != null){
-        host = host.fromCache(null, null, domainName, priority, new SmtpConversationEntity().fromSmtpConversation(smtpConversation));
+        SmtpConversationEntity conversationEntity = new SmtpConversationEntity();
+        conversationEntity.setFromSmtpConversation(smtpConversation);
+        host = host.fromCache(null, null, domainName, priority, conversationEntity);
       }
       else {
         host = host.fromCrawl(null, null, domainName, priority, smtpConversation);

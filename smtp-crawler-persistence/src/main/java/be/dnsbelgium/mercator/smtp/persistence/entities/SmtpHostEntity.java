@@ -7,7 +7,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Entity
 @Getter
@@ -46,7 +45,9 @@ public class SmtpHostEntity {
   }
 
   public void setConversation(SmtpConversation conversation){
-    this.conversation = new SmtpConversationEntity().fromSmtpConversation(conversation);
+    SmtpConversationEntity conversationEntity = new SmtpConversationEntity();
+    conversationEntity.setFromSmtpConversation(conversation);
+    this.conversation = conversationEntity;
   }
 
   public void setConversation(SmtpConversationEntity conversation) {

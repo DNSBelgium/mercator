@@ -35,7 +35,9 @@ public class SmtpHost {
   }
 
   public SmtpHost fromCrawl(SmtpVisit visit, Boolean fromMx, String hostName, int priority, SmtpConversation smtpConversation){
-    return new SmtpHost(visit, fromMx, hostName, priority, new SmtpConversationEntity().fromSmtpConversation(smtpConversation), smtpConversation);
+    SmtpConversationEntity conversationEntity = new SmtpConversationEntity();
+    conversationEntity.setFromSmtpConversation(smtpConversation);
+    return new SmtpHost(visit, fromMx, hostName, priority, conversationEntity, smtpConversation);
   }
 
   public boolean isFresh(){

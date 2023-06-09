@@ -95,7 +95,7 @@ public class SmtpConversationEntity {
   @Transient
   private final static String EMPTY_STRING = "";
 
-  public SmtpConversationEntity fromSmtpConversation(SmtpConversation conversation) {
+  public void setFromSmtpConversation(SmtpConversation conversation) {
     this.setId(conversation.getId());
     this.setIp(conversation.getIp());
     this.setAsn(conversation.getAsn());
@@ -113,7 +113,6 @@ public class SmtpConversationEntity {
     this.setSoftware(conversation.getSoftware());
     this.setSoftwareVersion(conversation.getSoftwareVersion());
     this.setTimestamp(conversation.getTimestamp());
-    return this;
   }
 
   public SmtpConversation toSmtpConversation() {
