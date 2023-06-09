@@ -3,12 +3,9 @@ package be.dnsbelgium.mercator.vat;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Timer;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class vatCrawlerHealth implements HealthIndicator {
