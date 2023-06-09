@@ -17,8 +17,6 @@ public class vatCrawlerHealth implements HealthIndicator {
 
     @Override
     public Health health() {
-        boolean contentCrawlerHealthParameters = true;
-
         Counter vatVisitsCompleted = getCounter("vat.crawler.visits");
         Counter vatVisitsFailed = getCounter("vat.crawler.failures");
 
@@ -26,7 +24,6 @@ public class vatCrawlerHealth implements HealthIndicator {
         double visitsCompleted = vatVisitsCompleted.count();
 
         double failureRate = visitsFailed / (visitsCompleted + visitsFailed);
-
 
         if (Double.isNaN(failureRate) || Double.compare(failureRate, 0.4) > 0) {
             return Health.down().withDetail("Failure Rate", failureRate).build();
