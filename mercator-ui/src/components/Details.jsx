@@ -114,9 +114,7 @@ function Details() {
                 </div>
 
                 <div id={'dns-card'}>
-                    <DNSCard 
-                        openRecords={recordsButtonOn} 
-                        setOpenRecords={recordsButtonSetOn} 
+                    <DNSCard
                         visitId={visitId}
                     />
                 </div>
