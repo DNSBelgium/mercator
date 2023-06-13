@@ -86,10 +86,10 @@ const DNSCard = (props) => {
                             country
                         </th>
                         <th>
-                            adn
+                            asn
                         </th>
                         <th>
-                            adn organisation
+                            asn organisation
                         </th>
                         <th>
                             ip
