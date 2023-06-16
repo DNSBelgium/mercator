@@ -54,7 +54,7 @@ public class FailureRate implements HealthIndicator {
 
         Health.Builder builder = failureRate < FailureRate.FAILURERATE_THRESHOLD ? Health.up() : Health.down();
         builder.withDetail(FAILURE_RATE, failureRate);
-        builder.withDetail(FAILURES, contentMessagesFailed)
+        builder.withDetail(FAILURES, contentMessagesFailed);
         return builder.build();
     }
 }
