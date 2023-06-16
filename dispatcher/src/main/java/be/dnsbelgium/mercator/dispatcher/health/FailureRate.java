@@ -29,6 +29,7 @@ public class FailureRate implements HealthIndicator {
     private static final double FAILURE_RATE_THRESHOLD = 0.02;
 
     FailureRate(MeterRegistry meterRegistry, DispatcherEventRepository dispatcherEventRepository) {
+        // TODO: add timeboxing
         this.meterRegistry = meterRegistry;
         this.dispatcherEventRepository = dispatcherEventRepository;
 
