@@ -55,23 +55,33 @@ public class ResolverHealthIndicator implements HealthIndicator {
      */
     private Optional<String> performAAAALookupTest() {
         return performLookupTest("@", RecordType.AAAA);
+    }
 
+    /**
+     * Returns a valid IPv6 if the test worked. Returns empty Optional otherwise.
+     */
+    private Optional<String> performMXLookupTest() {
+        return performLookupTest("@", RecordType.MX);
     }
 
     @Override
     public Health health() {
         // TODO: add GeoIP if available
 
-        Optional<String> aLookupTest = performALookupTest();
+        Optional<String> aLookupTest = this.performALookupTest();
         boolean aLookupTestSuccess = aLookupTest.isPresent();
 
-        Optional<String> aaaaLookupTest = performAAAALookupTest();
+        Optional<String> aaaaLookupTest = this.performAAAALookupTest();
         boolean aaaaLookupTestSuccess = aaaaLookupTest.isPresent();
 
-        Health.Builder builder = aLookupTestSuccess && aaaaLookupTestSuccess ? Health.up() : Health.down();
+        Optional<String> mxLookupTest = this.performMXLookupTest();
+        boolean mxLookupTestSuccess = mxLookupTest.isPresent();
+
+        Health.Builder builder = aLookupTestSuccess && aaaaLookupTestSuccess && mxLookupTestSuccess ? Health.up() : Health.down();
 
         builder.withDetail("aLookup", aLookupTest.get());
         builder.withDetail("aaaaLookup", aaaaLookupTest.get());
+        builder.withDetail("mxLookup", mxLookupTest.get());
 
         return builder.build();
     }
