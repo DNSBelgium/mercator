@@ -34,7 +34,7 @@ public class ResolverHealthIndicator implements HealthIndicator {
     }
 
     private Optional<String> performLookupTest(String prefix, RecordType type) {
-        DnsRequest aLookup = this.resolver.lookup("@", this.name, RecordType.A);
+        DnsRequest aLookup = this.resolver.lookup("@", this.name, type);
         if (!aLookup.isOk())
             return Optional.empty();
         if (aLookup.records().size() == 0)
@@ -66,8 +66,6 @@ public class ResolverHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        // TODO: add GeoIP if available
-
         Optional<String> aLookupTest = this.performALookupTest();
         boolean aLookupTestSuccess = aLookupTest.isPresent();
 
@@ -79,9 +77,11 @@ public class ResolverHealthIndicator implements HealthIndicator {
 
         Health.Builder builder = aLookupTestSuccess && aaaaLookupTestSuccess && mxLookupTestSuccess ? Health.up() : Health.down();
 
-        builder.withDetail("aLookup", aLookupTest.get());
-        builder.withDetail("aaaaLookup", aaaaLookupTest.get());
-        builder.withDetail("mxLookup", mxLookupTest.get());
+        // TODO: add geoIP health status
+
+        builder.withDetail("aLookup", aLookupTest.orElse(""));
+        builder.withDetail("aaaaLookup", aaaaLookupTest.orElse(""));
+        builder.withDetail("mxLookup", mxLookupTest.orElse(""));
 
         return builder.build();
     }
