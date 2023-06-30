@@ -14,7 +14,7 @@ public class FailureRate implements HealthIndicator {
     @Autowired
     private final MeterRegistry meterRegistry;
     @Autowired
-    DispatcherEventRepository dispatcherEventRepository;
+    private final DispatcherEventRepository dispatcherEventRepository;
 
     private final String HEALTHCHECK_NAME = "failureRate";
     private Counter getCounter(String counterName) {
@@ -48,7 +48,7 @@ public class FailureRate implements HealthIndicator {
     public Health health() {
         double failureRate = getFailureRate();
 
-        Health.Builder builder = failureRate < this.FAILURE_RATE_THRESHOLD ? Health.up() : Health.down();
+        Health.Builder builder = failureRate < FailureRate.FAILURE_RATE_THRESHOLD ? Health.up() : Health.down();
         builder.withDetail("failureRate", failureRate);
         return builder.build();
     }
