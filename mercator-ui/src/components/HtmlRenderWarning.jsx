@@ -8,23 +8,23 @@ export default function HtmlRenderWarning({onClickYes, onClickNo}) {
                     <path
                         d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
                 </svg>
-                <h6>Do you want to open and render the html in a new tab </h6>
-                <p> This could be potentially dangerous check out the raw html</p>
+                <h6>Open and render HTML in a new tab?</h6>
+                <p>This could be potentially dangerous. Check the raw HTML first.</p>
                 <div>
                     <button
                         id="acceptHtmlNewTab"
-                        className="mr-5 ml-5 btn btn-secondary"
+                        className="mr-5 ml-5 btn btn-warning"
                         onClick={onClickYes}
                     >
-                        Yes
+                        Proceed anyway
                     </button>
 
                     <button
                         id="declineHtmlNewTab"
-                        className="mr-5 ml-5 btn btn-secondary"
+                        className="mr-5 ml-5 btn"
                         onClick={onClickNo}
                     >
-                        No
+                        Cancel
                     </button>
                 </div>
             </div>
