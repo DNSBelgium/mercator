@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.smtp.persistence.entities;
 
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +12,12 @@ import org.hibernate.annotations.TypeDefs;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
@@ -33,7 +36,9 @@ public class SmtpConversationEntity {
   private String ip;
 
   private Long asn;
+
   private String country;
+
   @Column(name = "asn_organisation")
   private String asnOrganisation;
 
@@ -84,10 +89,6 @@ public class SmtpConversationEntity {
   @Column(name = "software_version")
   private String softwareVersion;
 
-  @OneToMany(mappedBy = "conversation", fetch = FetchType.EAGER)
-  @ToString.Exclude
-  private List<SmtpHostEntity> hosts = new ArrayList<>();
-
   private ZonedDateTime timestamp = ZonedDateTime.now();
 
   @Transient
@@ -95,48 +96,17 @@ public class SmtpConversationEntity {
   @Transient
   private final static String EMPTY_STRING = "";
 
-  public void setFromSmtpConversation(SmtpConversation conversation) {
-    this.setId(conversation.getId());
-    this.setIp(conversation.getIp());
-    this.setAsn(conversation.getAsn());
-    this.setCountry(conversation.getCountry());
-    this.setAsnOrganisation(conversation.getAsnOrganisation());
-    this.setBanner(conversation.getBanner());
-    this.setConnectOK(conversation.isConnectOK());
-    this.setConnectReplyCode(conversation.getConnectReplyCode());
-    this.setSupportedExtensions(conversation.getSupportedExtensions());
-    this.setIpVersion(conversation.getIpVersion());
-    this.setStartTlsOk(conversation.isStartTlsOk());
-    this.setErrorMessage(conversation.getErrorMessage());
-    this.setError(conversation.getError());
-    this.setConnectionTimeMs(conversation.getConnectionTimeMs());
-    this.setSoftware(conversation.getSoftware());
-    this.setSoftwareVersion(conversation.getSoftwareVersion());
-    this.setTimestamp(conversation.getTimestamp());
+  public SmtpConversationEntity(InetAddress ip) {
+    this.ip = ip.getHostAddress();
+    if (ip instanceof Inet4Address) {
+      ipVersion = 4;
+    }
+    if (ip instanceof Inet6Address) {
+      ipVersion = 6;
+    }
   }
 
-  public SmtpConversation toSmtpConversation() {
-    SmtpConversation conversation = new SmtpConversation();
-    conversation.setId(id);
-    conversation.setIp(ip);
-    conversation.setAsn(asn);
-    conversation.setCountry(country);
-    conversation.setAsnOrganisation(asnOrganisation);
-    conversation.setBanner(banner);
-    conversation.setConnectOK(connectOK);
-    conversation.setConnectReplyCode(connectReplyCode);
-    conversation.setSupportedExtensions(supportedExtensions);
-    conversation.setIpVersion(ipVersion);
-    conversation.setStartTlsOk(startTlsOk);
-    conversation.setErrorMessage(errorMessage);
-    conversation.setError(error);
-    conversation.setConnectionTimeMs(connectionTimeMs);
-    conversation.setSoftware(software);
-    conversation.setSoftwareVersion(softwareVersion);
-    conversation.setTimestamp(timestamp);
-    return conversation;
-  }
-
+  // Some servers return binary data and Postgres does not like it
   public void clean() {
     this.country = clean(country);
     this.softwareVersion = clean(softwareVersion);

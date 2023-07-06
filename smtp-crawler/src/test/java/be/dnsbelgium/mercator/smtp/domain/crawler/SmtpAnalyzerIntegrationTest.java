@@ -40,38 +40,38 @@ class SmtpAnalyzerIntegrationTest {
   @Test
   public void dnsbelgium() throws Exception {
     logger.info("cachingSmtpCrawler = {}", smtpAnalyzer);
-    SmtpVisit result = smtpAnalyzer.analyze("dnsbelgium.be");
+    var result = smtpAnalyzer.analyze("dnsbelgium.be");
     logger.info("result = {}", result);
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     assertThat(result.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(result.getTimestamp()).isNotNull();
-    List<SmtpHost> hosts = result.getHosts();
+    List<SmtpHostEntity> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getConnectReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getStartTlsReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getConnectionTimeMs()).isGreaterThan(1);
-    assertThat(hosts.get(0).getSmtpConversationEntity().isConnectOK()).isTrue();
-    assertThat(hosts.get(0).getSmtpConversationEntity().isStartTlsOk()).isTrue();
-    assertThat(hosts.get(0).getSmtpConversationEntity().getErrorMessage()).isNull();
+    assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
+    assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(hosts.get(0).getConversation().getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(hosts.get(0).getConversation().isConnectOK()).isTrue();
+    assertThat(hosts.get(0).getConversation().isStartTlsOk()).isTrue();
+    assertThat(hosts.get(0).getConversation().getErrorMessage()).isNull();
   }
 
   @Test
   public void abc() throws Exception {
     logger.info("cachingSmtpCrawler = {}", smtpAnalyzer);
-    SmtpVisit result = smtpAnalyzer.analyze("bosteels.eu");
+    var result = smtpAnalyzer.analyze("bosteels.eu");
     logger.info("result = {}", result);
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     //assertThat(result.getDomainName()).isEqualTo("abc.be");
     assertThat(result.getTimestamp()).isNotNull();
-    List<SmtpHost> hosts = result.getHosts();
+    List<SmtpHostEntity> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getConnectReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getStartTlsReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getSmtpConversationEntity().getConnectionTimeMs()).isGreaterThan(1);
-    assertThat(hosts.get(0).getSmtpConversationEntity().isConnectOK()).isTrue();
-    assertThat(hosts.get(0).getSmtpConversationEntity().isStartTlsOk()).isTrue();
-    assertThat(hosts.get(0).getSmtpConversationEntity().getErrorMessage()).isNull();
+    assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
+    assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(hosts.get(0).getConversation().getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(hosts.get(0).getConversation().isConnectOK()).isTrue();
+    assertThat(hosts.get(0).getConversation().isStartTlsOk()).isTrue();
+    assertThat(hosts.get(0).getConversation().getErrorMessage()).isNull();
   }
 }

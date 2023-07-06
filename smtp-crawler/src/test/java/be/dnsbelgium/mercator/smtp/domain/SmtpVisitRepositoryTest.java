@@ -1,9 +1,10 @@
 package be.dnsbelgium.mercator.smtp.domain;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
+import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,10 @@ class SmtpVisitRepositoryTest {
 
   @Autowired
   SmtpVisitRepository repository;
+  @Autowired
+  SmtpHostRepository smtpHostRepository;
+  @Autowired
+  SmtpConversationRepository conversationRepository;
   @Autowired
   ApplicationContext context;
   @Autowired
@@ -78,7 +83,8 @@ class SmtpVisitRepositoryTest {
     SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "dnsbelgium.be");
     SmtpHostEntity host1 = new SmtpHostEntity("smtp1.example.com");
     SmtpHostEntity host2 = new SmtpHostEntity("smtp2.example.com");
-    SmtpConversation conversation = new SmtpConversation("1.2.3.4");
+    var conversation = new SmtpConversationEntity();
+    conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
     conversation.setBanner("my banner");
@@ -91,7 +97,11 @@ class SmtpVisitRepositoryTest {
     host2.setConversation(conversation);
     visitEntity.add(host1);
     visitEntity.add(host2);
+    conversationRepository.save(conversation);
+
     repository.save(visitEntity);
+    // null value in column "ip" violates not-null constraint ??
+
     Optional<SmtpVisitEntity> found = repository.findByVisitId(uuid);
     assertThat(found).isPresent();
     SmtpVisitEntity foundVisit = found.get();
@@ -113,8 +123,11 @@ class SmtpVisitRepositoryTest {
   public void savingBinaryDataFails() {
     SmtpVisitEntity visitEntity = smtpVisitWithBinaryData();
     try {
-      SmtpVisitEntity visit = repository.save(visitEntity);
-      //noinspection ResultOfMethodCallIgnored
+      for (var host : visitEntity.getHosts()) {
+        conversationRepository.save(host.getConversation());
+      }
+      repository.save(visitEntity);
+
       fail("Binary data should throw DataIntegrityViolationException");
     } catch (DataIntegrityViolationException expected) {
       logger.info("expected = {}", expected.getMessage());
@@ -126,9 +139,9 @@ class SmtpVisitRepositoryTest {
   public void saveAndIgnoreDuplicateKeys() {
     UUID uuid = randomUUID();
     @SuppressWarnings("SqlResolve")
-    int rowsInserted = jdbcTemplate.update("" +
-        " insert into smtp_visit\n" +
-        "        (timestamp, domain_name, visit_id, num_conversations) \n" +
+    int rowsInserted = jdbcTemplate.update(
+        " insert into smtp_visit " +
+        "        (timestamp, domain_name, visit_id, num_conversations) " +
         "    values\n" +
         "        (current_timestamp, ?, ?, ?)"
       , "abc.be", uuid, 0
@@ -139,9 +152,22 @@ class SmtpVisitRepositoryTest {
     assertThat(found).isPresent();
     jdbcTemplate.execute("commit");
     SmtpVisitEntity crawlResult = smtpVisit(uuid);
+    logger.info("calling saveAndIgnoreDuplicateKeys");
     boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult).isPresent();
     logger.info("saveFailed = {}", saveFailed);
     assertThat(saveFailed).isTrue();
+  }
+
+  @Test
+  public void save() {
+    var uuid = UUID.randomUUID();
+    SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "test.be");
+
+    SmtpHostEntity hostEntity = new SmtpHostEntity("mx.test.be");
+    visitEntity.add(hostEntity);
+
+    var saved = repository.save(visitEntity);
+    logger.info("saved = {}", saved);
   }
 
   @Test
@@ -172,7 +198,8 @@ class SmtpVisitRepositoryTest {
   private SmtpVisitEntity smtpVisit(UUID uuid) {
     SmtpVisitEntity crawlResult = new SmtpVisitEntity(uuid, "jamaica.be");
     SmtpHostEntity host = new SmtpHostEntity("smtp1.example.com");
-    SmtpConversation conversation = new SmtpConversation("1.2.3.4");
+    SmtpConversationEntity conversation = new SmtpConversationEntity();
+    conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
     conversation.setBanner("my binary banner");
@@ -190,7 +217,8 @@ class SmtpVisitRepositoryTest {
     UUID uuid = randomUUID();
     SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "dnsbelgium.be");
     SmtpHostEntity host = new SmtpHostEntity("smtp1.example.com");
-    SmtpConversation conversation = new SmtpConversation("1.2.3.4");
+    var conversation = new SmtpConversationEntity();
+    conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
     conversation.setBanner("my binary \u0000 banner");

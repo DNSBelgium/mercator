@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SmtpCrawlerApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SmtpCrawlerApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(SmtpCrawlerApplication.class, args);
+  }
 
 }

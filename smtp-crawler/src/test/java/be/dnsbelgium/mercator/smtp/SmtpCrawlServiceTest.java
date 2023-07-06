@@ -1,9 +1,8 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
-import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpHost;
-import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
@@ -76,7 +75,7 @@ class SmtpCrawlServiceTest {
   public void integrationTest() throws Exception {
     UUID uuid = UUID.randomUUID();
     VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
-    SmtpVisit visit = service.retrieveSmtpInfo(request);
+    var visit = service.retrieveSmtpInfo(request);
     service.save(visit);
     Optional<SmtpVisitEntity> find = repository.findByVisitId(uuid);
     assertThat(find).isPresent();
@@ -98,26 +97,26 @@ class SmtpCrawlServiceTest {
     conversation2.setIpVersion(4);
 
     UUID visitId = UUID.randomUUID();
-    SmtpVisit visit = new SmtpVisit();
+    var visit = new SmtpVisitEntity();
     visit.setVisitId(visitId);
     visit.setDomainName("dnsbelgium.be");
     visit.setNumConversations(2);
 
-    SmtpHost host = new SmtpHost();
-    host.setSmtpConversationEntity(conversation1);
+    var host = new SmtpHostEntity();
+    host.setConversation(conversation1);
     host.setHostName("protection.outlook.com");
     host.setPriority(0);
     host.setFromMx(true);
     host.setVisit(visit);
 
-    SmtpHost host2 = new SmtpHost();
-    host2.setSmtpConversationEntity(conversation2);
+    var host2 = new SmtpHostEntity();
+    host2.setConversation(conversation2);
     host2.setHostName("protection.outlook.com");
     host2.setPriority(0);
     host2.setFromMx(true);
     host2.setVisit(visit);
 
-    List<SmtpHost> hosts = new ArrayList<>();
+    List<SmtpHostEntity> hosts = new ArrayList<>();
     hosts.add(host);
     hosts.add(host2);
 
@@ -128,9 +127,16 @@ class SmtpCrawlServiceTest {
     Optional<SmtpVisitEntity> savedVisit = repository.findByVisitId(visitId);
     assertThat(savedVisit).isPresent();
     SmtpVisitEntity visitEntity = savedVisit.get();
+
     assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
+
+    logger.info("savedVisit.hosts.size = {}", savedVisit.get().getHosts().size());
+
     assertThat(visitEntity.getHosts().size()).isEqualTo(2);
     assertThat(visitEntity.getHosts().get(0).getHostName()).isEqualTo("protection.outlook.com");
     assertThat(visitEntity.getHosts().get(0).getConversation().getIp()).isEqualTo("1.2.3.4");
   }
+
+
+
 }

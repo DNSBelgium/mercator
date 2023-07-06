@@ -1,7 +1,8 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -21,6 +22,7 @@ class NioSmtpConversationFactoryTest {
 
     // This test can be used to debug a real SMTP conversation with a specific IP
     @Test
+    @Disabled
     public void longerTimeout() throws KeyManagementException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
 
         SmtpConfig config = SmtpConfig.testConfig();
@@ -30,10 +32,10 @@ class NioSmtpConversationFactoryTest {
         NioSmtpConversation conversation = factory.create(ip("134.58.240.3"));
         logger.info("conversation = {}", conversation);
         long start = System.currentTimeMillis();
-        CompletableFuture<SmtpConversation> result = conversation.start();
+        CompletableFuture<SmtpConversationEntity> result = conversation.start();
         logger.info("result = {}", result);
         logger.info("waiting until done ...");
-        SmtpConversation smtpConversation = result.get();
+        var smtpConversation = result.get();
         long millis = System.currentTimeMillis() - start;
         logger.info("Conversation took {} ms", millis);
         logger.info("smtpHostIp = {}", smtpConversation);
