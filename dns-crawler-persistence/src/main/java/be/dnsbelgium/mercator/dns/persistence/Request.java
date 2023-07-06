@@ -25,6 +25,7 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
     @Column(name = "visit_id")
     private UUID visitId;
 
@@ -34,22 +35,30 @@ public class Request {
 
     @Column(name = "prefix")
     private String prefix;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "record_type")
     private RecordType recordType;
+
     @Column(name = "rcode")
     private Integer rcode;
+
     @Builder.Default
     @Column(name = "crawl_timestamp")
     private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
+
     @Column(name = "ok")
     private boolean ok;
+
     @Column(name = "problem")
     private String problem;
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "request_id")
-    @Builder.Default                    private List<Response> responses = new ArrayList<>();
-                                        private int numOfResponses;
+    @Builder.Default
+    private List<Response> responses = new ArrayList<>();
+
+    private int numOfResponses;
 
     @Access(AccessType.PROPERTY)
     @Column(name = "num_of_responses")

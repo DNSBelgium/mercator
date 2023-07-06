@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.SmtpTestUtils;
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.junit.jupiter.api.Tag;
@@ -22,16 +22,16 @@ public class CaffeineTest {
     private static final Logger logger = getLogger(CaffeineTest.class);
     public static final int CACHE_TIME = 500;
 
-    private SmtpConversation findByIp(InetAddress ip) {
+    private SmtpConversationEntity findByIp(InetAddress ip) {
         logger.info("crawling for ip = {}", ip);
-        SmtpConversation smtpConversation = new SmtpConversation(ip);
+        SmtpConversationEntity smtpConversation = new SmtpConversationEntity(ip);
         smtpConversation.setBanner("banner for " + ip);
         return smtpConversation;
     }
 
     @Test
     public void testMissAndHit() {
-        LoadingCache<InetAddress, SmtpConversation> cache = Caffeine.newBuilder()
+        LoadingCache<InetAddress, SmtpConversationEntity> cache = Caffeine.newBuilder()
                 .expireAfterWrite(CACHE_TIME, TimeUnit.MILLISECONDS)
                 .maximumSize(100)
                 .recordStats()
@@ -40,22 +40,22 @@ public class CaffeineTest {
         InetAddress ip = ip("10.20.30.40");
 
         // first miss
-        SmtpConversation foundNothing = cache.getIfPresent(ip);
+        SmtpConversationEntity foundNothing = cache.getIfPresent(ip);
         assertThat(foundNothing).isNull();
 
         // second miss but it populates the cache
-        SmtpConversation cacheMiss = cache.get(ip);
+        SmtpConversationEntity cacheMiss = cache.get(ip);
         assertThat(cacheMiss).isNotNull();
         assertThat(cacheMiss.getBanner()).isEqualTo("banner for " + ip);
 
         // first hit
-        SmtpConversation cacheHit = cache.get(ip);
+        SmtpConversationEntity cacheHit = cache.get(ip);
         assertThat(cacheHit).isNotNull();
         assertThat(cacheHit).isEqualTo(cacheMiss);
 
         SmtpTestUtils.sleep(CACHE_TIME);
         // third miss
-        SmtpConversation evicted = cache.getIfPresent(ip);
+        SmtpConversationEntity evicted = cache.getIfPresent(ip);
         assertThat(evicted).isNull();
 
         assertThat(cache.stats().hitCount()).isEqualTo(1);

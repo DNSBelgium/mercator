@@ -21,6 +21,7 @@ public interface SmtpVisitRepository extends PagingAndSortingRepository<SmtpVisi
       if (e.getMessage() != null && e.getMessage().contains("smtp_visit_pkey_uq")) {
         // error is already logged by SqlExceptionHelper
         getLogger(SmtpVisitRepository.class).info("Acceptable DataIntegrityViolationException: {}", e.getMessage());
+        // note that transaction will be rolled back by Hibernate even though we return here without an exception,
         return Optional.empty();
       } else {
         getLogger(SmtpVisitRepository.class).info("Other DataIntegrityViolationException: {}", e.getMessage());

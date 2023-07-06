@@ -1,19 +1,15 @@
 package be.dnsbelgium.mercator.smtp.persistence.entities;
 
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "smtp_host")
 public class SmtpHostEntity {
 
@@ -22,7 +18,6 @@ public class SmtpHostEntity {
   @Column(name = "id")
   private Long id;
 
-  // TODO: check if we need this.
   @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "visit_id")
   @ToString.Exclude
@@ -36,17 +31,13 @@ public class SmtpHostEntity {
 
   private int priority;
 
-  @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
   @JoinColumn(name = "conversation")
   @ToString.Exclude
   private SmtpConversationEntity conversation;
 
   public SmtpHostEntity(String hostName){
     this.hostName = hostName;
-  }
-
-  public void setConversation(SmtpConversation conversation){
-    this.conversation = new SmtpConversationEntity().fromSmtpConversation(conversation);
   }
 
   public void setConversation(SmtpConversationEntity conversation) {

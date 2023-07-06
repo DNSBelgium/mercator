@@ -75,7 +75,7 @@ class SmtpCrawlServiceTest {
   public void integrationTest() throws Exception {
     UUID uuid = UUID.randomUUID();
     VisitRequest request = new VisitRequest(uuid, "dnsbelgium.be");
-    SmtpVisitEntity visit = service.retrieveSmtpInfo(request);
+    var visit = service.retrieveSmtpInfo(request);
     service.save(visit);
     Optional<SmtpVisitEntity> find = repository.findByVisitId(uuid);
     assertThat(find).isPresent();
@@ -97,19 +97,19 @@ class SmtpCrawlServiceTest {
     conversation2.setIpVersion(4);
 
     UUID visitId = UUID.randomUUID();
-    SmtpVisitEntity visit = new SmtpVisitEntity();
+    var visit = new SmtpVisitEntity();
     visit.setVisitId(visitId);
     visit.setDomainName("dnsbelgium.be");
     visit.setNumConversations(2);
 
-    SmtpHostEntity host = new SmtpHostEntity();
+    var host = new SmtpHostEntity();
     host.setConversation(conversation1);
     host.setHostName("protection.outlook.com");
     host.setPriority(0);
     host.setFromMx(true);
     host.setVisit(visit);
 
-    SmtpHostEntity host2 = new SmtpHostEntity();
+    var host2 = new SmtpHostEntity();
     host2.setConversation(conversation2);
     host2.setHostName("protection.outlook.com");
     host2.setPriority(0);
@@ -127,9 +127,16 @@ class SmtpCrawlServiceTest {
     Optional<SmtpVisitEntity> savedVisit = repository.findByVisitId(visitId);
     assertThat(savedVisit).isPresent();
     SmtpVisitEntity visitEntity = savedVisit.get();
+
     assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
+
+    logger.info("savedVisit.hosts.size = {}", savedVisit.get().getHosts().size());
+
     assertThat(visitEntity.getHosts().size()).isEqualTo(2);
     assertThat(visitEntity.getHosts().get(0).getHostName()).isEqualTo("protection.outlook.com");
     assertThat(visitEntity.getHosts().get(0).getConversation().getIp()).isEqualTo("1.2.3.4");
   }
+
+
+
 }

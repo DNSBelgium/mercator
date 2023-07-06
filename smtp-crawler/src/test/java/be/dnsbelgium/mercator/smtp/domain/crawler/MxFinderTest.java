@@ -7,7 +7,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.slf4j.Logger;
 
-import java.net.IDN;
 import java.net.UnknownHostException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +22,7 @@ class MxFinderTest {
 
     @BeforeEach
     public void init() throws UnknownHostException {
-        mxFinder = new MxFinder("172.25.10.15", 2, 2500);
+        mxFinder = new MxFinder("8.8.8.8", 2, 2500, true);
     }
 
     @Test
@@ -98,15 +97,6 @@ class MxFinderTest {
 
     @Test
     public void idn() {
-        String input = "café.be";
-        String aLabel = IDN.toASCII("café.be");
-        logger.info("aLabel = {}", aLabel);
-        String s2 = IDN.toASCII("cafe.be");
-        logger.info("s2 = {}", s2);
-        String ulabel = IDN.toUnicode(aLabel);
-        logger.info("ulabel = {}", ulabel);
-        logger.info("ulabel.equals(input) = {}", ulabel.equals(input));
-
         MxLookupResult result = mxFinder.findMxRecordsFor("café.be");
         logger.info("result = {}", result);
         assertThat(result).isNotNull();

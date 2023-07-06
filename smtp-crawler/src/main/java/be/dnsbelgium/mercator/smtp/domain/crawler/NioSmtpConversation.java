@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
 import com.hubspot.smtp.client.ChannelClosedException;
 import com.hubspot.smtp.client.SmtpClientResponse;
 import com.hubspot.smtp.client.SmtpSessionConfig;
@@ -17,7 +17,6 @@ import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.Temporal;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -29,9 +28,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * A stateful class to represents the conversation with one IP of an SMTP server.
  */
-public class NioSmtpConversation implements ISmtpConversation {
+public class NioSmtpConversation implements SmtpConversation {
 
-    private final SmtpConversation smtpConversation;
+    private final SmtpConversationEntity smtpConversation;
     private long connectionStart;
     private long connectionTimeMs = -1;
     private Temporal ehloSent;
@@ -50,9 +49,6 @@ public class NioSmtpConversation implements ISmtpConversation {
     public static final int MAX_REPLY_LENGTH = 512;
     public static final int NO_RESPONSE_CODE = -1;
 
-    // TODO: inject
-    // private final CertificateProcessor certificateProcessor = new CertificateProcessor(false);
-
     private static final Logger logger = getLogger(NioSmtpConversation.class);
 
     public NioSmtpConversation(
@@ -65,17 +61,16 @@ public class NioSmtpConversation implements ISmtpConversation {
         this.sessionFactory = sessionFactory;
         this.sessionConfig = sessionConfig;
         this.config = config;
-        this.smtpConversation = new SmtpConversation(ipAddress);
+        this.smtpConversation = new SmtpConversationEntity(ipAddress);
     }
 
     // for testing
-    protected SmtpConversation getConversation() {
+    protected SmtpConversationEntity getConversation() {
         return smtpConversation;
     }
 
-    // TODO: now that we decided to block on every SMTP conversation we can consider using another SMTP client library
     @Override
-    public SmtpConversation talk() {
+    public SmtpConversationEntity talk() {
         try {
             return start().get();
         } catch (ExecutionException | InterruptedException e) {
@@ -85,7 +80,7 @@ public class NioSmtpConversation implements ISmtpConversation {
         }
     }
 
-    public CompletableFuture<SmtpConversation> start() {
+    public CompletableFuture<SmtpConversationEntity> start() {
         logger.debug("Starting SMTP crawl of {}", smtpConversation.getIp());
         CompletionStage<SmtpClientResponse> connected = this.connect();
         logger.debug("connected = {}", connected);
@@ -161,8 +156,7 @@ public class NioSmtpConversation implements ISmtpConversation {
 
     /**
      * Extract the response code from the first response.
-     *
-     *    https://tools.ietf.org/html/rfc5321#section-4.2.1
+     *    See <a href="https://tools.ietf.org/html/rfc5321#section-4.2.1">RFC</a>
      *    In a multiline reply, the reply code on each of the lines MUST be the
      *    same.  It is reasonable for the client to rely on this, so it can
      *    make processing decisions based on the code in any line, assuming
@@ -175,7 +169,7 @@ public class NioSmtpConversation implements ISmtpConversation {
         return (smtpClientResponse.getResponses().isEmpty() ? NO_RESPONSE_CODE : smtpClientResponse.getResponses().get(0).code());
     }
 
-    private SmtpConversation handleException(Throwable throwable) {
+    private SmtpConversationEntity handleException(Throwable throwable) {
         Instant start = now();
         // also set time to connect in case of Connection time-out => allows us to see how long we waited
         if (connectionTimeMs == -1) {

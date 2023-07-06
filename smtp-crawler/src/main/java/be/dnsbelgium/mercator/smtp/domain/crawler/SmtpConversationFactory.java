@@ -4,6 +4,6 @@ import java.net.InetAddress;
 
 public interface SmtpConversationFactory {
 
-    ISmtpConversation create(InetAddress ip);
+    SmtpConversation create(InetAddress ip);
 
 }

@@ -40,7 +40,7 @@ class SmtpAnalyzerIntegrationTest {
   @Test
   public void dnsbelgium() throws Exception {
     logger.info("cachingSmtpCrawler = {}", smtpAnalyzer);
-    SmtpVisitEntity result = smtpAnalyzer.analyze("dnsbelgium.be");
+    var result = smtpAnalyzer.analyze("dnsbelgium.be");
     logger.info("result = {}", result);
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
@@ -59,7 +59,7 @@ class SmtpAnalyzerIntegrationTest {
   @Test
   public void abc() throws Exception {
     logger.info("cachingSmtpCrawler = {}", smtpAnalyzer);
-    SmtpVisitEntity result = smtpAnalyzer.analyze("bosteels.eu");
+    var result = smtpAnalyzer.analyze("bosteels.eu");
     logger.info("result = {}", result);
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
