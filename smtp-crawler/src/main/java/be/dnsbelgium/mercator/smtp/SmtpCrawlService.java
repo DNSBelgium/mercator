@@ -62,15 +62,9 @@ public class SmtpCrawlService {
         host.setConversation(convo);
       }
     }
-    Optional<SmtpVisit> savedVisit = repository.saveAndIgnoreDuplicateKeys(visit);
-    if (savedVisit.isEmpty()) {
-      logger.info("was duplicate: {}", visit.getVisitId());
-      meterRegistry.counter(MetricName.COUNTER_DUPLICATE_KEYS).increment();
-    } else {
-      meterRegistry.counter(MetricName.SMTP_RESULTS_SAVED).increment();
-      logger.debug("Saved SmtpVisit for {} with visitId={}",
-          visit.getDomainName(), visit.getVisitId());
-    }
+    repository.save(visit);
+    meterRegistry.counter(MetricName.SMTP_RESULTS_SAVED).increment();
+    logger.debug("Saved SmtpVisit for {} with visitId={}", visit.getDomainName(), visit.getVisitId());
   }
 
 }

@@ -136,48 +136,13 @@ class SmtpVisitRepositoryTest {
 
 
   @Test
-  public void saveAndIgnoreDuplicateKeys() {
-    UUID uuid = randomUUID();
-    @SuppressWarnings("SqlResolve")
-    int rowsInserted = jdbcTemplate.update(
-        " insert into smtp_visit " +
-        "        (timestamp, domain_name, visit_id, num_conversations) " +
-        "    values\n" +
-        "        (current_timestamp, ?, ?, ?)"
-      , "abc.be", uuid, 0
-    );
-    logger.info("rowsInserted = {}", rowsInserted);
-    Optional<SmtpVisit> found = repository.findByVisitId(uuid);
-    logger.info("found = {}", found);
-    assertThat(found).isPresent();
-    jdbcTemplate.execute("commit");
-    SmtpVisit crawlResult = smtpVisit(uuid);
-    logger.info("calling saveAndIgnoreDuplicateKeys");
-    boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult).isPresent();
-    logger.info("saveFailed = {}", saveFailed);
-    assertThat(saveFailed).isTrue();
-  }
-
-  @Test
   public void save() {
     var uuid = UUID.randomUUID();
     SmtpVisit visit = new SmtpVisit(uuid, "test.be");
-
     SmtpHost host = new SmtpHost("mx.test.be");
     visit.add(host);
-
     var saved = repository.save(visit);
     logger.info("saved = {}", saved);
-  }
-
-  @Test
-  public void otherDataIntegrityViolationExceptionNotIgnored() {
-    SmtpVisit crawlResult = smtpVisit(randomUUID());
-    crawlResult.setDomainName(StringUtils.repeat("a", 130));
-    Assertions.assertThrows(
-      DataIntegrityViolationException.class,
-      () -> repository.saveAndIgnoreDuplicateKeys(crawlResult)
-    );
   }
 
   @Test
@@ -193,24 +158,6 @@ class SmtpVisitRepositoryTest {
     smtpVisit = repository.save(smtpVisit);
     logger.info("After save: crawlResult.getVisitId() = {}", smtpVisit.getVisitId());
     assertThat(smtpVisit.getVisitId()).isNotNull();
-  }
-
-  private SmtpVisit smtpVisit(UUID uuid) {
-    SmtpVisit crawlResult = new SmtpVisit(uuid, "jamaica.be");
-    SmtpHost host = new SmtpHost("smtp1.example.com");
-    SmtpConversation conversation = new SmtpConversation();
-    conversation.setIp("1.2.3.4");
-    conversation.setConnectReplyCode(220);
-    conversation.setIpVersion(4);
-    conversation.setBanner("my binary banner");
-    conversation.setConnectionTimeMs(123);
-    conversation.setStartTlsOk(false);
-    conversation.setCountry("Jamaica");
-    conversation.setAsnOrganisation("Happy Green grass");
-    conversation.setAsn(654L);
-    host.setConversation(conversation);
-    crawlResult.add(host);
-    return crawlResult;
   }
 
   private SmtpVisit smtpVisitWithBinaryData() {
