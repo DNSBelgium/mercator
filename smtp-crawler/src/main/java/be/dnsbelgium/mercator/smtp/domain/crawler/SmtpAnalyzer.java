@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.TxLogger;
+import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
@@ -197,6 +198,7 @@ public class SmtpAnalyzer {
     logger.debug("{} : {}", message, address);
     SmtpConversationEntity conversation = new SmtpConversationEntity(address);
     conversation.setErrorMessage(message);
+    conversation.setError(Error.SKIPPED);
     return conversation;
   }
 
