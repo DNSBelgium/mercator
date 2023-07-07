@@ -25,7 +25,7 @@ const SMTPCard = (props) => {
                     }
                 });
 
-            const smtpHostUrl = `/smtpHosts/search/findAllByVisitId?visit_id=${visitId}`;
+            const smtpHostUrl = `/smtpHosts/search/findByVisitVisitId?visit_id=${visitId}`;
             await api.get(smtpHostUrl)
                 .then(async (resp) => {
                     if (resp.status === 200) {

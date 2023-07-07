@@ -8,6 +8,7 @@ import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,6 +23,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.slf4j.LoggerFactory.getLogger;
 
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @DataJpaTest
@@ -35,7 +37,7 @@ public class SmtpConversationRepositoryTest {
   ApplicationContext context;
   @Autowired
   JdbcTemplate jdbcTemplate;
-
+  private static final Logger logger = getLogger(SmtpConversationRepositoryTest.class);
   @Container
   static PostgreSqlContainer container = PostgreSqlContainer.getInstance();
 
@@ -87,7 +89,7 @@ public class SmtpConversationRepositoryTest {
   }
 
   @Test
-  void findAllByVisitId(){
+  void findByHostId(){
     SmtpConversation conversation = new SmtpConversation();
     conversation.setIp("4.5.6.7");
     conversation.setIpVersion(4);
@@ -104,7 +106,9 @@ public class SmtpConversationRepositoryTest {
     visit.setDomainName("dnsbelgium.be");
     visit.add(host);
     hostRepository.save(host);
-    List<SmtpConversation> conversations = repository.findAllByVisitId(visitId);
-    Assertions.assertThat(conversations.size()).isEqualTo(1);
+    SmtpConversation conversationFound = repository.findByHostId(host.getId());
+    logger.info("conversationFound = {}", conversationFound);
+    assertThat(conversationFound).isEqualTo(conversation);
   }
+
 }

@@ -85,7 +85,7 @@ public class SmtpHostRepositoryTest {
     visit.setDomainName("dnsbelgium.be");
     visit.add(host);
     repository.save(host);
-    List<SmtpHost> hosts = repository.findAllByVisitId(visitId);
+    List<SmtpHost> hosts = repository.findByVisitVisitId(visitId);
     assertThat(hosts.size()).isEqualTo(1);
   }
 
