@@ -17,23 +17,23 @@ const SMTPCard = (props) => {
     // api SMTP
     useEffect(() => {
         const handlerData = async () => {
-            const smtpVisitEntityUrl = `/smtpVisitEntities/search/findByVisitId?visitId=${visitId}`;
-            await api.get(smtpVisitEntityUrl)
+            const smtpVisitUrl = `/smtpVisits/search/findByVisitId?visitId=${visitId}`;
+            await api.get(smtpVisitUrl)
                 .then((resp) => {
                     if(resp.status === 200) {
                         setVisit(resp.data);
                     }
                 });
 
-            const smtpHostUrl = `/smtpHostEntities/search/findAllByVisitId?visit_id=${visitId}`;
+            const smtpHostUrl = `/smtpHosts/search/findAllByVisitId?visit_id=${visitId}`;
             await api.get(smtpHostUrl)
                 .then(async (resp) => {
                     if (resp.status === 200) {
-                        let hosts = resp.data._embedded.smtpHostEntities;
+                        let hosts = resp.data._embedded.smtpHosts;
                         let conversations = {};
                         setHost(hosts);
                         for (let i = 0; i < hosts.length; i++) {
-                            const smtpConversationUrl = `/smtpConversationEntities/search/findByHostId?host_id=${hosts[i].id}`;
+                            const smtpConversationUrl = `/smtpConversations/search/findByHostId?host_id=${hosts[i].id}`;
                             await api.get(smtpConversationUrl)
                                 .then((resp) => {
                                     if (resp.status === 200) {
