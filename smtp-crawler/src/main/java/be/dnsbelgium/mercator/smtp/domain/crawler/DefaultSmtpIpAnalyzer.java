@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.TxLogger;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -36,23 +36,23 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   }
 
   @Override
-  public SmtpConversationEntity crawl(InetAddress ip) {
+  public SmtpConversation crawl(InetAddress ip) {
     TxLogger.log(getClass(), "crawl");
-    SmtpConversationEntity smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
+    SmtpConversation smtpConversation = meterRegistry.timer(MetricName.TIMER_IP_CRAWL).record(() -> doCrawl(ip));
     if (smtpConversation != null) {
         geoIP(smtpConversation);
     }
     return smtpConversation;
   }
 
-  private SmtpConversationEntity doCrawl(InetAddress ip) {
+  private SmtpConversation doCrawl(InetAddress ip) {
     TxLogger.log(getClass(), "doCrawl");
     logger.debug("About to talk SMTP with {}", ip);
-    SmtpConversation conversation = conversationFactory.create(ip);
+    Conversation conversation = conversationFactory.create(ip);
     return conversation.talk();
   }
 
-  private void geoIP(SmtpConversationEntity smtpConversation) {
+  private void geoIP(SmtpConversation smtpConversation) {
     Optional<Pair<Integer, String>> asn = geoIPService.lookupASN(smtpConversation.getIp());
     if (asn.isPresent()) {
       smtpConversation.setAsn(Long.valueOf(asn.get().getKey()));

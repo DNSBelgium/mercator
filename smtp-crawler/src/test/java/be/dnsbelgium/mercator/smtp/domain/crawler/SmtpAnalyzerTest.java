@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +39,9 @@ class SmtpAnalyzerTest {
   InetAddress localhost = ip("127.0.0.1");
   InetAddress privateIP = ip("172.16.2.3");
 
-  SmtpConversationEntity crawledIp1 = new SmtpConversationEntity(ip1);
-  SmtpConversationEntity crawledIp2 = new SmtpConversationEntity(ip2);
-  SmtpConversationEntity crawledIpv6 = new SmtpConversationEntity(ipv6);
+  SmtpConversation crawledIp1 = new SmtpConversation(ip1);
+  SmtpConversation crawledIp2 = new SmtpConversation(ip2);
+  SmtpConversation crawledIpv6 = new SmtpConversation(ipv6);
 
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
   MXRecord mx2 = mxRecord(DOMAIN_NAME, 20, "smtp2.name.be");
@@ -76,7 +76,7 @@ class SmtpAnalyzerTest {
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     assertThat(result.getTimestamp()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
-    SmtpHostEntity server = result.getHosts().get(0);
+    SmtpHost server = result.getHosts().get(0);
     assertThat(server.getHostName()).isEqualTo(ip1.getHostAddress());
     assertThat(server.getConversation()).isEqualTo(crawledIp1);
   }
@@ -210,7 +210,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
 
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
-    assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+    assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
     assertThat(result.getTimestamp()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(2);
     var host = result.getHosts().get(0);

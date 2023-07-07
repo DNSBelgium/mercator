@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.smtp;
 import be.dnsbelgium.mercator.common.messaging.dto.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpAnalyzer;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -36,25 +36,25 @@ public class SmtpCrawlService {
   }
 
 
-  public SmtpVisitEntity retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
+  public SmtpVisit retrieveSmtpInfo(VisitRequest visitRequest) throws Exception {
     String fqdn = visitRequest.getDomainName();
     logger.debug("Retrieving SMTP info for domainName = {}", fqdn);
-    SmtpVisitEntity result = analyzer.analyze(fqdn);
+    SmtpVisit result = analyzer.analyze(fqdn);
     TxLogger.log(getClass(), "retrieveSmtpInfo");
     result.setVisitId(visitRequest.getVisitId());
     return result;
   }
 
   @Transactional
-  public Optional<SmtpVisitEntity> find(UUID visitId) {
-    Optional<SmtpVisitEntity> smtpVisit = repository.findByVisitId(visitId);
+  public Optional<SmtpVisit> find(UUID visitId) {
+    Optional<SmtpVisit> smtpVisit = repository.findByVisitId(visitId);
     logger.debug("find by visitId => {}", smtpVisit);
     return smtpVisit;
   }
 
   @Transactional
-  public void save(SmtpVisitEntity visit) {
-    logger.debug("About to save SmtpVisitEntity for {}", visit.getDomainName());
+  public void save(SmtpVisit visit) {
+    logger.debug("About to save SmtpVisit for {}", visit.getDomainName());
     // Save the conversations
     for (var host : visit.getHosts()) {
       if (host.getConversation().getId() == null) {
@@ -62,13 +62,13 @@ public class SmtpCrawlService {
         host.setConversation(convo);
       }
     }
-    Optional<SmtpVisitEntity> savedVisit = repository.saveAndIgnoreDuplicateKeys(visit);
+    Optional<SmtpVisit> savedVisit = repository.saveAndIgnoreDuplicateKeys(visit);
     if (savedVisit.isEmpty()) {
       logger.info("was duplicate: {}", visit.getVisitId());
       meterRegistry.counter(MetricName.COUNTER_DUPLICATE_KEYS).increment();
     } else {
       meterRegistry.counter(MetricName.SMTP_RESULTS_SAVED).increment();
-      logger.debug("Saved SmtpVisitEntity for {} with visitId={}",
+      logger.debug("Saved SmtpVisit for {} with visitId={}",
           visit.getDomainName(), visit.getVisitId());
     }
   }

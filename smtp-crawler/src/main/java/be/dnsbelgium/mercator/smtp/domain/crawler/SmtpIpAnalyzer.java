@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 
 import java.net.InetAddress;
 
@@ -9,5 +9,5 @@ import java.net.InetAddress;
  */
 public interface SmtpIpAnalyzer {
 
-    SmtpConversationEntity crawl(InetAddress ip);
+    SmtpConversation crawl(InetAddress ip);
 }

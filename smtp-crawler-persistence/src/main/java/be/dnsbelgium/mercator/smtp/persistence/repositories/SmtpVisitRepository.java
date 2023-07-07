@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.persistence.repositories;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
@@ -10,12 +10,12 @@ import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public interface SmtpVisitRepository extends PagingAndSortingRepository<SmtpVisitEntity, Long> {
-  Optional<SmtpVisitEntity> findByVisitId(@Param("visitId") UUID visitId);
+public interface SmtpVisitRepository extends PagingAndSortingRepository<SmtpVisit, Long> {
+  Optional<SmtpVisit> findByVisitId(@Param("visitId") UUID visitId);
 
-  default Optional<SmtpVisitEntity> saveAndIgnoreDuplicateKeys(SmtpVisitEntity smtpVisitEntity) {
+  default Optional<SmtpVisit> saveAndIgnoreDuplicateKeys(SmtpVisit smtpVisit) {
     try {
-      SmtpVisitEntity visitEntity = save(smtpVisitEntity);
+      SmtpVisit visitEntity = save(smtpVisit);
       return Optional.of(visitEntity);
     } catch (DataIntegrityViolationException e) {
       if (e.getMessage() != null && e.getMessage().contains("smtp_visit_pkey_uq")) {

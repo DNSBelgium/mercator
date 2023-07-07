@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
 @Table(name = "smtp_conversation")
-public class SmtpConversationEntity {
+public class SmtpConversation {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "id")
@@ -96,7 +96,7 @@ public class SmtpConversationEntity {
   @Transient
   private final static String EMPTY_STRING = "";
 
-  public SmtpConversationEntity(InetAddress ip) {
+  public SmtpConversation(InetAddress ip) {
     this.ip = ip.getHostAddress();
     if (ip instanceof Inet4Address) {
       ipVersion = 4;
@@ -115,7 +115,7 @@ public class SmtpConversationEntity {
     this.asnOrganisation = clean(asnOrganisation);
     this.errorMessage = clean(errorMessage);
     this.ip = clean(ip);
-    this.supportedExtensions = supportedExtensions.stream().map(SmtpConversationEntity::clean).collect(Collectors.toSet());
+    this.supportedExtensions = supportedExtensions.stream().map(SmtpConversation::clean).collect(Collectors.toSet());
   }
 
   private static String clean(String input) {

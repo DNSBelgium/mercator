@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import com.hubspot.smtp.client.ChannelClosedException;
 import com.hubspot.smtp.client.SmtpClientResponse;
 import com.hubspot.smtp.client.SmtpSessionConfig;
@@ -28,9 +28,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 /**
  * A stateful class to represents the conversation with one IP of an SMTP server.
  */
-public class NioSmtpConversation implements SmtpConversation {
+public class NioSmtpConversation implements Conversation {
 
-    private final SmtpConversationEntity smtpConversation;
+    private final SmtpConversation smtpConversation;
     private long connectionStart;
     private long connectionTimeMs = -1;
     private Temporal ehloSent;
@@ -61,16 +61,16 @@ public class NioSmtpConversation implements SmtpConversation {
         this.sessionFactory = sessionFactory;
         this.sessionConfig = sessionConfig;
         this.config = config;
-        this.smtpConversation = new SmtpConversationEntity(ipAddress);
+        this.smtpConversation = new SmtpConversation(ipAddress);
     }
 
     // for testing
-    protected SmtpConversationEntity getConversation() {
+    protected SmtpConversation getConversation() {
         return smtpConversation;
     }
 
     @Override
-    public SmtpConversationEntity talk() {
+    public SmtpConversation talk() {
         try {
             return start().get();
         } catch (ExecutionException | InterruptedException e) {
@@ -80,7 +80,7 @@ public class NioSmtpConversation implements SmtpConversation {
         }
     }
 
-    public CompletableFuture<SmtpConversationEntity> start() {
+    public CompletableFuture<SmtpConversation> start() {
         logger.debug("Starting SMTP crawl of {}", smtpConversation.getIp());
         CompletionStage<SmtpClientResponse> connected = this.connect();
         logger.debug("connected = {}", connected);
@@ -169,7 +169,7 @@ public class NioSmtpConversation implements SmtpConversation {
         return (smtpClientResponse.getResponses().isEmpty() ? NO_RESPONSE_CODE : smtpClientResponse.getResponses().get(0).code());
     }
 
-    private SmtpConversationEntity handleException(Throwable throwable) {
+    private SmtpConversation handleException(Throwable throwable) {
         Instant start = now();
         // also set time to connect in case of Connection time-out => allows us to see how long we waited
         if (connectionTimeMs == -1) {

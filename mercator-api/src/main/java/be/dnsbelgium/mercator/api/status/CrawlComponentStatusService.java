@@ -7,7 +7,7 @@ import be.dnsbelgium.mercator.content.persistence.WappalyzerResultRepository;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +43,7 @@ public class CrawlComponentStatusService {
     CompletableFuture.allOf(dnsFuture, smtpFuture, muppetsFuture, wappalyzerFuture).get();
 
     List<Request> request = dnsFuture.exceptionally((ex -> Collections.emptyList())).get();
-    Optional<SmtpVisitEntity> smtpVisitEntity = smtpFuture.exceptionally((ex -> Optional.empty())).get();
+    Optional<SmtpVisit> smtpVisitEntity = smtpFuture.exceptionally((ex -> Optional.empty())).get();
     List<ContentCrawlResult> muppetsResults = muppetsFuture.exceptionally((ex -> Collections.emptyList())).get();
     Optional<WappalyzerResult> wappalyzerResult = wappalyzerFuture.exceptionally((ex -> Optional.empty())).get();
 

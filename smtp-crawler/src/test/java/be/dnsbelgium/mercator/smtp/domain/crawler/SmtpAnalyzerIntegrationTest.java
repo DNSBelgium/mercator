@@ -3,8 +3,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.domain.crawler.config.TestContext;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     assertThat(result.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(result.getTimestamp()).isNotNull();
-    List<SmtpHostEntity> hosts = result.getHosts();
+    List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
     assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
     assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);
@@ -65,7 +64,7 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     //assertThat(result.getDomainName()).isEqualTo("abc.be");
     assertThat(result.getTimestamp()).isNotNull();
-    List<SmtpHostEntity> hosts = result.getHosts();
+    List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
     assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
     assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);

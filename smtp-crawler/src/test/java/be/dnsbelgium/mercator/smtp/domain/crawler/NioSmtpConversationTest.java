@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import com.hubspot.smtp.client.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -113,7 +113,7 @@ class NioSmtpConversationTest {
         CompletableFuture<SmtpClientResponse> future = new CompletableFuture<>();
         future.orTimeout(5, TimeUnit.MILLISECONDS);
         when(sessionFactory.connect(sessionConfig)).thenReturn(future);
-        CompletableFuture<SmtpConversationEntity> crawlFuture = crawl.start();
+        CompletableFuture<SmtpConversation> crawlFuture = crawl.start();
         logger.info("crawl = {}", crawlFuture.get());
         assertThat(crawl.getConversation().getErrorMessage()).isNotBlank();
         assertThat(crawl.getConversation().getErrorMessage()).contains("TimeoutException");

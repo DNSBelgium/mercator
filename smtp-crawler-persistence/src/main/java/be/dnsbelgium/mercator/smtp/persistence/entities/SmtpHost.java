@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "smtp_host")
-public class SmtpHostEntity {
+public class SmtpHost {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class SmtpHostEntity {
   @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinColumn(name = "visit_id")
   @ToString.Exclude
-  private SmtpVisitEntity visit;
+  private SmtpVisit visit;
 
   @Column(name = "from_mx")
   private boolean fromMx;
@@ -34,13 +34,13 @@ public class SmtpHostEntity {
   @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
   @JoinColumn(name = "conversation")
   @ToString.Exclude
-  private SmtpConversationEntity conversation;
+  private SmtpConversation conversation;
 
-  public SmtpHostEntity(String hostName){
+  public SmtpHost(String hostName){
     this.hostName = hostName;
   }
 
-  public void setConversation(SmtpConversationEntity conversation) {
+  public void setConversation(SmtpConversation conversation) {
     this.conversation = conversation;
   }
 }

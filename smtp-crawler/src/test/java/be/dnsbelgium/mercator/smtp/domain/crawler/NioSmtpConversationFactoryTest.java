@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class NioSmtpConversationFactoryTest {
         NioSmtpConversation conversation = factory.create(ip("134.58.240.3"));
         logger.info("conversation = {}", conversation);
         long start = System.currentTimeMillis();
-        CompletableFuture<SmtpConversationEntity> result = conversation.start();
+        CompletableFuture<SmtpConversation> result = conversation.start();
         logger.info("result = {}", result);
         logger.info("waiting until done ...");
         var smtpConversation = result.get();

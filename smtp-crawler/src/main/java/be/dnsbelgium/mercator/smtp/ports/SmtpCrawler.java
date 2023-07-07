@@ -8,7 +8,7 @@ import be.dnsbelgium.mercator.smtp.SmtpCrawlService;
 import be.dnsbelgium.mercator.smtp.TxLogger;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -55,7 +55,7 @@ public class SmtpCrawler implements Crawler {
     setMDC(visitRequest);
     logger.debug("Received VisitRequest for domainName={}", visitRequest.getDomainName());
     TxLogger.log(getClass(), "process (before find");
-    Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
+    Optional<SmtpVisit> existingResult = crawlService.find(visitRequest.getVisitId());
     TxLogger.log(getClass(), "process (after find");
     if (existingResult.isPresent()) {
       logger.info("visit {} already exists => skipping", visitRequest);
@@ -64,15 +64,15 @@ public class SmtpCrawler implements Crawler {
 
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
-      // first try to save an SmtpVisitEntity  (=> this is an extra db tx)
+      // first try to save an SmtpVisit  (=> this is an extra db tx)
       // and see what happens when duplicate keys
-      SmtpVisitEntity visit = new SmtpVisitEntity();
+      SmtpVisit visit = new SmtpVisit();
       visit.setVisitId(visitRequest.getVisitId());
       visit.setDomainName(visitRequest.getDomainName());
       crawlService.save(visit);
       // now start crawling
 
-      SmtpVisitEntity smtpVisit = crawlService.retrieveSmtpInfo(visitRequest);
+      SmtpVisit smtpVisit = crawlService.retrieveSmtpInfo(visitRequest);
       TxLogger.log(getClass(), "process (before saveAndIgnoreDuplicate");
       save(visitRequest, smtpVisit);
       TxLogger.log(getClass(), "process (after saveAndIgnoreDuplicate");
@@ -93,7 +93,7 @@ public class SmtpCrawler implements Crawler {
     }
   }
 
-  private void save(VisitRequest visitRequest, SmtpVisitEntity smtpVisit) throws UnexpectedRollbackException {
+  private void save(VisitRequest visitRequest, SmtpVisit smtpVisit) throws UnexpectedRollbackException {
     try {
       TxLogger.log(getClass(), "save (before calling crawlService.save())");
       for (var host : smtpVisit.getHosts()) {
@@ -112,7 +112,7 @@ public class SmtpCrawler implements Crawler {
       }
     } catch (UnexpectedRollbackException e) {
       logger.info("UnexpectedRollbackException: {}", e.getMessage());
-      Optional<SmtpVisitEntity> existingResult = crawlService.find(visitRequest.getVisitId());
+      Optional<SmtpVisit> existingResult = crawlService.find(visitRequest.getVisitId());
       if (existingResult.isPresent()) {
         logger.info("Save failed because SmtpCrawlResult already existed");
         // swallow exception so that message will be removed from SQS queue (and ack will be sent)

@@ -4,9 +4,9 @@ import be.dnsbelgium.mercator.smtp.TxLogger;
 import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -55,17 +55,17 @@ public class SmtpAnalyzer {
     logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
   }
 
-  public SmtpVisitEntity analyze(String domainName) throws Exception {
+  public SmtpVisit analyze(String domainName) throws Exception {
     TxLogger.log(getClass(), "analyze");
-    SmtpVisitEntity result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
+    SmtpVisit result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
     meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
     return result;
   }
 
-  private SmtpVisitEntity doCrawl(String domainName) {
+  private SmtpVisit doCrawl(String domainName) {
     TxLogger.log(getClass(), "doCrawl");
     logger.debug("Starting SMTP crawl for domainName={}", domainName);
-    SmtpVisitEntity result = new SmtpVisitEntity();
+    SmtpVisit result = new SmtpVisit();
     result.setDomainName(domainName);
     result.setTimestamp(ZonedDateTime.now());
     MxLookupResult mxLookupResult = mxFinder.findMxRecordsFor(domainName);
@@ -92,7 +92,7 @@ public class SmtpAnalyzer {
     }
   }
 
-  private void visitAddressRecords(SmtpVisitEntity visit) {
+  private void visitAddressRecords(SmtpVisit visit) {
     // CNAME-s are followed when resolving hostnames to addresses
     // It seems that CNAME's are also followed hen looking up MX records
     //
@@ -111,26 +111,26 @@ public class SmtpAnalyzer {
     String domainName = visit.getDomainName();
     meterRegistry.counter(MetricName.COUNTER_NO_MX_RECORDS_FOUND).increment();
     logger.debug("No MX records found for {} => finding address records", domainName);
-    List<SmtpHostEntity> hosts = visit(domainName, 0, false);
+    List<SmtpHost> hosts = visit(domainName, 0, false);
     visit.add(hosts);
     setStatus(visit);
     logger.debug("DONE crawling A records for domain name {}", domainName);
   }
 
-  private void visitMxRecords(SmtpVisitEntity visit, MxLookupResult mxLookupResult) {
+  private void visitMxRecords(SmtpVisit visit, MxLookupResult mxLookupResult) {
     String domainName = visit.getDomainName();
     logger.debug("We found {} MX records for {}", mxLookupResult.getMxRecords().size(), domainName);
     for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
       logger.debug("mxRecord = {}", mxRecord);
       String hostName = mxRecord.getTarget().toString(true);
-      List<SmtpHostEntity> hosts = visit(hostName, mxRecord.getPriority(), true);
+      List<SmtpHost> hosts = visit(hostName, mxRecord.getPriority(), true);
       visit.add(hosts);
     }
     setStatus(visit);
     logger.debug("DONE crawling MX records for domain name {}", domainName);
   }
 
-  private void setStatus(SmtpVisitEntity visit) {
+  private void setStatus(SmtpVisit visit) {
     if (visit.getHosts().stream().anyMatch(host -> host
         .getConversation()
         .getError() == null)) {
@@ -140,18 +140,18 @@ public class SmtpAnalyzer {
     }
   }
 
-  private List<SmtpHostEntity> visit(String hostName, int priority, boolean fromMx) {
+  private List<SmtpHost> visit(String hostName, int priority, boolean fromMx) {
     List<InetAddress> addresses = mxFinder.findIpAddresses(hostName);
     if (addresses.size() == 0) {
       logger.debug("No addresses found for hostName {}", hostName);
       return Collections.emptyList();
     }
     logger.debug("We found {} addresses for hostName {}", addresses.size(), hostName);
-    List<SmtpHostEntity> hosts = new ArrayList<>();
+    List<SmtpHost> hosts = new ArrayList<>();
     for (InetAddress address : addresses) {
-      SmtpConversationEntity smtpConversation = findInCacheOrCrawl(address);
+      SmtpConversation smtpConversation = findInCacheOrCrawl(address);
       smtpConversation.clean();
-      SmtpHostEntity host = new SmtpHostEntity();
+      SmtpHost host = new SmtpHost();
       host.setHostName(hostName);
       host.setPriority(priority);
       host.setConversation(smtpConversation);
@@ -164,7 +164,7 @@ public class SmtpAnalyzer {
     return hosts;
   }
 
-  private SmtpConversationEntity findInCacheOrCrawl(InetAddress address) {
+  private SmtpConversation findInCacheOrCrawl(InetAddress address) {
     logger.debug("crawling ip {}", address.toString());
 
     if (address.isLoopbackAddress()) {
@@ -182,7 +182,7 @@ public class SmtpAnalyzer {
 
     // first check the cache
     String ip = address.getHostAddress();
-    SmtpConversationEntity conversation = conversationCache.get(ip);
+    SmtpConversation conversation = conversationCache.get(ip);
     if (conversation != null) {
       logger.debug("Found conversation in the cache: {}", conversation);
     } else {
@@ -193,10 +193,10 @@ public class SmtpAnalyzer {
 
   }
 
-  private SmtpConversationEntity skip(InetAddress address, String message) {
+  private SmtpConversation skip(InetAddress address, String message) {
     meterRegistry.counter(MetricName.COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
     logger.debug("{} : {}", message, address);
-    SmtpConversationEntity conversation = new SmtpConversationEntity(address);
+    SmtpConversation conversation = new SmtpConversation(address);
     conversation.setErrorMessage(message);
     conversation.setError(Error.SKIPPED);
     return conversation;

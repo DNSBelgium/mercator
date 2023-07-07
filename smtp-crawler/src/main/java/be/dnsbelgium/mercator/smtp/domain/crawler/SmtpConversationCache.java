@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -19,18 +19,18 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class SmtpConversationCache {
   private static final Logger logger = getLogger(SmtpConversationCache.class);
 
-  private final ConcurrentHashMap<String, SmtpConversationEntity> cache = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, SmtpConversation> cache = new ConcurrentHashMap<>();
 
   @Autowired
   public SmtpConversationCache(MeterRegistry meterRegistry) {
     meterRegistry.gaugeMapSize(MetricName.GAUGE_CACHE_SIZE, Tags.empty(), cache);
   }
 
-  public void add(String ip, SmtpConversationEntity conversation){
+  public void add(String ip, SmtpConversation conversation){
     cache.put(ip, conversation);
   }
 
-  public SmtpConversationEntity get(String ip){
+  public SmtpConversation get(String ip){
     return cache.get(ip);
   }
 

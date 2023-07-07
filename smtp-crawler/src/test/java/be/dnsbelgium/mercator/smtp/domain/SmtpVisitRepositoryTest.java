@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.smtp.domain;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversationEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHostEntity;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisitEntity;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpConversationRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpHostRepository;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpVisitRepository;
@@ -61,29 +61,29 @@ class SmtpVisitRepositoryTest {
   void addVisitTest(){
     UUID visitId = UUID.randomUUID();
     ZonedDateTime timestamp = ZonedDateTime.now();
-    SmtpVisitEntity visit = new SmtpVisitEntity();
+    SmtpVisit visit = new SmtpVisit();
     visit.setVisitId(visitId);
     visit.setDomainName("dnsbelgium.be");
     visit.setTimestamp(timestamp);
     visit.setNumConversations(0);
     repository.save(visit);
-    Optional<SmtpVisitEntity> savedVisit = repository.findByVisitId(visitId);
+    Optional<SmtpVisit> savedVisit = repository.findByVisitId(visitId);
     org.assertj.core.api.Assertions.assertThat(savedVisit).isPresent();
-    SmtpVisitEntity visitEntity = savedVisit.get();
-    assertThat(visitEntity.getVisitId()).isEqualTo(visitId);
-    assertThat(visitEntity.getDomainName()).isEqualTo("dnsbelgium.be");
-    assertThat(visitEntity.getTimestamp()).isEqualTo(timestamp);
-    assertThat(visitEntity.getNumConversations()).isEqualTo(0);
+    SmtpVisit saved = savedVisit.get();
+    assertThat(saved.getVisitId()).isEqualTo(visitId);
+    assertThat(saved.getDomainName()).isEqualTo("dnsbelgium.be");
+    assertThat(saved.getTimestamp()).isEqualTo(timestamp);
+    assertThat(saved.getNumConversations()).isEqualTo(0);
   }
 
   @Test
   void findByVisitId() {
     UUID uuid = randomUUID();
     logger.info("uuid = {}", uuid);
-    SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "dnsbelgium.be");
-    SmtpHostEntity host1 = new SmtpHostEntity("smtp1.example.com");
-    SmtpHostEntity host2 = new SmtpHostEntity("smtp2.example.com");
-    var conversation = new SmtpConversationEntity();
+    SmtpVisit visit = new SmtpVisit(uuid, "dnsbelgium.be");
+    SmtpHost host1 = new SmtpHost("smtp1.example.com");
+    SmtpHost host2 = new SmtpHost("smtp2.example.com");
+    var conversation = new SmtpConversation();
     conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
@@ -95,25 +95,25 @@ class SmtpVisitRepositoryTest {
     conversation.setAsn(654L);
     host1.setConversation(conversation);
     host2.setConversation(conversation);
-    visitEntity.add(host1);
-    visitEntity.add(host2);
+    visit.add(host1);
+    visit.add(host2);
     conversationRepository.save(conversation);
 
-    repository.save(visitEntity);
+    repository.save(visit);
     // null value in column "ip" violates not-null constraint ??
 
-    Optional<SmtpVisitEntity> found = repository.findByVisitId(uuid);
+    Optional<SmtpVisit> found = repository.findByVisitId(uuid);
     assertThat(found).isPresent();
-    SmtpVisitEntity foundVisit = found.get();
+    SmtpVisit foundVisit = found.get();
     logger.info("found.servers = {}", foundVisit.getHosts());
     assertThat(foundVisit).isNotNull();
-    assertThat(foundVisit.getTimestamp()).isEqualTo(visitEntity.getTimestamp());
-    assertThat(foundVisit.getDomainName()).isEqualTo(visitEntity.getDomainName());
-    assertThat(foundVisit.getVisitId()).isEqualTo(visitEntity.getVisitId());
+    assertThat(foundVisit.getTimestamp()).isEqualTo(visit.getTimestamp());
+    assertThat(foundVisit.getDomainName()).isEqualTo(visit.getDomainName());
+    assertThat(foundVisit.getVisitId()).isEqualTo(visit.getVisitId());
     assertThat(foundVisit.getHosts().size()).isEqualTo(2);
-    assertThat(foundVisit.getHosts().get(0).getHostName()).isEqualTo(visitEntity.getHosts().get(0).getHostName());
+    assertThat(foundVisit.getHosts().get(0).getHostName()).isEqualTo(visit.getHosts().get(0).getHostName());
 
-    SmtpConversationEntity conversation1 = foundVisit.getHosts().get(0).getConversation();
+    SmtpConversation conversation1 = foundVisit.getHosts().get(0).getConversation();
     assertThat(conversation1).isNotNull();
     assertThat(conversation1.getIp()).isEqualTo("1.2.3.4");
     assertThat(conversation1.getBanner()).isEqualTo("my banner");
@@ -121,12 +121,12 @@ class SmtpVisitRepositoryTest {
 
   @Test
   public void savingBinaryDataFails() {
-    SmtpVisitEntity visitEntity = smtpVisitWithBinaryData();
+    SmtpVisit visit = smtpVisitWithBinaryData();
     try {
-      for (var host : visitEntity.getHosts()) {
+      for (var host : visit.getHosts()) {
         conversationRepository.save(host.getConversation());
       }
-      repository.save(visitEntity);
+      repository.save(visit);
 
       fail("Binary data should throw DataIntegrityViolationException");
     } catch (DataIntegrityViolationException expected) {
@@ -147,11 +147,11 @@ class SmtpVisitRepositoryTest {
       , "abc.be", uuid, 0
     );
     logger.info("rowsInserted = {}", rowsInserted);
-    Optional<SmtpVisitEntity> found = repository.findByVisitId(uuid);
+    Optional<SmtpVisit> found = repository.findByVisitId(uuid);
     logger.info("found = {}", found);
     assertThat(found).isPresent();
     jdbcTemplate.execute("commit");
-    SmtpVisitEntity crawlResult = smtpVisit(uuid);
+    SmtpVisit crawlResult = smtpVisit(uuid);
     logger.info("calling saveAndIgnoreDuplicateKeys");
     boolean saveFailed = repository.saveAndIgnoreDuplicateKeys(crawlResult).isPresent();
     logger.info("saveFailed = {}", saveFailed);
@@ -161,18 +161,18 @@ class SmtpVisitRepositoryTest {
   @Test
   public void save() {
     var uuid = UUID.randomUUID();
-    SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "test.be");
+    SmtpVisit visit = new SmtpVisit(uuid, "test.be");
 
-    SmtpHostEntity hostEntity = new SmtpHostEntity("mx.test.be");
-    visitEntity.add(hostEntity);
+    SmtpHost host = new SmtpHost("mx.test.be");
+    visit.add(host);
 
-    var saved = repository.save(visitEntity);
+    var saved = repository.save(visit);
     logger.info("saved = {}", saved);
   }
 
   @Test
   public void otherDataIntegrityViolationExceptionNotIgnored() {
-    SmtpVisitEntity crawlResult = smtpVisit(randomUUID());
+    SmtpVisit crawlResult = smtpVisit(randomUUID());
     crawlResult.setDomainName(StringUtils.repeat("a", 130));
     Assertions.assertThrows(
       DataIntegrityViolationException.class,
@@ -182,23 +182,23 @@ class SmtpVisitRepositoryTest {
 
   @Test
   public void saveSuccessfulWhenWeCleanBinaryData() {
-    SmtpVisitEntity smtpVisitEntity = smtpVisitWithBinaryData();
+    SmtpVisit smtpVisit = smtpVisitWithBinaryData();
     // clean the data before saving
-    for (SmtpHostEntity host : smtpVisitEntity.getHosts()) {
+    for (SmtpHost host : smtpVisit.getHosts()) {
         host.getConversation().clean();
     }
-    String actualCountry = smtpVisitEntity.getHosts().get(0).getConversation().getCountry();
+    String actualCountry = smtpVisit.getHosts().get(0).getConversation().getCountry();
     assertThat(actualCountry).isEqualTo("Jamaica ");
-    logger.info("Before save: smtpVisitEntity.getVisitId() = {}", smtpVisitEntity.getVisitId());
-    smtpVisitEntity = repository.save(smtpVisitEntity);
-    logger.info("After save: crawlResult.getVisitId() = {}", smtpVisitEntity.getVisitId());
-    assertThat(smtpVisitEntity.getVisitId()).isNotNull();
+    logger.info("Before save: smtpVisit.getVisitId() = {}", smtpVisit.getVisitId());
+    smtpVisit = repository.save(smtpVisit);
+    logger.info("After save: crawlResult.getVisitId() = {}", smtpVisit.getVisitId());
+    assertThat(smtpVisit.getVisitId()).isNotNull();
   }
 
-  private SmtpVisitEntity smtpVisit(UUID uuid) {
-    SmtpVisitEntity crawlResult = new SmtpVisitEntity(uuid, "jamaica.be");
-    SmtpHostEntity host = new SmtpHostEntity("smtp1.example.com");
-    SmtpConversationEntity conversation = new SmtpConversationEntity();
+  private SmtpVisit smtpVisit(UUID uuid) {
+    SmtpVisit crawlResult = new SmtpVisit(uuid, "jamaica.be");
+    SmtpHost host = new SmtpHost("smtp1.example.com");
+    SmtpConversation conversation = new SmtpConversation();
     conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
@@ -213,11 +213,11 @@ class SmtpVisitRepositoryTest {
     return crawlResult;
   }
 
-  private SmtpVisitEntity smtpVisitWithBinaryData() {
+  private SmtpVisit smtpVisitWithBinaryData() {
     UUID uuid = randomUUID();
-    SmtpVisitEntity visitEntity = new SmtpVisitEntity(uuid, "dnsbelgium.be");
-    SmtpHostEntity host = new SmtpHostEntity("smtp1.example.com");
-    var conversation = new SmtpConversationEntity();
+    SmtpVisit visit = new SmtpVisit(uuid, "dnsbelgium.be");
+    SmtpHost host = new SmtpHost("smtp1.example.com");
+    var conversation = new SmtpConversation();
     conversation.setIp("1.2.3.4");
     conversation.setConnectReplyCode(220);
     conversation.setIpVersion(4);
@@ -228,8 +228,8 @@ class SmtpVisitRepositoryTest {
     conversation.setAsnOrganisation("Happy \u0000 Green grass");
     conversation.setAsn(654L);
     host.setConversation(conversation);
-    visitEntity.add(host);
-    return visitEntity;
+    visit.add(host);
+    return visit;
   }
 
 }
