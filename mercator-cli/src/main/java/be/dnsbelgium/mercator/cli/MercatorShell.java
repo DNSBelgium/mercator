@@ -199,6 +199,22 @@ public class MercatorShell implements PromptProvider {
     logger.info("sendMessageResult: {}", sendMessageResult);
   }
 
+  @ShellMethod("Send a number of duplicates requests")
+  // this can be handy when testing how the crawlers modules deal with duplicate/concurrent requests
+  public void sendDuplicateRequests(String domainName,
+                                    @ShellOption(defaultValue = "VISIT_REQUEST") RequestType requestType,
+                                    @ShellOption(defaultValue = "") CrawlerModule crawlerModule,
+                                    @ShellOption(defaultValue = "10") int sets) {
+    for (int i=0; i< sets; i++) {
+      UUID uuid = UUID.randomUUID();
+      String message = generateRequest(domainName, uuid, requestType, crawlerModule);
+      SendMessageResult sendMessageResult1 = sendMessage(message);
+      logger.info("sendMessageResult1: {}", sendMessageResult1);
+      SendMessageResult sendMessageResult2 = sendMessage(message);
+      logger.info("sendMessageResult2: {}", sendMessageResult2);
+    }
+  }
+
   @ShellMethod("Send a message for given domain name to the destination queue. If you omit a visit_id one will be generated.")
   public void sendRequest(String domainName,
                           @ShellOption(defaultValue = "RANDOM") String visitId,
