@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.smtp.persistence.repositories;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;

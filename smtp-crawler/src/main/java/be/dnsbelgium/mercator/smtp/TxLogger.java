@@ -11,7 +11,9 @@ public class TxLogger {
 
   public static void log(Class<?> clazz, String method) {
     boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
-    logger.info("{}.{} tx active: {}", clazz, method, txActive);
+    if (clazz != null) {
+      logger.debug("{}.{} tx active: {}", clazz.getSimpleName(), method, txActive);
+    }
   }
 
 }
