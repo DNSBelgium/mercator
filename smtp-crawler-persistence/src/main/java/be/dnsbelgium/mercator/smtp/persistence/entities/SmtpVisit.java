@@ -55,9 +55,4 @@ public class SmtpVisit {
     ++numConversations;
   }
 
-  public void add(List<SmtpHost> smtpHostEntities) {
-    for (SmtpHost host : smtpHostEntities){
-      add(host);
-    }
-  }
 }

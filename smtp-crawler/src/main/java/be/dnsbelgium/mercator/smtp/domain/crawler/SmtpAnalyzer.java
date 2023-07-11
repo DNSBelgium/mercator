@@ -19,8 +19,6 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -38,21 +36,29 @@ public class SmtpAnalyzer {
   private final boolean skipIPv4;
   private final boolean skipIPv6;
 
+  private final int maxHostsToContact;
+
   private final SmtpConversationCache conversationCache;
 
   private static final Logger logger = getLogger(SmtpAnalyzer.class);
 
   @Autowired
-  public SmtpAnalyzer(MeterRegistry meterRegistry, SmtpIpAnalyzer smtpIpAnalyzer, MxFinder mxFinder,
+  public SmtpAnalyzer(MeterRegistry meterRegistry,
+                      SmtpIpAnalyzer smtpIpAnalyzer,
+                      MxFinder mxFinder,
                       SmtpConversationCache smtpConversationCache,
-                      @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4, @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6) {
+                      @Value("${smtp.crawler.skip.ipv4:false}") boolean skipIPv4,
+                      @Value("${smtp.crawler.skip.ipv6:false}") boolean skipIPv6,
+                      @Value("${smtp.crawler.max.hosts.to.contact:15}") int maxHostsToContact
+  ) {
     this.meterRegistry = meterRegistry;
     this.smtpIpAnalyzer = smtpIpAnalyzer;
+    this.conversationCache = smtpConversationCache;
     this.mxFinder = mxFinder;
     this.skipIPv4 = skipIPv4;
     this.skipIPv6 = skipIPv6;
-    this.conversationCache = smtpConversationCache;
-    logger.info("skipIPv4={} skipIPv6={}", skipIPv4, skipIPv6);
+    this.maxHostsToContact = maxHostsToContact;
+    logger.info("skipIPv4={} skipIPv6={}, maxHostsToContact={}", skipIPv4, skipIPv6, maxHostsToContact);
   }
 
   public SmtpVisit analyze(String domainName) throws Exception {
@@ -111,8 +117,7 @@ public class SmtpAnalyzer {
     String domainName = visit.getDomainName();
     meterRegistry.counter(MetricName.COUNTER_NO_MX_RECORDS_FOUND).increment();
     logger.debug("No MX records found for {} => finding address records", domainName);
-    List<SmtpHost> hosts = visit(domainName, 0, false);
-    visit.add(hosts);
+    visitHostname(visit, domainName, 0, false);
     setStatus(visit);
     logger.debug("DONE crawling A records for domain name {}", domainName);
   }
@@ -123,8 +128,7 @@ public class SmtpAnalyzer {
     for (MXRecord mxRecord : mxLookupResult.getMxRecords()) {
       logger.debug("mxRecord = {}", mxRecord);
       String hostName = mxRecord.getTarget().toString(true);
-      List<SmtpHost> hosts = visit(hostName, mxRecord.getPriority(), true);
-      visit.add(hosts);
+      visitHostname(visit, hostName, mxRecord.getPriority(), true);
     }
     setStatus(visit);
     logger.debug("DONE crawling MX records for domain name {}", domainName);
@@ -140,15 +144,18 @@ public class SmtpAnalyzer {
     }
   }
 
-  private List<SmtpHost> visit(String hostName, int priority, boolean fromMx) {
+  private void visitHostname(SmtpVisit visit, String hostName, int priority, boolean fromMx) {
     List<InetAddress> addresses = mxFinder.findIpAddresses(hostName);
     if (addresses.size() == 0) {
       logger.debug("No addresses found for hostName {}", hostName);
-      return Collections.emptyList();
+      return;
     }
     logger.debug("We found {} addresses for hostName {}", addresses.size(), hostName);
-    List<SmtpHost> hosts = new ArrayList<>();
     for (InetAddress address : addresses) {
+      if (visit.getHosts().size() >= maxHostsToContact) {
+        logger.info("visit: We have already contacted {} hosts => stopping now", visit.getHosts().size());
+        break;
+      }
       SmtpConversation smtpConversation = findInCacheOrCrawl(address);
       smtpConversation.clean();
       SmtpHost host = new SmtpHost();
@@ -159,9 +166,8 @@ public class SmtpAnalyzer {
       if (!fromMx) {
         host.setHostName(smtpConversation.getIp());
       }
-      hosts.add(host);
+      visit.add(host);
     }
-    return hosts;
   }
 
   private SmtpConversation findInCacheOrCrawl(InetAddress address) {

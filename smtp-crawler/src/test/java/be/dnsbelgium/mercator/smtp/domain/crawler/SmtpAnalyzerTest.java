@@ -34,6 +34,8 @@ class SmtpAnalyzerTest {
 
   InetAddress ip1 = ip("100.20.30.40");
   InetAddress ip2 = ip("100.20.30.44");
+  InetAddress ip3 = ip("100.20.30.53");
+  InetAddress ip4 = ip("100.20.30.54");
   InetAddress ipv6 = ip("2a02:1802:5f:fff1::16a");
 
   InetAddress localhost = ip("127.0.0.1");
@@ -41,6 +43,8 @@ class SmtpAnalyzerTest {
 
   SmtpConversation crawledIp1 = new SmtpConversation(ip1);
   SmtpConversation crawledIp2 = new SmtpConversation(ip2);
+  SmtpConversation crawledIp3 = new SmtpConversation(ip3);
+  SmtpConversation crawledIp4 = new SmtpConversation(ip4);
   SmtpConversation crawledIpv6 = new SmtpConversation(ipv6);
 
   MXRecord mx1 = mxRecord(DOMAIN_NAME, 10, "smtp1.name.be");
@@ -48,10 +52,18 @@ class SmtpAnalyzerTest {
 
   @BeforeEach
   public void beforeEach() {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, false);
+    analyzer = analyzer(false, false, 15);
     when(ipAnalyzer.crawl(ip1)).thenReturn(crawledIp1);
     when(ipAnalyzer.crawl(ip2)).thenReturn(crawledIp2);
+    when(ipAnalyzer.crawl(ip3)).thenReturn(crawledIp3);
+    when(ipAnalyzer.crawl(ip4)).thenReturn(crawledIp4);
     when(ipAnalyzer.crawl(ipv6)).thenReturn(crawledIpv6);
+  }
+
+  private SmtpAnalyzer analyzer(boolean skipIPv4, boolean skipIPv6, int maxHostsToContact) {
+    return new SmtpAnalyzer(
+        meterRegistry, ipAnalyzer, mxFinder, conversationCache
+        , skipIPv4, skipIPv6, maxHostsToContact);
   }
 
   @Test
@@ -120,7 +132,7 @@ class SmtpAnalyzerTest {
 
   @Test
   public void skipv6() throws Exception {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, true);
+    analyzer = analyzer(false, true, 15);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
     var result = analyzer.analyze(DOMAIN_NAME);
@@ -143,7 +155,7 @@ class SmtpAnalyzerTest {
 
   @Test
   public void skipv4() throws Exception {
-    analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, true, false);
+    analyzer = analyzer(true, false, 15);
     expectNoMxRecords();
     expectIpAddresses(ip1, ip2, ipv6);
     var result = analyzer.analyze(DOMAIN_NAME);
@@ -262,6 +274,61 @@ class SmtpAnalyzerTest {
 
   private void expectIpAddresses(String hostName, InetAddress... ips) {
     when(mxFinder.findIpAddresses(hostName)).thenReturn(Arrays.asList(ips));
+  }
+
+  @Test
+  public void maxHostsViaOneMxRecord() throws Exception {
+    for (int maxHostsToContact : List.of(0, 1, 2, 3, 4)) {
+      logger.info("max = {}", maxHostsToContact);
+      analyzer = analyzer(false, true, maxHostsToContact);
+      String mxTarget = mx1.getTarget().toString(true);
+      expect(MxLookupResult.ok(List.of(mx1)));
+      expectIpAddresses(mxTarget, ip1, ip2, ip3, ip4);
+      var result = analyzer.analyze(DOMAIN_NAME);
+      logger.info("result = {}", result);
+      assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
+      if (maxHostsToContact > 0)
+        assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+      else
+        assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
+      assertThat(result.getTimestamp()).isNotNull();
+      assertThat(result.getHosts().size()).isEqualTo(maxHostsToContact);
+    }
+  }
+
+  @Test
+  public void maxHostsViaTwoMxRecords() throws Exception {
+    for (int maxHostsToContact : List.of(0, 1, 2, 3, 4)) {
+      logger.info("max = {}", maxHostsToContact);
+      analyzer = analyzer(false, true, maxHostsToContact);
+      String mxTarget1 = mx1.getTarget().toString(true);
+      String mxTarget2 = mx2.getTarget().toString(true);
+      expect(MxLookupResult.ok(List.of(mx1, mx2)));
+      expectIpAddresses(mxTarget1, ip1, ip2);
+      expectIpAddresses(mxTarget2, ip3, ip4);
+      var result = analyzer.analyze(DOMAIN_NAME);
+      logger.info("result = {}", result);
+      assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
+      if (maxHostsToContact > 0)
+        assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
+      else
+        assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
+      assertThat(result.getTimestamp()).isNotNull();
+      assertThat(result.getHosts().size()).isEqualTo(maxHostsToContact);
+    }
+  }
+
+  @Test
+  public void maxHostsViaAddressRecords() throws Exception {
+    for (int maxHostsToContact = 0; maxHostsToContact <= 4; maxHostsToContact++) {
+      analyzer = analyzer(false, true, maxHostsToContact);
+      expectNoMxRecords();
+      expectIpAddresses(ipv6, ip1, ip2, ip3, ip4);
+      var result = analyzer.analyze(DOMAIN_NAME);
+      logger.info("result = {}", result);
+      assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
+      assertThat(result.getHosts().size()).isEqualTo(maxHostsToContact);
+    }
   }
 
 }

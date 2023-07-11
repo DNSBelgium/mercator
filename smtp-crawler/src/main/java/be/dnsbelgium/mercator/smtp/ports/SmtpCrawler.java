@@ -65,7 +65,9 @@ public class SmtpCrawler implements Crawler {
     meterRegistry.gauge(MetricName.GAUGE_CONCURRENT_VISITS, concurrentVisits.incrementAndGet());
     try {
       // first try to save an SmtpVisit  (=> this is an extra db tx)
-      // and see what happens when duplicate keys
+      // This can still generate a duplicate key violation (when two threads are simultaneously processing duplicate request)
+      // but a) the chances are much lower than before (since the insert is committed immediately)
+      //     b) it is dealt with correctly (one thread will succeed other wil log an exception)
       SmtpVisit visit = new SmtpVisit();
       visit.setVisitId(visitRequest.getVisitId());
       visit.setDomainName(visitRequest.getDomainName());
