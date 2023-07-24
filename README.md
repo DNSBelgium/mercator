@@ -149,7 +149,7 @@ Or use intellij to run/debug one of the Application classes. Do not forget to sp
 
 ## Deployment
 
-Mercator's goal is to run on Kubernetes. This allows to scale modules of mercator easily and according to the load.
+Mercator is built to run on Kubernetes. This allows to scale modules of mercator easily and according to the load.
 
 ### Build containers
 
