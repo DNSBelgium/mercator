@@ -12,6 +12,7 @@ async function main() {
 }
 
 (async () => {
+  console.log("Starting wappalyzer");
   await main().catch(err => {
     console.error("getting error", err);
     process.exit(1);

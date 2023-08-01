@@ -4,16 +4,37 @@ import express from "express";
 
 Prometheus.collectDefaultMetrics({ prefix: "wappalyzer_" });
 
+async function getFailureRate(): Promise<number> {
+    // Errors only take into account how many crashes we got. No error if the page doesn't exist.
+    const errors = await getValueOfMetric(getUrlFailed());
+    const successful = await getValueOfMetric(getProcessedUrlCounter());
+    const total = errors + successful;
+
+    const failureRate = total !== 0 ? errors / total : 0.0;
+    return failureRate;
+}
+
 export function initMetricsServer() {
     const app = express();
-    app.get("/health", (_: express.Request, res: express.Response) => {
-        res.send("OK"); // TODO: A pull request to wappalyzer for monitoring the health of the browser
+    app.get("/health", async (_: express.Request, res: express.Response) => {
+        // TODO: add browser status check
+        const failureRate = await getFailureRate();
+
+        const FAILURE_THRESHOLD = config.failure_threshold;
+        const health: boolean = failureRate < FAILURE_THRESHOLD;
+        if (!health)
+            res.status(500);
+        res.send({ healthy: health, failureRate: failureRate });
     });
     app.get("/actuator/prometheus", async (_: express.Request, res: express.Response) => {
         res.set("Content-Type", getContentType());
         res.send(await getMetrics());
     });
     app.listen(config.server_port);
+}
+
+async function getValueOfMetric(metric: Prometheus.Counter): Promise<number> {
+    return (await metric.get()).values[0].value;
 }
 
 function getContentType() {
@@ -42,4 +63,13 @@ function getProcessingTimeHist() {
     return processingTimeHist;
 }
 
-export { getContentType, getMetrics, getProcessedUrlCounter, getProcessingTimeHist };
+const urlFailed = new Prometheus.Counter({
+    name: "wappalyzer_url_failed",
+    help: "Number of URLs that failed processing"
+});
+
+function getUrlFailed() {
+    return urlFailed;
+}
+
+export { getMetrics, getProcessedUrlCounter, getProcessingTimeHist, getUrlFailed };
