@@ -1,23 +1,27 @@
 import Prometheus from "prom-client";
-import {config} from './config'
+import { config } from './config'
 import express from "express";
 
-Prometheus.collectDefaultMetrics({prefix: "wappalyzer_"});
+Prometheus.collectDefaultMetrics({ prefix: "wappalyzer_" });
 
 export function initMetricsServer() {
     const app = express();
-    app.get("/health", (_: any, res) => {
+    app.get("/health", (_: express.Request, res: express.Response) => {
         res.send("OK"); // TODO: A pull request to wappalyzer for monitoring the health of the browser
     });
-    app.get("/actuator/prometheus", (_: any, res) => {
+    app.get("/actuator/prometheus", async (_: express.Request, res: express.Response) => {
         res.set("Content-Type", getContentType());
-        res.send(getMetrics());
+        res.send(await getMetrics());
     });
     app.listen(config.server_port);
 }
 
-const getContentType = () => Prometheus.register.contentType;
-const getMetrics = () => Prometheus.register.metrics();
+function getContentType() {
+    return Prometheus.register.contentType;
+}
+function getMetrics() {
+    return Prometheus.register.metrics();
+}
 
 // Metrics type
 const urlProcessedCounter = new Prometheus.Counter({
@@ -25,11 +29,17 @@ const urlProcessedCounter = new Prometheus.Counter({
     help: "Number of processed URL"
 });
 
-export const getProcessedUrlCounter = () => urlProcessedCounter;
+function getProcessedUrlCounter() {
+    return urlProcessedCounter;
+}
 
 const processingTimeHist = new Prometheus.Histogram({
     name: "wappalyzer_processing_time",
     help: "Processing time to wappalyze an URL"
 });
 
-export const getProcessingTimeHist = () => processingTimeHist;
+function getProcessingTimeHist() {
+    return processingTimeHist;
+}
+
+export { getContentType, getMetrics, getProcessedUrlCounter, getProcessingTimeHist };
