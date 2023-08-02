@@ -72,6 +72,8 @@ limits:
   # When to try taking a webp instead of a png
   # 3 mebibyte
   png_threshold: 3145728
+  # Percentage of total request that produced an error before unhealthy
+  failure_threshold: 0.05
 
 extraEnv: {}
 
