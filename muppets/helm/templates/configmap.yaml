@@ -10,6 +10,7 @@ data:
   AWS_STS_REGIONAL_ENDPOINTS: "regional"
   MAX_CONTENT_LENGTH: "{{ .Values.limits.max_content_length }}"
   PNG_THRESHOLD: "{{ .Values.limits.png_threshold }}"
+  FAILURE_THRESHOLD: "{{ .Values.limits.failure_threshold }}"
 ---
 apiVersion: v1
 kind: ConfigMap

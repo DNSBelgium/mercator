@@ -55,7 +55,7 @@ export function createConsumer(queueName: string, handleMessage: (message: AWS.S
     return consumer;
 }
 
-function clean(result: scraper.ScraperResult) {
+function removeData(result: scraper.ScraperResult) {
     delete result.htmlData;
     delete result.screenshotData;
     delete result.harData;
@@ -133,23 +133,29 @@ export async function uploadScrapedData(result: scraper.ScraperResult, uploader:
 export async function handleMessage(message: AWS.SQS.Types.Message) {
     const params = JSON.parse(message.Body!);
 
-    if (params.url) {
-        const result = await scraper.websnap(params)
-            .then(result => uploadScrapedData(result))
-            .then(result => clean(result));
-
-        if (result.errors.length)
-            console.log("Scraper returned with the following error : %s", result.errors.join("\n"));
-
-        metrics.getProcessedUrlCounter().inc();
-
-        console.log("Scraper returned with result [%s]", JSON.stringify(result));
-        return result;
-    } else {
+    if (!params.url) {
         console.error("ERROR: message on SQS did not have a URL specified.");
         console.error(message.Body!);
-        console.error(params);
-        console.error(params.url);
+        metrics.getFailureCounter().inc();
+        return;
+    }
+
+
+    try {
+        const result = await scraper.websnap(params)
+            .then(result => uploadScrapedData(result))
+            .then(result => removeData(result));
+
+        if (result.errors.length !== 0) {
+            console.log("Scraper returned with the following error : %s", result.errors.join("\n"));
+        }
+
+        metrics.getProcessedUrlCounter().inc();
+        console.log("Scraper returned with result [%s]", JSON.stringify(result));
+        return result;
+    } catch (exception) {
+        console.error(`Exception occurred while snapping ${params.url}:\n${exception}`);
+        metrics.getFailureCounter().inc();
     }
 }
 

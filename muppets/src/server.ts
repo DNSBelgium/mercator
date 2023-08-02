@@ -46,17 +46,23 @@ process.on("SIGTERM", handle);
 
     const app = express();
     // health for  muppets checks browser
-    app.get("/health", (req, res) => {
-        if (isBrowserConnected()) {
-            res.send("OK");
-        } else {
-            res.status(500).send({ error: "Browser is unhealthy" });
-            console.log("Responding to health check with HTTP 500, browser is unhealthy");
-        }
+    app.get("/health", async (req: express.Request, res: express.Response) => {
+
+        const browserConnected = isBrowserConnected();
+        const failureRate = await metrics.calculateFailureRate();
+        const failureRateHealthy = failureRate < config.failure_threshold;
+
+        const healthy = browserConnected && failureRateHealthy;
+
+        if (!healthy)
+            res.status(500);
+
+        res.send({ healthy, failureRate, browserConnected });
     });
-    app.get("/actuator/prometheus", (req, res) => {
+
+    app.get("/actuator/prometheus", async (req: express.Request, res: express.Response) => {
         res.set("Content-Type", metrics.getContentType());
-        res.send(metrics.getMetrics());
+        res.send(await metrics.getMetrics());
     });
     server = app.listen(config.server_port);
 
