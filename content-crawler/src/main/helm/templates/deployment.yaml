@@ -40,12 +40,12 @@ spec:
             - name: http
               containerPort: 8443
               protocol: TCP
-{{/*          livenessProbe:*/}}
-{{/*            httpGet:*/}}
-{{/*              path: /actuator/health*/}}
-{{/*              port: http*/}}
-{{/*              scheme: HTTPS*/}}
-{{/*            failureThreshold: 10*/}}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+              scheme: HTTPS
+            failureThreshold: 10
           readinessProbe:
             httpGet:
               path: /actuator/health
