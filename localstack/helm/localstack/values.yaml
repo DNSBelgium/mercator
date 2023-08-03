@@ -29,11 +29,13 @@ podSecurityContext:
 securityContext:
   runAsUser: 10000
   readOnlyRootFilesystem: true
-  privileged: false
   runAsNonRoot: true
   capabilities:
     drop:
-      - all
+      - ALL
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
 
 service:
   type: NodePort

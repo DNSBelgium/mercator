@@ -33,13 +33,15 @@ podSecurityContext:
 securityContext:
   runAsUser: 65534
   readOnlyRootFilesystem: true
-  privileged: false
   runAsNonRoot: true
   capabilities:
     drop:
-      - all
+      - ALL
     add:
       - SYS_ADMIN
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
 
 resources:
   requests:
