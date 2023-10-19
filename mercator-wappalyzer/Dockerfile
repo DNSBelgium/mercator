@@ -1,4 +1,4 @@
-FROM node:lts-alpine@sha256:b375b98d1dcd56f5783efdd80a4d6ff5a0d6f3ce7921ec99c17851db6cba2a93
+FROM node:lts-alpine@sha256:51490771aba658439d29b1b03b60fc31e67bf0da3e01cb5903716310df4be1c1
 
 RUN apk add -u --no-cache \
     libstdc++ \
@@ -8,16 +8,6 @@ RUN apk add -u --no-cache \
     freetype \
     ttf-freefont \
     font-noto-emoji
-
-RUN \
-    # CVE-2022-30065 \
-    apk upgrade --no-cache busybox && \
-    # CVE-2022-37434 \
-    apk upgrade --no-cache zlib && \
-    # CVE-2023-24056
-    apk upgrade --no-cache pkgconf && \
-    # CVE-2023-0286
-    apk upgrade --no-cache libssl3 libcrypto3
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
