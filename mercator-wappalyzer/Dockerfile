@@ -1,4 +1,4 @@
-FROM node:lts-alpine@sha256:51490771aba658439d29b1b03b60fc31e67bf0da3e01cb5903716310df4be1c1
+FROM node:lts-alpine@sha256:807e66e2bee193961c9642bb1157d77a61747bf76737ca786da45b10749dcb42
 
 RUN apk add -u --no-cache \
     libstdc++ \
