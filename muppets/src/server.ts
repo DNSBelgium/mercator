@@ -8,22 +8,20 @@ let server;
 let consumer;
 
 async function gracefulStop() {
-    console.log("Shutdown initiated");
-
-    console.log("Closing Express server");
+    console.info("Closing Express server");
     if (server) server.close();
 
-    console.log("Closing SQS Consumer");
+    console.info("Closing SQS Consumer");
     if (consumer) consumer.stop();
 
     await new Promise(resolve => consumer.on("stopped", resolve)).then(shutdown).catch(() => { });
 }
 
 const handle = code => {
-    console.log("Received [%s]", code);
+    console.info("Received [%s]", code);
 
     gracefulStop().then(() => {
-        console.log("Exiting now ..");
+        console.info("Exiting now ..");
         process.exit(0);
     });
 };

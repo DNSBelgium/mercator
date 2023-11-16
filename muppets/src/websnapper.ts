@@ -151,7 +151,7 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
         }
 
         metrics.getProcessedUrlCounter().inc();
-        console.log("Scraper returned with result [%s]", JSON.stringify(result));
+        console.debug("Scraper returned", JSON.stringify(result));
         return result;
     } catch (exception) {
         console.error(`Exception occurred while snapping ${params.url}:\n${exception}`);

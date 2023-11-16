@@ -1,13 +1,13 @@
 import puppeteer from "puppeteer";
 import * as path from "path";
-import {URL} from "url";
-import {v4 as uuid} from "uuid";
+import { URL } from "url";
+import { v4 as uuid } from "uuid";
 import treekill from "tree-kill";
-import {publicIpv4, publicIpv6} from "public-ip";
+import { publicIpv4, publicIpv6 } from "public-ip";
 
 import * as metrics from "./metrics.js";
 
-import {harFromMessages} from "chrome-har";
+import { harFromMessages } from "chrome-har";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;
@@ -314,7 +314,7 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         }
 
         if (params.retries) {
-            console.log("Easing conditions as this is a retry");
+            console.info(`Retrying ${params.url}`);
             await page.goto(params.url, { waitUntil: "domcontentloaded", timeout: GOTO_TIMEOUT });
         } else {
             await page.goto(params.url, { waitUntil: "networkidle2", timeout: GOTO_TIMEOUT });
@@ -335,11 +335,11 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
             takeScreenshot(params, page).then(output => { result.screenshotData = output })
         ]);
 
-        console.log(result);
+        console.debug(result);
         result.screenshotType = params.screenshotOptions.type ?? "webp";
         await page.close();
 
-        console.log("Snap finished");
+        console.info(`${params.url} finished`);
 
         return { ...result };
 
