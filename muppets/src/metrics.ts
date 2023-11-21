@@ -1,5 +1,6 @@
 import Prometheus from "prom-client";
 import AWS from "aws-sdk";
+import { error } from "./logging";
 
 Prometheus.collectDefaultMetrics({ prefix: "muppets_" });
 
@@ -93,7 +94,7 @@ function getSqsMetrics(sqs: AWS.SQS, queueUrl: string) {
     sqs.getQueueAttributes({ QueueUrl: queueUrl, AttributeNames: ["ApproximateNumberOfMessages"] })
         .promise()
         .then(data => urlToProcessGauge.set(parseInt(data.Attributes!.ApproximateNumberOfMessages)))
-        .catch(() => console.error("Cannot retrieve SQS metrics !"));
+        .catch(() => error("Cannot retrieve SQS metrics !"));
 }
 
 function sqsMetrics(sqs: AWS.SQS, queueUrl: string) {

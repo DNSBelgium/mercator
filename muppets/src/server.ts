@@ -3,25 +3,26 @@ import { config } from "./config.js";
 import express from "express";
 import * as metrics from "./metrics.js";
 import { isBrowserConnected, shutdown } from "./scraper.js";
+import { error, info, visit_debug } from "./logging";
 
 let server;
 let consumer;
 
 async function gracefulStop() {
-    console.info("Closing Express server");
+    info("Closing Express server");
     if (server) server.close();
 
-    console.info("Closing SQS Consumer");
+    info("Closing SQS Consumer");
     if (consumer) consumer.stop();
 
     await new Promise(resolve => consumer.on("stopped", resolve)).then(shutdown).catch(() => { });
 }
 
 const handle = code => {
-    console.info("Received [%s]", code);
+    info("Received [%s]", code);
 
     gracefulStop().then(() => {
-        console.info("Exiting now ..");
+        info("Exiting now...");
         process.exit(0);
     });
 };
@@ -34,7 +35,7 @@ process.on("SIGTERM", handle);
         getQueueUrl(config.sqs_input_queue),
         getQueueUrl(config.sqs_output_queue),
     ]).catch(err => {
-        console.log("Cannot determine queue URLs : %s", err);
+        error("Cannot determine queue URLs : %s", err);
         process.exit(-1);
     });
 
@@ -65,6 +66,6 @@ process.on("SIGTERM", handle);
     server = app.listen(config.server_port);
 
     consumer.start();
-    console.log("websnapper is running: " + consumer.isRunning);
+    info("websnapper is running: " + consumer.isRunning);
 
 })();

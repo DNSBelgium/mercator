@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
-
 dotenv.config();
+
+import { log } from "./logging";
 
 interface MuppetsConfiguration {
     s3_endpoint: string | null,
@@ -28,7 +29,6 @@ const config: MuppetsConfiguration = {
     failure_threshold: parseFloat(process.env.FAILURE_THRESHOLD || '0.05')
 };
 
-console.log(`Using configuration:`);
-console.log(config);
+log(`Using configuration: ${config}`);
 
 export { config };
