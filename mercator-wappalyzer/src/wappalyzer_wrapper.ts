@@ -1,3 +1,5 @@
+import { config } from "./config";
+import { info, log_failure, log_success, visit_info } from "./logging";
 import { getProcessedUrlCounter, getProcessingTimeHist, getUrlFailed } from "./metrics";
 
 const Wappalyzer = require('wappalyzer');
@@ -12,32 +14,31 @@ const wappalyzer = new Wappalyzer(options);
 
 export async function init_wappalyzer() {
     await wappalyzer.init();
-    console.log("Wappalyzer loaded");
+    info("Wappalyzer loaded");
 }
 
 export async function close() {
     await wappalyzer.destroy();
-    console.log("Wappalyzer destroyed");
+    info("Wappalyzer destroyed");
 }
 
 export async function wappalyze(url: string) {
     try {
-        console.log("Wappalyzing " + url);
+        visit_info("Wappalyzing " + url);
         const endProcessingTimeHist = getProcessingTimeHist().startTimer();
         const site = await wappalyzer.open(url)
         // const report = await site.analyze();
         const report = await Promise.race([
             site.analyze(),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 300000)) // throw error after 5 min
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), config.wappalyzing_timeout)) // throw error after 5 min
         ]);
         getProcessedUrlCounter().inc();
         endProcessingTimeHist();
-        console.log(url + " wappalyzed");
+        log_success(url);
         return report;
     } catch (e) {
-        console.error("Something went wrong");
+        log_failure(url, e);
         getUrlFailed().inc();
-        console.error(e);
         process.exit(1); // Kill the pod to re-initiate the browser.
     }
 }

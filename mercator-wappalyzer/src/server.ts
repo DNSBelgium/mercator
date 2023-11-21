@@ -1,13 +1,14 @@
 import { Message, SQS } from "@aws-sdk/client-sqs";
 import { SQSClientConfig } from "@aws-sdk/client-sqs/dist-types/SQSClient";
-import {Consumer} from "sqs-consumer";
+import { Consumer } from "sqs-consumer";
 import { Producer } from "sqs-producer";
-import {wappalyze} from "./wappalyzer_wrapper";
-import {WappalyzerRequest, WappalyzerResponse} from "./api";
-import {v4 as uuid} from "uuid";
+import { wappalyze } from "./wappalyzer_wrapper";
+import { WappalyzerRequest, WappalyzerResponse } from "./api";
+import { v4 as uuid } from "uuid";
+import { debug, error, log } from "./logging";
 
 async function getQueueUrl(sqs: SQS, queueName: string) {
-    const queueUrlResponse = await sqs.getQueueUrl({QueueName: queueName});
+    const queueUrlResponse = await sqs.getQueueUrl({ QueueName: queueName });
     return queueUrlResponse.QueueUrl;
 }
 
@@ -20,8 +21,8 @@ export async function start_sqs_polling(endpoint: string, input_queue: string, o
 
     let output_queue_url = await getQueueUrl(sqs, output_queue)
     let input_queue_url = await getQueueUrl(sqs, input_queue)
-    console.log("input_queue_url: "  + input_queue_url)
-    console.log("output_queue_url: " + output_queue_url)
+    log("input_queue_url: " + input_queue_url)
+    log("output_queue_url: " + output_queue_url)
 
     if (!output_queue_url) {
         throw "Could not determine input_queue_url"
@@ -42,16 +43,16 @@ export async function start_sqs_polling(endpoint: string, input_queue: string, o
         handleMessage: await createHandler(producer)
     });
     consumer.on("error", (err: Error) => {
-        console.error("SQS error: " + err.message);
+        error("SQS error: " + err.message);
         throw err;
     });
     consumer.on("processing_error", (err: Error) => {
-        console.error("processing_error: " + err.message);
+        error("processing_error: " + err.message);
         throw err;
     });
     consumer.start();
-    console.log("consumer.start() is done")
-    console.log("consumer.isRunning() : " + consumer.isRunning)
+    debug("consumer.start() is done")
+    debug("consumer.isRunning() : " + consumer.isRunning)
 }
 
 export async function createHandler(producer: Producer): Promise<(message: Message) => Promise<void>> {
@@ -63,7 +64,7 @@ export async function createHandler(producer: Producer): Promise<(message: Messa
                 id: uuid(),
                 body: JSON.stringify(result)
             }).catch(err => {
-                console.error("Failed to send message to SQS: " + err);
+                error("Failed to send message to SQS: " + err);
                 throw err;
             });
         }
