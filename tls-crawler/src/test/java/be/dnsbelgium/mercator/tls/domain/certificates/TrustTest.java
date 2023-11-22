@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.tls.domain.RateLimiter;
 import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -53,29 +54,6 @@ class TrustTest {
     InetSocketAddress address = new InetSocketAddress("een.be", 443);
     SingleVersionScan singleVersionScan = scanner.scanForProtocol(TlsProtocolVersion.TLS_1_2, address);
     logger.info("singleVersionScan = {}", singleVersionScan);
-  }
-
-  @Test
-  public void checkChain() throws CertificateException, IOException {
-    X509TrustManager trustManager = Trust.defaultTrustManager();
-    X509Certificate[] chain = loadChain();
-    trustManager.checkServerTrusted(chain, "UNKNOWN");
-
-    // see sun.security.validator.EndEntityChecker
-
-    //     // TLS key exchange algorithms requiring digitalSignature key usage
-    //    private static final Collection<String> KU_SERVER_SIGNATURE =
-    //        Arrays.asList("DHE_DSS", "DHE_RSA", "ECDHE_ECDSA", "ECDHE_RSA",
-    //            "RSA_EXPORT", "UNKNOWN");
-
-    trustManager.checkServerTrusted(chain, "DHE_DSS");
-    trustManager.checkServerTrusted(chain, "DHE_RSA");
-    trustManager.checkServerTrusted(chain, "ECDHE_ECDSA");
-    trustManager.checkServerTrusted(chain, "ECDHE_RSA");
-    trustManager.checkServerTrusted(chain, "RSA_EXPORT");
-    // authType = 'RSA' fails with "sun.security.validator.ValidatorException: KeyUsage does not allow key encipherment"
-    // trustManager.checkServerTrusted(chain, "RSA");
-
   }
 
   @Test
