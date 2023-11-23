@@ -1,0 +1,25 @@
+plugins {
+    id 'base'
+    id 'java'
+    id 'io.spring.dependency-management'
+}
+
+group = 'be.dnsbelgium'
+version = '0.0.1-' + getCommitHash()
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    enabled = true
+}

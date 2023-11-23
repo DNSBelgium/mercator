@@ -1,5 +1,6 @@
 rootProject.name = 'mercator'
 
+include 'mercator-throttling-appender'
 include 'common-geoip'
 include 'common-messaging'
 include 'common-messaging-aws'
@@ -28,3 +29,4 @@ include 'tls-crawler-persistence'
 include 'vat-crawler'
 include 'vat-crawler-persistence'
 include 'mercator-cli'
+
