@@ -1,6 +1,6 @@
 plugins {
     id 'base'
-    id 'java'
+    id 'java-library'
     id 'io.spring.dependency-management'
 }
 
@@ -13,7 +13,14 @@ repositories {
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    api 'ch.qos.logback:logback-classic:1.2.9'
+    testImplementation "org.assertj:assertj-core:3.24.2"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.9.2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+java {
 }
 
 test {
