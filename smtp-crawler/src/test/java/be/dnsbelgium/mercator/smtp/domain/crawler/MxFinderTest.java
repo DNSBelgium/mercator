@@ -97,9 +97,10 @@ class MxFinderTest {
 
     @Test
     public void idn() {
-        MxLookupResult result = mxFinder.findMxRecordsFor("café.be");
+        MxLookupResult result = mxFinder.findMxRecordsFor("sénat.be");
         logger.info("result = {}", result);
         assertThat(result).isNotNull();
+        logger.info(result.getStatus().toString());
         assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.NO_MX_RECORDS_FOUND);
         assertThat(result.getMxRecords()).isNotNull();
         assertThat(result.getMxRecords().size()).isEqualTo(0);
