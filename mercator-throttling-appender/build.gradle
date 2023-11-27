@@ -27,6 +27,19 @@ test {
     useJUnitPlatform()
 }
 
+tasks.matching {task -> task.name.startsWith('spotbugs')}.forEach {
+    it.reports {
+        html.enabled = true
+        xml.enabled = false
+    }
+}
+
 jar {
     enabled = true
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes('Automatic-Module-Name': 'be.dnsbelgium.logback.throttling.appender')
+    }
 }
