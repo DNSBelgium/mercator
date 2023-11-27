@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+
+    id 'java'
+    id 'java-library'
+    id 'com.google.cloud.tools.jib'
+}
+
+group = 'be.dnsbelgium'
+version = '0.0.1-' + getCommitHash()
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jib {
+    container {
+        jvmFlags = ['-XX:MaxRAMPercentage=75.0']
+    }
+}
