@@ -3,12 +3,11 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
-    <appender name="listAppender" class="ch.qos.logback.core.read.ListAppender" />
     <appender name="Throttle" class="be.dnsbelgium.logback.ThrottlingAppender">
         <bufferSize>50</bufferSize>
         <maxMessagesToEmitAfterStartUp>200</maxMessagesToEmitAfterStartUp>
         <maxMessagesToEmitAfterWakeUp>100</maxMessagesToEmitAfterWakeUp>
-        <appender-ref ref="listAppender" />
+        <appender-ref ref="CONSOLE" />
     </appender>
 
     <root level="INFO">
