@@ -13,8 +13,7 @@ repositories {
 
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
-
-    api 'ch.qos.logback:logback-classic:1.2.9'
+    api 'ch.qos.logback:logback-classic:1.4.12'
     testImplementation "org.assertj:assertj-core:3.24.2"
     testImplementation "org.junit.jupiter:junit-jupiter:5.9.2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
