@@ -48,9 +48,13 @@ Request #2 has 2 Responses which could hold the following data as an example:
 
 RRSIG data for (currently only) the SOA record type is saved in the record_signature table.
 
+# GeoIP configuration
+
 The following GeoIP information for the A and AAAA record types' Responses is also stored:
- - Asn
- - Country
- - Ip
- - Asn Organisation
- - Ip Version
+- Asn
+- Country
+- Ip
+- Asn Organisation
+- Ip Version
+
+To store these values, you need a MaxMind license key and accompanying database files. The GeoLite license can be obtained from [https://maxmind.com](MaxMind) and must be stored in `MAXMIND_LICENSE_KEY` or the application properties.
