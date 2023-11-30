@@ -15,7 +15,7 @@ public class FailureRate implements HealthIndicator {
     private final MeterRegistry meterRegistry;
 
     private final Counter contentCrawlerMuppetsMessagesIn;
-    private final Counter contentCrawlerWappalyserMessagesIn;
+    private final Counter contentCrawlerWappalyzerMessagesIn;
     private final Counter contentCrawlerMessagesOut;
     private final Counter contentCrawlerMessagesFailed;
 
@@ -28,7 +28,7 @@ public class FailureRate implements HealthIndicator {
     FailureRate(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
         this.contentCrawlerMuppetsMessagesIn = this.meterRegistry.counter(MetricName.MUPPETS_MESSAGES_IN);
-        this.contentCrawlerWappalyserMessagesIn = this.meterRegistry.counter(MetricName.WAPPALYZER_MESSAGES_IN);
+        this.contentCrawlerWappalyzerMessagesIn = this.meterRegistry.counter(MetricName.WAPPALYZER_MESSAGES_IN);
         this.contentCrawlerMessagesOut = this.meterRegistry.counter(MetricName.MESSAGES_OUT);
         this.contentCrawlerMessagesFailed = this.meterRegistry.counter(MetricName.MESSAGES_FAILED);
     }
