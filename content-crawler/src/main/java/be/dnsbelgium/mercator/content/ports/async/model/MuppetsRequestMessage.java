@@ -17,7 +17,7 @@ public class MuppetsRequestMessage implements RequestMessage {
   private BrowserOptions browserOptions = new BrowserOptions();
 
   private Boolean saveHtml = true;
-  private Boolean saveScreenshot = true;
+  private Boolean saveScreenshot = false;
   private Boolean saveHar = true;
   private Integer retries = 0;
 
