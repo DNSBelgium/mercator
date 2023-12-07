@@ -114,7 +114,5 @@ subprojects { subproject ->
     }
     tasks.findByName('helmPublish').dependsOn(tasks.findByName('helmPackageMainChart'))
     tasks.findByName('helmPublish').mustRunAfter(tasks.findByName('helmPackageMainChart'))
-
   }
-
 }

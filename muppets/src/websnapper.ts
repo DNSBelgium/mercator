@@ -6,6 +6,7 @@ import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
 import { config } from "./config.js";
 import { computePath } from "./util.js";
+import { error, visit_debug, visit_error, visit_info } from "./logging";
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {
@@ -45,11 +46,11 @@ export function createConsumer(queueName: string, handleMessage: (message: AWS.S
     });
 
     consumer.on("error", (err: Error) => {
-        console.error("SQS error: " + err.message);
+        error("SQS error: " + err.message);
     });
 
     consumer.on("processing_error", (err: Error) => {
-        console.error("processing_error: " + err.message);
+        error("processing_error: " + err.message);
     });
 
     return consumer;
@@ -75,10 +76,10 @@ export class S3FileUploader implements IFileUploader {
             ContentType: contentType
         };
 
-        console.log("Uploading item [%s]", params.Key);
+        visit_debug("Uploading item [%s]", params.Key);
 
         return s3.upload(params).promise().then(putObjectPromise => {
-            console.log("Key = [%s]", putObjectPromise.Key);
+            visit_debug("Key = [%s]", putObjectPromise.Key);
             return putObjectPromise.Key;
         }).catch(err => {
             throw new Error(`Upload failed for ${uploadFileFormat} file [${params.Key}] : [${JSON.stringify(err)}]`);
@@ -96,7 +97,7 @@ export async function uploadScrapedData(result: scraper.ScraperResult, uploader:
     const prefix: string = computePath(url);
     const s3UploadResults: Promise<string>[] = [];
 
-    console.log("Uploading to S3 [%s]", prefix);
+    visit_info("Uploading to S3 [%s]", prefix);
     if (result.screenshotData !== undefined) {
         metrics.getScreenshotsSizes().observe((result.screenshotData?.length / 1024) / 1024);
         if (result.screenshotData.length < config.max_content_length) {
@@ -134,8 +135,8 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
     const params = JSON.parse(message.Body!);
 
     if (!params.url) {
-        console.error("ERROR: message on SQS did not have a URL specified.");
-        console.error(message.Body!);
+        visit_error("ERROR: message on SQS did not have a URL specified.");
+        visit_error(message.Body!);
         metrics.getFailureCounter().inc();
         return;
     }
@@ -147,14 +148,14 @@ export async function handleMessage(message: AWS.SQS.Types.Message) {
             .then(result => removeData(result));
 
         if (result.errors.length !== 0) {
-            console.log("Scraper returned with the following error : %s", result.errors.join("\n"));
+            visit_error("Scraper returned with the following error : %s", result.errors.join("\n"));
         }
 
         metrics.getProcessedUrlCounter().inc();
-        console.log("Scraper returned with result [%s]", JSON.stringify(result));
+        visit_info("Scraper returned", JSON.stringify(result));
         return result;
     } catch (exception) {
-        console.error(`Exception occurred while snapping ${params.url}:\n${exception}`);
+        visit_error(`Exception occurred while snapping ${params.url}:\n${exception}`);
         metrics.getFailureCounter().inc();
     }
 }
@@ -167,7 +168,7 @@ export async function createHandler(producer: Producer): Promise<(message: AWS.S
                 id: scraperResult.id,
                 body: JSON.stringify(scraperResult)
             }, function (err: Error) {
-                if (err) console.log("Failed to send message to SQS: " + err);
+                if (err) error("Failed to send message to SQS: " + err);
             });
         }
     };

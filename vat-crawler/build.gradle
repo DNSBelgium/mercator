@@ -35,6 +35,7 @@ dependencies {
 
   // JSON logging
   implementation "net.logstash.logback:logstash-logback-encoder:${logstashLogbackEncoderVersion}"
+  implementation project(':mercator-throttling-appender')
 
   implementation 'org.springframework.integration:spring-integration-core'
   implementation 'com.fasterxml.jackson.core:jackson-databind'

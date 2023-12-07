@@ -1,0 +1,18 @@
+<configuration>
+
+    <appender name="listAppender1" class="ch.qos.logback.core.read.ListAppender"/>
+    <appender name="listAppender2" class="ch.qos.logback.core.read.ListAppender"/>
+
+    <appender name="Throttle" class="be.dnsbelgium.logback.ThrottlingAppender">
+        <bufferSize>10</bufferSize>
+        <maxMessagesToEmitAfterStartUp>6</maxMessagesToEmitAfterStartUp>
+        <maxMessagesToEmitAfterWakeUp>3</maxMessagesToEmitAfterWakeUp>
+        <appender-ref ref="listAppender1" />
+        <appender-ref ref="listAppender1" />
+    </appender>
+
+    <root level="debug">
+        <appender-ref ref="Throttle" />
+    </root>
+
+</configuration>

@@ -38,3 +38,4 @@ data:
   AWS_ACCESS_KEY_ID: "accessKey"
   AWS_SECRET_ACCESS_KEY: "secretKey"
   NODE_ENV: "kubernetes"
+  WAPPALYZING_TIMEOUT: {{ .Values.wappalyzer_timeout | quote }}
