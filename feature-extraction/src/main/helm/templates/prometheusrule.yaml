@@ -1,0 +1,13 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "feature-extraction.fullname" . }}
+  labels:
+    {{- include "feature-extraction.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: {{ include "feature-extraction.fullname" . }}
+      rules: {{- toYaml .Values.prometheusRule.rules | nindent 8 }}
+{{- end }}

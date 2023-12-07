@@ -1,0 +1,13 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "tls-crawler.fullname" . }}
+  labels:
+    {{- include "tls-crawler.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: {{ include "tls-crawler.fullname" . }}
+      rules: {{- toYaml .Values.prometheusRule.rules | nindent 8 }}
+{{- end }}
