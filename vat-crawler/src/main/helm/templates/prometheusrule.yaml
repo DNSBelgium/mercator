@@ -1,4 +1,4 @@
-{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheusRule.enabled }}
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheus.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -9,5 +9,13 @@ metadata:
 spec:
   groups:
     - name: {{ include "vat-crawler.fullname" . }}
-      rules: {{- toYaml .Values.prometheusRule.rules | nindent 8 }}
+      rules:
+        - alert: FailureRateError
+          expr: sum by(kubernetes_namespace)(increase(vat_crawler_failures_total{kubernetes_namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheus.period }}])) / sum by(kubernetes_namespace)(increase(vat_crawler_visits_total{kubernetes_namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheus.period }}])) < {{ .Values.prometheus.failure_rate}}
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ .Chart.Name }} failure rate too high (namespace {{ .Release.Namespace }})"
+            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheus.period }}, which is higher than {{ .Values.prometheus.failure_rate}}."
 {{- end }}

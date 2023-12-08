@@ -16,6 +16,6 @@ spec:
           labels:
             severity: warning
           annotations:
-            summary: "Crawler failure rate too high (namespace {{ .Release.Namespace }})"
-            description: "Crawler failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheus.period }}, which is higher than 1%."
+            summary: "{{ .Chart.Name }} failure rate too high (namespace {{ .Release.Namespace }})"
+            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheus.period }}, which is higher than {{ .Values.prometheus.failure_rate}}."
 {{- end }}
