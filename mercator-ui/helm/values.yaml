@@ -77,3 +77,14 @@ mercator_api:
   host: mercator-mercator-api.default.svc.cluster.local
   port: 80
 extraEnv: {}
+
+networkpolicy:
+  enabled: true
+  ingress:
+    from:
+      - namespaceSelector:
+          matchLabels:
+            namespace: ingress
+        podSelector:
+          matchLabels:
+            app: nginx-ingress

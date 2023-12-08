@@ -1,3 +1,4 @@
+{{- if .Values.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -9,26 +10,13 @@ spec:
     matchLabels:
       {{- include "mercator-api.selectorLabels" . | nindent 6 }}
   ingress:
-    # Ingress
+    {{- with .Values.networkPolicy.ingress }}
     - from:
-        - namespaceSelector:
-            matchLabels:
-              namespace: ingress
-          podSelector:
-            matchLabels:
-              app: nginx-ingress
+        {{- with .from }}{{- . | toYaml | nindent 8 }}{{- else }} []{{- end }}
       ports:
-        - port: 8443
-    # Prometheus
-    - ports:
-        - port: 8443
-      from:
-        - namespaceSelector:
-            matchLabels:
-              namespace: monitoring
-        - podSelector:
-            matchLabels:
-              app: prometheus
+        - protocol: "TCP"
+          port: {{ $.Values.service.port }}
+    {{- end }}
   egress:
     # vpc endpoints
     - ports:
@@ -49,3 +37,4 @@ spec:
   policyTypes:
     - Ingress
     - Egress
+{{- end }}
