@@ -3,7 +3,7 @@ import { config } from "./config.js";
 import express from "express";
 import * as metrics from "./metrics.js";
 import { isBrowserConnected, shutdown } from "./scraper.js";
-import { error, info, visit_debug } from "./logging";
+import { error, info, visit_debug } from "./logging.js";
 
 let server;
 let consumer;
