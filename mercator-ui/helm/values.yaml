@@ -78,7 +78,7 @@ mercator_api:
   port: 80
 extraEnv: {}
 
-networkpolicy:
+networkPolicy:
   enabled: true
   ingress:
     from:

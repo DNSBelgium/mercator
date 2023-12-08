@@ -110,7 +110,7 @@ extraEnv: {}
 
 updateStrategy: Recreate
 
-networkpolicy:
+networkPolicy:
   enabled: true
   ingress:
     from:
