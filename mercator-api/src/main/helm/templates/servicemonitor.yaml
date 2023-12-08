@@ -18,7 +18,7 @@ spec:
     matchLabels:
 {{ include "mercator-api.selectorLabels" . | indent 6 }}
   endpoints:
-  - port: {{ .Values.service.port }}
+  - port: http
     interval: {{ .Values.serviceMonitor.interval }}
     path: {{ .Values.serviceMonitor.path }}
     {{- if .Values.serviceMonitor.metricRelabelings }}
