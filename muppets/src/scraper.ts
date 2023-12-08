@@ -9,7 +9,7 @@ import * as metrics from "./metrics.js";
 
 import { harFromMessages } from "chrome-har";
 
-import { debug, error, log, log_failure, log_success, visit_debug, visit_error, visit_info } from "./logging";
+import { debug, error, log, log_failure, log_success, visit_debug, visit_error, visit_info } from "./logging.js";
 
 const DEFAULT_WIDTH = 1600;
 const DEFAULT_HEIGHT = 1200;

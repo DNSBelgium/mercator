@@ -6,7 +6,7 @@ import * as metrics from "./metrics.js";
 import * as scraper from "./scraper.js";
 import { config } from "./config.js";
 import { computePath } from "./util.js";
-import { error, visit_debug, visit_error, visit_info } from "./logging";
+import { error, visit_debug, visit_error, visit_info } from "./logging.js";
 
 const sqsOptions: ServiceConfigurationOptions = {};
 if (config.sqs_endpoint) {

@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { log } from "./logging";
+import { log } from "./logging.js";
 
 interface MuppetsConfiguration {
     s3_endpoint: string | null,

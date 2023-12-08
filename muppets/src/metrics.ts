@@ -1,6 +1,6 @@
 import Prometheus from "prom-client";
 import AWS from "aws-sdk";
-import { error } from "./logging";
+import { error } from "./logging.js";
 
 Prometheus.collectDefaultMetrics({ prefix: "muppets_" });
 
