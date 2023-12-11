@@ -21,7 +21,7 @@ spec:
   - port: http
     scheme: https
     tls_config:
-      insecure_skip_verify: true
+      insecureSkipVerify: true
     interval: {{ .Values.serviceMonitor.interval }}
     path: {{ .Values.serviceMonitor.path }}
     {{- if .Values.serviceMonitor.metricRelabelings }}
