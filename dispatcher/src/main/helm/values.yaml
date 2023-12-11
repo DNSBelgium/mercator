@@ -85,3 +85,14 @@ global:
       - "127.0.0.1/32"
 
 updateStrategy: Recreate
+
+networkPolicy:
+  enabled: true
+  ingress:
+    from:
+      - namespaceSelector:
+          matchLabels:
+            namespace: monitoring
+        podSelector:
+          matchLabels:
+            app: prometheus

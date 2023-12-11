@@ -1,3 +1,4 @@
+{{- if .Values.networkPolicy.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -9,16 +10,13 @@ spec:
     matchLabels:
       {{- include "dispatcher.selectorLabels" . | nindent 6 }}
   ingress:
-    # Prometheus
-    - ports:
-        - port: 8443
-      from:
-        - namespaceSelector:
-            matchLabels:
-              namespace: monitoring
-        - podSelector:
-            matchLabels:
-              app: prometheus
+    {{- with .Values.networkPolicy.ingress }}
+    - from:
+        {{- with .from }}{{- . | toYaml | nindent 8 }}{{- else }} []{{- end }}
+      ports:
+        - protocol: "TCP"
+          port: 8443
+    {{- end }}
   egress:
     # vpc endpoints
     - ports:
@@ -39,3 +37,4 @@ spec:
   policyTypes:
     - Ingress
     - Egress
+{{- end }}
