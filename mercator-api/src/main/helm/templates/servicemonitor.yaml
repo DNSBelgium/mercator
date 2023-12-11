@@ -20,7 +20,7 @@ spec:
   endpoints:
   - port: http
     scheme: https
-    tls_config:
+    tlsConfig:
       insecureSkipVerify: true
     interval: {{ .Values.serviceMonitor.interval }}
     path: {{ .Values.serviceMonitor.path }}
