@@ -20,6 +20,8 @@ spec:
   endpoints:
   - port: http
     scheme: https
+    tls_config:
+      insecure_skip_verify: true
     interval: {{ .Values.serviceMonitor.interval }}
     path: {{ .Values.serviceMonitor.path }}
     {{- if .Values.serviceMonitor.metricRelabelings }}
