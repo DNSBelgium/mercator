@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: {{ include "stats-consumer.fullname" . }}
+  name: {{ include "dispatcher.fullname" . }}
   annotations:
 {{ toYaml .Values.podMonitor.annotations | indent 4 }}
   labels:
@@ -12,10 +12,14 @@ metadata:
 spec:
   selector:
     matchLabels:
-{{ include "stats-consumer.selectorLabels" . | indent 6 }}
+{{ include "dispatcher.selectorLabels" . | indent 6 }}
   podMetricsEndpoints:
     - port: {{ .Values.podMonitor.port }}
       scheme: {{ .Values.podMonitor.scheme }}
+      {{- if .Values.podMonitor.insecureSkipVerify }}
+      tlsConfig:
+        insecureSkipVerify: true
+      {{- end }}
       interval: {{ .Values.podMonitor.interval }}
       path: {{ .Values.podMonitor.path }}
     {{- if .Values.podMonitor.metricRelabelings }}
