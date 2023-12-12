@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: {{ include "dispatcher.fullname" . }}
+  name: {{ include "content-crawler.fullname" . }}
   annotations:
 {{ toYaml .Values.podMonitor.annotations | indent 4 }}
   labels:
@@ -12,7 +12,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-{{ include "dispatcher.selectorLabels" . | indent 6 }}
+{{ include "content-crawler.selectorLabels" . | indent 6 }}
   podMetricsEndpoints:
     - port: {{ .Values.podMonitor.port }}
       scheme: {{ .Values.podMonitor.scheme }}
