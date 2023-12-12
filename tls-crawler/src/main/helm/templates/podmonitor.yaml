@@ -1,0 +1,32 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.podMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "tls-crawler.fullname" . }}
+  annotations:
+{{ toYaml .Values.podMonitor.annotations | indent 4 }}
+  labels:
+  {{- range $key, $value := .Values.podMonitor.selector }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+{{ include "tls-crawler.selectorLabels" . | indent 6 }}
+  podMetricsEndpoints:
+    - port: {{ .Values.podMonitor.port }}
+      scheme: {{ .Values.podMonitor.scheme }}
+      {{- if .Values.podMonitor.insecureSkipVerify }}
+      tlsConfig:
+        insecureSkipVerify: true
+      {{- end }}
+      interval: {{ .Values.podMonitor.interval }}
+      path: {{ .Values.podMonitor.path }}
+    {{- if .Values.podMonitor.metricRelabelings }}
+      metricRelabelings:
+{{ tpl (toYaml .Values.podMonitor.metricRelabelings | indent 6) . }}
+    {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{.Release.Namespace}}
+{{ end }}

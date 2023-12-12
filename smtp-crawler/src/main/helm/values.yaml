@@ -87,3 +87,29 @@ global:
       - "127.0.0.1/32"
 
 updateStrategy: Recreate
+
+networkPolicy:
+  enabled: true
+  ingress:
+    from:
+      - namespaceSelector:
+          matchLabels:
+            namespace: monitoring
+        podSelector:
+          matchLabels:
+            app: prometheus
+
+podMonitor:
+  enabled: false
+  port: http
+  scheme: https
+  insecureSkipVerify: true
+  interval: 15s
+  ## [Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#prometheus-operator-1)
+  ## [Kube Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#exporters)
+  # serviceMonitor.selector -- Default to kube-prometheus install (CoreOS recommended), but should be set according to Prometheus install.
+  selector:
+    release: kube-prometheus-stack
+  path: /actuator/prometheus
+  annotations: {}
+  metricRelabelings: {}
