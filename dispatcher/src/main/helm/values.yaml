@@ -97,8 +97,11 @@ networkPolicy:
           matchLabels:
             app: prometheus
 
-serviceMonitor:
+podMonitor:
   enabled: false
+  port: http
+  scheme: https
+  insecureSkipVerify: true
   interval: 15s
   ## [Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#prometheus-operator-1)
   ## [Kube Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#exporters)
