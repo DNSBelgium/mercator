@@ -9,16 +9,13 @@ spec:
     matchLabels:
       {{- include "content-crawler.selectorLabels" . | nindent 6 }}
   ingress:
-    # Prometheus
-    - ports:
-        - port: 8443
-      from:
-        - namespaceSelector:
-            matchLabels:
-              namespace: monitoring
-        - podSelector:
-            matchLabels:
-              app: prometheus
+    {{- with .Values.networkPolicy.ingress }}
+    - from:
+        {{- with .from }}{{- . | toYaml | nindent 8 }}{{- else }} []{{- end }}
+      ports:
+        - protocol: "TCP"
+          port: 8443
+    {{- end }}
   egress:
     # vpc endpoints
     - ports:
