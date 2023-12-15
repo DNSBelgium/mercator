@@ -11,7 +11,7 @@ spec:
     - name: {{ include "feature-extraction.fullname" . }}
       rules:
         - alert: FailureRateError
-          expr: sum by(kubernetes_namespace)(increase(feature_extraction_visits_failed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(kubernetes_namespace)(increase(feature_extraction_visits_processed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
+          expr: sum by(namespace)(increase(feature_extraction_visits_failed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(feature_extraction_visits_processed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:
             severity: warning
