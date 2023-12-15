@@ -1,4 +1,4 @@
-{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheus.enabled }}
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheusRule.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -11,11 +11,11 @@ spec:
     - name: {{ include "muppets.fullname" . }}
       rules:
         - alert: FailureRateError
-          expr: sum by(kubernetes_namespace)(increase(muppets_failed_to_process{kubernetes_namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheus.period }}])) / sum by(kubernetes_namespace)(increase(muppets_url_processed_counter{kubernetes_namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheus.period }}])) < {{ .Values.prometheus.failure_rate}}
+          expr: sum by(kubernetes_namespace)(increase(muppets_failed_to_process{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(kubernetes_namespace)(increase(muppets_url_processed_counter{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:
             severity: warning
           annotations:
             summary: "{{ .Chart.Name }} failure rate too high (namespace {{ .Release.Namespace }})"
-            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheus.period }}, which is higher than {{ .Values.prometheus.failure_rate}}."
+            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheusRule.period }}, which is higher than {{ .Values.prometheusRule.failure_rate}}."
 {{- end }}
