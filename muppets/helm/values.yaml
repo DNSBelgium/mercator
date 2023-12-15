@@ -117,5 +117,5 @@ podMonitor:
 
 prometheusRule:
   enabled: false
-  failure_rate: 0.01
+  max_failures: 0
   period: 5m

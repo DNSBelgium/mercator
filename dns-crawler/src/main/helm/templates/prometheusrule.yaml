@@ -10,12 +10,12 @@ spec:
   groups:
     - name: {{ include "dns-crawler.fullname" . }}
       rules:
-        - alert: MercatorDNSCrawlerFailureRateError
-          expr: sum by(namespace)(increase(dns_crawler_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(dns_crawler_domains_done_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
+        - alert: MercatorDNSCrawlerMaxFailuresExceeded
+          expr: sum by(namespace)(increase(dns_crawler_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) > {{ .Values.prometheusRule.max_failures}}
           for: 0m
           labels:
             severity: warning
           annotations:
-            summary: "{{ .Chart.Name }} failure rate too high (namespace {{ .Release.Namespace }})"
-            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheusRule.period }}, which is higher than {{ .Values.prometheusRule.failure_rate}}."
+            summary: "{{ .Chart.Name }} has failed too often"
+            description: "{{ .Chart.Name }} has failed {{ "{{" }} $value {{ "}}" }} times in the last {{ .Values.prometheusRule.period }} in namespace {{ .Release.Namespace }} (max: {{ .Values.prometheusRule.max_failures}} )."
 {{- end }}
