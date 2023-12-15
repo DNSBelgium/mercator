@@ -121,3 +121,8 @@ podMonitor:
   path: /actuator/prometheus
   annotations: {}
   metricRelabelings: {}
+
+prometheusRule:
+  enabled: false
+  failure_rate: 0.01
+  period: 5m

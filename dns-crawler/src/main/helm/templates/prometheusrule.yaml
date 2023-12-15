@@ -1,0 +1,21 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "dns-crawler.fullname" . }}
+  labels:
+    {{- include "dns-crawler.labels" . | nindent 4 }}
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: {{ include "dns-crawler.fullname" . }}
+      rules:
+        - alert: FailureRateError
+          expr: sum by(kubernetes_namespace)(increase(dns_crawler_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(kubernetes_namespace)(increase(dns_crawler_domains_done_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ .Chart.Name }} failure rate too high (namespace {{ .Release.Namespace }})"
+            description: "{{ .Chart.Name }} failure rate in namespace {{ .Release.Namespace }}) is {{ "{{" }} $value {{ "}}" }} in the last {{ .Values.prometheusRule.period }}, which is higher than {{ .Values.prometheusRule.failure_rate}}."
+{{- end }}
