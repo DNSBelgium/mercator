@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "dns-crawler.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorDNSCrawlerFailureRateError
           expr: sum by(namespace)(increase(dns_crawler_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(dns_crawler_domains_done_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

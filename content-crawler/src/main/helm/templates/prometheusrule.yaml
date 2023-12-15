@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "content-crawler.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorContentCrawlerFailureRateError
           expr: sum by(namespace)(increase(content_crawler_messages_failed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(content_crawler_messages_out_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

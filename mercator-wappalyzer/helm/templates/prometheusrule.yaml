@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "wappalyzer.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorWappalyzerFailureRateError
           expr: sum by(namespace)(increase(wappalyzer_url_failed{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(wappalyzer_url_processed_counter{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

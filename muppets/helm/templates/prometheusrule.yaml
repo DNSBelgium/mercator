@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "muppets.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorMuppetsFailureRateError
           expr: sum by(namespace)(increase(muppets_failed_to_process{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(muppets_url_processed_counter{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

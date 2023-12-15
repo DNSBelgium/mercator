@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "smtp-crawler.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorSMTPCrawlerFailureRateError
           expr: sum by(namespace)(increase(smtp_analyzer_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(smtp_analyzer_domains_done_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

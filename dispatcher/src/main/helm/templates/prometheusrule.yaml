@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "dispatcher.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorDispatcherFailureRateError
           expr: sum by(namespace)(increase(dispatcher_message_failed_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(dispatcher_message_out_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:

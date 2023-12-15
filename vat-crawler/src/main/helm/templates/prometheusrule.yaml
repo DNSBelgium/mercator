@@ -10,7 +10,7 @@ spec:
   groups:
     - name: {{ include "vat-crawler.fullname" . }}
       rules:
-        - alert: FailureRateError
+        - alert: MercatorVATCrawlerFailureRateError
           expr: sum by(namespace)(increase(vat_crawler_failures_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) / sum by(namespace)(increase(vat_crawler_visits_total{namespace='{{ .Release.Namespace }}'}[{{ .Values.prometheusRule.period }}])) < {{ .Values.prometheusRule.failure_rate}}
           for: 0m
           labels:
