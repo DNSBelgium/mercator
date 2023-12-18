@@ -29,6 +29,7 @@ const config: MuppetsConfiguration = {
     failure_threshold: parseFloat(process.env.FAILURE_THRESHOLD || '0.05')
 };
 
-log(`Using configuration: ${config}`);
+log(`Using configuration`);
+log(config);
 
 export { config };
