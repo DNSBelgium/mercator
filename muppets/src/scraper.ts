@@ -250,13 +250,13 @@ function takeScreenshot(params: ScraperParams, page: puppeteer.Page): Promise<Bu
 }
 
 async function saveHtml(params: ScraperParams, page: puppeteer.Page): Promise<string> {
-    if (params.saveHtml) {
-        visit_debug("Saving html");
-        return page.content();
-    } else {
-        visit_debug("Not saving html");
+    if (!params.saveHtml) {
+        visit_error("Save HTML not requested");
         return Promise.reject();
     }
+
+    visit_debug("Saving html");
+    return page.content();
 }
 
 async function registerHarEventListeners(page: puppeteer.Page, events: any[]) {
