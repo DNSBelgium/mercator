@@ -232,19 +232,21 @@ function saveHar(params: ScraperParams, events: Event[]) {
 
 function takeScreenshot(params: ScraperParams, page: puppeteer.Page): Promise<Buffer> {
     visit_debug("screenshotOptions = [%s]", JSON.stringify(params.screenshotOptions));
-    if (params.saveScreenshot && params.screenshotOptions) {
-        params.screenshotOptions.type = params.screenshotOptions.type || "webp";
-        params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
-        params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
-        params.screenshotOptions.encoding = params.screenshotOptions.encoding || "binary";
-        params.screenshotOptions.quality = params.screenshotOptions.quality || 100;
-        return page.screenshot(params.screenshotOptions).then(screenshot => {
-            // Because we use encoding binary, this will never be a string
-            return screenshot as Buffer;
-        });
-    } else {
-        return Promise.reject("Not taking a screenshot");
-    }
+    if (params.saveScreenshot !== true)
+        return Promise.reject("Taking screenshot while it is not asked to do so");
+
+    if (!params.screenshotOptions)
+        return Promise.reject("No screenshot options were provided");
+
+    params.screenshotOptions.type = params.screenshotOptions.type || "webp";
+    params.screenshotOptions.fullPage = params.screenshotOptions.fullPage || true;
+    params.screenshotOptions.omitBackground = params.screenshotOptions.omitBackground || false;
+    params.screenshotOptions.encoding = params.screenshotOptions.encoding || "binary";
+    params.screenshotOptions.quality = params.screenshotOptions.quality || 100;
+    return page.screenshot(params.screenshotOptions).then(screenshot => {
+        // Because we use encoding binary, this will never be a string
+        return screenshot as Buffer;
+    });
 }
 
 async function saveHtml(params: ScraperParams, page: puppeteer.Page): Promise<string> {
