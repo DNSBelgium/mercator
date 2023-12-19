@@ -329,13 +329,18 @@ async function snap(page: puppeteer.Page, params: ScraperParams): Promise<Scrape
         result.harData = saveHar(params, events);
 
         // Get all data
-        await Promise.all([
+        const promises = [
             page.metrics().then(output => { result.metrics = output; }),
             page.title().then(output => { result.pageTitle = output; }),
             page.browser().version().then(output => { result.browserVersion = output; }),
-            saveHtml(params, page).then(output => { result.htmlData = output; result.htmlLength = result.htmlData ? result.htmlData.length : 0 }),
-            takeScreenshot(params, page).then(output => { result.screenshotData = output })
-        ]);
+        ];
+
+        if (params.saveHtml)
+            promises.push(saveHtml(params, page).then(output => { result.htmlData = output; result.htmlLength = result.htmlData ? result.htmlData.length : 0 }));
+        if (params.saveScreenshot)
+            promises.push(takeScreenshot(params, page).then(output => { result.screenshotData = output }));
+
+        await Promise.all(promises);
 
         visit_debug(result);
         result.screenshotType = params.screenshotOptions.type ?? "webp";
