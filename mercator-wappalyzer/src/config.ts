@@ -12,6 +12,7 @@ const config = {
     wappalyzing_timeout: parseInt(process.env.WAPPALYZING_TIMEOUT || '300000')
 }
 
-info(`Using configuration: ${config}`);
+info(`Using configuration:`);
+info(config);
 
 export { config };
