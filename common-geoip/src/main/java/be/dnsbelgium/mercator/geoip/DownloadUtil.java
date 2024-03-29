@@ -47,10 +47,6 @@ public class DownloadUtil {
         .setConnectionRequestTimeout(timeoutMillis)
         // socket has timeout, for slow senders
         .setSocketTimeout(timeoutMillis)
-        // do not let the apache http client initiate redirects
-        .setRelativeRedirectsAllowed(false)
-        .setRedirectsEnabled(false)
-        .setCircularRedirectsAllowed(false)
         // build it
         .build();
   }

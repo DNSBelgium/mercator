@@ -23,6 +23,9 @@ pipeline {
           withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
             env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
           }
+          withCredentials([usernamePassword(credentialsId: 'maxmind_test_license', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            env.MAXMIND_LICENSE_KEY = "${PASSWORD}"
+          }
         }
       }
     }

@@ -31,7 +31,7 @@ public class GeoIPServiceTest {
   public void before() {
     location = maxMindPath.toString();
     logger.info("location = {}", location);
-    config = MaxMindConfig.free(Duration.ofDays(1), "fdNqsJ5r4tS2GODo", location);
+    config = MaxMindConfig.free(Duration.ofDays(1), System.getenv("MAXMIND_LICENSE_KEY"), location);
     geoIPService = new GeoIPServiceImpl(config);
   }
 
