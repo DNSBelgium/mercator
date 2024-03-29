@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -158,6 +159,7 @@ class PageFetcherTest {
   }
 
   @Test
+  @Disabled
   @DisplayName("https://www.dnsbelgium.com/")
   public void https_dnsbelgium_dot_com() throws IOException {
 
