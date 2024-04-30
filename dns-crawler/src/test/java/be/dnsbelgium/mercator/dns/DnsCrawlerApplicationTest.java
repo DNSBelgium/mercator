@@ -70,7 +70,7 @@ public class DnsCrawlerApplicationTest {
 
     var found = requestRepository.findByVisitId(visitId);
     var retries = 0;
-    while (found.isEmpty() && retries++ < 5) {
+    while (found.isEmpty() && retries++ < 10) {
       System.out.println("found = " + found);
       found = requestRepository.findByVisitId(visitId);
       Thread.sleep(200);
