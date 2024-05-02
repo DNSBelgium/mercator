@@ -20,9 +20,7 @@ pipeline {
     stage("Setting up env variables") {
       steps {
         script {
-          withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
-            env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
-          }
+          env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
           withCredentials([usernamePassword(credentialsId: 'maxmind_test_license', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
             env.MAXMIND_LICENSE_KEY = "${PASSWORD}"
           }
@@ -62,13 +60,11 @@ pipeline {
 
     stage("Docker and Helm login") {
       steps {
-        withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
-          sh """
-            \$(aws ecr get-login --no-include-email --region \${aws_region})
-            export HELM_EXPERIMENTAL_OCI=1
-            helm registry login --username AWS --password \$(aws ecr get-login --no-include-email --region \${aws_region} | cut -d' ' -f6) ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
-          """
-        }
+        sh """
+          \$(aws ecr get-login --no-include-email --region \${aws_region})
+          export HELM_EXPERIMENTAL_OCI=1
+          helm registry login --username AWS --password \$(aws ecr get-login --no-include-email --region \${aws_region} | cut -d' ' -f6) ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
+        """
       }
     }
 
@@ -77,21 +73,16 @@ pipeline {
         script {
           def docker = [:]
           ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
-//             docker[app] = {
-              stage("Create docker image for ${app}") {
-                withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
-                  sh """
-                    if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
-                      echo "image already exists"
-                    else
-                      ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
-                    fi
-                  """
-                }
-              }
-//             }
+            stage("Create docker image for ${app}") {
+              sh """
+                if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                  echo "image already exists"
+                else
+                  ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
+                fi
+              """
+            }
           }
-//           parallel docker
         }
       }
     }
@@ -103,10 +94,8 @@ pipeline {
           ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
             stage("Scan docker image for ${app}") {
               dir("${app}") {
-                withCredentials(bindings: [[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-role-ecr-Prod']]) {
-                  library 'dnsbelgium-jenkins-pipeline-steps'
-                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${GIT_COMMIT.take(7)}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
-                }
+                library 'dnsbelgium-jenkins-pipeline-steps'
+                scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${GIT_COMMIT.take(7)}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
               }
             }
           }
@@ -121,16 +110,14 @@ pipeline {
           ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
             docker[app] = {
               stage("Build and push helm chart for ${app}") {
-                withCredentials(bindings: [[$class: "AmazonWebServicesCredentialsBinding", credentialsId: "aws-role-ecr-Prod"]]) {
-                  sh """
-                    export HELM_EXPERIMENTAL_OCI=1
-                    if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/helm/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
-                      echo "image already exists"
-                    else
-                      ./gradlew --no-daemon ${app}:helmPackage ${app}:helmPublish -PhelmRegistry=oci://${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/helm
-                    fi
-                  """
-                }
+                sh """
+                  export HELM_EXPERIMENTAL_OCI=1
+                  if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/helm/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                    echo "image already exists"
+                  else
+                    ./gradlew --no-daemon ${app}:helmPackage ${app}:helmPublish -PhelmRegistry=oci://${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/helm
+                  fi
+                """
               }
             }
           }
