@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.geoip;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Disabled // enable this if you have a MaxMind license key
 public class GeoIPServiceTest {
 
   private GeoIPServiceImpl geoIPService;
@@ -32,6 +34,7 @@ public class GeoIPServiceTest {
     location = maxMindPath.toString();
     logger.info("location = {}", location);
     config = MaxMindConfig.free(Duration.ofDays(1), System.getenv("MAXMIND_LICENSE_KEY"), location);
+    System.out.println("System.getenv(\"MAXMIND_LICENSE_KEY\") = " + System.getenv("MAXMIND_LICENSE_KEY"));
     geoIPService = new GeoIPServiceImpl(config);
   }
 
