@@ -55,10 +55,10 @@ class DnsResolverTest {
 
   @Test
   public void nxdomain() throws TextParseException {
-    Name dnsbelgium = Name.fromString("------this-domain-can-not-be-registered__.be");
+    Name dnsbelgium = Name.fromString("this-domain-is-not-registered.dnsbelgium.be");
     DnsRequest request = dnsResolver.lookup("nxdomain", dnsbelgium, RecordType.A);
-    logger.info("request = {}", request);
-    assertThat(request.rcode()).isEqualTo(Rcode.NXDOMAIN);
+    logger.info("nxdomain: request = {}", request);
+    assertThat(request.rcode()).isEqualTo(Rcode.NXDOMAIN).withFailMessage("Expected NXDOMAIN");
     assertThat(request.recordType()).isEqualTo(RecordType.A);
     assertThat(request.records()).isEmpty();
     assertThat(request.humanReadableProblem()).isEqualTo("host not found");
@@ -75,7 +75,7 @@ class DnsResolverTest {
     // at the moment we have no TXT record at _domainkey.dns.be
     Name dns_dot_be = Name.fromString("dns.be");
     DnsRequest request = dnsResolver.lookup("nxdomain", dns_dot_be, RecordType.TXT);
-    logger.info("request = {}", request);
+    logger.info("_domainkey_not_found: request = {}", request);
     assertThat(request.rcode()).isEqualTo(Rcode.NXDOMAIN);
     assertThat(request.recordType()).isEqualTo(RecordType.TXT);
     assertThat(request.records()).isEmpty();
