@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.dns;
 
+import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.RequestRepository;
 import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
@@ -15,6 +16,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,10 +70,9 @@ public class DnsCrawlerApplicationTest {
     logger.info("result.stderr = " + result.getStderr());
     logger.info("result.stdout = " + result.getStdout());
 
-    var found = requestRepository.findByVisitId(visitId);
+    List<Request> found = requestRepository.findByVisitId(visitId);
     var retries = 0;
     while (found.isEmpty() && retries++ < 10) {
-      System.out.println("found = " + found);
       found = requestRepository.findByVisitId(visitId);
       Thread.sleep(200);
     }
@@ -80,13 +81,7 @@ public class DnsCrawlerApplicationTest {
     assertThat(found.get(0).getDomainName()).isEqualTo("dnsbelgië.be");
   }
 
-//  @Autowired
-//  DnsCrawler dnsCrawler;
-
   @Autowired
   RequestRepository requestRepository;
-
-//  @Autowired
-//  DnsCrawlerConfigurationProperties crawlerConfigurationProperties;
 
 }

@@ -3,7 +3,7 @@ plugins {
     id 'io.spring.dependency-management'
     id 'com.google.cloud.tools.jib'
     id 'java'
-    id 'org.unbroken-dome.helm'
+    id 'com.citi.helm'
 }
 
 version = '0.0.1-' + getCommitHash()

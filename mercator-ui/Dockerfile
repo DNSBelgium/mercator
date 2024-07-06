@@ -16,10 +16,7 @@ ADD public /app/public
 
 RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build --force
 
-#FROM nginx:stable-alpine
-FROM nginx@sha256:26a1b20f194c2adab3be2d9e569ca837ddd31fe105d95dd51344e5bf829f1349
-# CVE-2023-28322
-RUN apk upgrade --no-cache curl libcurl
+FROM nginx@sha256:0f04e4f646a3f14bf31d8bc8d885b6c951fdcf42589d06845f64d18aec6a3c4d
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 

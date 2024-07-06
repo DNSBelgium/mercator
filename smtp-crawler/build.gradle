@@ -4,7 +4,7 @@ plugins {
     id 'com.google.cloud.tools.jib'
     id 'java'
     id 'info.solidsoft.pitest' version '1.5.1'
-    id 'org.unbroken-dome.helm'
+    id 'com.citi.helm'
 }
 
 version = '0.0.1-' + getCommitHash()

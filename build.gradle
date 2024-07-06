@@ -1,10 +1,10 @@
 plugins {
-  id "org.owasp.dependencycheck" version "7.4.4"
-  id 'com.google.cloud.tools.jib' version "3.2.1" apply false
-  id 'org.unbroken-dome.helm' version '1.7.0' apply false
+  id "org.owasp.dependencycheck" version "9.2.0"
+  id 'com.google.cloud.tools.jib' version '3.4.3' apply false
+  id 'com.citi.helm' version '2.2.0' apply false
   id 'org.springframework.boot' version '2.7.11' apply false
   id 'io.spring.dependency-management' version '1.0.11.RELEASE' apply false
-  id 'org.barfuin.gradle.taskinfo' version '1.3.1'
+  id 'org.barfuin.gradle.taskinfo' version '2.2.0'
 }
 
 group = 'be.dnsbelgium'
@@ -49,7 +49,7 @@ subprojects { subproject ->
   }
 
   pluginManager.withPlugin("java") {
-    sourceCompatibility = 17
+    sourceCompatibility = JavaVersion.VERSION_17
 
     dependencyManagement {
       imports {
@@ -95,7 +95,7 @@ subprojects { subproject ->
     }
   }
 
-  pluginManager.withPlugin("org.unbroken-dome.helm") {
+  pluginManager.withPlugin("com.citi.helm") {
     helm {
       lint {
         // treat linter warnings as errors (failing the build)

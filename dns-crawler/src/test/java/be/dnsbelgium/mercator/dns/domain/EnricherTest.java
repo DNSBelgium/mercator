@@ -5,6 +5,7 @@ import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("SpringBootApplicationProperties")
 @SpringJUnitConfig({Enricher.class, MetricsAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class})
 @TestPropertySource(properties = {"crawler.dns.geoIP.enabled=true"})
+@Disabled // for now (until we add a MAXMIND license in Jenkins)
 class EnricherTest {
 
   @MockBean

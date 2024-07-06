@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.testcontainers.shaded.org.bouncycastle.util.IPAddress;
 import org.xbill.DNS.*;
@@ -15,7 +15,8 @@ import org.xbill.DNS.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringJUnitConfig({DnsResolver.class, MetricsAutoConfiguration.class, CompositeMeterRegistryAutoConfiguration.class})
-@ActiveProfiles("test")
+// use TCP to avoid annoying firewalls from breaking the tests
+@TestPropertySource(properties = {"resolver.hostname=8.8.8.8", "resolver.tcp=true"})
 class DnsResolverTest {
 
   /*

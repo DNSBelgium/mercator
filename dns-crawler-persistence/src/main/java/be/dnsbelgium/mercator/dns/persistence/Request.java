@@ -2,10 +2,7 @@ package be.dnsbelgium.mercator.dns.persistence;
 
 import be.dnsbelgium.mercator.common.messaging.idn.ULabelConverter;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
@@ -18,6 +15,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 @Builder
 public class Request {
 

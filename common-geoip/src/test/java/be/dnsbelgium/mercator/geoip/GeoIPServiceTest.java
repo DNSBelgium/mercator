@@ -34,7 +34,6 @@ public class GeoIPServiceTest {
     location = maxMindPath.toString();
     logger.info("location = {}", location);
     config = MaxMindConfig.free(Duration.ofDays(1), System.getenv("MAXMIND_LICENSE_KEY"), location);
-    System.out.println("System.getenv(\"MAXMIND_LICENSE_KEY\") = " + System.getenv("MAXMIND_LICENSE_KEY"));
     geoIPService = new GeoIPServiceImpl(config);
   }
 

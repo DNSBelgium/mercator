@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Record;
@@ -37,9 +38,13 @@ public class DnsResolver {
   @Value("${resolver.port:53}")
   private int port;
 
+  @Value("${resolver.tcp:false}")
+  private boolean tcp = false;
+
   @Value("${resolver.timeout.seconds:10}")
   private int timeoutSeconds;
 
+  @Autowired
   public DnsResolver(MeterRegistry meterRegistry) {
     this.meterRegistry = meterRegistry;
     this.concurrentCalls = meterRegistry.gauge(MetricName.DNS_RESOLVER_CONCURRENT_CALLS, new AtomicInteger(0));
@@ -113,9 +118,12 @@ public class DnsResolver {
 
   private Resolver createResolver() {
     try {
+      logger.info("resolver: {}", hostName);
       SimpleResolver simpleResolver = new SimpleResolver(hostName);
       simpleResolver.setPort(port);
+      simpleResolver.setTCP(tcp);
       simpleResolver.setTimeout(Duration.ofSeconds(timeoutSeconds));
+      logger.info("Using {}:{}:{}", tcp?"tcp":"udp", hostName, port);
       return simpleResolver;
     } catch (UnknownHostException e) {
       logger.error("Failed to create SimpleResolver", e);
