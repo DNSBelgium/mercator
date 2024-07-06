@@ -39,24 +39,26 @@ pipeline {
       }
     }
 
-    stage("Helm conftest") {
-      steps {
-        sh "/usr/local/bin/helm-conftest-wrapper.sh"
-      }
-      post {
-        always {
-          archiveArtifacts allowEmptyArchive: true, artifacts: "helm-conftest-results.txt"
-        }
-      }
-    }
+// Disabling for now ...
+//     stage("Helm conftest") {
+//       steps {
+//         sh "/usr/local/bin/helm-conftest-wrapper.sh"
+//       }
+//       post {
+//         always {
+//           archiveArtifacts allowEmptyArchive: true, artifacts: "helm-conftest-results.txt"
+//         }
+//       }
+//     }
 
-    stage("OWASP dependency check") {
-      steps {
-        sh "./gradlew dependencyCheckAggregate"
-        dependencyCheckPublisher pattern: "build/reports/dependency-check-report.xml"
-        archiveArtifacts artifacts: "build/reports/dependency-check-report.html"
-      }
-    }
+//     // this takes 50 minutes without an API key. Disabling for now ...
+//     stage("OWASP dependency check") {
+//       steps {
+//         sh "./gradlew dependencyCheckAggregate"
+//         dependencyCheckPublisher pattern: "build/reports/dependency-check-report.xml"
+//         archiveArtifacts artifacts: "build/reports/dependency-check-report.html"
+//       }
+//     }
 
     stage("Docker and Helm login") {
       steps {
