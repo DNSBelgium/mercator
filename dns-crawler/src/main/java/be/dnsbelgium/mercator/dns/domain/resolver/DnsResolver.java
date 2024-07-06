@@ -54,11 +54,11 @@ public class DnsResolver {
   }
 
   public DnsRequest lookup(String prefix, Name name, RecordType recordType) {
-    logger.info("Resolving DNS records of type {} for name {}", recordType, name);
     var start = LocalDateTime.now();
     try {
       concurrentCalls.incrementAndGet();
       Name ownerName = Name.fromString(prefix, name);
+      logger.info("Resolving DNS records of type {} for name {}", recordType, ownerName);
       Lookup lookup = initLookup(ownerName, recordType);
       lookup.run();
       updateMetrics(recordType, lookup);
