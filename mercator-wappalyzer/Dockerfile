@@ -1,5 +1,4 @@
-FROM node:lts-alpine@sha256:807e66e2bee193961c9642bb1157d77a61747bf76737ca786da45b10749dcb42
-
+FROM node:lts-alpine@sha256:34b7aa411056c85dbf71d240d26516949b3f72b318d796c26b57caaa1df5639a
 RUN apk add -u --no-cache \
     libstdc++ \
     chromium \

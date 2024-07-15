@@ -4,11 +4,10 @@ plugins {
 }
 
 // switch to alpine because of CVE's
-version = 20240705
+version = 20240706
 
 docker {
   name "dnsbelgium/mercator/${project.name}:${project.version}"
-  files 'rds-to-keytool.sh'
 }
 
 tasks.findByName('dockerPrepare').dependsOn -= tasks.findByName('dockerClean')
