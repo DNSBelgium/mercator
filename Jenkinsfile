@@ -63,7 +63,7 @@ pipeline {
     stage("Docker and Helm login") {
       steps {
         sh """
-          aws ecr get-login-password --region \${aws_region} | docker login --username AWS --password-stdin ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com"
+          aws ecr get-login-password --region \${aws_region} | docker login --username AWS --password-stdin ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
           export HELM_EXPERIMENTAL_OCI=1
           aws ecr get-login-password --region \${aws_region} | helm registry login --username AWS --password-stdin  ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
         """
