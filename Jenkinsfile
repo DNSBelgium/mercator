@@ -28,16 +28,16 @@ pipeline {
       }
     }
 
-//     stage("Build + test") {
-//       steps {
-//         sh "./gradlew clean build"
-//       }
-//       post {
-//         always {
-//           junit allowEmptyResults: true, testResults: "**/build/test-results/test/*.xml"
-//         }
-//       }
-//     }
+    stage("Build + test") {
+      steps {
+        sh "./gradlew clean build"
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: "**/build/test-results/test/*.xml"
+        }
+      }
+    }
 
 // Disabling for now ...
 //     stage("Helm conftest") {
