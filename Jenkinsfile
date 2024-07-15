@@ -70,6 +70,25 @@ pipeline {
       }
     }
 
+    stage("Build and push docker base image") {
+      steps {
+        script {
+          def docker = [:]
+          ["docker-base-image"].each { app ->
+            stage("Create docker image for ${app}") {
+              sh """
+                if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                  echo "image already exists"
+                else
+                  ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
+                fi
+              """
+            }
+          }
+        }
+      }
+    }
+
     stage("Build and push docker images") {
       steps {
         script {
