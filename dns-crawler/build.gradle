@@ -45,13 +45,13 @@ dependencies {
   implementation 'com.maxmind.geoip2:geoip2:2.12.0'
 
   // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
-  implementation 'org.apache.commons:commons-compress:1.21'
+  implementation 'org.apache.commons:commons-compress:1.26.0'
 
   // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
   implementation 'org.apache.commons:commons-lang3'
 
   // https://mvnrepository.com/artifact/com.google.guava/guava
-  implementation 'com.google.guava:guava:30.1.1-jre'
+  implementation group: 'com.google.guava', name: 'guava', version: '33.2.1-jre'
 
   // For IDN stuff
   // https://mvnrepository.com/artifact/com.ibm.icu/icu4j

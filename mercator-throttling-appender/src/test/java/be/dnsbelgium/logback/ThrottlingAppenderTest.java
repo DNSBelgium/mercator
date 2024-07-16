@@ -120,9 +120,9 @@ class ThrottlingAppenderTest {
 
   }
 
-  @Test @Disabled
+  @Test
   public void wakeUps() {
-    for (int i=0; i<5000; i++) {
+    for (int i=0; i<50; i++) {
       beforeEach();
       wakeUp();
     }

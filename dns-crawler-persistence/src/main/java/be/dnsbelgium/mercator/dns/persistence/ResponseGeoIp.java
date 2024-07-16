@@ -22,7 +22,7 @@ public class ResponseGeoIp {
     @Column(name = "asn_organisation")  private String asnOrganisation;
     @Column(name = "ip_version")        private int ipVersion;
 
-    public ResponseGeoIp(Pair<Integer, String> asn, String country, int ipVersion, String ip) {
+    public ResponseGeoIp(Pair<Long, String> asn, String country, int ipVersion, String ip) {
         if (asn != null) {
             this.asn = String.valueOf(asn.getLeft());
             this.asnOrganisation = StringUtils.abbreviate(asn.getRight(), 128);

@@ -18,12 +18,12 @@ public class DisabledGeoIPService implements GeoIPService {
   }
 
   @Override
-  public Optional<Pair<Integer, String>> lookupASN(InetAddress ip) {
+  public Optional<Pair<Long, String>> lookupASN(InetAddress ip) {
     return Optional.empty();
   }
 
   @Override
-  public Optional<Pair<Integer, String>> lookupASN(String ip) {
+  public Optional<Pair<Long, String>> lookupASN(String ip) {
     return Optional.empty();
   }
 }

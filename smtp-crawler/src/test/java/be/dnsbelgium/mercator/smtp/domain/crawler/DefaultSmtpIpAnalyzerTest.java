@@ -74,7 +74,7 @@ class DefaultSmtpIpAnalyzerTest {
     @Test
     public void geoIP() {
         InetAddress ip = ip("10.20.30.40");
-        when(geoIPService.lookupASN(ip.getHostAddress())).thenReturn(Optional.of(Pair.of(123, "ASN 123")));
+        when(geoIPService.lookupASN(ip.getHostAddress())).thenReturn(Optional.of(Pair.of(123L, "ASN 123")));
         when(geoIPService.lookupCountry(ip.getHostAddress())).thenReturn(Optional.of("Test Country"));
         Conversation conversation1 = mock(Conversation.class);
         when(conversationFactory.create(ip)).thenReturn(conversation1);

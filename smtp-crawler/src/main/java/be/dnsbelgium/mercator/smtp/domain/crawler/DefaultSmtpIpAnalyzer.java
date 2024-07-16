@@ -53,9 +53,9 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
   }
 
   private void geoIP(SmtpConversation smtpConversation) {
-    Optional<Pair<Integer, String>> asn = geoIPService.lookupASN(smtpConversation.getIp());
+    Optional<Pair<Long, String>> asn = geoIPService.lookupASN(smtpConversation.getIp());
     if (asn.isPresent()) {
-      smtpConversation.setAsn(Long.valueOf(asn.get().getKey()));
+      smtpConversation.setAsn(asn.get().getKey());
       smtpConversation.setAsnOrganisation(asn.get().getValue());
     }
     Optional<String> country = geoIPService.lookupCountry(smtpConversation.getIp());

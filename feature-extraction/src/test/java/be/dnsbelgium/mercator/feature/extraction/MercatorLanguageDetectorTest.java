@@ -16,7 +16,6 @@ import static be.dnsbelgium.mercator.feature.extraction.MercatorLanguageDetector
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Disabled("These tests take over a minute and mostly test 3rd party code")
 class MercatorLanguageDetectorTest {
 
   private final MercatorLanguageDetector languageDetector = new MercatorLanguageDetector();
@@ -67,6 +66,7 @@ class MercatorLanguageDetectorTest {
   }
 
   @Test
+  @Disabled
   public void memoryUsagePerLanguage() {
     long previousMemoryUsed = usedMemory();
     for (Language language : languages) {

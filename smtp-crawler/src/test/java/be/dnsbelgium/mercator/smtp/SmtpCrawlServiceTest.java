@@ -9,6 +9,7 @@ import be.dnsbelgium.mercator.test.LocalstackContainer;
 import be.dnsbelgium.mercator.test.PostgreSqlContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -72,6 +74,7 @@ class SmtpCrawlServiceTest {
   private static final Logger logger = getLogger(SmtpCrawlServiceTest.class);
 
   @Test
+  @Timeout(value = 2, unit = TimeUnit.MINUTES)
   @Transactional
   public void integrationTest() throws Exception {
     UUID uuid = UUID.randomUUID();

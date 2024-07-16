@@ -114,7 +114,7 @@ class RequestRepositoryTest {
         .build();
 
     // Geo Ip for r1
-    Pair<Integer, String> asn = Pair.of(1, "GROUP");
+    var asn = Pair.of(1L, "GROUP");
     ResponseGeoIp responseGeoIp = new ResponseGeoIp(asn, "BE", 4, "1.2.3.4");
     r1.getResponseGeoIps().add(responseGeoIp);
 

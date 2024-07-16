@@ -31,7 +31,7 @@ public class EnabledGeoIpEnricher implements GeoIpEnricher {
     int ipVersion = getIpVersion(ip);
 
     String country = geoIPService.lookupCountry(ip).orElse(null);
-    Pair<Integer, String> asn = geoIPService.lookupASN(ip).orElse(null);
+    var asn = geoIPService.lookupASN(ip).orElse(null);
 
     if (country != null || asn != null) {
       return new ResponseGeoIp(asn, country, ipVersion, ip.getHostAddress());

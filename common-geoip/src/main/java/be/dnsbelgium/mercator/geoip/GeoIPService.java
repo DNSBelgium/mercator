@@ -11,8 +11,8 @@ public interface GeoIPService {
 
   Optional<String> lookupCountry(InetAddress addr);
 
-  Optional<Pair<Integer, String>> lookupASN(InetAddress ip);
+  Optional<Pair<Long, String>> lookupASN(InetAddress ip);
 
-  Optional<Pair<Integer, String>> lookupASN(String ip);
+  Optional<Pair<Long, String>> lookupASN(String ip);
 
 }

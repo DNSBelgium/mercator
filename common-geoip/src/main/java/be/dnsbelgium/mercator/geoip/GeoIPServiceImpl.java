@@ -31,7 +31,16 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.util.Timeout;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +50,8 @@ import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
+
+import static org.apache.commons.lang3.time.DateFormatUtils.SMTP_DATETIME_FORMAT;
 
 /**
  * Utility class to lookup IP address information such as country and asn. Uses the maxmind database
@@ -81,18 +92,19 @@ public class GeoIPServiceImpl implements GeoIPService {
     String countryFile = countryFile();
     String asnFile = asnFile();
 
-    if (shouldUpdate(countryFile)) {
+    String url = config.getUrlCountryDb() + config.getLicenseKey();
+
+    if (shouldUpdate(countryFile, url)) {
       log.info("GEOIP country database does not exist or is too old, fetch latest version");
-      String url = config.getUrlCountryDb() + config.getLicenseKey();
       if (config.isUsePaidVersion()) {
         log.info("Download paid Maxmind country database");
       }
       download(countryFile, url, 30);
     }
 
-    if (shouldUpdate(asnFile)) {
+    url = config.getUrlAsnDb() + config.getLicenseKey();
+    if (shouldUpdate(asnFile, url)) {
       log.info("GEOIP ASN database does not exist or is too old, fetch latest version");
-      String url = config.getUrlAsnDb() + config.getLicenseKey();
       if (config.isUsePaidVersion()) {
         log.info("Download paid Maxmind ISP database");
       }
@@ -125,7 +137,7 @@ public class GeoIPServiceImpl implements GeoIPService {
    * @param database named of database
    * @return true if database file does not exist or is too old
    */
-  private boolean shouldUpdate(String database) {
+  private boolean shouldUpdate(String database, String url) {
     File f = new File(FileUtil.appendPath(config.getFileLocation(), database));
 
     if (log.isDebugEnabled()) {
@@ -141,7 +153,10 @@ public class GeoIPServiceImpl implements GeoIPService {
       return true;
     }
 
-    return false;
+    Date lastModified = lastModifiedOnline(url, 30);
+    return
+            lastModified == null ||
+            lastModified.after(new Date(f.lastModified()));
   }
 
   private boolean isExpired(File f, int maxDays) {
@@ -150,6 +165,44 @@ public class GeoIPServiceImpl implements GeoIPService {
     return isFileOlder(f, calendar.getTime());
   }
 
+  private static RequestConfig createConfig(Timeout timeout) {
+    return RequestConfig
+            .custom()
+            // timeout for waiting during creating of connection
+            .setConnectTimeout(timeout)
+            .setConnectionRequestTimeout(timeout)
+            .setResponseTimeout(timeout)
+            // do not let the apache http client initiate redirects
+            // build it
+            .build();
+  }
+
+  public Date lastModifiedOnline(String url, int timeoutInSeconds) {
+    Timeout timeout = Timeout.ofSeconds(timeoutInSeconds);
+    try (CloseableHttpClient client =
+                 HttpClientBuilder
+                         .create()
+                         .setDefaultRequestConfig(createConfig(timeout))
+                         .build()){
+
+
+      try(CloseableHttpResponse response = client.execute(new HttpHead(url))){
+
+        if (response.getCode() == HttpStatus.SC_OK) {
+
+          var lastModified = response.getFirstHeader("last-modified").getValue();
+          log.debug("url={} => lastModified = {}", url, lastModified);
+
+          return  DateUtils.parseDate(lastModified, SMTP_DATETIME_FORMAT.getPattern());
+        }
+      }
+    } catch (Exception e) {
+        //noinspection StringConcatenationArgumentToLogCall
+        log.error("Error executing HTTP HEAD request: " + e);
+    }
+
+    return null;
+  }
   public static boolean isFileOlder(final File file, final Date date) {
     if (date == null) {
       throw new IllegalArgumentException("No specified date");
@@ -170,16 +223,12 @@ public class GeoIPServiceImpl implements GeoIPService {
 
   @Override
   public Optional<String> lookupCountry(String ip) {
-    InetAddress inetAddr;
-    try {
-      inetAddr = InetAddresses.forString(ip);
-    } catch (Exception e) {
-      if (log.isDebugEnabled()) {
-        log.debug("Invalid IP address: " + ip);
-      }
+    Optional<InetAddress> inetAddr= ipToAddress(ip);
+    if (inetAddr.isPresent()) {
+      return lookupCountry(inetAddr.get());
+    } else {
       return Optional.empty();
     }
-    return lookupCountry(inetAddr);
   }
 
   @Override
@@ -187,19 +236,17 @@ public class GeoIPServiceImpl implements GeoIPService {
     try {
       return Optional.ofNullable(geoReader.country(ip).getCountry().getIsoCode());
     } catch (AddressNotFoundException e) {
-      if (log.isDebugEnabled()) {
-        log.debug("Maxmind error, IP not in database: " + ip);
-      }
+      logNotFound(ip);
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
-        log.debug("No country found for: " + ip);
+        log.debug("No country found for: {} ", ip);
       }
     }
     return Optional.empty();
   }
 
   @Override
-  public Optional<Pair<Integer, String>> lookupASN(InetAddress ip) {
+  public Optional<Pair<Long, String>> lookupASN(InetAddress ip) {
     try {
       if (config.isUsePaidVersion()) {
         // paid version returns IspResponse
@@ -210,21 +257,25 @@ public class GeoIPServiceImpl implements GeoIPService {
       AsnResponse r = asnReader.asn(ip);
       return asn(r.getAutonomousSystemNumber(), r.getAutonomousSystemOrganization(), ip);
     } catch (AddressNotFoundException e) {
-      if (log.isDebugEnabled()) {
-        log.debug("Maxmind error, IP not in database: " + ip);
-      }
+      logNotFound(ip);
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
-        log.debug("Error while doing ASN lookup for: " + ip);
+          log.debug("Error while doing ASN lookup for: {}", ip);
       }
     }
     return Optional.empty();
   }
 
-  public Optional<Pair<Integer, String>> asn(Integer asn, String org, InetAddress ip) {
+  private void logNotFound(InetAddress ip) {
+    if (log.isDebugEnabled()) {
+      log.debug("Maxmind error, IP not in database: {}", ip);
+    }
+  }
+
+  public Optional<Pair<Long, String>> asn(Long asn, String org, InetAddress ip) {
     if (asn == null) {
       if (log.isDebugEnabled()) {
-        log.debug("No asn found for: " + ip);
+          log.debug("No asn found for: {}", ip);
       }
       return Optional.empty();
     }
@@ -232,24 +283,33 @@ public class GeoIPServiceImpl implements GeoIPService {
   }
 
   @Override
-  public Optional<Pair<Integer, String>> lookupASN(String ip) {
+  public Optional<Pair<Long, String>> lookupASN(String ip) {
+    Optional<InetAddress> inetAddr= ipToAddress(ip);
+    if (inetAddr.isPresent()) {
+      return lookupASN(inetAddr.get());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  private Optional<InetAddress> ipToAddress(String ip) {
     InetAddress inetAddr;
     try {
       inetAddr = InetAddresses.forString(ip);
     } catch (Exception e) {
       if (log.isDebugEnabled()) {
-        log.debug("Invalid IP address: " + ip);
+          log.debug("Invalid IP address: {}", ip);
       }
       return Optional.empty();
     }
-    return lookupASN(inetAddr);
+    return Optional.of(inetAddr);
   }
 
 
-  public void download(String database, String url, int timeout) {
+  public void download(String database, String url, int timeoutInSeconds) {
     // do not log api key
     String logUrl = RegExUtils.removePattern(url, "&license_key=.+");
-    Optional<byte[]> data = DownloadUtil.getAsBytes(url, logUrl, timeout);
+    Optional<byte[]> data = DownloadUtil.getAsBytes(url, logUrl, timeoutInSeconds);
     if (data.isPresent()) {
       InputStream is = new ByteArrayInputStream(data.get());
       try {
@@ -265,7 +325,7 @@ public class GeoIPServiceImpl implements GeoIPService {
     try (TarArchiveInputStream tarIn = new TarArchiveInputStream(gzipIn)) {
       TarArchiveEntry entry;
 
-      while ((entry = (TarArchiveEntry) tarIn.getNextEntry()) != null) {
+      while ((entry = tarIn.getNextEntry()) != null) {
         if (StringUtils.endsWith(entry.getName(), database)) {
           int count;
           byte[] data = new byte[4096];
