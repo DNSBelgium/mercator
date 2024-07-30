@@ -19,6 +19,7 @@ public class DownloadUtil {
     }
 
     public static Optional<byte[]> getAsBytes(String url, String logUrl, int timeoutInSeconds) {
+        log.info("GET URL with license: {}", url);
         log.info("GET URL: {}", logUrl);
 
         Timeout timeout = Timeout.ofSeconds(timeoutInSeconds);
@@ -30,6 +31,8 @@ public class DownloadUtil {
 
             try (CloseableHttpResponse response = client.execute(new HttpGet(url))) {
                 if (response.getCode() == HttpStatus.SC_OK) {
+                    long bytes = response.getEntity().getContentLength();
+                    log.info("bytes received = {}", bytes);
                     return Optional.ofNullable(EntityUtils.toByteArray(response.getEntity()));
                 } else if (response.getCode() == HttpStatus.SC_TOO_MANY_REQUESTS) {
                     log.error("GeoIP Database Download Limit Reached, url = {}", logUrl);
@@ -39,6 +42,7 @@ public class DownloadUtil {
             }
         } catch (Exception e) {
             log.error("Error executing HTTP GET request for: {}", logUrl);
+            log.error("Error executing HTTP GET request", e);
         }
 
         return Optional.empty();

@@ -65,6 +65,9 @@ public class MaxMindConfig {
     this.usePaidVersion = usePaidVersion;
     this.licenseKey = licenseKey;
     this.fileLocation = Objects.requireNonNullElse(fileLocation, getTempDir());
+    logger.info("urlAsnDb = {}", urlAsnDb);
+    logger.info("urlCountryDb = {}", urlCountryDb);
+    logger.info("usePaidVersion = {}", usePaidVersion);
   }
 
   private String getTempDir() {
