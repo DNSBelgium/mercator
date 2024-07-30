@@ -82,6 +82,9 @@ database:
   password: "password"
 geoip:
   key:
+  use_paid_version: false
+  url_asn_db:
+  url_country_db:
 extraEnv: {}
 
 global:
