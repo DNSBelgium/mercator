@@ -21,6 +21,10 @@ data:
   CLOUD_AWS_REGION_STATIC: "{{ .Values.global.region }}"
   LOGGING_LEVEL_COM_AMAZONAWS_UTIL: "ERROR"
   CRAWLER_SMTP_GEOIP_ENABLED: "true"
+  GEO_IP_MAXMIND_USE_PAID_VERSION: "{{ .Values.geoip.use_paid_version }}"
+  GEO_IP_MAXMIND_URL_ASN_DB: "{{ .Values.geoip.url_asn_db }}"
+  GEO_IP_MAXMIND_URL_COUNTRY_DB: "{{ .Values.geoip.url_country_db }}"
+
 ---
 apiVersion: v1
 kind: ConfigMap
