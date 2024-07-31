@@ -71,8 +71,6 @@ dependencies {
     // caching
     implementation 'com.github.ben-manes.caffeine:caffeine:2.8.2'
     
-    implementation 'com.maxmind.geoip2:geoip2:2.12.0'
-
     // https://mvnrepository.com/artifact/org.apache.commons/commons-compress
     implementation 'org.apache.commons:commons-compress:1.26.0'
 
