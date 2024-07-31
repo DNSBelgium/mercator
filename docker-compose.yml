@@ -103,7 +103,7 @@ services:
     image: postgres:11.10
     command: "-c max_connections=500"
     ports:
-      - "5432:5432"
+      - "5678:5432"
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
