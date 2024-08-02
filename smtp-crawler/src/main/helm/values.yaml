@@ -45,10 +45,10 @@ securityContext:
 resources:
   requests:
     cpu: 100m
-    memory: 800M
+    memory: 900M
   limits:
     cpu: 500m
-    memory: 800M
+    memory: 1000M
 
 autoscaling:
   enabled: false
