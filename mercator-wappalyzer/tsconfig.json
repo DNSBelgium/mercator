@@ -6,7 +6,7 @@
     "types"
   ],
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2023",
     "module": "esnext",
     "lib": [
       "dom",
