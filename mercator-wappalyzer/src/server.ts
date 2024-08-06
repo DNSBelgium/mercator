@@ -2,7 +2,7 @@ import { Message, SQS } from "@aws-sdk/client-sqs";
 import { SQSClientConfig } from "@aws-sdk/client-sqs/dist-types/SQSClient";
 import { Consumer } from "sqs-consumer";
 import { Producer } from "sqs-producer";
-import { wappalyze } from "./wappalyzer_wrapper";
+import { analyze } from "./gowap_wrapper";
 import { WappalyzerRequest, WappalyzerResponse } from "./api";
 import { v4 as uuid } from "uuid";
 import { debug, error, log } from "./logging";
@@ -74,6 +74,6 @@ export async function createHandler(producer: Producer): Promise<(message: Messa
 export async function handleMessage(request: WappalyzerRequest): Promise<WappalyzerResponse> {
     return {
         request: request,
-        wappalyzer: await wappalyze(request.url)
+        wappalyzer: await analyze(request.url)
     }
 }

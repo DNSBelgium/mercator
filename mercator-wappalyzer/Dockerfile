@@ -1,4 +1,8 @@
-FROM node:lts-alpine@sha256:34b7aa411056c85dbf71d240d26516949b3f72b318d796c26b57caaa1df5639a
+FROM golang:1.22.5-alpine AS gobuilder
+RUN apk add git
+RUN git clone https://github.com/editicalu/gowap ./gowap && cd gowap && go build -o /gowap_bin cmd/gowap/main.go
+
+FROM node:lts-alpine@sha256:eb8101caae9ac02229bd64c024919fe3d4504ff7f329da79ca60a04db08cef52
 RUN apk add -u --no-cache \
     libstdc++ \
     chromium \
@@ -28,7 +32,8 @@ ADD tsconfig.json /app
 ADD src /app/src
 ADD .env /app/.env
 
+COPY --from=gobuilder /gowap_bin /app/gowap
+ENV GOWAP_PATH="/app/gowap"
 # RUN npm run build --omit=dev
 RUN npm run build
-
 CMD ["node", "/app/dist/index.js"]
