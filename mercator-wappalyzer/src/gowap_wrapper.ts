@@ -1,4 +1,6 @@
 import { config } from "./config";
+import { log_failure, log_success, visit_info } from "./logging";
+import { getUrlFailed } from "./metrics";
 
 import { spawn } from "child_process";
 
@@ -29,24 +31,30 @@ class GoWapWrapper {
         // TODO
         if (this.options) { }
         args.push(url);
-        console.log("Starting gowap");
-        const childProcess = spawn("./gowap", args);
-        // Debug logging
-        childProcess.stderr.pipe(process.stderr);
+        visit_info("Gowapping " + url);
+        try {
+            const childProcess = spawn("./gowap", args);
+            // Debug logging
+            childProcess.stderr.pipe(process.stderr);
 
-        const exitCode = await new Promise((resolve) => {
-            childProcess.on('close', resolve);
-        });
-        console.log("exitcode was", exitCode);
+            const exitCode = await new Promise((resolve) => {
+                childProcess.on('close', resolve);
+            });
+            console.log("exitcode was", exitCode);
 
-        let complete_data = "";
-        console.log("Waiting for gowap");
-        for await (const data of childProcess.stdout) {
-            complete_data = complete_data.concat(data);
+            let complete_data = "";
+            console.log("Waiting for gowap");
+            for await (const data of childProcess.stdout) {
+                complete_data = complete_data.concat(data);
+            }
+            console.log("Done: {}", complete_data);
+            log_success(url);
+            return JSON.parse(complete_data);
+        } catch (e) {
+            log_failure(url, e);
+            getUrlFailed().inc();
         }
-        console.log("Done: {}", complete_data);
 
-        return JSON.parse(complete_data);
     }
 
     /**
