@@ -1,4 +1,4 @@
-FROM node:lts-alpine@sha256:09faa7dabeae557cb6baff17be5b216fc4e3c9608aa04fe71695aad3d229a9c7
+FROM node:20-alpine3.20
 
 RUN apk add -u --update-cache \
     libstdc++ \
