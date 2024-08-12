@@ -2,7 +2,7 @@ import { config } from "./config";
 import { log_failure, log_success, visit_info } from "./logging";
 import { getUrlFailed } from "./metrics";
 
-import { spawn } from "child_process";
+import spawnPlease from "spawn-please";
 
 const DEFAULT_OPTIONS = {
     delay: config.wappalyzing_timeout,
@@ -12,6 +12,12 @@ const DEFAULT_OPTIONS = {
 };
 
 interface GoWapWrapperOptions {
+}
+
+interface GoWapUrlResponse {
+    url?: string;
+    status: number;
+    error?: string | null;
 }
 
 class GoWapWrapper {
@@ -32,29 +38,35 @@ class GoWapWrapper {
         if (this.options) { }
         args.push(url);
         visit_info("Gowapping " + url);
-        try {
-            const childProcess = spawn("./gowap", args);
-            // Debug logging
-            childProcess.stderr.pipe(process.stderr);
 
-            const exitCode = await new Promise((resolve) => {
-                childProcess.on('close', resolve);
-            });
-            console.log("exitcode was", exitCode);
+        //const childProcess = spawn("./gowap", args);
+        const { stdout, stderr } = await spawnPlease(config.gowap_path, args, { rejectOnError: false });
 
-            let complete_data = "";
-            console.log("Waiting for gowap");
-            for await (const data of childProcess.stdout) {
-                complete_data = complete_data.concat(data);
-            }
-            console.log("Done: {}", complete_data);
-            log_success(url);
-            return JSON.parse(complete_data);
-        } catch (e) {
-            log_failure(url, e);
-            getUrlFailed().inc();
+        // Everything should be fine
+        if (stderr.endsWith("analyzePageFailed\n")) {
+            const regex = /ERRO\[0000\] Scraper failed : (?:navigation failed: )?(.+)$/gm;
+            const error = regex.exec(stderr)?.at(1);
+            getUrlFailed().inc()
+            log_failure(url, error);
+            throw error;
         }
 
+        log_success(url);
+        const parsed = JSON.parse(stdout);
+        // Keep compatible with existing db scheme:
+        // TODO:
+
+        // To remain compatible with existing db schemes
+        (parsed["urls"] as any[]).reduce(function (map, obj) {
+            map[obj.key] = obj.val;
+            return map;
+        }, {});
+        const urls = (parsed["urls"] as GoWapUrlResponse[]).reduce((map: any, obj: GoWapUrlResponse) => {
+            map[obj.url!] = { status: obj.status, error: null };
+            return map;
+        }, {});
+
+        return { urls: urls, technologies: parsed["technologies"] };
     }
 
     /**
@@ -70,7 +82,7 @@ let INSTANCE: null | GoWapWrapper = null;
 
 async function analyze(url: string) {
     if (INSTANCE === null) {
-        INSTANCE = new GoWapWrapper(DEFAULT_OPTIONS);
+        INSTANCE = new GoWapWrapper(DEFAULT_OPTIONS);   
     }
 
     return INSTANCE.analyze(url);

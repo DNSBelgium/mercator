@@ -59,10 +59,11 @@ export async function createHandler(producer: Producer): Promise<(message: Messa
     return async (message: Message) => {
         const params = JSON.parse(message.Body!);
         const result = await handleMessage(params);
+        const result_string = JSON.stringify(result);
         if (result) {
             await producer.send({
                 id: uuid(),
-                body: JSON.stringify(result)
+                body: result_string
             }).catch(err => {
                 error("Failed to send message to SQS: " + err);
                 throw err;
