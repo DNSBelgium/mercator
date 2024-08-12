@@ -7,8 +7,6 @@ RUN apk add -u --update-cache \
     nss \
     ttf-freefont \
     font-noto-emoji \
-    # CVE-2023-0286
-    && apk upgrade --no-cache libssl1.1 libcrypto1.1 \
     && rm -rf /var/cache/* \
     && mkdir /var/cache/apk
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
