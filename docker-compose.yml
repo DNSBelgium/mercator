@@ -100,10 +100,10 @@ services:
     restart: always # since the process stops listening for messages on network issues, we need to restart it
 
   db:
-    image: postgres:11.10
+    image: postgres:16.3
     command: "-c max_connections=500"
     ports:
-      - "5678:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
