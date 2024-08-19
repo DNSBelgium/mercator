@@ -43,12 +43,21 @@ class GoWapWrapper {
         const { stdout, stderr } = await spawnPlease(config.gowap_path, args, { rejectOnError: false });
 
         // Everything should be fine
-        if (stderr.endsWith("analyzePageFailed\n")) {
-            const regex = /ERRO\[0000\] Scraper failed : (?:navigation failed: )?(.+)$/gm;
-            const error = regex.exec(stderr)?.at(1);
-            getUrlFailed().inc()
+        if (stderr.includes("analyzePageFailed")) {
+            getUrlFailed().inc();
+
+            const regex = /msg="Scraper failed : navigation failed: (.+)"/g;
+            const match = regex.exec(stderr);
+            if (match === null) {
+                const error = stderr;
+                log_failure(url, error);
+                const result = { urls: { url: { status: 0, error } }, technologies: [] };
+                return result;
+            }
+            const error = match[1];
             log_failure(url, error);
-            throw error;
+            const result = { urls: { url: { status: 0, error } }, technologies: [] };
+            return result;
         }
 
         log_success(url);

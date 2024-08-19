@@ -59,8 +59,8 @@ export async function createHandler(producer: Producer): Promise<(message: Messa
     return async (message: Message) => {
         const params = JSON.parse(message.Body!);
         const result = await handleMessage(params);
-        const result_string = JSON.stringify(result);
         if (result) {
+            const result_string = JSON.stringify(result);
             await producer.send({
                 id: uuid(),
                 body: result_string
