@@ -24,6 +24,9 @@ pipeline {
           withCredentials([usernamePassword(credentialsId: 'maxmind_test_license', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
             env.MAXMIND_LICENSE_KEY = "${PASSWORD}"
           }
+          withCredentials([usernamePassword(credentialsId: 'NVD_API_KEY', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+            env.NVD_API_KEY = "${PASSWORD}"
+          }
         }
       }
     }
@@ -51,14 +54,14 @@ pipeline {
 //       }
 //     }
 
-//     // this takes 50 minutes without an API key. Disabling for now ...
-//     stage("OWASP dependency check") {
-//       steps {
-//         sh "./gradlew dependencyCheckAggregate"
-//         dependencyCheckPublisher pattern: "build/reports/dependency-check-report.xml"
-//         archiveArtifacts artifacts: "build/reports/dependency-check-report.html"
-//       }
-//     }
+    // this takes 50 minutes without an API key.
+    stage("OWASP dependency check") {
+      steps {
+        sh "./gradlew dependencyCheckAggregate"
+        dependencyCheckPublisher pattern: "build/reports/dependency-check-report.xml"
+        archiveArtifacts artifacts: "build/reports/dependency-check-report.html"
+      }
+    }
 
     stage("Docker and Helm login") {
       steps {
