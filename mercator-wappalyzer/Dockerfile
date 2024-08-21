@@ -1,6 +1,6 @@
 FROM golang:1.22.5-alpine AS gobuilder
 RUN apk add git
-RUN git clone https://github.com/editicalu/gowap ./gowap && cd gowap && go build -o /gowap_bin cmd/gowap/main.go
+RUN git clone https://github.com/DNSBelgium/gowap ./gowap && cd gowap && go build -o /gowap_bin cmd/gowap/main.go
 
 FROM node:20-alpine3.20
 RUN apk add -u --no-cache \
