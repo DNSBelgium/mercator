@@ -4,14 +4,16 @@ import { getUrlFailed } from "./metrics";
 
 import spawnPlease from "spawn-please";
 
-const DEFAULT_OPTIONS = {
-    delay: config.wappalyzing_timeout,
-    maxDepth: 3,
-    maxUrls: 5,
-    recursive: true
+const DEFAULT_OPTIONS: GoWapWrapperOptions = {
+    timeout: 10,
+    loadTimeout: 10,
+    maxDepth: 10,
 };
 
 interface GoWapWrapperOptions {
+    timeout?: number;
+    loadTimeout?: number;
+    maxDepth?: number;
 }
 
 interface GoWapUrlResponse {
@@ -35,7 +37,17 @@ class GoWapWrapper {
         // TODO
         const args = [];
         // TODO
-        if (this.options) { }
+        if (this.options) {
+            if (this.options.timeout) {
+                args.push(["-timeout", this.options.timeout]);
+            }
+            if (this.options.loadTimeout) {
+                args.push(["-load-timeout", this.options.loadTimeout]);
+            }
+            if (this.options.maxDepth) {
+                args.push("-depth", this.options.maxDepth);
+            }
+        }
         args.push(url);
         visit_info("Gowapping " + url);
 
