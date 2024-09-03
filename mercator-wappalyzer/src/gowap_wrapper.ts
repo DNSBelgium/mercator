@@ -34,18 +34,16 @@ class GoWapWrapper {
      * @param url The url to parse
      */
     public async analyze(url: string) /*: GoWapResult*/ {
-        // TODO
         const args = [];
-        // TODO
         if (this.options) {
             if (this.options.timeout) {
-                args.push(["-timeout", this.options.timeout]);
+                args.push("-timeout", this.options.timeout.toString());
             }
             if (this.options.loadTimeout) {
-                args.push(["-load-timeout", this.options.loadTimeout]);
+                args.push("-load-timeout", this.options.loadTimeout.toString());
             }
             if (this.options.maxDepth) {
-                args.push("-depth", this.options.maxDepth);
+                args.push("-depth", this.options.maxDepth.toString());
             }
         }
         args.push(url);
