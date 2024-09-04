@@ -4,6 +4,7 @@ import express from "express";
 
 Prometheus.collectDefaultMetrics({ prefix: "wappalyzer_" });
 
+// @ts-ignore noUnusedLocals
 async function getFailureRate(): Promise<number> {
     // Errors only take into account how many crashes we got. No error if the page doesn't exist.
     const errors = await getValueOfMetric(getUrlFailed());
@@ -17,7 +18,7 @@ async function getFailureRate(): Promise<number> {
 export function initMetricsServer() {
     const app = express();
     app.get("/health", async (_: express.Request, res: express.Response) => {
-        res.send({ healthy: health, failureRate: failureRate });
+        res.send({ ok: true });
     });
     app.get("/actuator/prometheus", async (_: express.Request, res: express.Response) => {
         res.set("Content-Type", getContentType());
