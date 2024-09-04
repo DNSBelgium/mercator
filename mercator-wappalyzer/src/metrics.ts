@@ -17,13 +17,6 @@ async function getFailureRate(): Promise<number> {
 export function initMetricsServer() {
     const app = express();
     app.get("/health", async (_: express.Request, res: express.Response) => {
-        // TODO: add browser status check
-        const failureRate = await getFailureRate();
-
-        const FAILURE_THRESHOLD = config.failure_threshold;
-        const health: boolean = failureRate < FAILURE_THRESHOLD;
-        if (!health)
-            res.status(500);
         res.send({ healthy: health, failureRate: failureRate });
     });
     app.get("/actuator/prometheus", async (_: express.Request, res: express.Response) => {
