@@ -48,15 +48,17 @@ process.on("SIGTERM", handle);
     app.get("/health", async (req: express.Request, res: express.Response) => {
 
         const browserConnected = isBrowserConnected();
-        const failureRate = await metrics.calculateFailureRate();
-        const failureRateHealthy = failureRate < config.failure_threshold;
+        // const failureRate = await metrics.calculateFailureRate();
+        // const failureRateHealthy = failureRate < config.failure_threshold;
 
-        const healthy = browserConnected && failureRateHealthy;
+        // const healthy = browserConnected && failureRateHealthy;
+
+        const healthy = browserConnected;
 
         if (!healthy)
             res.status(500);
 
-        res.send({ healthy, failureRate, browserConnected });
+        res.send({ healthy, browserConnected });
     });
 
     app.get("/actuator/prometheus", async (req: express.Request, res: express.Response) => {
