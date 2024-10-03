@@ -31,12 +31,12 @@ public class AsyncContentListener {
     handleMessage(message, muppetsResolutionListener);
   }
 
-  @JmsListener(destination = "${content.resolving.responseQueues.wappalyzer}", containerFactory =
-      "wappalyzerJmsListenerContainerFactory")
-  @Transactional
-  public void contentResolved(WappalyzerResponseMessage message) throws JsonProcessingException {
-    handleMessage(message, wappalyzerResolutionListener);
-  }
+//  @JmsListener(destination = "${content.resolving.responseQueues.wappalyzer}", containerFactory =
+//      "wappalyzerJmsListenerContainerFactory")
+//  @Transactional
+//  public void contentResolved(WappalyzerResponseMessage message) throws JsonProcessingException {
+//    handleMessage(message, wappalyzerResolutionListener);
+//  }
 
   private <T extends ResponseMessage> void handleMessage(T message, ContentResolutionListener<T> contentResolutionListener) throws JsonProcessingException {
     logger.debug("Received message {} on queue ", message);
