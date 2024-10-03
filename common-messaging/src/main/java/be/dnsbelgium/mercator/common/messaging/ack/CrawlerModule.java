@@ -6,7 +6,7 @@ public enum CrawlerModule {
 
   DNS(),
   MUPPETS(),
-  WAPPALYZER(),
+  WAPPALYZER(false),
   SMTP(),
   VAT(),
   TLS(),
