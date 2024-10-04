@@ -83,7 +83,7 @@ subprojects { subproject ->
         tags = tagList
       }
       from {
-        image = "${registry}dnsbelgium/mercator/docker-base-image:20241004"
+        image = "dnsbelgium/mercator/docker-base-image:20241004"
       }
     }
 
