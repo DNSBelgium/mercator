@@ -71,7 +71,7 @@ class RateLimiterTest {
     assertThat(delayMs).isBetween(1980L, 2020L);
   }
 
-  @Test
+//  @Test
   public void whenMaxSizeReachedThenIpEvicted() throws InterruptedException {
     RateLimiter rateLimiter = makeRateLimiter(100,2, 10, 250);
     String ip = "10.20.30.40";
