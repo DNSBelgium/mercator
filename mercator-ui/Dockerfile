@@ -17,7 +17,7 @@ ADD public /app/public
 RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build --force
 
 # stable-alpine
-FROM nginx@sha256:f05d105face814474acc5538160bd3f29309d9398dd895a4e71f676a4fd9a3fc
+FROM nginx@sha256:c9896551cb3993df16b553dacf95c47a86fe4f351e82101561b710ef179b8e68
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 
