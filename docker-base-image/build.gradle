@@ -6,6 +6,11 @@ plugins {
 // switch to alpine because of CVE's
 version = '0.0.1-' + getCommitHash()
 
+def registry = ""
+if (project.hasProperty("dockerRegistry")) {
+  registry = project.getProperty("dockerRegistry")
+}
+
 docker {
   name "${registry}dnsbelgium/mercator/${project.name}:${version}"
 }
