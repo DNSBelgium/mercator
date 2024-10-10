@@ -16,10 +16,10 @@ pipeline {
     string(name: "aws_region", defaultValue: "eu-west-1", description: "region to deploy to")
   }
   stages {
-
     stage("Setting up env variables") {
       steps {
         script {
+          env.GIT_COMMIT_HASH = sh(script: 'git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD', returnStdout: true, returnStatus: false).trim()
           env.AWS_ACCOUNT_ID = sh(script: 'aws sts get-caller-identity | jq -r ".Account"', returnStdout: true).trim()
           withCredentials([usernamePassword(credentialsId: 'maxmind_test_license', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
             env.MAXMIND_LICENSE_KEY = "${PASSWORD}"
@@ -68,7 +68,7 @@ pipeline {
         sh """
           aws ecr get-login-password --region \${aws_region} | docker login --username AWS --password-stdin ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
           export HELM_EXPERIMENTAL_OCI=1
-          aws ecr get-login-password --region \${aws_region} | helm registry login --username AWS --password-stdin  ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
+          aws ecr get-login-password --region \${aws_region} | helm registry login --username AWS --password-stdin ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
         """
       }
     }
@@ -89,7 +89,7 @@ pipeline {
           ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
             stage("Create docker image for ${app}") {
               sh """
-                if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F "${env.GIT_COMMIT_HASH}" ; then
                   echo "image already exists"
                 else
                   ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
@@ -109,7 +109,7 @@ pipeline {
             stage("Scan docker image for ${app}") {
               dir("${app}") {
                 library 'dnsbelgium-jenkins-pipeline-steps'
-                scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${GIT_COMMIT.take(7)}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
+                scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
               }
             }
           }
@@ -126,7 +126,7 @@ pipeline {
               stage("Build and push helm chart for ${app}") {
                 sh """
                   export HELM_EXPERIMENTAL_OCI=1
-                  if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/helm/${app} --output text | grep -q -F \${GIT_COMMIT:0:7} ; then
+                  if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/helm/${app} --output text | grep -q -F "${env.GIT_COMMIT_HASH}" ; then
                     echo "image already exists"
                   else
                     ./gradlew --no-daemon ${app}:helmPackage ${app}:helmPublish -PhelmRegistry=oci://${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/dnsbelgium/mercator/helm
@@ -142,7 +142,7 @@ pipeline {
 
     stage("Deploy to dev") {
       steps {
-        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: GIT_COMMIT.take(7)),]
+        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: env.GIT_COMMIT_HASH),]
       }
     }
   }
@@ -150,7 +150,7 @@ pipeline {
   post {
     always {
       sh """
-        CURRENT_COMMIT=\${GIT_COMMIT:0:7}
+        CURRENT_COMMIT=${env.GIT_COMMIT_HASH}
         PROJECT="mercator"
 
         LAYER_TO_KEEP=`docker images -a | grep \${PROJECT} | grep \${CURRENT_COMMIT} | awk '{ print \$3}'`
