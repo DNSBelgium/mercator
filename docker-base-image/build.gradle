@@ -1,13 +1,13 @@
 plugins {
   id 'base'
-  id 'com.palantir.docker' version '0.35.0'
+  id 'com.palantir.docker' version '0.36.0'
 }
 
 // switch to alpine because of CVE's
-version = 20241005
+version = '0.0.1-' + getCommitHash()
 
 docker {
-  name "dnsbelgium/mercator/${project.name}:${project.version}"
+  name "${registry}dnsbelgium/mercator/${project.name}:${version}"
 }
 
 tasks.findByName('dockerPrepare').dependsOn -= tasks.findByName('dockerClean')
