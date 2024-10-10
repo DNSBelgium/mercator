@@ -77,6 +77,7 @@ pipeline {
       steps {
         sh """
            ./gradlew --no-daemon docker-base-image:docker -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
+           ./gradlew --no-daemon docker-base-image:dockerPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
         """
       }
     }
