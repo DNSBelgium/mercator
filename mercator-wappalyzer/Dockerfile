@@ -10,7 +10,8 @@ RUN apk add -u --no-cache \
     nss \
     freetype \
     ttf-freefont \
-    font-noto-emoji
+    font-noto-emoji \
+    libexpat
 
 WORKDIR /app
 RUN chown node:node ./
