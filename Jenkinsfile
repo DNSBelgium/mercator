@@ -76,7 +76,7 @@ pipeline {
     stage("Build and push docker base image") {
       steps {
         sh """
-           ./gradlew --no-daemon docker-base-image:docker
+           ./gradlew --no-daemon docker-base-image:docker -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
         """
       }
     }
