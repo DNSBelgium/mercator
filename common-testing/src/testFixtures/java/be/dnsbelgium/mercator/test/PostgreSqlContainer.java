@@ -9,7 +9,7 @@ public class PostgreSqlContainer extends PostgreSQLContainer<PostgreSqlContainer
 
   private static final Logger logger = LoggerFactory.getLogger(PostgreSqlContainer.class);
 
-  private static final String IMAGE_VERSION = "postgres:11.10";
+  private static final String IMAGE_VERSION = "postgres:16.4";
   private static PostgreSqlContainer container;
 
   private PostgreSqlContainer() {
