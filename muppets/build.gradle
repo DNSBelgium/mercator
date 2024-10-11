@@ -3,7 +3,7 @@ plugins {
   id 'com.citi.helm'
 }
 
-version = '0.0.1-' + getCommitHash()
+version = '0.0.1-GIT' + getCommitHash()
 
 tasks.register('dockerBuild', Exec) {
   def registry = ""

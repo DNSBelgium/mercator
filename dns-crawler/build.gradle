@@ -6,7 +6,8 @@ plugins {
   id 'com.citi.helm'
 }
 
-version = '0.0.1-' + getCommitHash()
+// Text before the \getCommitHash required, as this would fail semver-wise if the commit hash has a leading zero.
+version = '0.0.1-GIT' + getCommitHash()
 
 repositories {
   mavenCentral()

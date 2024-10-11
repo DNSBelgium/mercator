@@ -4,7 +4,7 @@ plugins {
 }
 
 // switch to alpine because of CVE's
-version = '0.0.1-' + getCommitHash()
+version = '0.0.1-GIT' + getCommitHash()
 
 def registry = ""
 if (project.hasProperty("dockerRegistry")) {

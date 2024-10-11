@@ -82,11 +82,13 @@ pipeline {
       }
     }
 
+    def buildableDockerImages = ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"]
+
     stage("Build and push docker images") {
       steps {
         script {
           def docker = [:]
-          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+          buildableDockerImages.each { app ->
             stage("Create docker image for ${app}") {
               sh """
                 if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F "${env.GIT_COMMIT_HASH}" ; then
@@ -105,13 +107,14 @@ pipeline {
       steps {
         script {
           def docker = [:]
-          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+          buildableDockerImages.each { app ->
             stage("Scan docker image for ${app}") {
               dir("${app}") {
                 library 'dnsbelgium-jenkins-pipeline-steps'
                 scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
               }
             }
+            parallel docker
           }
         }
       }
@@ -121,7 +124,7 @@ pipeline {
       steps {
         script {
           def docker = [:]
-          ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"].each { app ->
+          buildableDockerImages.each { app ->
             docker[app] = {
               stage("Build and push helm chart for ${app}") {
                 sh """
@@ -142,7 +145,7 @@ pipeline {
 
     stage("Deploy to dev") {
       steps {
-        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: env.GIT_COMMIT_HASH),]
+        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: "GIT${env.GIT_COMMIT_HASH}"),]
       }
     }
   }
