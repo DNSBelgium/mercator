@@ -108,14 +108,16 @@ pipeline {
         script {
           def docker = [:]
           buildableDockerImages.each { app ->
-            stage("Scan docker image for ${app}") {
-              dir("${app}") {
-                library 'dnsbelgium-jenkins-pipeline-steps'
-                scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
+            docker[app] = {
+              stage("Scan docker image for ${app}") {
+                dir("${app}") {
+                  library 'dnsbelgium-jenkins-pipeline-steps'
+                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
+                }
               }
             }
-            parallel docker
           }
+          parallel docker
         }
       }
     }
