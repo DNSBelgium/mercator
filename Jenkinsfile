@@ -82,7 +82,7 @@ pipeline {
       }
     }
 
-    def buildableDockerImages = ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"]
+    buildableDockerImages = ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"]
 
     stage("Build and push docker images") {
       steps {
