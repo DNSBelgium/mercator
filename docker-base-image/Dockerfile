@@ -9,5 +9,4 @@ FROM eclipse-temurin:21-alpine@sha256:cf94706ed7b63f1f29b720182fe3385f2fd5d17b3a
 COPY --from=build /etc/ssl/certs /etc/ssl/certs
 
 RUN apk upgrade && \
-    apk update libexpat
-
+    apk upgrade libexpat
