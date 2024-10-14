@@ -1,23 +1,24 @@
 #!/usr/bin/env groovy
-def buildableDockerImages = ["dispatcher", "dns-crawler", "smtp-crawler", "tls-crawler", "vat-crawler", "feature-extraction", "content-crawler", "ground-truth", "mercator-api", "muppets", "mercator-ui", "mercator-wappalyzer"]
+def buildableDockerImages = ['dispatcher', 'dns-crawler', 'smtp-crawler', 'tls-crawler', 'vat-crawler', 'feature-extraction', 'content-crawler', 'ground-truth', 'mercator-api', 'muppets', 'mercator-ui', 'mercator-wappalyzer']
+@Library 'dnsbelgium-jenkins-pipeline-steps' _
 
 pipeline {
   agent {
-    label "master"
+    label 'master'
   }
   tools {
-    jdk "OpenJDK 17"
+    jdk 'OpenJDK 17'
   }
   options {
-    buildDiscarder(logRotator(numToKeepStr: "10"))
-    ansiColor("xterm")
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    ansiColor('xterm')
     disableConcurrentBuilds()
   }
   parameters {
-    string(name: "aws_region", defaultValue: "eu-west-1", description: "region to deploy to")
+    string(name: 'aws_region', defaultValue: 'eu-west-1', description: 'region to deploy to')
   }
   stages {
-    stage("Setting up env variables") {
+    stage('Setting up env variables') {
       steps {
         script {
           env.GIT_COMMIT_HASH = sh(script: 'git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD', returnStdout: true, returnStatus: false).trim()
@@ -32,13 +33,13 @@ pipeline {
       }
     }
 
-    stage("Build + test") {
+    stage('Build + test') {
       steps {
-        sh "./gradlew clean build"
+        sh './gradlew clean build'
       }
       post {
         always {
-          junit allowEmptyResults: true, testResults: "**/build/test-results/test/*.xml"
+          junit allowEmptyResults: true, testResults: '**/build/test-results/test/*.xml'
         }
       }
     }
@@ -56,15 +57,15 @@ pipeline {
 //     }
 
     // this takes 50 minutes without an API key.
-    stage("OWASP dependency check") {
+    stage('OWASP dependency check') {
       steps {
-        sh "./gradlew dependencyCheckAggregate"
-        dependencyCheckPublisher pattern: "build/reports/dependency-check-report.xml"
-        archiveArtifacts artifacts: "build/reports/dependency-check-report.html"
+        sh './gradlew dependencyCheckAggregate'
+        dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
+        archiveArtifacts artifacts: 'build/reports/dependency-check-report.html'
       }
     }
 
-    stage("Docker and Helm login") {
+    stage('Docker and Helm login') {
       steps {
         sh """
           aws ecr get-login-password --region \${aws_region} | docker login --username AWS --password-stdin ${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com
@@ -74,7 +75,7 @@ pipeline {
       }
     }
 
-    stage("Build and push docker base image") {
+    stage('Build and push docker base image') {
       steps {
         sh """
            ./gradlew --no-daemon docker-base-image:docker -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
@@ -83,8 +84,7 @@ pipeline {
       }
     }
 
-
-    stage("Build and push docker images") {
+    stage('Build and push docker images') {
       steps {
         script {
           def docker = [:]
@@ -98,25 +98,6 @@ pipeline {
                     ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
                   fi
                 """
-                }
-            }
-          }
-          parallel docker
-        }
-      }
-    }
-
-    stage("Scan docker images") {
-      steps {
-        script {
-          def docker = [:]
-          buildableDockerImages.each { app ->
-            docker[app] = {
-              stage("Scan docker image for ${app}") {
-                dir("${app}") {
-                  library 'dnsbelgium-jenkins-pipeline-steps'
-                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
-                }
               }
             }
           }
@@ -125,7 +106,23 @@ pipeline {
       }
     }
 
-    stage("Build and push helm charts") {
+    stage('Scan docker images') {
+      steps {
+        script {
+          docker = [:]
+          buildableDockerImages.each { app ->
+              stage("Scan docker image for ${app}") {
+                dir("${app}") {
+                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:GIT${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
+                }
+              }
+          }
+          parallel docker
+        }
+      }
+    }
+
+    stage('Build and push helm charts') {
       steps {
         script {
           def docker = [:]
@@ -148,9 +145,9 @@ pipeline {
       }
     }
 
-    stage("Deploy to dev") {
+    stage('Deploy to dev') {
       steps {
-        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: "dev"), string(name: 'VERSION', value: "GIT${env.GIT_COMMIT_HASH}"),]
+        build job: 'mercator-cd', parameters: [string(name: 'ENV', value: 'dev'), string(name: 'VERSION', value: "GIT${env.GIT_COMMIT_HASH}"),]
       }
     }
   }
