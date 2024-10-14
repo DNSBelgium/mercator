@@ -89,16 +89,19 @@ pipeline {
         script {
           def docker = [:]
           buildableDockerImages.each { app ->
-            stage("Create docker image for ${app}") {
-              sh """
-                if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F "${env.GIT_COMMIT_HASH}" ; then
-                  echo "image already exists"
-                else
-                  ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
-                fi
-              """
+            docker[app] = {
+              stage("Create docker image for ${app}") {
+                sh """
+                  if aws ecr list-images --region \${aws_region} --repository dnsbelgium/mercator/${app} --output text | grep -q -F "${env.GIT_COMMIT_HASH}" ; then
+                    echo "image already exists"
+                  else
+                    ./gradlew --no-daemon ${app}:dockerBuildAndPush -PdockerRegistry=${env.AWS_ACCOUNT_ID}.dkr.ecr.\${aws_region}.amazonaws.com/
+                  fi
+                """
+                }
             }
           }
+          parallel docker
         }
       }
     }
@@ -112,7 +115,7 @@ pipeline {
               stage("Scan docker image for ${app}") {
                 dir("${app}") {
                   library 'dnsbelgium-jenkins-pipeline-steps'
-                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:GIT${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
+                  scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
                 }
               }
             }
