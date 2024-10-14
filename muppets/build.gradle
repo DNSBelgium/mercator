@@ -10,7 +10,7 @@ tasks.register('dockerBuild', Exec) {
   if (project.hasProperty("dockerRegistry")) {
     registry = project.getProperty("dockerRegistry")
   }
-  def tags = "-t ${registry}dnsbelgium/mercator/${project.name}:${project.version} -t ${registry}dnsbelgium/mercator/${project.name}:${getCommitHash()} -t ${registry}dnsbelgium/mercator/${project.name}:${getCommitHash()}"
+  def tags = "-t ${registry}dnsbelgium/mercator/${project.name}:${project.version} -t ${registry}dnsbelgium/mercator/${project.name}:GIT${getCommitHash()} -t ${registry}dnsbelgium/mercator/${project.name}:${getCommitHash()}"
   if (registry == "") {
     tags += " -t dnsbelgium/mercator/${project.name}:local"
   }
@@ -30,7 +30,7 @@ tasks.register('dockerPush', Exec) {
     registry = project.getProperty("dockerRegistry")
   }
 
-  def tags = ["0.0.1-GIT${getCommitHash()}"]
+  def tags = ["GIT${getCommitHash()}"]
   if (project.hasProperty("dockerTags")) {
     project.getProperty('dockerTags').split(',').each {
       tags += [it]
