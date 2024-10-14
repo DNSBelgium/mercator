@@ -111,11 +111,13 @@ pipeline {
         script {
           docker = [:]
           buildableDockerImages.each { app ->
+            docker[app] = {
               stage("Scan docker image for ${app}") {
                 dir("${app}") {
                   scanContainer(image: "${env.AWS_ACCOUNT_ID}.dkr.ecr.${aws_region}.amazonaws.com/dnsbelgium/mercator/${app}:GIT${env.GIT_COMMIT_HASH}", ignoredCVEs: readFile(file: '.trivyignore'), offlineScan: true)
                 }
               }
+            }
           }
           parallel docker
         }
