@@ -13,7 +13,6 @@ interface MuppetsConfiguration {
     verbose: boolean,
     max_content_length: number,
     failure_threshold: number,
-    gowap_path: string
 };
 
 const MAX_CONTENT_LENGTH_DEFAULT = "10485760";
@@ -28,7 +27,6 @@ const config: MuppetsConfiguration = {
     verbose: (process.env.VERBOSE !== undefined && process.env.VERBOSE.toLowerCase() == 'true'),
     max_content_length: parseInt(process.env.MAX_CONTENT_LENGTH || MAX_CONTENT_LENGTH_DEFAULT),
     failure_threshold: parseFloat(process.env.FAILURE_THRESHOLD || '0.05'),
-    gowap_path: process.env.GOWAP_PATH || './gowap'
 };
 
 log(`Using configuration`);
