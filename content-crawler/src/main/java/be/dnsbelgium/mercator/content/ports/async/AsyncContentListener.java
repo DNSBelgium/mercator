@@ -24,12 +24,14 @@ public class AsyncContentListener {
     this.wappalyzerResolutionListener = wappalyzerResolutionListener;
   }
 
-  @JmsListener(destination = "${content.resolving.responseQueues.muppets}", containerFactory =
-      "muppetsJmsListenerContainerFactory")
-  @Transactional
-  public void contentResolved(MuppetsResponseMessage message) throws JsonProcessingException {
-    handleMessage(message, muppetsResolutionListener);
-  }
+  // @JmsListener(destination = "${content.resolving.responseQueues.muppets}",
+  // containerFactory =
+  // "muppetsJmsListenerContainerFactory")
+  // @Transactional
+  // public void contentResolved(MuppetsResponseMessage message) throws
+  // JsonProcessingException {
+  // handleMessage(message, muppetsResolutionListener);
+  // }
 
 //  @JmsListener(destination = "${content.resolving.responseQueues.wappalyzer}", containerFactory =
 //      "wappalyzerJmsListenerContainerFactory")
