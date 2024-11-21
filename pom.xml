@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>eu.bosteels</groupId>
-    <artifactId>mavencator</artifactId>
+    <artifactId>monocator</artifactId>
     <version>0.0.3-SNAPSHOT</version>
 
     <name>monocator</name>
@@ -90,10 +90,12 @@
             </exclusions>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+        <!-- Fixes https://github.com/bcgit/bc-java/wiki/CVE%E2%80%902024%E2%80%9029857 -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.78</version>
+            <version>1.79</version>
         </dependency>
 
         <dependency>
