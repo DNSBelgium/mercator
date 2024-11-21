@@ -52,7 +52,7 @@ public class CertificateProcessor {
       logger.debug(" cert.pubkey.algo = [{}]", cert.getPublicKey().getAlgorithm());
       logger.debug(" cert.pubkey.format = [{}]", cert.getPublicKey().getFormat());
 
-      System.out.println("  cert.class = " + cert.getClass());
+      logger.info("  cert.class = " + cert.getClass());
 
       if (cert instanceof X509Certificate x509Certificate) {
         logger.debug("   x509Certificate.getSigAlgName        = {}", x509Certificate.getSigAlgName());

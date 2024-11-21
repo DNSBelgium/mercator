@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -118,7 +119,7 @@ class WebRepositoryTest {
         HtmlFeatures htmlFeatures = new HtmlFeatures();
         htmlFeatures.visitId = VisitIdGenerator.generate();
         htmlFeatures.domainName = "google.com";
-        htmlFeatures.crawlTimestamp = Instant.now();
+        htmlFeatures.crawlTimestamp = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         htmlFeatures.body_text = "hello world";
         htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
         htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
@@ -128,6 +129,9 @@ class WebRepositoryTest {
         System.out.println("found.external_hosts = " + found.getFirst().external_hosts.size());
         System.out.println("external_hosts[0] = " + found.getFirst().external_hosts.get(0));
         System.out.println("external_hosts[1] = " + found.getFirst().external_hosts.get(1));
-        assertThat(found.getFirst()).isEqualTo(htmlFeatures);
+        assertThat(found.getFirst())
+                .usingRecursiveComparison()
+                .isEqualTo(htmlFeatures);
     }
+
 }

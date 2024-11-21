@@ -2,34 +2,40 @@ package eu.bosteels.mercator.mono;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 class CrawlerModuleTest {
 
+  private static final Logger logger = LoggerFactory.getLogger(CrawlerModuleTest.class);
+
   public interface VisitResult {
     default void saveWith(Crawler<?> crawler) {
-
-      System.out.println("this.getClass() = " + this.getClass());
-
-      crawler.save(this);
+      logger.info("this.getClass() = {}", this.getClass());
+      crawler.saveItem(this);
     }
   }
 
   public interface Crawler <T extends VisitResult> {
+
     List<T> collectData(VisitRequest request);
-    List<T> find(String visitId);
-    void save(VisitResult visitResult);
-    void saveT(T t);
+
+    List<MyVisitResult> find(String visitId);
+
+    void save(T t);
+
     default void saveItem(VisitResult visitResult) {
       try {
         @SuppressWarnings("unchecked")
         T t = (T) visitResult;
         save(t);
       } catch (ClassCastException e) {
-        e.printStackTrace();
+        logger.error(e.getMessage(), e);
       }
     }
+
     void afterSave(Object t);
 
   }
@@ -55,6 +61,7 @@ class CrawlerModuleTest {
       for (Object item : data) {
         crawler.afterSave(item);
       }
+      crawler.find("some-visit-id");
     }
   }
 
@@ -85,26 +92,14 @@ class CrawlerModuleTest {
       return List.of(new MyVisitResult("abc"));
     }
 
-    public void save(VisitResult visitResult) {
-      System.out.println("SAVED visitResult = " + visitResult);
-      if (visitResult instanceof MyVisitResult myVisitResult) {
-        save(myVisitResult);
-      }
-    }
-
-    public void save(MyVisitResult myVisitResult) {
-      System.out.println("saved myVisitResult = " + myVisitResult);
-    }
-
-
     @Override
-    public void saveT(MyVisitResult myVisitResult) {
-      System.out.println("saveT myVisitResult = " + myVisitResult);
+    public void save(MyVisitResult myVisitResult) {
+      logger.info("saved myVisitResult = " + myVisitResult);
     }
 
     @Override
     public void afterSave(Object t) {
-      System.out.println("afterSave myVisitResult = " + t);
+      logger.info("afterSave myVisitResult = {}", t);
     }
   }
 
@@ -112,6 +107,9 @@ class CrawlerModuleTest {
   public void test() {
     MyCrawler crawler = new MyCrawler();
     visit(List.of(crawler), new VisitRequest("abc.be"));
+
+    List<MyVisitResult> list = crawler.find("abc-578e7-45");
+    logger.info("list = {}", list);
   }
 
   @Test

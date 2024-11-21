@@ -18,15 +18,4 @@ public interface CrawlerModule <T> {
 
   void createTables();
 
-
-  default void saveAll(List<T> collectedData) {
-    for (T t : collectedData) {
-      saveItem(t);
-    }
-  }
-
-  default String key() {
-    return getClass().getName();
-  }
-
 }
