@@ -12,6 +12,9 @@ permissions:
   actions: read
   checks: write
 
+env:
+  REGISTRY: ghcr.io
+
 jobs:
   build:
 
