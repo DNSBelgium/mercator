@@ -41,7 +41,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles({"local" })
 @AutoConfigureObservability
-@ContextConfiguration(classes = MonocatorApplication.class)
+@ContextConfiguration(classes = MercatorApplication.class)
 @Disabled
 public class DatabasePerformanceTest {
 

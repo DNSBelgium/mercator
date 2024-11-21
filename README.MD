@@ -1,10 +1,7 @@
-[![CodeQL](https://github.com/maartenbosteels/monocator/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/maartenbosteels/monocator/actions/workflows/github-code-scanning/codeql)
-
-[![Run unit tests](https://github.com/maartenbosteels/monocator/actions/workflows/junit-report.yml/badge.svg)](https://github.com/maartenbosteels/monocator/actions/workflows/junit-report.yml)
 
 # Intro
 
-Monocator is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator), but it has only one design goal: **ease of use**
+Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator), but it has only one design goal: **ease of use**
 
 # Getting started
 
@@ -54,11 +51,11 @@ To use a specific profile:
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-Note: using the 'local' profile will start monocator on port 8090 instead of 8082.
+Note: using the 'local' profile will start mercator on port 8090 instead of 8082.
 
 ## Running the JAR file
 ```
-java -jar -Dspring.active.profiles=local  target/monocator-0.0.3-SNAPSHOT.jar
+java -jar -Dspring.active.profiles=local  target/mercator-*-SNAPSHOT.jar
 ```
 
 Note: you need to run `mvn package` first.
@@ -84,7 +81,7 @@ docker-compose up --renew-anon-volumes --remove-orphans -d
 docker compose logs monocator 
 ```
 
-The Monocator UI should be available at http://localhost:8082
+The Mercator UI should be available at http://localhost:8082
 
 Metrics are available on http://localhost:3000 
                  
@@ -94,7 +91,7 @@ Will follow soon.
 
 # Features
   
-Monocator will do the following info for each submitted domain name
+Mercator will do the following info for each submitted domain name
 * Fetch a configurable set of DNS resource records (SOA, A, AAAA, NS, MX, TXT, CAA, HTTPS, SVCB, DS, DNSKEY, CDNSKEY, CDS, ...)
 * Fetch one or more html pages
 * Extract features from all collected html pages

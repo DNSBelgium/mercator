@@ -29,15 +29,15 @@ exclude = {
         DataSourceAutoConfiguration.class,
         DataSourceTransactionManagerAutoConfiguration.class,
 })
-public class MonocatorApplication {
+public class MercatorApplication {
 
   @Value("${jms.concurrency:10}")
   private String jmsConcurrency;
 
-  private static final Logger logger = LoggerFactory.getLogger(MonocatorApplication.class);
+  private static final Logger logger = LoggerFactory.getLogger(MercatorApplication.class);
 
   public static void main(String[] args) {
-    SpringApplication.run(MonocatorApplication.class, args);
+    SpringApplication.run(MercatorApplication.class, args);
   }
 
 //  @Bean

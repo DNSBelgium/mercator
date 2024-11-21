@@ -10,12 +10,12 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>eu.bosteels</groupId>
-    <artifactId>monocator</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <groupId>be.dnsbelgium</groupId>
+    <artifactId>mercator</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
 
-    <name>monocator</name>
-    <description>A crawler meant to be easy to use.</description>
+    <name>mercator</name>
+    <description>A fast and user-friendly crawler</description>
     <url/>
     <licenses>
         <license>
@@ -455,12 +455,12 @@
                 <version>3.4.4</version>
                 <configuration>
                     <to>
-                        <image>maartenbosteels/monocator</image>
+                        <image>dnsbelgium/mercator2</image>
                         <auth>
                             <!--suppress MavenModelInspection -->
-                            <username>${env.DOCKERHUB_USERNAME}</username>
+                            <username>${env.DOCKER_USERNAME}</username>
                             <!--suppress MavenModelInspection -->
-                            <password>${env.DOCKERHUB_PASSWORD}</password>
+                            <password>${env.DOCKER_PASSWORD}</password>
                         </auth>
                     </to>
                     <from>
@@ -483,12 +483,12 @@
                             <port>8082</port>
                         </ports>
                         <volumes>
-                            <volume>/root/monocator/</volume>
+                            <volume>/root/mercator/</volume>
                         </volumes>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
                         </environment>
-                        <mainClass>be.dnsbelgium.mercator.MonocatorApplication</mainClass>
+                        <mainClass>be.dnsbelgium.mercator.MercatorApplication</mainClass>
                     </container>
 
                 </configuration>

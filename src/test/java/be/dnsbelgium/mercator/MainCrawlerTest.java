@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SuppressWarnings("CommentedOutCode")
-@SpringBootTest(classes = { MonocatorApplication.class })
+@SpringBootTest(classes = { MercatorApplication.class })
 @ActiveProfiles({"test", "local"})
 @EnabledIfEnvironmentVariable(named = "MainCrawlerTest.enabled", matches = "true")
 class MainCrawlerTest {

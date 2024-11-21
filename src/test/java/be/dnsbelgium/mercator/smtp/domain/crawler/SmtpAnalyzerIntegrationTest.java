@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
-import be.dnsbelgium.mercator.MonocatorApplication;
+import be.dnsbelgium.mercator.MercatorApplication;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 // This test is slow (and brittle since it relies on external state)
 @EnabledIfEnvironmentVariable(named = "SMTP_TEST_ENABLED", matches = "True")
-@SpringBootTest(classes = { MonocatorApplication.class } )
+@SpringBootTest(classes = { MercatorApplication.class } )
 @ActiveProfiles("test")
 class SmtpAnalyzerIntegrationTest {
 

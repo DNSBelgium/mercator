@@ -33,7 +33,7 @@ import static be.dnsbelgium.mercator.test.TestUtils.now;
 @SuppressWarnings("SqlDialectInspection")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ActiveProfiles({"test" })
-@ContextConfiguration(classes = MonocatorApplication.class)
+@ContextConfiguration(classes = MercatorApplication.class)
 @Transactional
 class RepositoryTest {
 

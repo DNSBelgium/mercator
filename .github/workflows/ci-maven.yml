@@ -54,6 +54,18 @@ jobs:
 #          reporter: java-junit
 #          fail-on-error: true
 #
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish container image to GitHub Container registry
+        id: publish
+        run: DOCKER_USERNAME=${{ github.actor }} DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }} mvn --batch-mode clean compile jib:build
+
+
 
 #      - name: Publish container image to Docker Hub
 #        id: publish
