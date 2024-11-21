@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono.persistence;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.smtp.SmtpCrawler;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;

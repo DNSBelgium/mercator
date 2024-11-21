@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

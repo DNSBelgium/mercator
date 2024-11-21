@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.vat.crawler.persistence;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -106,11 +106,28 @@ class WebRepositoryTest {
         HtmlFeatures htmlFeatures = new HtmlFeatures();
         htmlFeatures.visitId = VisitIdGenerator.generate();
         htmlFeatures.domainName = "google.com";
-        htmlFeatures.crawlTimestamp = ZonedDateTime.now();
+        htmlFeatures.crawlTimestamp = Instant.now();
         htmlFeatures.body_text = "hello world";
         htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
         htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
         webRepository.save(htmlFeatures);
     }
 
+    @Test
+    public void findFeatures() {
+        HtmlFeatures htmlFeatures = new HtmlFeatures();
+        htmlFeatures.visitId = VisitIdGenerator.generate();
+        htmlFeatures.domainName = "google.com";
+        htmlFeatures.crawlTimestamp = Instant.now();
+        htmlFeatures.body_text = "hello world";
+        htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
+        htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
+        webRepository.save(htmlFeatures);
+        List<HtmlFeatures> found = webRepository.findHtmlFeatures(htmlFeatures.visitId);
+        System.out.println("found = " + found);
+        System.out.println("found.external_hosts = " + found.getFirst().external_hosts.size());
+        System.out.println("external_hosts[0] = " + found.getFirst().external_hosts.get(0));
+        System.out.println("external_hosts[1] = " + found.getFirst().external_hosts.get(1));
+        assertThat(found.getFirst()).isEqualTo(htmlFeatures);
+    }
 }

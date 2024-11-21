@@ -1,11 +1,10 @@
 package eu.bosteels.mercator.mono.mvc;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import eu.bosteels.mercator.mono.metrics.Threads;
 import eu.bosteels.mercator.mono.scheduling.Scheduler;
 import eu.bosteels.mercator.mono.scheduling.WorkQueue;
-import io.micrometer.core.instrument.MeterRegistry;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -18,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
@@ -27,9 +24,8 @@ import java.util.List;
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-    private final MeterRegistry meterRegistry;
 
-    private final WorkQueue workQueue;
+  private final WorkQueue workQueue;
     private final DuckDataSource dataSource;
     private final Scheduler scheduler;
 
@@ -38,8 +34,7 @@ public class HomeController {
     @Getter
     private File trancoLocation;
 
-    public HomeController(MeterRegistry meterRegistry, WorkQueue workQueue, DuckDataSource dataSource, Scheduler scheduler) {
-      this.meterRegistry = meterRegistry;
+    public HomeController(WorkQueue workQueue, DuckDataSource dataSource, Scheduler scheduler) {
       this.workQueue = workQueue;
       this.dataSource = dataSource;
       this.scheduler = scheduler;

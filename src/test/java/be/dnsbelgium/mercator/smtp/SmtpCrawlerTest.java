@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.*;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;

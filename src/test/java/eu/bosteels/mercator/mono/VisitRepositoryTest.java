@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlResult;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
@@ -45,13 +45,18 @@ class VisitRepositoryTest {
     dataSource = new DuckDataSource("jdbc:duckdb:");
     WebRepository webRepository = new WebRepository(dataSource, meterRegistry);
     TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository);
-    visitRepository = new VisitRepository(dataSource, tableCreator, meterRegistry);
+    visitRepository = new VisitRepository(dataSource, tableCreator, webRepository, meterRegistry);
     visitRepository.setDatabaseDirectory(tempDir);
     visitRepository.setExportDirectory(tempDir);
     visitRepository.init();
     jdbcClient = JdbcClient.create(dataSource);
     logger.info("init done");
   }
+
+//  @Test
+//  void failOnPurpose() {
+//    fail("tesing failure report");
+//  }
 
   @Test
   @Transactional

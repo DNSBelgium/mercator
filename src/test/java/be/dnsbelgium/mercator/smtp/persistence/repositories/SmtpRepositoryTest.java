@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.persistence.repositories;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;

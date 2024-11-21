@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.tls.crawler.persistence.repositories;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CrawlResultEntity;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;

@@ -1,10 +1,14 @@
 package eu.bosteels.mercator.mono.persistence;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlResult;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.Response;
 import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
+import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
+import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
+import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
 import com.github.f4b6a3.ulid.Ulid;
 import eu.bosteels.mercator.mono.visits.CrawlerModule;
 import eu.bosteels.mercator.mono.visits.VisitResult;
@@ -42,6 +46,7 @@ public class VisitRepository {
   private final JdbcTemplate jdbcTemplate;
   private final JdbcClient jdbcClient;
   private final TableCreator tableCreator;
+  private final WebRepository webRepository;
 
   private final MeterRegistry meterRegistry;
 
@@ -68,10 +73,11 @@ public class VisitRepository {
   boolean ulidInDatabaseName;
 
   @Autowired
-  public VisitRepository(DuckDataSource dataSource, TableCreator tableCreator, MeterRegistry meterRegistry) {
+  public VisitRepository(DuckDataSource dataSource, TableCreator tableCreator, WebRepository webRepository, MeterRegistry meterRegistry) {
     this.jdbcTemplate = new JdbcTemplate(dataSource);
     this.jdbcClient = JdbcClient.create(dataSource);
     this.tableCreator = tableCreator;
+    this.webRepository = webRepository;
     this.meterRegistry = meterRegistry;
   }
 
@@ -141,6 +147,20 @@ public class VisitRepository {
       logger.info("save on {} started at {} failed", dbName, start);
       throw e;
     }
+  }
+
+  @Transactional
+  public List<WebCrawlResult> findWebCrawlResults (String visitId) {
+    attachAndUse();
+    List<WebCrawlResult>  webCrawlResults = webRepository.findWebCrawlResult(visitId);
+    // TODO: it's bit of a mess, discuss with team how to do this better
+    for (WebCrawlResult webCrawlResult : webCrawlResults) {
+      List<PageVisit> pageVisits = webRepository.findPageVisits(visitId);
+      webCrawlResult.setPageVisits(pageVisits);
+      List<HtmlFeatures> featuresList = webRepository.findHtmlFeatures(visitId);
+      webCrawlResult.setHtmlFeatures(featuresList);
+    }
+    return webCrawlResults;
   }
 
   @Transactional

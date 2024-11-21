@@ -1,3 +1,7 @@
+[![CodeQL](https://github.com/maartenbosteels/monocator/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/maartenbosteels/monocator/actions/workflows/github-code-scanning/codeql)
+
+[![Run unit tests](https://github.com/maartenbosteels/monocator/actions/workflows/junit-report.yml/badge.svg)](https://github.com/maartenbosteels/monocator/actions/workflows/junit-report.yml)
+
 # Intro
 
 Monocator is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator)

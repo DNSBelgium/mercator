@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono.scheduling;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import eu.bosteels.mercator.mono.persistence.Repository;
 import jakarta.annotation.PostConstruct;

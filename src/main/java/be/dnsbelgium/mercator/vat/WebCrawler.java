@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +139,7 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
                         visitRequest.getDomainName()
                 );
                 features.visitId = visitRequest.getVisitId();
-                features.crawlTimestamp = ZonedDateTime.now();
+                features.crawlTimestamp = Instant.now();
                 features.domainName = visitRequest.getDomainName();
                 featuresList.add(features);
             }

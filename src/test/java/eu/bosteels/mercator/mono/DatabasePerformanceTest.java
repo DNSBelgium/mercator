@@ -77,7 +77,7 @@ public class DatabasePerformanceTest {
         HtmlFeatures htmlFeatures = new HtmlFeatures();
         htmlFeatures.visitId = VisitIdGenerator.generate();
         htmlFeatures.domainName = "google.com";
-        htmlFeatures.crawlTimestamp = ZonedDateTime.now();
+        htmlFeatures.crawlTimestamp = Instant.now();
         htmlFeatures.body_text = "hello world";
         htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
         htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
@@ -96,7 +96,7 @@ public class DatabasePerformanceTest {
     htmlFeatures.visitId = VisitIdGenerator.generate();
     htmlFeatures.domainName = "google.com";
     htmlFeatures.html_length = 4578;
-    htmlFeatures.crawlTimestamp = ZonedDateTime.now();
+    htmlFeatures.crawlTimestamp = Instant.now();
     htmlFeatures.external_hosts = List.of("google.com", "facebook.com", randomAlphabetic(15), randomAlphabetic(8));
     htmlFeatures.body_text_language = "nl";
     htmlFeatures.body_text_language_2 = "fr";
@@ -120,7 +120,7 @@ public class DatabasePerformanceTest {
     htmlFeatures.nb_distinct_hosts_in_urls = random.nextInt(45);
     htmlFeatures.url = "http://www." + randomAlphabetic(15) + ".com";
 
-    htmlFeatures.crawlTimestamp = ZonedDateTime.now();
+    htmlFeatures.crawlTimestamp = Instant.now();
     htmlFeatures.body_text = "<1>hello world</h1>" + randomAlphabetic(3500);
     htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
     htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");

@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono.persistence;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlResult;
 

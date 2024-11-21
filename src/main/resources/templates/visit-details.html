@@ -16,7 +16,304 @@
 
     <p>Work in progress ...</p>
 
-<!--    <span th:text="${visit}"></span>-->
+
+    <p th:each="webCrawlResult : ${webCrawlResults}">
+
+        <span th:text="${webCrawlResult.getCrawlFinished()}"></span>
+    </p>
+
+<!--    div/details-->
+    <div class="container-fluid">
+        <summary role="button" class="outline">Web pages</summary>
+<!--        TODO: article/div-->
+        <div th:each="webCrawlResult : ${webCrawlResults}">
+            <header>
+                <h4 th:text="${webCrawlResult.domainName}"></h4>
+<!--                TODO: show other data like crawlStarted/crawlFinished/...-->
+                <!--                <p>pageVisits.size</p>-->
+<!--                <p th:text="${webCrawlResult.getPageVisits().size()}"></p>-->
+
+            </header>
+
+            <table>
+                <tbody>
+                <tr>
+                    <th width="30%">visitId</th>
+                    <td th:text="${webCrawlResult.visitId}"></td>
+                </tr>
+                <tr>
+                    <th>Start URL</th>
+                    <td th:text="${webCrawlResult.startUrl}"></td>
+                </tr>
+                <tr>
+                    <th>Matching URL</th>
+                    <td th:text="${webCrawlResult.matchingUrl}"></td>
+                </tr>
+                <tr>
+                    <th>VAT values</th>
+                    <td th:text="${webCrawlResult.vatValues}"></td>
+                </tr>
+                <tr>
+                    <th>Number of visited URLs</th>
+                    <td th:text="${webCrawlResult.visitedUrls.size()}"></td>
+                </tr>
+                <tr>
+                    <th>Number of pages with html features</th>
+                    <td th:text="${webCrawlResult.htmlFeatures.size()}"></td>
+                </tr>
+                <tr>
+                    <th>Visited URLs</th>
+                    <td >
+<!--                        th:text="${webCrawlResult.visitedUrls}"-->
+                        <div th:each="visitedUrl : ${webCrawlResult.visitedUrls}">
+                            <span th:text="${visitedUrl}"></span>
+                        </div>
+
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <article th:each="pageVisit : ${webCrawlResult.getPageVisits()}">
+                <header>
+                    <h5 th:text="${pageVisit.getUrl()}"></h5>
+                </header>
+
+                <table>
+                    <thead></thead>
+                    <tbody>
+                    <tr>
+                        <td width="20%">
+                            <em th:data-tooltip="${#temporals.format(pageVisit.getCrawlStarted(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
+                                Url
+                            </em>
+                        </td>
+                        <td>
+                            <span th:text="${pageVisit.getUrl()}"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>link text</td>
+                        <td th:text="${pageVisit.getLinkText()}"></td>
+                    </tr>
+                    <tr>
+                        <td>VAT values</td>
+                        <td>
+                            <div th:each="vat : ${pageVisit.getVatValues()}">
+                                <span th:text="${vat}"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Crawl started</td>
+                        <td th:text="${#temporals.format(pageVisit.getCrawlStarted(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Crawl finished</td>
+                        <td th:text="${#temporals.format(pageVisit.getCrawlFinished(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
+                    </tr>
+
+                    </tbody>
+                </table>
+
+            </article>
+
+            <p th:text="${webCrawlResult.getHtmlFeatures() == null}"></p>
+
+            <div th:each="features : ${webCrawlResult.getHtmlFeatures()}">
+                <header>
+                    <h5 th:text="${features.domainName}"></h5>
+                </header>
+
+                <table>
+                    <thead></thead>
+                    <tbody>
+                    <tr>
+                        <td width="30%">url</td>
+                        <td th:text="${features.url}"></td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td th:text="${features.title}"></td>
+                    </tr>
+                    <tr>
+                        <td>Meta text</td>
+                        <td th:text="${features.meta_text}"></td>
+                    </tr>
+                    <tr>
+                        <td>Body text</td>
+                        <td th:text="${features.body_text}"></td>
+                    </tr>
+                    <tr>
+                        <td>nb_images</td>
+                        <td th:text="${features.nb_imgs}"></td>
+                    </tr>
+                    <tr>
+                        <td>Internal links</td>
+                        <td th:text="${features.nb_links_int}"></td>
+                    </tr>
+                    <tr>
+                        <td>External links</td>
+                        <td th:text="${features.nb_links_ext}"></td>
+                    </tr>
+                    <tr>
+                        <td>Email links</td>
+                        <td th:text="${features.nb_links_email}"></td>
+                    </tr>
+                    <tr>
+                        <td>Telephone links</td>
+                        <td th:text="${features.nb_links_tel}"></td>
+                    </tr>
+                    <tr>
+                        <td>Inputs of type txt</td>
+                        <td th:text="${features.nb_input_txt}"></td>
+                    </tr>
+                    <tr>
+                        <td>Buttons</td>
+                        <td th:text="${features.nb_button}"></td>
+                    </tr>
+                    <tr>
+                        <td>Meta desriptions</td>
+                        <td th:text="${features.nb_meta_desc}"></td>
+                    </tr>
+                    <tr>
+                        <td>Meta keywords</td>
+                        <td th:text="${features.nb_meta_keyw}"></td>
+                    </tr>
+                    <tr>
+                        <td>Numerical strings</td>
+                        <td th:text="${features.nb_numerical_strings}"></td>
+                    </tr>
+                    <tr>
+                        <td>Tags</td>
+                        <td th:text="${features.nb_tags}"></td>
+                    </tr>
+                    <tr>
+                        <td>Words</td>
+                        <td th:text="${features.nb_words}"></td>
+                    </tr>
+                    <tr>
+                        <td>Letters</td>
+                        <td th:text="${features.nb_letters}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of facebook shallow links</td>
+                        <td th:text="${features.nb_facebook_shallow_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of facebook deep links</td>
+                        <td th:text="${features.nb_facebook_deep_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of Twitter shallow links</td>
+                        <td th:text="${features.nb_twitter_shallow_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of Twitter deep links</td>
+                        <td th:text="${features.nb_twitter_deep_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of LinkedIn shallow links</td>
+                        <td th:text="${features.nb_linkedin_shallow_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of LinkedIn deep links</td>
+                        <td th:text="${features.nb_linkedin_deep_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of YouTube shallow links</td>
+                        <td th:text="${features.nb_youtube_shallow_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of YouTube deep links</td>
+                        <td th:text="${features.nb_youtube_deep_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of Vimeo shallow links</td>
+                        <td th:text="${features.nb_vimeo_shallow_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of Vimeo deep links</td>
+                        <td th:text="${features.nb_vimeo_deep_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Number of currency names</td>
+                        <td th:text="${features.nb_currency_names}"></td>
+                    </tr>
+                    <tr>
+                        <td>Distinct currencies</td>
+                        <td th:text="${features.nb_distinct_currencies}"></td>
+                    </tr>
+                    <tr>
+                        <td>Distance between title and domainName in initial url</td>
+                        <td th:text="${features.distance_title_initial_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Distance between title and domainName in final url</td>
+                        <td th:text="${features.distance_title_final_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Longest subsequence between title and domainName in initial url</td>
+                        <td th:text="${features.longest_subsequence_title_initial_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Longest subsequence between title and domainName in final url</td>
+                        <td th:text="${features.longest_subsequence_title_final_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Fraction between title and domainName in initial url</td>
+                        <td th:text="${features.fraction_words_title_initial_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Fraction subsequence between title and domainName in final url</td>
+                        <td th:text="${features.fraction_words_title_final_dn}"></td>
+                    </tr>
+                    <tr>
+                        <td>Distinct words in title</td>
+                        <td th:text="${features.nb_distinct_words_in_title}"></td>
+                    </tr>
+                    <tr>
+                        <td>Distinct hosts in url's</td>
+                        <td th:text="${features.nb_distinct_hosts_in_urls}"></td>
+                    </tr>
+                    <tr>
+                        <td>Language</td>
+                        <td th:text="${features.body_text_language}"></td>
+                    </tr>
+                    <tr>
+                        <td>Language</td>
+                        <td th:text="${features.body_text_language_2}"></td>
+                    </tr>
+                    <tr>
+                        <td>External hosts</td>
+                        <td th:text="${features.external_hosts}"></td>
+                    </tr>
+                    <tr>
+                        <td>Facebook links</td>
+                        <td th:text="${features.facebook_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Twitter links</td>
+                        <td th:text="${features.twitter_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>YouTube links</td>
+                        <td th:text="${features.youtube_links}"></td>
+                    </tr>
+                    <tr>
+                        <td>Vimeo links</td>
+                        <td th:text="${features.vimeo_links}"></td>
+                    </tr>
+
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
 
 </main>
 

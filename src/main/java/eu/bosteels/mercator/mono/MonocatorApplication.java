@@ -1,6 +1,6 @@
 package eu.bosteels.mercator.mono;
 
-import be.dnsbelgium.mercator.DuckDataSource;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import eu.bosteels.mercator.mono.persistence.Repository;
 import eu.bosteels.mercator.mono.scheduling.Scheduler;
 import eu.bosteels.mercator.mono.scheduling.WorkQueue;

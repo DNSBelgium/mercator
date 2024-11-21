@@ -1,6 +1,8 @@
 package eu.bosteels.mercator.mono.mvc;
 
+import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
 import eu.bosteels.mercator.mono.persistence.Repository;
+import eu.bosteels.mercator.mono.persistence.VisitRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +13,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/")
 public class SearchController {
 
     private final Repository repository;
-    private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
+    private final VisitRepository visitRepository;
+
+  private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
 
     @Autowired
-    public SearchController(Repository repository) {
+    public SearchController(Repository repository, VisitRepository visitRepository) {
         this.repository = repository;
+      this.visitRepository = visitRepository;
     }
 
     @GetMapping("/search")
@@ -37,11 +44,13 @@ public class SearchController {
     public String visit(Model model, @PathVariable(name = "id") String visitId) {
         logger.info("/visits/{}", visitId);
         model.addAttribute("visitId", visitId);
-        //var visits = repository.findDone(search);
 
-        // TODO:  create records for all tables
-        // retrieve lists of these records and put them in the model
-        // or use the same classes we used for inserting ?
+        List<WebCrawlResult> webCrawlResults = visitRepository.findWebCrawlResults(visitId);
+        System.out.println("webCrawlResults = " + webCrawlResults.size());
+
+        model.addAttribute("webCrawlResults", webCrawlResults);
+
+        // TODO:  retrieve records for all tables
 
         return "visit-details";
     }

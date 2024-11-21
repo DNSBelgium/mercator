@@ -36,3 +36,7 @@ h1 {
 .home-link a:hover {
     text-decoration: none;
 }
+
+.td_label {
+    width: 20%;
+}

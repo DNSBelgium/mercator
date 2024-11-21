@@ -1,13 +1,14 @@
 package be.dnsbelgium.mercator.vat.crawler.persistence;
 
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
+import be.dnsbelgium.mercator.persistence.ArrayConvertor;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.ConnectionCallback;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.convert.ApplicationConversionService;
+import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
@@ -26,11 +27,15 @@ public class WebRepository {
     private final JdbcTemplate jdbcTemplate;
     private final JdbcClient jdbcClient;
     private final MeterRegistry meterRegistry;
+    private final RowMapper<HtmlFeatures> htmlFeaturesRowMapper;
 
     public WebRepository(DataSource dataSource, MeterRegistry meterRegistry) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.jdbcClient = JdbcClient.create(dataSource);
         this.meterRegistry = meterRegistry;
+      ApplicationConversionService applicationConversionService = new ApplicationConversionService();
+        applicationConversionService.addConverter(new ArrayConvertor());
+        this.htmlFeaturesRowMapper = new SimplePropertyRowMapper<>(HtmlFeatures.class, applicationConversionService);
     }
 
     public void createTables() {
@@ -135,9 +140,9 @@ public class WebRepository {
     }
 
     private void execute(String sql) {
-        logger.info("Start executing sql = {}", sql);
+        logger.debug("Start executing sql = {}", sql);
         jdbcTemplate.execute(sql);
-        logger.info("Done executing sql {}", sql);
+        logger.debug("Done executing sql {}", sql);
     }
 
     public void savePageVisits(List<PageVisit> pageVisits) {
@@ -242,6 +247,14 @@ public class WebRepository {
         return found;
     }
 
+    public List<HtmlFeatures> findHtmlFeatures(String visitId) {
+        return jdbcClient
+                .sql("select * from html_features where visit_id = ?")
+                .param(visitId)
+                .query(htmlFeaturesRowMapper)
+                .list();
+    }
+
     public List<WebCrawlResult> findWebCrawlResult(String visitId) {
         return jdbcClient
                 .sql("select * from web_visit where visit_id = ?")
@@ -254,11 +267,9 @@ public class WebRepository {
                     Instant crawl_finished = instant(rs.getTimestamp("crawl_finished"));
                     List<String> visitedUrls = getList(rs, "visited_urls");
                     logger.info("visitedUrls = {}", visitedUrls);
-
                     for (String visitedUrl : visitedUrls) {
                         logger.info("visitedUrl = [{}]", visitedUrl);
                     }
-
                     return WebCrawlResult
                             .builder()
                             .visitId(visitId)

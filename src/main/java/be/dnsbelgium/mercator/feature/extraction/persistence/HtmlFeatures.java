@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.feature.extraction.persistence;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -15,7 +15,7 @@ import java.util.StringJoiner;
 public class HtmlFeatures {
 
   public String visitId;
-  public ZonedDateTime crawlTimestamp;
+  public Instant crawlTimestamp;
 
   public String domainName;
 
@@ -95,6 +95,9 @@ public class HtmlFeatures {
   @Override
   public String toString() {
     return new StringJoiner(", \n", HtmlFeatures.class.getSimpleName() + "[", "]")
+        .add("domainName=" + domainName)
+        .add("external_hosts=" + external_hosts)
+        .add("crawlTimestamp=" + crawlTimestamp)
         .add("nb_imgs=" + nb_imgs)
         .add("nb_links_int=" + nb_links_int)
         .add("nb_links_ext=" + nb_links_ext)
