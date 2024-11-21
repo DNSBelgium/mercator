@@ -33,12 +33,14 @@ Will follow soon.
 It fetches the following info for each submitted domain name
 * Fetches configurable set of DNS resource records (SOA, A, AAAA, NS, MX, TXT, CAA, HTTPS, SVCB, DS, DNSKEY, CDNSKEY, CDS, ...)
 * Fetches one or more html pages
+* Extracts features from all collected html pages
 * Records conversations with all configured SMTP servers
 * Checks the TLS versions (and cipher suites) supported on port 443
 * Finds work by scanning a configurable folder for parquet files with domain names
+* Publishes metrics for Prometheus
+* docker-compose file to start Prometheus Grafana with custom Grafana dashboards with most important metrics
 
 Planned
-* publish metrics to Influxdb / Prometheus / ...
 * export output files to S3
 * optionally receive work via SQS
 * show fetched data in web ui

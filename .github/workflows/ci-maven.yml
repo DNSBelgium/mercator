@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - maven
   schedule:
     - cron: '30 5 * * *'
 
@@ -29,26 +28,17 @@ jobs:
           cache: maven
 
       - name: Run the Maven verify phase
-        run: mvn --batch-mode --update-snapshots -Dsnyk.skip verify
+        run: mvn --batch-mode -Dsnyk.skip verify
 
-      - run: mkdir staging && cp target/*.jar staging
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Package
-          path: staging
-
-      - name: Publish container image to Docker Hub
-        id: publish
-        run: DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build
-
-#      - name: Publish Test Report
-#        if: success() || failure()
-#        uses: ScaCap/action-surefire-report@v1.8.0
-
-      - uses: dorny/test-reporter@v1.9.1
+      - name: Junit Test Report
+        uses: dorny/test-reporter@v1.9.1
         if: success() || failure()
         with:
           name: Junit Test Report
           path: 'target/surefire-reports/*.xml'
           reporter: java-junit
           fail-on-error: true
+
+      - name: Publish container image to Docker Hub
+        id: publish
+        run: DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build
