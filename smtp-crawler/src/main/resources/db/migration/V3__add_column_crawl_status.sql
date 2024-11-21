@@ -1,1 +1,0 @@
-ALTER TABLE smtp_crawler.smtp_crawl_result add COLUMN crawl_status int;

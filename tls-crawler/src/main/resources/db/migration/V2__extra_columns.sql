@@ -1,3 +1,0 @@
-alter table scan_result add chain_trusted_by_java_platform boolean;
-
-alter table tls_scan_result rename column hostname_matches_subject to host_name_matches_certificate;

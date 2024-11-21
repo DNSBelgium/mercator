@@ -1,8 +1,0 @@
-alter table html_features rename column distance_url_title to distance_title_final_dn;
-alter table html_features rename column distance_dn_title to distance_title_initial_dn;
-
-alter table html_features rename column substring_url_title to longest_subsequence_title_final_dn;
-alter table html_features rename column substring_dn_title to longest_subsequence_title_initial_dn;
-
-alter table html_features rename column fraction_words_in_url to fraction_words_title_final_dn;
-alter table html_features rename column fraction_words_in_dn to fraction_words_title_initial_dn;

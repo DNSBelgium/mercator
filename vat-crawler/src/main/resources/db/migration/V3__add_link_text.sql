@@ -1,1 +1,0 @@
-alter table page_visit add column link_text varchar(500);

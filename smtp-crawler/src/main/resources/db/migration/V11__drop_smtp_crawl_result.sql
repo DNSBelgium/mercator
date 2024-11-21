@@ -1,1 +1,0 @@
-drop table IF EXISTS smtp_crawler.smtp_crawl_result;

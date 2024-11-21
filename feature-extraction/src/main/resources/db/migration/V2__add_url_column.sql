@@ -1,1 +1,0 @@
-alter table html_features add column url VARCHAR(255);
