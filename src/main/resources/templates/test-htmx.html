@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Status</title>
+</head>
+
+<body>
+
+    <div layout:fragment="content">
+
+        <h6>Testing HTMX</h6>
+        <div>
+            <p>
+                See the raw response of <a href="/hello_htmx">/hello_htmx</a>
+            </p>
+        </div>
+
+        <div>
+            <p>
+                Or test with a button
+            </p>
+            <p>
+                <button th:hx-get="@{/hello_htmx}" hx-target="#message">Click me</button>
+            </p>
+        </div>
+
+        <article>
+            Message:
+            <div id="message">
+                Hello World
+            </div>
+        </article>
+
+        <h1>Submit some crawls</h1>
+
+        <div>
+            <form th:hx-get="@{/submit_crawls}" hx-target="#submit-crawl-response">
+                <input name="numberOfCrawls" value="100" type="number">
+                <button>Submit</button>
+            </form>
+            <div id="submit-crawl-response">
+                <p>...</p>
+            </div>
+
+            </p>
+        </div>
+
+
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+## overview tests
+
+* CaffeineTest => quick & simple
+* DefaultSmtpIpAnalyzerTest => using mocks
+* MxFinderTest => uses internet, does many DNS lookups
+* NioSmtpConversationTest => using mocks, fast
+* SmtpAnalyzerIntegrationTest (EnabledIfEnvironmentVariable)
+* SmtpAnalyzerTest
+  * using mocks for MxFinder & SmtpIpAnalyzer
+  * fast
+* SSLTest => fast
+* SmtpCrawlerTest => fast, uses in-memory duckdb
+* SmtpCrawlServiceTest (no mocks, no spring, basically the same as  SmtpAnalyzerIntegrationTest but without using Spring)
+
+* 52 passed
+* 3 ignored
+* 1.9 seconds

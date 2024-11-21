@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<!--layout:decorate="~{layout/main}"-->
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" th:href="@{/css/pico.min.css}">
+    <link rel="stylesheet" th:href="@{/css/pico.colors.min.css}">
+    <link rel="stylesheet" th:href="@{/css/application.css}">
+
+    <title>Mercator</title>
+
+</head>
+
+<body >
+
+<!--  start of sticky header: navbar + search form -->
+
+<div class="sticky_hero  pico-background-sand-50 container-fluid"  >
+    <!--  start of NAV BAR-->
+    <nav class="container-fluid">
+        <ul >
+            <li class="home-link">
+                <a href="/" class="home-link">
+                <h2 class="pico-color-sand-650">
+                    <!--                        style="padding-bottom: 20px"-->
+                    <img th:src="@{/174px-mercator.jpg}"
+                         alt="Portrait of Gerardus Mercator"
+                         width="30px"
+                         style="padding-top: 0"
+                         class="mercator-portrait"
+                    />
+                        <svg class="mercator-icon"
+                             width="32px" height="32px" stroke-width="1.5" viewBox="0 0 24 24" fill="none"
+                             xmlns="http://www.w3.org/2000/svg" color="#413030">
+                            <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                                  stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                            <path d="M2.5 12.5L8 14.5L7 18L8 21"
+                                  stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                            <path d="M17 20.5L16.5 18L14 17V13.5L17 12.5L21.5 13"
+                                  stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                            <path d="M19 5.5L18.5 7L15 7.5V10.5L17.5 9.5H19.5L21.5 10.5"
+                                  stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                            <path d="M2.5 10.5L5 8.5L7.5 8L9.5 5L8.5 3"
+                                  stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            </path>
+                        </svg>
+                    Mercator
+                </h2>
+                </a>
+            </li>
+        </ul>
+        <ul>
+            <li><a  href="/">Home</a></li>
+            <li><a  href="/submit_crawl" >Submit work</a></li>
+            <li><a  href="/status" >Status</a></li>
+            <li><a  href="/settings" >Settings</a></li>
+            <li></li>
+        </ul>
+
+    </nav>
+    <!--  end of NAV BAR-->
+
+    <form role="search" action="/search" method="get">
+        <input type="search" name="search"
+               aria-label="Enter a domain name to search for visits"
+               placeholder="Enter a domain name to search for visits">
+        <input type="submit" value="Search" class="search">
+    </form>
+
+</div> <!--  end of sticky header: navbar + search form -->
+
+<main class="container-fluid">
+    <div class="container">
+        <div layout:fragment="content">
+            <p>
+                This is just the layout. Will be replaced with content
+                on the pages that use this layout.
+            </p>
+        </div>
+    </div>
+
+</main>
+
+<hr>
+
+<footer class="container footer" >
+    <p>
+        <small>
+        The source code of Mercator is available at <a href="https://github.com/DNSBelgium/mercator">Github</a>
+        </small>
+    </p>
+
+</footer>
+
+<th:block layout:fragment="page-scripts">
+    
+</th:block>
+
+<script type="text/javascript" th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+
+</body>
+</html>

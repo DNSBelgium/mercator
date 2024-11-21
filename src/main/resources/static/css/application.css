@@ -1,0 +1,38 @@
+.sticky_hero {
+    position: sticky; top: 0;
+    /*does not work when using a from with role="search"*/
+    /*Also does not work when using <fieldset role="group"> https://picocss.com/docs/group*/
+    margin-bottom: 10px;
+}
+
+h2.hero {
+    --pico-line-height: 30px;
+    --pico-font-size: 40px;
+    padding-top: 8px;
+}
+
+h1 {
+    padding-top: 15px;
+}
+
+.mercator-portrait {
+    display: none;
+}
+
+.mercator-icon {
+    display: inline;
+}
+
+.right {
+    text-align: right;
+    margin-right: 1em;
+}
+
+.left {
+    text-align: left;
+    margin-left: 1em;
+}
+
+.home-link a:hover {
+    text-decoration: none;
+}

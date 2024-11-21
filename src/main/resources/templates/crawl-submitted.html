@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Submitted </title>
+</head>
+
+<body >
+
+        <div layout:fragment="content">
+            <h1>Submit a visit</h1>
+            <p>
+                Use the form below to submit a visit request to the work queue.
+
+                Use the ingestion folder (TODO: or the upload form)
+                to submit a larger set of visit requests.
+            </p>
+            <form action="/submit-crawl" method="POST">
+                <fieldset role="group">
+                    <label>
+                        <input name="domainName" placeholder="Enter a domain name to visit" required />
+                    </label>
+                    <input type="submit" value="Submit"/>
+                </fieldset>
+            </form>
+            <p>
+                Visit with id <span th:text="${visit.id}"/>
+                submitted for domain name <span th:text="${domain}"/>
+            </p>
+        </div>
+
+</body>
+</html>

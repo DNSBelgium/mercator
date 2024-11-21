@@ -1,0 +1,307 @@
+<!doctype html>
+<!--suppress HtmlRequiredLangAttribute -->
+<html th:lang="|${#locale.language}-${#locale.country}|"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>Mercator | Hello</title>
+</head>
+<body>
+
+<main>
+    <div layout:fragment="content">
+        <h3>Visits for abc.be</h3>
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <td>Date</td>
+                        <td>DNS requests</td>
+                        <td>SMTP conversations</td>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="#">2023-12-26</a></td>
+                        <td>5</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#">2024-03-11</a></td>
+                        <td>15</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#">2024-04-11</a></td>
+                        <td>15</td>
+                        <td>0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <h1>Visit details</h1>
+        <details class="container-fluid">
+            <summary role="button" class="outline">HTTP</summary>
+
+            <article>
+                <header>www.abc.be</header>
+                <table>
+                    <tr>
+                        <th scope="row">URL</th>
+    <!--                    <td>URL</td>-->
+                        <td>http://www.abc.be</td>
+                    </tr>
+                    <tr>
+                        <th><strong>OK</strong></th>
+                        <td>True</td>
+                    </tr>
+                    <tr>
+                        <td>Problem</td>
+                        <td>n/a</td>
+                    </tr>
+                </table>
+
+                <table >
+                    <thead>
+                    <tr>
+                        <td>Prefix</td>
+                        <td>Request Type</td>
+                        <td>Response</td>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><a href="#">2023-12-26</a></td>
+                        <td>5</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#">2024-03-11</a></td>
+                        <td>15</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><a href="#">2024-04-11</a></td>
+                        <td>15</td>
+                        <td>0</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+
+            </article>
+
+        </details>
+        <details class="container-fluid">
+            <summary role="button" class="outline">HTML Features</summary>
+
+            <article>
+                <header>www.abc.be</header>
+                <table>
+                    <tr>
+                        <th scope="row">URL</th>
+                        <td>http://www.abc.be</td>
+                    </tr>
+                    <tr>
+                        <th><strong>OK</strong></th>
+                        <td>True</td>
+                    </tr>
+                    <tr>
+                        <td>Problem</td>
+                        <td>n/a</td>
+                    </tr>
+
+                    <tr>
+                        <th>Body text</th>
+                        <td>
+                            <details>
+                                <summary>More info</summary>
+                                Home Abcservices.eu . NL ZH EN Search ... Toggle Navigation Home About us Mission History Our services Marketing support Location & Facilitation Merger & Acquisitions References Internships Contact us Contact us Prev Next You are here: Home Back to Top © 2023 Abcservices.eu
+                            </details>
+                        </td>
+                    </tr>
+
+                </table>
+
+
+            </article>
+
+
+        </details>
+        <details class="container-fluid">
+            <summary role="button" class="outline">DNS</summary>
+
+            <table >
+                <thead>
+                <tr>
+                    <td>Prefix</td>
+                    <td>Request Type</td>
+                    <td>Response</td>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><a href="#">2023-12-26</a></td>
+                    <td>5</td>
+                    <td>3</td>
+                </tr>
+                <tr>
+                    <td><a href="#">2024-03-11</a></td>
+                    <td>15</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td><a href="#">2024-04-11</a></td>
+                    <td>15</td>
+                    <td>0</td>
+                </tr>
+                </tbody>
+
+            </table>
+
+
+        </details>
+        <details class="container-fluid">
+            <summary role="button" class="outline">SMTP</summary>
+
+            <article>
+                <header>dnsbelgium-be.mail.protection.outlook.com</header>
+                <table>
+                    <tr>
+                        <td>IP</td>
+                        <td>Response</td>
+                    </tr>
+                    <tr>
+                        <td>129.2.2.5</td>
+                        <td>ehlo jkjkjkjk</td>
+                    </tr>
+                    <tr>
+                        <td>129.2.2.5</td>
+                        <td>
+                            <details>
+                                <summary role="button" class="secondary">Conversation</summary>
+                                <table>
+                                    <tr>
+                                        <td>ASN</td>
+                                        <td>Country</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8075</td>
+                                        <td>NL</td>
+                                    </tr>
+                                </table>
+
+                            </details>
+                        </td>
+                    </tr>
+                </table>
+            </article>
+            <article>
+                <header>dnsbelgium-be.mail.protection.outlook.com</header>
+                <table>
+                    <tr>
+                        <td>IP</td>
+                        <td>Response</td>
+                    </tr>
+                    <tr>
+                        <td>129.2.2.5</td>
+                        <td>ehlo jkjkjkjk</td>
+                    </tr>
+                    <tr>
+                        <td>129.2.2.5</td>
+                        <td>
+                            <details>
+                                <summary role="button" class="secondary">Conversation</summary>
+                                <table>
+                                    <tr>
+                                        <td>ASN</td>
+                                        <td>Country</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8075</td>
+                                        <td>NL</td>
+                                    </tr>
+                                </table>
+
+                            </details>
+                        </td>
+                    </tr>
+                </table>
+            </article>
+        </details>
+        <details class="container-fluid">
+            <summary role="button" class="outline">VAT</summary>
+            <table>
+                <tr>
+                    <td>Timestamp</td>
+                    <td>2024-02-12</td>
+                </tr>
+                <tr>
+                    <td>VAT number found</td>
+                    <td>BE0466158640</td>
+                </tr>
+                <tr>
+                    <td>Matching URL	</td>
+                    <td>https://www.dnsbelgium.be/en/contact</td>
+                </tr>
+                <tr>
+                    <td># URLs followed	</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>URLs followed	</td>
+                    <td>
+                        <ul class="mt-2 no-bullet pl-0">
+                            <li class="mt-1">http://www.dnsbelgium.be/</li>
+                            <li class="mt-1">https://www.dnsbelgium.be/</li>
+                            <li class="mt-1">https://www.dnsbelgium.be/en</li>
+                            <li class="mt-1">https://www.dnsbelgium.be/en/contact</li>
+                        </ul>
+                    </td>
+                </tr>
+
+            </table>
+        </details>
+        <details class="container-fluid">
+            <summary role="button" class="outline">TLS</summary>
+
+            <article>
+                <header>dnsbelgium.be</header>
+                <table class="table table-sm table-borderless striped">
+                    <tbody><tr><th>Host name</th><td>www.dnsbelgium.be</td></tr><tr><th>Crawl timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Host name matches certificate</th><td>Yes</td></tr><tr><th>Scan timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Scanned ip</th><td>45.60.74.42</td></tr><tr><th>Scan server name</th><td>www.dnsbelgium.be</td></tr><tr><th>Scan connect ok</th><td>Yes</td></tr></tbody></table>
+            </article>
+
+            <article>
+                <header>www.dnsbelgium.be</header>
+                <table class="table table-sm table-borderless">
+                    <tbody><tr><th>Host name</th><td>www.dnsbelgium.be</td></tr><tr><th>Crawl timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Host name matches certificate</th><td>Yes</td></tr><tr><th>Scan timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Scanned ip</th><td>45.60.74.42</td></tr><tr><th>Scan server name</th><td>www.dnsbelgium.be</td></tr><tr><th>Scan connect ok</th><td>Yes</td></tr></tbody></table>
+            </article>
+
+    <!--        <details>-->
+    <!--            <summary class="container-fluid">dnsbelgium.be</summary>-->
+
+    <!--            <table class="table table-sm table-borderless"><tbody><tr><th>Host name</th><td>www.dnsbelgium.be</td></tr><tr><th>Crawl timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Host name matches certificate</th><td>Yes</td></tr><tr><th>Scan timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Scanned ip</th><td>45.60.74.42</td></tr><tr><th>Scan server name</th><td>www.dnsbelgium.be</td></tr><tr><th>Scan connect ok</th><td>Yes</td></tr></tbody></table>-->
+    <!--        </details>-->
+
+    <!--        <details>-->
+    <!--            <summary class="container-fluid">www.dnsbelgium.be</summary>-->
+
+    <!--            <table class="table table-sm table-borderless">-->
+    <!--                <tbody><tr><th>Host name</th><td>www.dnsbelgium.be</td></tr><tr><th>Crawl timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Host name matches certificate</th><td>Yes</td></tr><tr><th>Scan timestamp</th><td>10/08/2024 10:04:42</td></tr><tr><th>Scanned ip</th><td>45.60.74.42</td></tr><tr><th>Scan server name</th><td>www.dnsbelgium.be</td></tr><tr><th>Scan connect ok</th><td>Yes</td></tr></tbody></table>-->
+    <!--        </details>-->
+
+        </details>
+
+    </div>
+
+</main>
+
+</body>
+</html>
+
+
+

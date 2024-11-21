@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Search Results</title>
+</head>
+
+<body >
+
+<main>
+    <div layout:fragment="content">
+        <h1>Search results</h1>
+     
+        <table class="overflow-auto">
+            <thead>
+            <tr>
+                <td>Visit Id</td>
+                <td>Domain name</td>
+                <td>Crawled</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="visit : ${visits}">
+                <td>
+                    <a th:href="@{/visits/{id}(id=${visit.visitId()})}" th:text="${visit.visitId()}"> </a>
+                </td>
+                <td th:text="${visit.domainName()}">5</td>
+                <td th:text="${visit.done()}">3</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</main>
+
+</body>
+</html>
