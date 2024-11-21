@@ -4,8 +4,7 @@
 
 # Intro
 
-Monocator is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator)
-but it has only one design goal: **ease of use**
+Monocator is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator), but it has only one design goal: **ease of use**
 
 # Getting started
 
@@ -29,6 +28,14 @@ Important differences compared to current version of Mercator
 * Multi-platform docker images published to docker hub (x86 and aarch64) so it also works an Apple Silicon machines
 
 # Compiling & running locally 
+
+## If you have no (recent) JDK on your system
+
+```bash
+curl -s "https://get.sdkman.io" | bash
+sdk install java 21.0.5-tem
+sdk install maven 3.9.9 
+```
 
 ## Compiling
 ```
@@ -62,6 +69,11 @@ Since Lombok is [not yet compatible](https://github.com/projectlombok/lombok/iss
 Once compiled, it is possible to *run* the application with Java 23.
 
 # Running with docker compose
+
+Build container image:
+```
+mvn jib:dockerBuild
+```
 
 * Store a username in ~/.env.grafana-username
 * Store a password in ~/.env.grafana-password

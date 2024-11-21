@@ -99,6 +99,11 @@ public class Scheduler {
 
      */
 
+    /*
+     * reads parquet files and copies content to ingested table
+     * copies (visit_id, domain_name) from ingested table to work table
+     * moves ingested files to other folder
+     */
     @Scheduled(fixedRate = 20, timeUnit = TimeUnit.SECONDS)
     public void findFilesToIngest() {
         if (ingestionStopped.get()) {

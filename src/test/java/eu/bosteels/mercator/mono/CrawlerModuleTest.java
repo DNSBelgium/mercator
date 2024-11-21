@@ -36,6 +36,12 @@ class CrawlerModuleTest {
       }
     }
 
+    default void save(List<? extends VisitResult> list) {
+      for (VisitResult visitResult : list) {
+        saveItem(visitResult);
+      }
+    }
+
     void afterSave(Object t);
 
   }

@@ -53,12 +53,6 @@ class VatScraperTest {
                     .withBody(BIG_BODY)
                     .withHeader("Content-Type", "text/html; charset=UTF-8"))
     );
-//    wireMockRule.stubFor(get(urlEqualTo("/big"))
-//            .willReturn(aResponse()
-//                    .withBody("hello")
-//                    .withHeader("Content-Type", "text/html; charset=UTF-8"))
-//    );
-
     wireMockRule.start();
     PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
     LinkPrioritizer linkPrioritizer = new LinkPrioritizer();
@@ -182,7 +176,7 @@ class VatScraperTest {
       mockWebServer.start();
       baseUrl = mockWebServer.url("/");
       Page page1 = testVatScraper.fetchAndParse(baseUrl);
-      assertThat(page1).isEqualTo(null);
+      assertThat(page1).isEqualTo(Page.PAGE_TIME_OUT);
       testFetcher.clearCache();
       Page page2 = testVatScraper.fetchAndParse(baseUrl);
       logger.info("page = {}", page2);

@@ -53,21 +53,26 @@ public class Worker {
       workQueue.remove(visitRequest);
 
     } catch (Exception e) {
-      int failureCount = failures.incrementAndGet();
-      logger.atError()
-              .setMessage("mainCrawler.visit(visitRequest) failed")
-              .setCause(e)
-              .log();
-      if (failureCount > 10) {
-        logger.error("We got over 10 exceptions => stopping the listener until someone looks at the issue.");
-        jmsListenerEndpointRegistry.getListenerContainers().forEach(
-                container -> logger.info("container: {}", container)
-        );
-        jmsListenerEndpointRegistry.stop();
-      }
+      onFailure(e);
     } finally {
       Threads.PROCESS_MESSAGE.decrementAndGet();
     }
+  }
+
+  private void onFailure(Exception e) {
+    int failureCount = failures.incrementAndGet();
+    logger.atError()
+            .setMessage("mainCrawler.visit(visitRequest) failed")
+            .setCause(e)
+            .log();
+    if (failureCount > 10) {
+      logger.error("We got over 10 exceptions => stopping the listener until someone looks at the issue.");
+      jmsListenerEndpointRegistry.getListenerContainers().forEach(
+              container -> logger.info("container: {}", container)
+      );
+      jmsListenerEndpointRegistry.stop();
+    }
+
   }
 
 }

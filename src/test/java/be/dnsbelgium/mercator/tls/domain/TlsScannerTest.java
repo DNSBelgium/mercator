@@ -10,10 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
-import javax.net.ssl.SSLHandshakeException;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 
@@ -107,19 +104,6 @@ class TlsScannerTest {
     SingleVersionScan result = tlsScanner.scanForProtocol(
         TLS_1_0, new InetSocketAddress("1a-renovations.be", 443));
     logger.info("result = {}", result);
-  }
-
-  @Test
-  public void woonoutlet07_url() throws IOException {
-    String hostname = "woonoutlet07.be";
-    URL url = new URL("https://" + hostname);
-    try {
-      String content = "" + url.getContent();
-      logger.info("content = {}", content);
-      // javax.net.ssl.SSLHandshakeException: No subject alternative DNS name matching woonoutlet07.be found.
-    } catch (SSLHandshakeException e) {
-      logger.info("SSLHandshakeException", e);
-    }
   }
 
     @Test
