@@ -1,7 +1,7 @@
 # Intro
 
 Monocator is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator)
-but it has only one design goal: **make it easy to set it up**
+but it has only one design goal: **ease of use**
 
 # Getting started
 
