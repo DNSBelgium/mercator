@@ -46,8 +46,6 @@ public class SearchController {
         model.addAttribute("visitId", visitId);
 
         List<WebCrawlResult> webCrawlResults = visitRepository.findWebCrawlResults(visitId);
-        System.out.println("webCrawlResults = " + webCrawlResults.size());
-
         model.addAttribute("webCrawlResults", webCrawlResults);
 
         // TODO:  retrieve records for all tables

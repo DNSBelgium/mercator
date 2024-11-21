@@ -7,7 +7,6 @@ import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpRepository;
 import eu.bosteels.mercator.mono.visits.CrawlerModule;
-import groovy.util.logging.Slf4j;
 import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,10 +64,6 @@ public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
     collectedData.forEach(this::save);
   }
 
-  @Override
-  public void saveAll(List<SmtpVisit> collectedData) {
-    CrawlerModule.super.saveAll(collectedData);
-  }
 
   @Override
   public void afterSave(List<?> collectedData) {
