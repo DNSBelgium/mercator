@@ -98,6 +98,20 @@
             <version>1.79</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcutil-jdk18on</artifactId>
+            <version>1.79</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>1.79</version>
+        </dependency>
+
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
@@ -474,6 +488,7 @@
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
                         </environment>
+                        <mainClass>eu.bosteels.mercator.mono.MonocatorApplication</mainClass>
                     </container>
 
                 </configuration>
