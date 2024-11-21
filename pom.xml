@@ -488,7 +488,7 @@
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
                         </environment>
-                        <mainClass>eu.bosteels.mercator.mono.MonocatorApplication</mainClass>
+                        <mainClass>be.dnsbelgium.mercator.MonocatorApplication</mainClass>
                     </container>
 
                 </configuration>

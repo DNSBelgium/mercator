@@ -6,7 +6,7 @@ import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpRepository;
-import eu.bosteels.mercator.mono.visits.CrawlerModule;
+import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

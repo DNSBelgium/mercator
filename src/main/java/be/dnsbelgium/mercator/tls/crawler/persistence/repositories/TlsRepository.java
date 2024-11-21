@@ -26,9 +26,9 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 
-import static eu.bosteels.mercator.mono.persistence.Repository.instant;
-import static eu.bosteels.mercator.mono.persistence.Repository.timestamp;
-import static eu.bosteels.mercator.mono.persistence.VisitRepository.getList;
+import static be.dnsbelgium.mercator.persistence.Repository.instant;
+import static be.dnsbelgium.mercator.persistence.Repository.timestamp;
+import static be.dnsbelgium.mercator.persistence.VisitRepository.getList;
 
 @Component
 public class TlsRepository {

@@ -17,8 +17,8 @@ import java.sql.Array;
 import java.time.Instant;
 import java.util.List;
 
-import static eu.bosteels.mercator.mono.persistence.Repository.*;
-import static eu.bosteels.mercator.mono.persistence.VisitRepository.getList;
+import static be.dnsbelgium.mercator.persistence.Repository.*;
+import static be.dnsbelgium.mercator.persistence.VisitRepository.getList;
 
 @Component
 public class WebRepository {

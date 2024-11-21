@@ -10,8 +10,8 @@ import be.dnsbelgium.mercator.vat.domain.Link;
 import be.dnsbelgium.mercator.vat.domain.Page;
 import be.dnsbelgium.mercator.vat.domain.SiteVisit;
 import be.dnsbelgium.mercator.vat.domain.VatScraper;
-import eu.bosteels.mercator.mono.metrics.Threads;
-import eu.bosteels.mercator.mono.visits.CrawlerModule;
+import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.Setter;
@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

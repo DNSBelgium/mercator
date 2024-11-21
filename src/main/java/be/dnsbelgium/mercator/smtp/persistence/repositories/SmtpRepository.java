@@ -27,8 +27,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static eu.bosteels.mercator.mono.persistence.Repository.instant;
-import static eu.bosteels.mercator.mono.persistence.Repository.timestamp;
+import static be.dnsbelgium.mercator.persistence.Repository.instant;
+import static be.dnsbelgium.mercator.persistence.Repository.timestamp;
 
 @Component
 public class SmtpRepository {
