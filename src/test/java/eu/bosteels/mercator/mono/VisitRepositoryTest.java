@@ -96,9 +96,9 @@ class VisitRepositoryTest {
     Instant now = now();
     Timestamp timestamp = Timestamp.from(now);
     Instant instant = timestamp.toInstant();
-    System.out.println("now       = " + now);
-    System.out.println("timestamp = " + timestamp);
-    System.out.println("instant   = " + instant);
+    logger.info("now       = {}", now);
+    logger.info("timestamp = {}", timestamp);
+    logger.info("instant   = {}", instant);
     assertThat(instant).isEqualTo(now);
     DuckDataSource dataSource = new DuckDataSource("jdbc:duckdb:");
     JdbcClient jdbcClient = JdbcClient.create(dataSource);

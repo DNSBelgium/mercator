@@ -133,7 +133,7 @@ class RepositoryTest {
     public void getRecentCrawlRates() {
         var rates = repository.getRecentCrawlRates(Repository.Frequency.PerHour, 100);
         for (CrawlRate rate : rates) {
-            System.out.println("rate = " + rate);
+          logger.info("rate = {}", rate);
         }
     }
 
@@ -141,7 +141,7 @@ class RepositoryTest {
     public void getRecentCrawlRatesPerMinute() {
         var rates = repository.getRecentCrawlRates(Repository.Frequency.PerMinute, 100);
         for (CrawlRate rate : rates) {
-            System.out.println("rate = " + rate);
+          logger.info("rate = {}", rate);
         }
     }
 

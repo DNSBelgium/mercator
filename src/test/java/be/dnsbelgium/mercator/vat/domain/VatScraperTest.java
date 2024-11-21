@@ -148,14 +148,10 @@ class VatScraperTest {
   @Disabled
   @Test
   public void fetchPageAndParseTestWithErrors() {
-    System.out.println("start");
     //String BIG_BODY = StringUtils.repeat("abcdefghjiklmnopqrst", 10_000_000);
     PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
-    System.out.println("testFetcher created");
     testFetcher.clearCache();
-    System.out.println("cache cleared");
     VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new LinkPrioritizer());
-    System.out.println("testVatScraper = " + testVatScraper);
 
     //baseUrl = mockWebServer.url("/");
 

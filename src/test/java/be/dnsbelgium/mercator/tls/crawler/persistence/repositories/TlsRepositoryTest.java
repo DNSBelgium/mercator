@@ -84,9 +84,9 @@ class TlsRepositoryTest {
         logger.info("AFTER: crawlResultEntity = {}", crawlResultEntity);
 
         List<CrawlResultEntity> found = tlsRepository.find(crawlResultEntity.getVisitId());
-        System.out.println("found = " + found);
+        logger.info("found = " + found);
         for (CrawlResultEntity resultEntity : found) {
-            System.out.println("resultEntity = " + resultEntity);
+            logger.info("resultEntity = " + resultEntity);
         }
 
     }

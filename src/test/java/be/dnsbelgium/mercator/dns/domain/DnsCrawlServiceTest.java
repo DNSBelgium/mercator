@@ -70,9 +70,8 @@ class DnsCrawlServiceTest {
   @Test
   public void invalidDomainNameIsIgnored() {
     VisitRequest visitRequest = make("--invalid--.be");
-    var x = dnsCrawlService.retrieveDnsRecords(visitRequest);
-    System.out.println("x = " + x);
-    System.out.println("x.getStatus = " + x.getStatus());
+    DnsCrawlResult dnsCrawlResult = dnsCrawlService.retrieveDnsRecords(visitRequest);
+    logger.info("dnsCrawlResult = {}", dnsCrawlResult);
     verify(enricher, never()).enrichResponses(any());
     //verify(requestRepository, never()).saveAll(any());
     verify(dnsResolver, never()).lookup(any(String.class), any(Name.class), any(RecordType.class));

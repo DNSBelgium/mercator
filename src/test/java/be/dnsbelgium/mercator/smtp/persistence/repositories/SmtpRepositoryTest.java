@@ -34,7 +34,7 @@ class SmtpRepositoryTest {
   @Test
   public void createTables() {
     List<String> tableNames = jdbcClient.sql("show tables").query(String.class).list();
-    System.out.println("tableNames = " + tableNames);
+    logger.info("tableNames = {}", tableNames);
     assertThat(tableNames).contains("smtp_conversation", "smtp_host", "smtp_visit");
   }
 
@@ -44,7 +44,7 @@ class SmtpRepositoryTest {
     SmtpVisit visit = visit();
     smtpRepository.saveVisit(visit);
     Optional<SmtpVisit> found = smtpRepository.findVisit(visit.getVisitId());
-    System.out.println("found = " + found);
+    logger.info("found = {}", found);
     assertThat(found.isPresent()).isTrue();
     assertThat(found.get().getVisitId()).isEqualTo(visit.getVisitId());
     assertThat(found.get().getCrawlStatus()).isEqualTo(visit.getCrawlStatus());
@@ -90,9 +90,9 @@ class SmtpRepositoryTest {
     Instant instant = smtpConversation.getTimestamp();
     smtpRepository.saveConversation(smtpConversation);
     List<Map<String, Object>> rows = jdbcClient.sql("select * from smtp_conversation").query().listOfRows();
-    System.out.println("rows = " + rows);
+    logger.info("rows = {}", rows);
     Optional<SmtpConversation> found = smtpRepository.findConversation(id);
-    System.out.println("found = " + found);
+    logger.info("found = {}", found);
     assertThat(found.isPresent()).isTrue();
     assertThat(found.get().getId()).isEqualTo(id);
     assertThat(found.get().getIp()).isEqualTo("127.0.0.1");
@@ -121,16 +121,16 @@ class SmtpRepositoryTest {
     Optional<SmtpVisit> found = smtpRepository.findVisit(visit.getVisitId());
     assertThat(found.isPresent()).isTrue();
     String jvm = System.getProperty("java.version");
-    System.out.println("jvm = " + jvm);
-    System.out.println("found.get().getTimestamp() = " + found.get().getTimestamp());
-    System.out.println("found.seconds = " + found.get().getTimestamp().getEpochSecond());
+    logger.info("jvm = {}", jvm);
+    logger.info("found.get().getTimestamp() = " + found.get().getTimestamp());
+    logger.info("found.seconds = " + found.get().getTimestamp().getEpochSecond());
 
     assertThat(found.get().getTimestamp().getEpochSecond()).isEqualTo(visit.getTimestamp().getEpochSecond());
     assertThat(found.get().getTimestamp().getNano()).isEqualTo(visit.getTimestamp().getNano());
 
-    System.out.println("found.nano = " + found.get().getTimestamp().getNano());
-    System.out.println("visit.seconds = " + visit.getTimestamp().getEpochSecond());
-    System.out.println("visit.nano = " + visit.getTimestamp().getNano());
+    logger.info("found.nano = " + found.get().getTimestamp().getNano());
+    logger.info("visit.seconds = " + visit.getTimestamp().getEpochSecond());
+    logger.info("visit.nano = " + visit.getTimestamp().getNano());
     assertThat(found.get()).isEqualTo(visit);
   }
 

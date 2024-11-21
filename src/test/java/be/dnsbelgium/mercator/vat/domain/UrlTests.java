@@ -22,11 +22,12 @@ public class UrlTests {
   @Test
   public void javaURL() throws MalformedURLException, URISyntaxException {
     String attack = "http://example.com/static/images/../../../../../etc/passwd";
-    System.out.println(new URL(attack).getPath());
-    System.out.println(new URI(attack).getPath());
-    System.out.println(HttpUrl.parse(attack).encodedPath());
-    System.out.println(HttpUrl.parse(attack).pathSegments());
-    System.out.println(HttpUrl.parse(attack).encodedPathSegments());
+    //noinspection deprecation
+    logger.info("new URL(attack).getPath() = {}", new URL(attack).getPath());
+    logger.info("new URI(attack).getPath() = {}" , new URI(attack).getPath());
+    logger.info("HttpUrl.parse(attack).encodedPath() = {}", HttpUrl.parse(attack).encodedPath());
+    logger.info("HttpUrl.parse(attack).pathSegments() = {}", HttpUrl.parse(attack).pathSegments());
+    logger.info("HttpUrl.parse(attack).encodedPathSegments() = {}", HttpUrl.parse(attack).encodedPathSegments());
   }
 
   @Test

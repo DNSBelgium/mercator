@@ -2,6 +2,8 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,6 +15,8 @@ import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.r
 import static org.assertj.core.api.Assertions.assertThat;
 
 class FullScanTest {
+
+  private static final Logger logger = LoggerFactory.getLogger(FullScanTest.class);
 
   @Test
   public void lowestVersionSupported() {
@@ -46,14 +50,14 @@ class FullScanTest {
     assertThat(fullScan.getHighestVersionSupported()).hasValue(TLS_1_0);
 
     String lowest = fullScan.getLowestVersionSupported().map(TlsProtocolVersion::getName).orElse(null);
-    System.out.println("lowest = " + lowest);
+    logger.info("lowest = " + lowest);
 
     tls10.setHandshakeOK(false);
     assertThat(fullScan.getLowestVersionSupported()).isEmpty();
     assertThat(fullScan.getHighestVersionSupported()).isEmpty();
 
     lowest = fullScan.getLowestVersionSupported().map(TlsProtocolVersion::getName).orElse(null);
-    System.out.println("lowest = " + lowest);
+    logger.info("lowest = " + lowest);
 
     sslv2.setHandshakeOK(true);
     assertThat(fullScan.getLowestVersionSupported()).hasValue(SSL_2);

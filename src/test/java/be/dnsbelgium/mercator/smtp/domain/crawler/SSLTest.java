@@ -107,9 +107,9 @@ public class SSLTest {
             ksKeys.load(keyStoreResource, keyStorePassphrase);
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(ksKeys, keyStorePassphrase);
-            System.out.println("kmf.algorithm = " + kmf.getAlgorithm());
-            System.out.println("key managers = " + Arrays.toString(kmf.getKeyManagers()));
-            System.out.println("key manager info = " + kmf.getProvider().getInfo());
+            logger.info("kmf.algorithm = " + kmf.getAlgorithm());
+            logger.info("key managers = " + Arrays.toString(kmf.getKeyManagers()));
+            logger.info("key manager info = " + kmf.getProvider().getInfo());
             return kmf;
         } catch (IOException | CertificateException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
             throw new RuntimeException(e);
@@ -127,9 +127,9 @@ public class SSLTest {
             ksTrust.load(trustStoreStream, trustStorePassphrase);
             TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
             tmf.init(ksTrust);
-            System.out.println("tmf algorithm = " + tmf.getAlgorithm());
-            System.out.println("tmf trust managers = " + Arrays.toString(tmf.getTrustManagers()));
-            System.out.println("tmf provider info = " + tmf.getProvider().getInfo());
+            logger.info("tmf algorithm = " + tmf.getAlgorithm());
+            logger.info("tmf trust managers = " + Arrays.toString(tmf.getTrustManagers()));
+            logger.info("tmf provider info = " + tmf.getProvider().getInfo());
             return tmf;
         } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
             e.printStackTrace();

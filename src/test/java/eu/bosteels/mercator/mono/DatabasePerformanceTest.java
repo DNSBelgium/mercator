@@ -136,7 +136,7 @@ public class DatabasePerformanceTest {
     int loops = 5;
     int threads = 100;
     int rows = 10_000;
-    System.out.println("loop starting");
+    logger.info("loop starting");
     for (int k=0; k<loops; k++) {
       logger.info("starting with loop {} out of {}", k+1, loops);
       ExecutorService executorService = Executors.newFixedThreadPool(threads);
@@ -155,7 +155,7 @@ public class DatabasePerformanceTest {
           }
         });
       }
-      System.out.println("loop done");
+      logger.info("loop done");
       executorService.shutdown();
       executorService.awaitTermination(10, TimeUnit.MINUTES);
       Instant done = Instant.now();
@@ -176,7 +176,7 @@ public class DatabasePerformanceTest {
     int loops = 2;
     int threads = 5;
     int rows = 10;
-    System.out.println("loop starting");
+    logger.info("loop starting");
     for (int k=0; k<loops; k++) {
       logger.info("starting with loop {} out of {}", k+1, loops);
       ExecutorService executorService = Executors.newFixedThreadPool(threads);
@@ -204,7 +204,7 @@ public class DatabasePerformanceTest {
           }
         });
       }
-      System.out.println("loop done");
+      logger.info("loop done");
       executorService.shutdown();
       executorService.awaitTermination(10, TimeUnit.MINUTES);
       Instant done = Instant.now();

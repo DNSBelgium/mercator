@@ -26,11 +26,10 @@ public class UpdatesTest {
         => TransactionContext Error: Failed to commit: PRIMARY KEY or UNIQUE constraint violated: duplicate key "1""
      */
     public void concurrentUpdates() throws ExecutionException, InterruptedException {
-        System.out.println("starting ...");
         final JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.execute(
                 "create or replace table test_locks(id int primary key, thread varchar)");
-        var threadPool = Executors.newFixedThreadPool(2);
+        @SuppressWarnings("resource") var threadPool = Executors.newFixedThreadPool(2);
         final CountDownLatch t1_insert_done_done_signal = new CountDownLatch(1);
         final CountDownLatch t2_commit_done_signal = new CountDownLatch(1);
 
@@ -40,15 +39,15 @@ public class UpdatesTest {
                 c.setAutoCommit(false);
                 var s = c.prepareStatement("insert into test_locks(id, thread) values(1, 't1')");
                 s.execute();
-                System.out.println("t1 has inserted");
+                logger.info("t1 has inserted");
                 t1_insert_done_done_signal.countDown();
                 t2_commit_done_signal.await();
-                System.out.println("t1 about to commit, this will fail");
+                logger.info("t1 about to commit, this will fail");
                 s.execute("commit");
-                System.out.println("t1 commit done");
+                logger.info("t1 commit done");
 
             } catch (SQLException | InterruptedException e) {
-                e.printStackTrace();
+                logger.info("error", e);
                 throw new RuntimeException(e);
             }
 
@@ -61,10 +60,10 @@ public class UpdatesTest {
                 t1_insert_done_done_signal.await();
                 var s = c.prepareStatement("insert into test_locks(id, thread) values(1, 't2')");
                 s.execute();
-                System.out.println("t2 has inserted");
-                System.out.println("t2 about to commit");
+                logger.info("t2 has inserted");
+                logger.info("t2 about to commit");
                 s.execute("commit");
-                System.out.println("t2 commit done");
+                logger.info("t2 commit done");
                 t2_commit_done_signal.countDown();
 
             } catch (SQLException | InterruptedException e) {

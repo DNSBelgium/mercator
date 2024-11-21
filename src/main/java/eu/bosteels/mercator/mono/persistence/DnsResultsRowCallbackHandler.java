@@ -47,7 +47,7 @@ public class DnsResultsRowCallbackHandler implements RowCallbackHandler {
     public void processRow(@NotNull ResultSet rs) throws SQLException {
         String response_id = rs.getString("response_id");
         String request_id = rs.getString("request_id");
-        System.out.println("request_id = " + request_id + ", response_id = " + response_id);
+      logger.info("request_id = {}, response_id = {}", request_id, response_id);
         String record_data	= rs.getString("record_data");
         Long ttl = getLong(rs, "ttl");
         String rtype = rs.getString("record_type");

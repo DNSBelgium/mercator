@@ -10,6 +10,8 @@ import groovy.util.logging.Slf4j;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.net.InetAddress;
@@ -31,12 +33,13 @@ class SmtpCrawlerTest {
   SmtpConversationCache conversationCache = new SmtpConversationCache(meterRegistry);
 
   private final SmtpCrawler smtpCrawler = new SmtpCrawler(smtpRepository, null, conversationCache);
+  private static final Logger logger = LoggerFactory.getLogger(SmtpCrawlerTest.class);
 
   @Test
   public void createTables() {
     smtpCrawler.createTables();
     List<String> tableNames = jdbcClient.sql("show tables").query(String.class).list();
-    System.out.println("tableNames = " + tableNames);
+    logger.info("tableNames = {}", tableNames);
     assertThat(tableNames).contains("smtp_conversation", "smtp_host", "smtp_visit");
   }
 
@@ -46,8 +49,8 @@ class SmtpCrawlerTest {
     SmtpVisit visit = visit();
     smtpRepository.saveVisit(visit);
     List<SmtpVisit> found = smtpCrawler.find(visit.getVisitId());
+    logger.info("found = {}", found);
     assertThat(found).hasSize(1);
-    System.out.println("found = " + found);
   }
 
   @Test
@@ -57,8 +60,8 @@ class SmtpCrawlerTest {
     SmtpVisit visit2 = visit();
     smtpCrawler.save(List.of(visit1, visit2));
     List<SmtpVisit> found = smtpCrawler.find(visit1.getVisitId());
+    logger.info("found = {}", found);
     assertThat(found).hasSize(1);
-    System.out.println("found = " + found);
   }
 
   @Test

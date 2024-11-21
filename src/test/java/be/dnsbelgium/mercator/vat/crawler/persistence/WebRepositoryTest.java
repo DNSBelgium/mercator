@@ -86,7 +86,7 @@ class WebRepositoryTest {
                 .build();
         webRepository.saveWebVisit(crawlResult);
         List<Map<String, Object>> rows = jdbcClient.sql("select * from web_visit").query().listOfRows();
-        System.out.println("rows = " + rows);
+        logger.info("rows = {}", rows);
         assertThat(rows).hasSize(1);
         assertThat(rows.getFirst().get("visit_id").toString()).isEqualTo(crawlResult.getVisitId());
         assertThat(rows.getFirst().get("domain_name")).isEqualTo(crawlResult.getDomainName());
@@ -125,10 +125,7 @@ class WebRepositoryTest {
         htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
         webRepository.save(htmlFeatures);
         List<HtmlFeatures> found = webRepository.findHtmlFeatures(htmlFeatures.visitId);
-        System.out.println("found = " + found);
-        System.out.println("found.external_hosts = " + found.getFirst().external_hosts.size());
-        System.out.println("external_hosts[0] = " + found.getFirst().external_hosts.get(0));
-        System.out.println("external_hosts[1] = " + found.getFirst().external_hosts.get(1));
+        logger.info("found = {}", found);
         assertThat(found.getFirst())
                 .usingRecursiveComparison()
                 .isEqualTo(htmlFeatures);

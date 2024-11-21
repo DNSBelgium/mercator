@@ -7,6 +7,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
@@ -21,6 +23,8 @@ class SmtpCrawlServiceTest {
   SmtpConversationCache conversationCache = new SmtpConversationCache(meterRegistry);
   SmtpAnalyzer analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, true, 10);
 
+  private static final Logger logger = LoggerFactory.getLogger(SmtpCrawlServiceTest.class);
+
   SmtpCrawlServiceTest() throws NoSuchAlgorithmException, KeyManagementException, UnknownHostException {
   }
 
@@ -29,7 +33,7 @@ class SmtpCrawlServiceTest {
   public void integrationTest() {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, true, 10);
     SmtpVisit result = analyzer.visit("dnsbelgium.be");
-    System.out.println("result = " + result);
+    logger.info("result = {}", result);
     // this is basically the same as  SmtpAnalyzerIntegrationTest but without using Spring
   }
 
