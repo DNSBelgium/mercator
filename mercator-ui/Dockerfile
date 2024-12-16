@@ -1,4 +1,4 @@
-FROM node:20-alpine3.20 as build
+FROM node:20-alpine3.20 AS build
 
 #ARG NODE_ENV=production
 #ENV NODE_ENV $NODE_ENV
@@ -17,7 +17,7 @@ ADD public /app/public
 RUN NODE_OPTIONS="--openssl-legacy-provider" npm run build --force
 
 # stable-alpine
-FROM nginx@sha256:c9896551cb3993df16b553dacf95c47a86fe4f351e82101561b710ef179b8e68
+FROM nginx@sha256:35e3238f2f0925a505d5d697df9a9148db9a0c78e89fd2e253919047b3cec824
 
 COPY --from=build /app/build/ /usr/share/nginx/html
 
