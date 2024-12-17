@@ -29,7 +29,8 @@ dependencyCheck {
 ext['springCloudAwsVersion']="2.4.1"
 ext['logstashLogbackEncoderVersion']="7.2"
 ext['aws-java-sdk.version']="1.12.262"
-ext['postgresql.version']="42.4.1"
+// CVE-2024-1597
+ext['postgresql.version']="42.4.4"
 
 // CVE-2022-25857
 ext['snakeyaml.version']="1.33"
