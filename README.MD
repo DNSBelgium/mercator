@@ -35,10 +35,16 @@ sdk install maven 3.9.9
 ```
 
 ## Compiling
+
 ```
 mvn package
 ```
-Will compile the sources and run all (enabled) tests.
+Will compile the sources and run all (enabled) tests. To run the tests, you need a Docker environment.
+
+To run without tests and vulnerability scanning, use:
+```bash
+mvn package -DskipTests -Dsnyk.skip
+```
 
 ## Running locally compiled version
 
