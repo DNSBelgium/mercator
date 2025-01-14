@@ -6,8 +6,8 @@ Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercat
 # Getting started
 
 ```bash
-docker run -p 8082:8082 maartenbosteels/monocator:latest
-open localhost:8082 
+docker run -p 8082:8082 ghcr.io/dnsbelgium/mercator/mercator:latest
+open localhost:8082
 ```
                    
 # Compared to Mercator
