@@ -1,7 +1,7 @@
 services:
 
   monocator:
-    image: maartenbosteels/monocator:latest
+    image: ghcr.io/dnsbelgium/mercator:latest
     volumes:
       - ./mono:/root/monocator
     ports:

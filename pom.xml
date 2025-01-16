@@ -455,7 +455,7 @@
                 <version>3.4.4</version>
                 <configuration>
                     <to>
-                        <image>${env.REGISTRY}/dnsbelgium/mercator/mercator</image>
+                        <image>${env.REGISTRY}/dnsbelgium/mercator</image>
                         <auth>
                             <!--suppress MavenModelInspection -->
                             <username>${env.DOCKER_USERNAME}</username>
