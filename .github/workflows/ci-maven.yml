@@ -3,7 +3,7 @@ name: Build & publish to docker hub
 on:
   push:
     branches:
-      - v2.0
+      - main
   schedule:
     - cron: '30 5 * * *'
 
