@@ -69,7 +69,11 @@ jobs:
 
       - name: Publish container image to GitHub Container registry
         id: publish
-        run: REGISTRY=${{ env.REGISTRY }} DOCKER_USERNAME=${{ github.actor }} DOCKER_PASSWORD=${{ secrets.GITHUB_TOKEN }} mvn --batch-mode clean compile jib:build
+        env:
+          REGISTRY: ${{ env.REGISTRY }}
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn --batch-mode clean compile jib:build
 
 
 
