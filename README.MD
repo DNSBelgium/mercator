@@ -1,7 +1,11 @@
 
+> [!WARNING]  
+> This codebase is for Mercator v2 (also named Monocator because of its single container) and is still under development. Checkout the `v1.0` branch for the older and more stable codebase.
+
+
 # Intro
 
-Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator), but it has only one design goal: **ease of use**
+Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator/tree/v1.0), but it has only one design goal: **ease of use**
 
 # Getting started
 
@@ -10,9 +14,9 @@ docker run -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
 open localhost:8082
 ```
                    
-# Compared to Mercator
+# Compared to version 1
 
-Important differences compared to current version of Mercator 
+Important differences compared to previous version of Mercator 
   
 * Zero required dependencies to deploy it.
 * Can be run as a single docker image 
@@ -57,14 +61,16 @@ To use a specific profile:
 mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-Note: using the 'local' profile will start mercator on port 8090 instead of 8082.
+>[!NOTE]
+> Using the 'local' profile will start mercator on port 8090 instead of 8082.
 
 ## Running the JAR file
 ```
 java -jar -Dspring.active.profiles=local  target/mercator-*-SNAPSHOT.jar
 ```
 
-Note: you need to run `mvn package` first.
+>[!NOTE]
+> You need to run `mvn package` first.
 
 ## Java 23 & Lombok
 
