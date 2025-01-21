@@ -66,7 +66,7 @@ between temporary, internal module state and stable, consumable data.
 ### Data Model
 
 All modules currently write into a Postgres SQL database.
-See [Data Catalog](https://github.com/DNSBelgium/mercator/blob/main/doc/data_catalog.md) for more details.
+See [Data Catalog](https://github.com/DNSBelgium/mercator/blob/v1.0/doc/data_catalog.md) for more details.
 
 ### Warning on usage
 
