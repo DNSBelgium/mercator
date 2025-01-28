@@ -103,6 +103,23 @@ public class DnsCrawlService {
             logger.debug("Result of lookup: {}", dnsRequest);
             Request request = buildEntity(visitRequest, dnsRequest);
             requests.add(request);
+
+            // If the record type is NS, also perform a TXT lookup on the _signal subdomain
+            if (recordType == RecordType.NS) {
+              for (RRecord nsRecord : dnsRequest.records()) {
+                
+                String nsDomain = nsRecord.getData();
+                logger.debug("calling resolver.lookup(\"_signal\", \"{}\", TXT)", nsDomain);
+                try {
+                DnsRequest txtRequest = resolver.lookup("_signal", new Name(nsDomain), RecordType.TXT);
+                logger.debug("Result of TXT lookup: {}", txtRequest);
+                Request txtRequestEntity = buildEntity(visitRequest, txtRequest);
+                requests.add(txtRequestEntity);
+                } catch (TextParseException e) {
+                  logger.info("TextParseException");
+                }
+              }
+            }
           }
         }
       }
