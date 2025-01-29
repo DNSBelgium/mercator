@@ -500,7 +500,12 @@ public class HtmlFeatureExtractor {
       logger.debug("MalformedURLException for url={} msg={}", url, e.getMessage());
       meterRegistry.counter(MetricName.COUNTER_INVALID_URL).increment();
       return null;
+    }  catch (IllegalArgumentException e) {
+      logger.debug("IllegalArgumentException for url={} msg={}", url, e.getMessage());
+      meterRegistry.counter(MetricName.COUNTER_INVALID_URL).increment();
+      return null;
     }
+
   }
 
   /**
