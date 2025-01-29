@@ -81,9 +81,12 @@ public class MainCrawler {
     try {
 
       var dataPerModule = visitResult.getCollectedData();
-      for (CrawlerModule<?> crawlerModule : dataPerModule.keySet()) {
-        var data = dataPerModule.get(crawlerModule);
-        crawlerModule.afterSave(data);
+
+      if (dataPerModule != null) {
+        for (CrawlerModule<?> crawlerModule : dataPerModule.keySet()) {
+          var data = dataPerModule.get(crawlerModule);
+          crawlerModule.afterSave(data);
+        }
       }
 
     } finally {

@@ -135,10 +135,13 @@ public class VisitRepository {
         save(visitResult.getDnsCrawlResult());
       }
 
-      for (CrawlerModule<?> crawlerModule : visitResult.getCollectedData().keySet()) {
-        List<?> data = visitResult.getCollectedData().get(crawlerModule);
-        crawlerModule.save(data);
+      if (visitResult.getCollectedData() != null) {
+        for (CrawlerModule<?> crawlerModule : visitResult.getCollectedData().keySet()) {
+          List<?> data = visitResult.getCollectedData().get(crawlerModule);
+          crawlerModule.save(data);
+        }
       }
+
       var duration = Duration.between(start, Instant.now());
       logger.info("Done saving VisitResult for {}, took {}", visitResult.getVisitRequest(), duration);
 
