@@ -7,16 +7,16 @@
 <!--    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">-->
 <!--    </appender>-->
 
-<!--    <appender name="Throttle" class="be.dnsbelgium.logback.ThrottlingAppender">-->
-<!--        <bufferSize>50</bufferSize>-->
-<!--        <maxMessagesToEmitAfterStartUp>200</maxMessagesToEmitAfterStartUp>-->
-<!--        <maxMessagesToEmitAfterWakeUp>100</maxMessagesToEmitAfterWakeUp>-->
-<!--        <appender-ref ref="CONSOLE" />-->
-<!--    </appender>-->
+    <appender name="Throttle" class="be.dnsbelgium.logback.ThrottlingAppender">
+        <bufferSize>50</bufferSize>
+        <maxMessagesToEmitAfterStartUp>200</maxMessagesToEmitAfterStartUp>
+        <maxMessagesToEmitAfterWakeUp>100</maxMessagesToEmitAfterWakeUp>
+        <appender-ref ref="CONSOLE" />
+    </appender>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-<!--        <appender-ref ref="Throttle" />-->
+<!--        <appender-ref ref="CONSOLE" />-->
+        <appender-ref ref="Throttle" />
     </root>
 
 </configuration>
