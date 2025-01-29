@@ -1,3 +1,4 @@
+[![Run unit tests](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml/badge.svg)](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml)
 
 > [!WARNING]  
 > This codebase is for Mercator v2 (also named Monocator because of its single container) and is still under development. Checkout the `v1.0` branch for the older and more stable codebase.
