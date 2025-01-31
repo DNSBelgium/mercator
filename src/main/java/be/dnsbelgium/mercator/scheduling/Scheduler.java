@@ -64,6 +64,15 @@ public class Scheduler {
                 """.formatted(workDirectory.getAbsolutePath());
         logger.info("create_file: {}", create_file);
         jdbcTemplate.execute(create_file);
+        // create empty CSV file in workDirectory
+        String create_csv_file = """
+                copy
+                    (select 'abc.be' as domain_name, 'visit_id' as visit_id where false)
+                to '%s/.empty_file_do_not_remove.csv'
+                """.formatted(workDirectory.getAbsolutePath());
+        logger.info("create_csv_file: {}", create_csv_file);
+        jdbcTemplate.execute(create_csv_file);
+
     }
 
     private void makeDirectories() {
@@ -114,12 +123,21 @@ public class Scheduler {
         var ingestion_id = repository.nextid();
         var insert = """
             insert into ingested(ingestion_id, visit_id, domain_name, filename, ingested_at)
-            select ?, visit_id, domain_name, filename, current_timestamp
-            from read_parquet('%s/*.parquet', filename=True, union_by_name=True)
-            where visit_id not in (select visit_id from done)
-        """.formatted(workDirectory.getAbsolutePath());
+            (
+                select ?, visit_id, domain_name, filename, current_timestamp
+                from read_parquet('%s/*.parquet', filename=True, union_by_name=True)
+                where visit_id not in (select visit_id from done)
+            )
+            union
+            (
+                select ?, visit_id, domain_name, filename, current_timestamp
+                from read_csv('%s/*.csv', filename=True, union_by_name=True)
+                where visit_id not in (select visit_id from done)
+
+            )
+        """.formatted(workDirectory.getAbsolutePath(), workDirectory.getAbsolutePath());
         logger.debug("insert: {}", insert);
-        int rowsInserted = jdbcTemplate.update(insert, ingestion_id);
+        int rowsInserted = jdbcTemplate.update(insert, ingestion_id, ingestion_id);
 
         if (rowsInserted == 0) {
             logger.debug("No files to ingest found");
