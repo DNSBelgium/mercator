@@ -18,7 +18,7 @@ public class DataSourceConfig {
     private String url;
 
     @Bean
-    public DuckDataSource duckDataSource() {
+    public DuckDataSource dataSource() {
         logger.info("creating DuckDataSource using url=[{}]", url);
         DuckDataSource duckDataSource = new DuckDataSource();
         duckDataSource.setUrl(url);

@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.persistence;
 
 import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
+import org.apache.commons.dbcp2.DelegatingConnection;
 import org.duckdb.DuckDBConnection;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -56,6 +57,18 @@ public class DuckDataSource extends AbstractDriverBasedDataSource {
     @Override
     protected Connection getConnectionFromDriver(@NotNull Properties props) throws SQLException {
         logger.debug("getConnectionFromDriver with props = {}", props);
-        return connection.duplicate();
+        //return connection.duplicate();
+
+        return new DelegatingConnection<>(connection.duplicate()) {
+            @Override
+            public void setTransactionIsolation(int level) throws SQLException {
+                logger.info("setTransactionIsolation = {}", level);
+                //super.setTransactionIsolation(level);
+            }
+        };
+
     }
+
+
+
 }

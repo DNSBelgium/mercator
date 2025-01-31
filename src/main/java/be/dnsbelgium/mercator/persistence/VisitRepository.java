@@ -57,11 +57,11 @@ public class VisitRepository {
   private String databaseName;
   private File databaseFile;
 
-  @Value("${visits.export.directory}")
+  @Value("${visits.export.directory:./mercator/visits/exported/}")
   @Setter @Getter
   private File exportDirectory;
 
-  @Value("${visits.database.directory}")
+  @Value("${visits.database.directory:./mercator/visits/db/}")
   @Setter @Getter
   private File databaseDirectory;
 

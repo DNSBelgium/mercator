@@ -11,22 +11,28 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
+import javax.sql.DataSource;
+
 @ConfigurationPropertiesScan
 @SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
 exclude = {
         DataSourceAutoConfiguration.class,
+        BatchAutoConfiguration.class,
         DataSourceTransactionManagerAutoConfiguration.class,
 })
 public class MercatorApplication {
@@ -39,6 +45,7 @@ public class MercatorApplication {
   public static void main(String[] args) {
     SpringApplication.run(MercatorApplication.class, args);
   }
+
 
 //  @Bean
 //  @ConditionalOnProperty(value = "use.sqs", havingValue = "false")

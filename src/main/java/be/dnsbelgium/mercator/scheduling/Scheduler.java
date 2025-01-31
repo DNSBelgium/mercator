@@ -35,10 +35,10 @@ public class Scheduler {
     private static final Logger logger = LoggerFactory.getLogger(Scheduler.class);
     private final AtomicBoolean ingestionStopped = new AtomicBoolean(false);
 
-    @Value("${visits.ingested.directory}")
+    @Value("${visits.ingested.directory:./mercator/visits/ingested/}")
     private File ingestedDirectory;
 
-    @Value("${visits.work.directory}")
+    @Value("${visits.work.directory:./mercator/work}")
     private File workDirectory;
 
     // TODO: disable this class when SQS is used
@@ -54,7 +54,7 @@ public class Scheduler {
     @PostConstruct
     public void init() {
         logger.info("Scheduler ingestedDirectory: {}", ingestedDirectory);
-        logger.info("Scheduler workDirectory: {}", ingestedDirectory);
+        logger.info("Scheduler workDirectory: {}", workDirectory);
         makeDirectories();
         // create empty parquet file in workDirectory
         String create_file = """

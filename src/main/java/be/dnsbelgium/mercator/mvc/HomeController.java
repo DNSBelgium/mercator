@@ -29,12 +29,7 @@ public class HomeController {
     private final DuckDataSource dataSource;
     private final Scheduler scheduler;
 
-    @Value("${tranco.location}")
-    @Setter
-    @Getter
-    private File trancoLocation;
-
-    public HomeController(WorkQueue workQueue, DuckDataSource dataSource, Scheduler scheduler) {
+   public HomeController(WorkQueue workQueue, DuckDataSource dataSource, Scheduler scheduler) {
       this.workQueue = workQueue;
       this.dataSource = dataSource;
       this.scheduler = scheduler;
@@ -63,33 +58,33 @@ public class HomeController {
     }
 
 
-    @GetMapping("/submit_crawls")
-    @ResponseBody
-    public String submitCrawls(@RequestParam(name = "numberOfCrawls", defaultValue = "100") int numberOfCrawls) {
-        logger.info("submitCrawls called: numberOfCrawls = {}", numberOfCrawls);
-        String query = "select domain_name from '%s' limit ?".formatted(trancoLocation.getAbsolutePath());
-        logger.info("query = {}", query);
-        JdbcClient jdbcClient = JdbcClient.create(dataSource);
-        List<String> names = jdbcClient
-            .sql(query)
-            .param(numberOfCrawls)
-            .query(String.class)
-            .list();
-        logger.info("names.size = {}", names.size());
-        for (String domainName : names) {
-            VisitRequest visitRequest = new VisitRequest(domainName);
-            // workQueue.add(visitRequest);
-            // todo: move code to service (if we want to keep it)
-            // We could also do it in one statement without the loop
-            jdbcClient
-                    .sql("insert into work (visit_id, domain_name) values (?,?)")
-                    .param(visitRequest.getVisitId())
-                    .param(visitRequest.getDomainName())
-                    .update();
-        }
-        scheduler.queueWork();
-        return "We added " + names.size() + " visit requests to the queue";
-    }
+//    @GetMapping("/submit_crawls")
+//    @ResponseBody
+//    public String submitCrawls(@RequestParam(name = "numberOfCrawls", defaultValue = "100") int numberOfCrawls) {
+//        logger.info("submitCrawls called: numberOfCrawls = {}", numberOfCrawls);
+//        String query = "select domain_name from '%s' limit ?".formatted(trancoLocation.getAbsolutePath());
+//        logger.info("query = {}", query);
+//        JdbcClient jdbcClient = JdbcClient.create(dataSource);
+//        List<String> names = jdbcClient
+//            .sql(query)
+//            .param(numberOfCrawls)
+//            .query(String.class)
+//            .list();
+//        logger.info("names.size = {}", names.size());
+//        for (String domainName : names) {
+//            VisitRequest visitRequest = new VisitRequest(domainName);
+//            // workQueue.add(visitRequest);
+//            // todo: move code to service (if we want to keep it)
+//            // We could also do it in one statement without the loop
+//            jdbcClient
+//                    .sql("insert into work (visit_id, domain_name) values (?,?)")
+//                    .param(visitRequest.getVisitId())
+//                    .param(visitRequest.getDomainName())
+//                    .update();
+//        }
+//        scheduler.queueWork();
+//        return "We added " + names.size() + " visit requests to the queue";
+//    }
 
 
     @GetMapping("/submit_crawl")
