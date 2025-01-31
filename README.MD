@@ -14,10 +14,28 @@ Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercat
 
 ## stand-alone
 
+First, create a folder where Mercator can write its output:
+
 ```bash
-docker run -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
-open localhost:8082
+export MERCATOR_DATA_DIR=~/mercator_data
+mkdir -p ${MERCATOR_DATA_DIR} 
 ```
+
+Now start Mercator in a container:
+
+```bash
+docker run --rm  -v ${MERCATOR_DATA_DIR}:/root/mercator -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
+```
+
+Every 20 seconds, Mercator will search for work by reading all CSV and parquet files in the ${MERCATOR_DATA_DIR}/work/ directory.
+
+So feed it some work by copying a CSV file in that folder
+```
+export DATA_URL="https://raw.githubusercontent.com/DNSBelgium/mercator/refs/heads/main/sample_data/visit_requests.csv"
+curl -JL -o ${MERCATOR_DATA_DIR}/work/visit_requests.csv $DATA_URL   
+```
+
+See below for details on using the generated output.
 
 ## With docker compose
 
