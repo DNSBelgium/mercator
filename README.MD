@@ -24,8 +24,10 @@ mkdir -p ${MERCATOR_DATA_DIR}
 Now start Mercator in a container:
 
 ```bash
-docker run --rm  -v ${MERCATOR_DATA_DIR}:/root/mercator -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
+docker run --rm  -e SMTP_ENABLED=false -v ${MERCATOR_DATA_DIR}:/root/mercator -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
 ```
+
+You can omit '-e SMTP_ENABLED=false' if you want to contact SMTP servers (but please know that it often takes a long time).
 
 Every 20 seconds, Mercator will search for work by reading all CSV and parquet files in the ${MERCATOR_DATA_DIR}/work/ directory.
 
