@@ -23,7 +23,7 @@ public class StatusController {
 
     @GetMapping("/status")
     public String status(Model model) {
-        logger.info("/status called");
+        logger.debug("/status called");
         var perHour = repository.getRecentCrawlRates(Repository.Frequency.PerHour, 120);
         var perMinute = repository.getRecentCrawlRates(Repository.Frequency.PerMinute, 120);
         Stats stats = repository.getStats();
