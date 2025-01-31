@@ -12,11 +12,69 @@ Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercat
 
 # Getting started
 
+## stand-alone
+
 ```bash
 docker run -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
 open localhost:8082
 ```
-                   
+
+## With docker compose
+
+```bash
+git clone git@github.com:DNSBelgium/mercator.git
+cd mercator/observability
+./start-all.sh
+```
+
+The [start-all.sh](./observability/start-all.sh) script will start three containers:
+* Mercator: you can check its Web interface at http://localhost:8082
+* Prometheus: to collect metrics from Mercator
+* Grafana: to visualize the metrics, see http://localhost:3000
+
+The Mercator container should have mounted a directory [mercator_data](./mercator_data) where you can find the crawled data.  
+Every 20 seconds, Mercator will search for work by reading all CSV and parquet files in the mercator_data/work/ directory. 
+
+So let's go back to the terminal to give Mercator something to do:
+```
+cp ../sample_data/visit_requests.csv ../mercator_data/work/  
+```
+
+That [csv file](./sample_data/visit_requests.csv) contains a thousand .be domains extracted from the Tranco list.
+
+Now browse to http://localhost:8082/status to see the progress.
+   
+When all visits are done, you can stop the containers like this:
+
+```
+docker compose stop 
+```
+
+The result of the crawling is stored in parquet files in ../mercator/visits/exported/*/*.parquet.
+
+You could use for example [duckdb](https://duckdb.org/#quickinstall) to read the data:
+
+```
+duckdb -c "select domain_name, title, twitter_links  from '../mercator_data/visits/exported/*/html_features.parquet' limit 10"  
+```
+
+```
+duckdb -c "select domain_name, url, status_code from '../mercator_data/visits/exported/*/web_page_visit.parquet' limit 10"
+```
+
+```
+duckdb -c "select ip, server_name, support_tls_1_3, support_ssl_3_0  from 'mercator_data/visits/exported/*/tls_full_scan.parquet'"
+```
+
+But there are many tools and libraries that support reading parquet files.
+          
+### Clean up
+
+To destroy the containers:
+```bash
+docker compose down 
+```
+      
 # Compared to version 1
 
 Important differences compared to previous version of Mercator 

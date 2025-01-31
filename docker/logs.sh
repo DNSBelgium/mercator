@@ -1,4 +1,6 @@
-container_id=$(docker ps --filter ancestor=maartenbosteels/monocator --format {{.ID}})
+export repo="ghcr.io/dnsbelgium/mercator"
+
+container_id=$(docker ps --filter ancestor=$repo --format {{.ID}})
 
 docker ps
 

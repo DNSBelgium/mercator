@@ -1,6 +1,6 @@
-# container_id=$(docker ps --filter ancestor=maartenbosteels/monocator --format '{{json .ID}}' | jq .)
+export repo="ghcr.io/dnsbelgium/mercator"
 
-container_id=$(docker ps --filter ancestor=maartenbosteels/monocator --format {{.ID}})
+container_id=$(docker ps --filter ancestor=$repo --format {{.ID}})
 
 docker logs ${container_id}
 
