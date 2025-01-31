@@ -37,6 +37,10 @@ export DATA_URL="https://raw.githubusercontent.com/DNSBelgium/mercator/refs/head
 curl -JL -o ${MERCATOR_DATA_DIR}/work/visit_requests.csv $DATA_URL   
 ```
 
+Now browse to http://localhost:8082/status to see the progress.
+
+When all visits are done, you can stop the container.
+
 See below for details on using the generated output.
 
 ## With docker compose
