@@ -1072,7 +1072,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "save_visitResult_seconds_count{instance=\"monocator:8082\"}",
+          "expr": "save_visitResult_seconds_count{instance=\"mercator:8082\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -1444,7 +1444,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Monocator",
+  "title": "Mercator",
   "uid": "ee2o2xd2n47wga",
   "version": 1,
   "weekStart": ""

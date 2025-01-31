@@ -1,11 +1,14 @@
 services:
 
-  monocator:
+  mercator:
     image: ghcr.io/dnsbelgium/mercator:latest
     volumes:
-      - ./mono:/root/monocator
+      - ./mono:/root/mercator
     ports:
       - '8082:8082'
+    environment:
+      SMTP_ENABLED: false
+      VAT_CRAWLER_MAX_VISITS_PER_DOMAIN: 2
     healthcheck:
       test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
       interval: 2s

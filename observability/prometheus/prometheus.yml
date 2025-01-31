@@ -19,10 +19,10 @@ scrape_configs:
     static_configs:
       - targets:
           - localhost:9090
-  - job_name: 'monocator'
+  - job_name: 'mercator'
     # Override the global default and scrape targets from this job every 5 seconds.
     scrape_interval: 5s
     metrics_path: '/actuator/prometheus'
 
     static_configs:
-      - targets: ['monocator:8082', 'host.docker.internal:8090']
+      - targets: ['mercator:8082', 'host.docker.internal:8090']

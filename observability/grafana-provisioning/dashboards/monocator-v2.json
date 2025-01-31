@@ -3207,8 +3207,8 @@
     "list": [
       {
         "current": {
-          "text": "monocator:8082",
-          "value": "monocator:8082"
+          "text": "mercator:8082",
+          "value": "mercator:8082"
         },
         "definition": "label_values(jvm_gc_overhead,instance)",
         "description": "",
@@ -3286,7 +3286,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Monocator v2",
+  "title": "Mercator v2",
   "version": 2,
   "weekStart": ""
 }

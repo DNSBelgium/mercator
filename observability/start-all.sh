@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-docker-compose build
-docker-compose up --renew-anon-volumes --remove-orphans -d
+docker compose pull
+docker compose build
+docker compose up --renew-anon-volumes --remove-orphans -d
 
 docker compose logs | grep -i "Started"
 
