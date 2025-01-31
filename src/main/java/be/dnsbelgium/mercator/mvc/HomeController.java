@@ -94,7 +94,7 @@ public class HomeController {
 
     @GetMapping("/submit_crawl")
     public String submitCrawlForm(Model model) {
-        logger.info("submitCrawlForm: model = {}", model);
+        logger.debug("submitCrawlForm: model = {}", model);
         return "submit-crawl";
     }
 
