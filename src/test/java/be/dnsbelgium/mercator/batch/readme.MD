@@ -21,9 +21,10 @@
 * define a Batch job for each crawler module
 * ItemReader : read from CSV file(s)
 * implement an ItemProcessor for each crawler module:
-    * WEB (+ feature extraction)
-    * SMTP
-    * TLS
+   * DNS 
+   * WEB (+ feature extraction)
+   * SMTP
+   * TLS
 * ItemWriter: use a JsonFileItemWriter to write the crawl results to a JSON file
 * when done (TBD: with a chunk or with a job): use duckdb to convert the JSON files to parquet 
 * optionally upload the parquet files to S3. 
@@ -53,3 +54,14 @@ copy (
         ) 
   from WebCrawlResult
 ) to web_site_visit.parquet;
+
+# Benefits
+
+* All the code to create (duckdb) table can be removed.
+* All the code to insert rows into these tables can be removed (serialization will be done by Jackson)
+* All modules (at least WEB, SMTP, TLS) can be run in parallel and independed from each other
+* No more commit per visit => should lead to higher throughput
+
+# Potential issues
+* Changing the layout of classes like WebCrawlResult will result in (unintentional) differences in output structure  
+* But this can be covered with unit tests
