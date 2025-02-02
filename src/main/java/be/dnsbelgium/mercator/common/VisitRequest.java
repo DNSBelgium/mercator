@@ -12,8 +12,7 @@ public class VisitRequest {
   private String visitId;
   private String domainName;
 
-  @SuppressWarnings("unused") //used by Jackson
-  private VisitRequest() {
+  public VisitRequest() {
   }
 
   public VisitRequest(String domainName) {

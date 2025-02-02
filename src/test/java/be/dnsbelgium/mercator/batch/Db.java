@@ -30,17 +30,15 @@ public class Db {
 
   private void addScript(String location) {
     resourceDatabasePopulator.addScript(resourceLoader.getResource(location));
-
   }
 
   @PostConstruct
   public void init() {
     logger.info("Initializing DB");
-    addScript("classpath:org/springframework/batch/core/schema-drop-postgresql.sql");
-    addScript("classpath:org/springframework/batch/core/schema-postgresql.sql");
+    // addScript("classpath:org/springframework/batch/core/schema-drop-postgresql.sql");
+    // addScript("classpath:org/springframework/batch/core/schema-postgresql.sql");
     DatabasePopulatorUtils.execute(resourceDatabasePopulator, dataSource);
     logger.info("DONE Initializing DB");
   }
-
 
 }

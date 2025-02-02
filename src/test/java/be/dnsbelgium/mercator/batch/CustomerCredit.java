@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class CustomerCredit {
 
   private int id;
+  private String visitId;
 
   private String name;
 
@@ -66,4 +67,11 @@ public class CustomerCredit {
     return id;
   }
 
+  public String getVisitId() {
+    return visitId;
+  }
+
+  public void setVisitId(String visitId) {
+    this.visitId = visitId;
+  }
 }

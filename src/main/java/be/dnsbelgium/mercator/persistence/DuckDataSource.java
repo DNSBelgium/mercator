@@ -69,6 +69,11 @@ public class DuckDataSource extends AbstractDriverBasedDataSource {
 
     }
 
+    public DuckDBConnection connection() {
+        return connection;
+
+    }
+
 
 
 }

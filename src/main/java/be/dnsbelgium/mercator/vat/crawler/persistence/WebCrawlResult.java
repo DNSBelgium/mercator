@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@ToString
+@ToString(exclude = {"pageVisits", "htmlFeatures"})
 public class WebCrawlResult {
 
   private String visitId;
