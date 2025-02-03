@@ -26,6 +26,7 @@
    * SMTP
    * TLS
 * ItemWriter: use a JsonFileItemWriter to write the crawl results to a JSON file
+* for tables with only simple datatypes we can create an ItemWriter that uses a DuckDbAppender and avoid the json step in between.
 * when done (TBD: with a chunk or with a job): use duckdb to convert the JSON files to parquet 
 * optionally upload the parquet files to S3. 
 
