@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import inet.ipaddr.HostName;
-import inet.ipaddr.IPAddress;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -73,16 +72,10 @@ class BlackListTest {
     logger.info("hostName.isEmpty = {}", hostName.isEmpty());
     logger.info("address.getAddress() = {}", address.getAddress());
 
-    //IPAddress ipAddress = new HostName(address).asAddress();
-
     if (blackList.isBlacklisted(address)) {
       logger.info("address isBlacklisted = {}", address);
     }
 
-    //IPAddress address = new HostName(inetAddress).asAddress();
-
-//    blackList.add("1.2");
-//    blackList.isBlacklisted("1.2.3.x");
   }
 
 

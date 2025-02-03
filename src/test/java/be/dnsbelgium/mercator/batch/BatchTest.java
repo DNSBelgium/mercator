@@ -6,9 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -16,30 +16,34 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class BatchTest {
 
   private static final Logger logger = LoggerFactory.getLogger(BatchTest.class);
 
+  @Autowired @Qualifier("webJob") Job webJob;
+  @Autowired @Qualifier("tlsJob") Job tlsJob;
+  @Autowired @Qualifier("smtpJob") Job smtpJob;
+
   @Test
   public void webJob() throws JobExecutionException {
-    runJob("webJob");
+    run(webJob);
   }
 
   @Test
   public void smtpJob() throws JobExecutionException {
-    runJob("smtpJob");
+    run(smtpJob);
   }
 
   @Test
   public void tlsJob() throws JobExecutionException {
-    runJob("tlsJob");
+    run(tlsJob);
   }
 
-  public void runJob(String name) throws JobExecutionException {
+  public void run(Job job) throws JobExecutionException {
     ApplicationContext context = new AnnotationConfigApplicationContext(MercatorApplication.class);
     JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-    Job job = context.getBean(name, Job.class);
-    String outputFileName = "file:./target/test-outputs/" + name + ".json";
+    String outputFileName = "file:./target/test-outputs/" + job.getName() + ".json";
 
     JobParameters jobParameters = new JobParametersBuilder()
             .addString("inputFile", "test-data/visit_requests.csv")

@@ -2,13 +2,10 @@ package be.dnsbelgium.mercator.smtp.persistence.entities;
 
 import com.github.f4b6a3.ulid.Ulid;
 import lombok.*;
-import org.slf4j.Logger;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Data
 @Builder

@@ -4,9 +4,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,6 @@ import jakarta.annotation.PostConstruct;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -29,11 +25,10 @@ import static be.dnsbelgium.mercator.tls.metrics.MetricName.COUNTER_VISITS_COMPL
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class TlsCrawler implements CrawlerModule<TlsCrawlResult> , ItemProcessor<VisitRequest, TlsCrawlResult> {
+public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
   private final FullScanCache fullScanCache;
   private final TlsScanner tlsScanner;
-  //private final TlsRepository tlsRepository;
   private final BlackList blackList;
   private final MeterRegistry meterRegistry;
 
@@ -48,11 +43,9 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> , ItemProcessor
   public TlsCrawler(
           TlsScanner tlsScanner,
           FullScanCache fullScanCache,
-          //TlsRepository tlsRepository,
           BlackList blackList, MeterRegistry meterRegistry) {
       this.fullScanCache = fullScanCache;
       this.tlsScanner = tlsScanner;
-      //this.tlsRepository = tlsRepository;
       this.blackList = blackList;
       this.meterRegistry = meterRegistry;
   }
@@ -72,6 +65,7 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> , ItemProcessor
     }
   }
 
+  @SuppressWarnings("unused") // TODO
   public void addToCache(TlsCrawlResult tlsCrawlResult) {
     fullScanCache.add(Instant.now(), tlsCrawlResult.getFullScanEntity());
   }
@@ -114,67 +108,6 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> , ItemProcessor
     return tlsScanner.scan(address);
   }
 
-
-  @Override
-  public List<TlsCrawlResult> collectData(VisitRequest visitRequest) {
-    List<TlsCrawlResult> results = new ArrayList<>();
-    try {
-      Threads.TLS.incrementAndGet();
-      if (visitApex) {
-        String hostName = visitRequest.getDomainName();
-        TlsCrawlResult tlsCrawlResult = visit(hostName, visitRequest);
-        results.add(tlsCrawlResult);
-      }
-      if (visitWww) {
-        String hostName = "www." + visitRequest.getDomainName();
-        TlsCrawlResult tlsCrawlResult = visit(hostName, visitRequest);
-        results.add(tlsCrawlResult);
-      }
-      meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
-    } finally {
-      Threads.TLS.decrementAndGet();
-    }
-    return results;
-  }
-
-  @Override
-  public void save(List<?> collectedData) {
-    collectedData.forEach(this::save);
-  }
-
-  public void save(Object item) {
-    if (item instanceof TlsCrawlResult visit) {
-      saveItem(visit);
-    } else {
-      logger.error("Cannot save item of type: {}", item.getClass().getName());
-    }
-  }
-
-
-  @Override
-  public void saveItem(TlsCrawlResult tlsCrawlResult) {
-//    tlsRepository.persist(tlsCrawlResult);
-  }
-
-  @Override
-  public void afterSave(List<?> collectedData) {
-    for (Object object : collectedData) {
-      if (object instanceof TlsCrawlResult tlsCrawlResult) {
-        addToCache(tlsCrawlResult);
-      }
-    }
-  }
-
-  @Override
-  public List<TlsCrawlResult> find(String visitId) {
-    // TODO
-    throw new NotImplementedException("TODO");
-  }
-
-  @Override
-  public void createTables() {
-    //tlsRepository.createTablesTls();
-  }
 
   @Override
   public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {

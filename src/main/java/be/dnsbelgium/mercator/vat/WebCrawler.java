@@ -5,13 +5,11 @@ import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
 import be.dnsbelgium.mercator.vat.domain.Link;
 import be.dnsbelgium.mercator.vat.domain.Page;
 import be.dnsbelgium.mercator.vat.domain.SiteVisit;
 import be.dnsbelgium.mercator.vat.domain.VatScraper;
 import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.Setter;
@@ -31,14 +29,13 @@ import static be.dnsbelgium.mercator.vat.metrics.MetricName.COUNTER_WEB_CRAWLS_D
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class WebCrawler { //implements CrawlerModule<WebCrawlResult> {
+public class WebCrawler {
 
     private static final Logger logger = getLogger(WebCrawler.class);
 
     private final VatScraper vatScraper;
     private final MeterRegistry meterRegistry;
     private final HtmlFeatureExtractor htmlFeatureExtractor;
-    private final WebRepository webRepository;
 
     @Setter
     @Value("${vat.crawler.max.visits.per.domain:10}")
@@ -57,11 +54,11 @@ public class WebCrawler { //implements CrawlerModule<WebCrawlResult> {
     private boolean persistBodyText = false;
 
     @Autowired
-    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, WebRepository webRepository) {
+    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor) {
         this.vatScraper = vatScraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
-        this.webRepository = webRepository;
+        logger.info("maxVisitsPerDomain = {}", maxVisitsPerDomain);
     }
 
     @PostConstruct
@@ -166,48 +163,4 @@ public class WebCrawler { //implements CrawlerModule<WebCrawlResult> {
         return webCrawlResult;
     }
 
-//    @Override
-    public List<WebCrawlResult> collectData(VisitRequest visitRequest) {
-        WebCrawlResult webCrawlResult = crawl(visitRequest);
-        return List.of(webCrawlResult);
-    }
-
-//    @Override
-//    public void save(List<?> collectedData) {
-//        collectedData.forEach(this::saveObject);
-//    }
-
-//    public void saveObject(Object object) {
-//        if (object instanceof WebCrawlResult webCrawlResult) {
-//            saveItem(webCrawlResult);
-//        } else {
-//            logger.error("Cannot save {}", object);
-//        }
-//    }
-
-//    @Override
-//    public void saveItem(WebCrawlResult webCrawlResult) {
-//        webRepository.saveWebVisit(webCrawlResult);
-//        logger.debug("Persisting the {} page visits for {}",
-//                webCrawlResult.getPageVisits().size(), webCrawlResult.getStartUrl());
-//        webRepository.savePageVisits(webCrawlResult.getPageVisits());
-//        for (HtmlFeatures htmlFeatures : webCrawlResult.getHtmlFeatures()) {
-//            webRepository.save(htmlFeatures);
-//        }
-//    }
-
-//    @Override
-//    public void afterSave(List<?> collectedData) {
-//        // nothing to do
-//    }
-//
-//    @Override
-//    public List<WebCrawlResult> find(String visitId) {
-//        return webRepository.findWebCrawlResult(visitId);
-//    }
-//
-//    @Override
-//    public void createTables() {
-//        webRepository.createTables();
-//    }
 }

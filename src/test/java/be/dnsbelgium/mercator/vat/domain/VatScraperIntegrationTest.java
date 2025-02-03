@@ -27,7 +27,7 @@ public class VatScraperIntegrationTest {
    */
 
   private VatScraper vatScraper;
-  private static final Logger logger = getLogger(VatScraperTest.class);
+  private static final Logger logger = getLogger(VatScraperIntegrationTest.class);
   private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
   @BeforeEach

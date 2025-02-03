@@ -1,6 +1,10 @@
 package be.dnsbelgium.mercator.vat.domain;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.vat.WebCrawler;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -16,12 +20,12 @@ public class VatCrawlerIntegrationTest {
   // and stores the result in a Postgres database.
   // LocalStack is started to avoid complaints about unexisting SQS queues
 
-//  @Autowired
-//  private VatCrawler vatCrawler;
-//
-//  @Test
-//  public void casino() {
-//    vatCrawler.process(new VisitRequest("casino-legal-belgique.be"));
-//  }
+  @Autowired
+  private WebCrawler webCrawler;
+
+  @Test
+  public void casino() {
+    webCrawler.visit(new VisitRequest("casino-legal-belgique.be"));
+  }
 
 }
