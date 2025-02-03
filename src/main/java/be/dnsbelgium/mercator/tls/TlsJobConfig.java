@@ -1,8 +1,10 @@
-package be.dnsbelgium.mercator.vat;
+package be.dnsbelgium.mercator.tls;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,17 +25,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 
 @SuppressWarnings("SpringElInspection")
 @Configuration
-public class WebJobConfig {
+public class TlsJobConfig {
 
-  private static final Logger logger = LoggerFactory.getLogger(WebJobConfig.class);
+  private static final Logger logger = LoggerFactory.getLogger(TlsJobConfig.class);
 
   @Bean
   @StepScope
-  public FlatFileItemReader<VisitRequest> itemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
+  public FlatFileItemReader<VisitRequest> tlsItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
     logger.info("creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
@@ -46,41 +49,40 @@ public class WebJobConfig {
 
   @Bean
   @StepScope
-  public JsonFileItemWriter<WebCrawlResult> webCrawlResultJsonFileItemWriter(
+  public JsonFileItemWriter<TlsCrawlResult> tlsJsonFileItemWriter(
           @Value("#{jobParameters[outputFile]}") WritableResource resource,
           JavaTimeModule javaTimeModule) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(javaTimeModule);
-    JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller
+    objectMapper.registerModule(new Jdk8Module());
+    JacksonJsonObjectMarshaller<TlsCrawlResult> jsonObjectMarshaller
             = new JacksonJsonObjectMarshaller<>(objectMapper);
 
-    return new JsonFileItemWriterBuilder<WebCrawlResult>()
-            .name("WebCrawlResultWriter")
+    return new JsonFileItemWriterBuilder<TlsCrawlResult>()
+            .name("tls-writer")
             .jsonObjectMarshaller(jsonObjectMarshaller)
             .resource(resource)
             .build();
   }
 
-  @Bean(name = "webJob")
-  public Job webJob(JobRepository jobRepository,
+  @Bean(name = "tlsJob")
+  public Job tlsJob(JobRepository jobRepository,
                     JdbcTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
-                    WebProcessor processor,
-                    JsonFileItemWriter<WebCrawlResult> itemWriter) {
-    logger.info("creating webJob");
-    Step step = new StepBuilder("web", jobRepository)
-            .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
+                    TlsCrawler tlsCrawler,
+                    JsonFileItemWriter<TlsCrawlResult> itemWriter) {
+    logger.info("creating tlsJob");
+    Step step = new StepBuilder("tls", jobRepository)
+            .<VisitRequest, TlsCrawlResult>chunk(10, transactionManager)
             .reader(itemReader)
-            //.taskExecutor(new VirtualThreadTaskExecutor("web-virtual-thread"))
-            .processor(processor)
+            .taskExecutor(new VirtualThreadTaskExecutor("tls-virtual-thread"))
+            .processor(tlsCrawler)
             .writer(itemWriter)
-            //.faultTolerant().retry(Exception.class).retryLimit(5)
             .build();
 
-    return new JobBuilder("web", jobRepository)
+    return new JobBuilder("tls-job", jobRepository)
             .start(step)
             .build();
   }
-
 
 }

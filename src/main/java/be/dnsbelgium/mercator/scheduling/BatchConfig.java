@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
+@EnableBatchProcessing
 public class BatchConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(BatchConfig.class);
@@ -33,6 +35,8 @@ public class BatchConfig {
   public JobRepository jobRepository(JobRepositoryFactoryBean factoryBean) throws Exception {
     return factoryBean.getObject();
   }
+
+
 
   @Bean
   public DataSource dataSource() {
@@ -55,8 +59,6 @@ public class BatchConfig {
   @Bean
   public JavaTimeModule javaTimeModule() {
     JavaTimeModule module = new JavaTimeModule();
-//    LocalDateTimeSerializer LOCAL_DATETIME_SERIALIZER = new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATETIME_FORMAT));
-//    module.addSerializer(LOCAL_DATETIME_SERIALIZER);
     logger.info("module = {}", module);
     return module;
   }

@@ -67,9 +67,4 @@ public class ParquetWritingTest {
     }
   }
 
-  @Test
-  public void json() {
-
-  }
-
 }

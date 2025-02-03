@@ -1,9 +1,6 @@
 package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.MercatorApplication;
-import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.WebJobConfig;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,62 +21,36 @@ public class BatchTest {
   private static final Logger logger = LoggerFactory.getLogger(BatchTest.class);
 
   @Test
-  public void start() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
-    logger.info("javaTimeModule = {}", javaTimeModule);
-
-
-    ApplicationContext context = new AnnotationConfigApplicationContext(MercatorApplication.class);
-    logger.info("context = {}", context);
-
-    JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-    Job job = context.getBean(Job.class);
-
-    logger.info("job = {}", job);
-    logger.info("job = {}", job.getName());
-
-
-    JobParameters jobParameters = new JobParametersBuilder()
-            .addString("inputFile", "test-data/visit_requests.csv")
-            .addString("outputFile", "file:./target/test-outputs/web_crawl_results.json")
-            .addString("job_uuid", UUID.randomUUID().toString())
-            .toJobParameters();
-
-    // when
-    JobExecution jobExecution = jobLauncher.run(job, jobParameters);
-
-    logger.info("jobExecution = {}", jobExecution);
-    logger.info("jobExecution = {}", jobExecution.getExitStatus());
-    logger.info("jobExecution = {}", jobExecution.getLastUpdated());
-
-    for (StepExecution stepExecution : jobExecution.getStepExecutions()) {
-      logger.info("stepExecution = {}", stepExecution);
-    }
-
-    assertEquals(BatchStatus.COMPLETED, jobExecution.getStatus());
-
-    VisitRequest request = new VisitRequest("uuid", "dnsbelgium.be");
-    logger.info("request = {}", request);
+  public void webJob() throws JobExecutionException {
+    runJob("webJob");
   }
 
   @Test
-  public void webJob() throws JobExecutionException {
-    runJob(WebJobConfig.class);
+  public void smtpJob() throws JobExecutionException {
+    runJob("smtpJob");
   }
 
-  public void runJob(Class<?> clazz) throws JobExecutionException {
+  @Test
+  public void tlsJob() throws JobExecutionException {
+    runJob("tlsJob");
+  }
+
+  public void runJob(String name) throws JobExecutionException {
     ApplicationContext context = new AnnotationConfigApplicationContext(MercatorApplication.class);
     JobLauncher jobLauncher = context.getBean(JobLauncher.class);
-    Job job = context.getBean(Job.class);
+    Job job = context.getBean(name, Job.class);
+    String outputFileName = "file:./target/test-outputs/" + name + ".json";
+
     JobParameters jobParameters = new JobParametersBuilder()
-            .addString("inputFile", "test-data/delimited.csv")
-            .addString("outputFile", "file:./target/test-outputs/output.csv")
+            .addString("inputFile", "test-data/visit_requests.csv")
+            .addString("outputFile", outputFileName)
+            .addString("job_uuid", UUID.randomUUID().toString())
             .toJobParameters();
     JobExecution jobExecution = jobLauncher.run(job, jobParameters);
-    logger.info("jobExecution = {}", jobExecution);
-    logger.info("jobExecution = {}", jobExecution.getExitStatus());
-    logger.info("jobExecution = {}", jobExecution.getLastUpdated());
+    logger.info("jobExecution.startTime = {}", jobExecution.getStartTime());
+    logger.info("jobExecution.endTime   = {}", jobExecution.getEndTime());
+    logger.info("jobExecution.exitstatus = {}", jobExecution.getExitStatus());
+    logger.info("jobExecution.lastUpdated = {}", jobExecution.getLastUpdated());
     for (StepExecution stepExecution : jobExecution.getStepExecutions()) {
       logger.info("stepExecution = {}", stepExecution);
     }

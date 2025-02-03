@@ -1,7 +1,7 @@
-package be.dnsbelgium.mercator.vat;
+package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
+import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
@@ -27,13 +27,13 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 
 @SuppressWarnings("SpringElInspection")
 @Configuration
-public class WebJobConfig {
+public class SmtpJobConfig {
 
-  private static final Logger logger = LoggerFactory.getLogger(WebJobConfig.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmtpJobConfig.class);
 
   @Bean
   @StepScope
-  public FlatFileItemReader<VisitRequest> itemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
+  public FlatFileItemReader<VisitRequest> smtpItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
     logger.info("creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
@@ -46,41 +46,39 @@ public class WebJobConfig {
 
   @Bean
   @StepScope
-  public JsonFileItemWriter<WebCrawlResult> webCrawlResultJsonFileItemWriter(
+  public JsonFileItemWriter<SmtpVisit> smtpJsonFileItemWriter(
           @Value("#{jobParameters[outputFile]}") WritableResource resource,
           JavaTimeModule javaTimeModule) {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(javaTimeModule);
-    JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller
+    JacksonJsonObjectMarshaller<SmtpVisit> jsonObjectMarshaller
             = new JacksonJsonObjectMarshaller<>(objectMapper);
 
-    return new JsonFileItemWriterBuilder<WebCrawlResult>()
-            .name("WebCrawlResultWriter")
+    return new JsonFileItemWriterBuilder<SmtpVisit>()
+            .name("smtp-writer")
             .jsonObjectMarshaller(jsonObjectMarshaller)
             .resource(resource)
             .build();
   }
 
-  @Bean(name = "webJob")
-  public Job webJob(JobRepository jobRepository,
+  @Bean(name = "smtpJob")
+  public Job smtpJob(JobRepository jobRepository,
                     JdbcTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
-                    WebProcessor processor,
-                    JsonFileItemWriter<WebCrawlResult> itemWriter) {
-    logger.info("creating webJob");
-    Step step = new StepBuilder("web", jobRepository)
-            .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
+                    SmtpCrawler smtpCrawler,
+                    JsonFileItemWriter<SmtpVisit> itemWriter) {
+    logger.info("creating smtpJob");
+    Step step = new StepBuilder("smtp", jobRepository)
+            .<VisitRequest, SmtpVisit>chunk(10, transactionManager)
             .reader(itemReader)
-            //.taskExecutor(new VirtualThreadTaskExecutor("web-virtual-thread"))
-            .processor(processor)
+            //.taskExecutor(new VirtualThreadTaskExecutor("smtp-virtual-thread"))
+            .processor(smtpCrawler)
             .writer(itemWriter)
-            //.faultTolerant().retry(Exception.class).retryLimit(5)
             .build();
 
-    return new JobBuilder("web", jobRepository)
+    return new JobBuilder("smtp-job", jobRepository)
             .start(step)
             .build();
   }
-
 
 }

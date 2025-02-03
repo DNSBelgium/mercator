@@ -5,11 +5,11 @@ import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpAnalyzer;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
 import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
-import be.dnsbelgium.mercator.smtp.persistence.repositories.SmtpRepository;
 import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.annotation.Timed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,18 +18,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
+public class SmtpCrawler implements CrawlerModule<SmtpVisit>, ItemProcessor<VisitRequest, SmtpVisit> {
 
-  //private final SmtpRepository smtpRepository;
+
   private final SmtpAnalyzer smtpAnalyzer;
   private final SmtpConversationCache cache;
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpCrawler.class);
 
-  public SmtpCrawler(
-          SmtpRepository smtpRepository,
-          SmtpAnalyzer smtpAnalyzer, SmtpConversationCache cache) {
-    //this.smtpRepository = smtpRepository;
+  public SmtpCrawler(SmtpAnalyzer smtpAnalyzer, SmtpConversationCache cache) {
     this.smtpAnalyzer = smtpAnalyzer;
     this.cache = cache;
   }
@@ -46,6 +43,13 @@ public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
     SmtpVisit smtpVisit = smtpAnalyzer.visit(visitRequest.getDomainName());
     smtpVisit.setVisitId(visitRequest.getVisitId());
     return List.of(smtpVisit);
+  }
+
+  @Override
+  public SmtpVisit process(VisitRequest visitRequest) {
+    SmtpVisit smtpVisit = smtpAnalyzer.visit(visitRequest.getDomainName());
+    smtpVisit.setVisitId(visitRequest.getVisitId());
+    return smtpVisit;
   }
 
   @Override

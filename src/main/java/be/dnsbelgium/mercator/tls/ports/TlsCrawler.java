@@ -8,8 +8,10 @@ import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +29,7 @@ import static be.dnsbelgium.mercator.tls.metrics.MetricName.COUNTER_VISITS_COMPL
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
+public class TlsCrawler implements CrawlerModule<TlsCrawlResult> , ItemProcessor<VisitRequest, TlsCrawlResult> {
 
   private final FullScanCache fullScanCache;
   private final TlsScanner tlsScanner;
@@ -172,5 +174,24 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
   @Override
   public void createTables() {
     //tlsRepository.createTablesTls();
+  }
+
+  @Override
+  public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
+    try {
+      Threads.TLS.incrementAndGet();
+      if (visitWww) {
+        String hostName = "www." + visitRequest.getDomainName();
+        return visit(hostName, visitRequest);
+      }
+      // TODO: create a job for www and one for apex ?
+      // or find out how to 'fork' a job
+      String hostName = visitRequest.getDomainName();
+      return visit(hostName, visitRequest);
+
+    } finally {
+      meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
+      Threads.TLS.decrementAndGet();
+    }
   }
 }
