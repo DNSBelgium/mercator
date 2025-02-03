@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.MercatorApplication;
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.vat.WebJobConfig;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -63,17 +64,12 @@ public class BatchTest {
   }
 
   @Test
-  public void creditJob() throws JobExecutionException {
-    runJob(CreditJobConfiguration.class);
-  }
-
-  @Test
   public void webJob() throws JobExecutionException {
     runJob(WebJobConfig.class);
   }
 
   public void runJob(Class<?> clazz) throws JobExecutionException {
-    ApplicationContext context = new AnnotationConfigApplicationContext(clazz);
+    ApplicationContext context = new AnnotationConfigApplicationContext(MercatorApplication.class);
     JobLauncher jobLauncher = context.getBean(JobLauncher.class);
     Job job = context.getBean(Job.class);
     JobParameters jobParameters = new JobParametersBuilder()

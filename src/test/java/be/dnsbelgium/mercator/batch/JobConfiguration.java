@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.vat.WebProcessor;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -85,6 +86,7 @@ public class JobConfiguration {
 
     PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
     WritableResource outputJsonFile = (WritableResource) resolver.getResource("file:output-web.json");
+    logger.info("outputJsonFile = {}", outputJsonFile);
 
     return new JsonFileItemWriterBuilder<WebCrawlResult>()
             .name("WebCrawlResultWriter")
@@ -102,13 +104,16 @@ public class JobConfiguration {
                     WebProcessor processor,
                     JsonFileItemWriter<WebCrawlResult> itemWriter)
   {
+    //logger.info("creating webJob with itemReader={} and itemWriter={}", itemReader, itemWriter);
+    logger.info("creating webJob");
+
     Step step = new StepBuilder("web", jobRepository)
             .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
             .reader(itemReader)
-            .taskExecutor(new VirtualThreadTaskExecutor("web-virtual-thread"))
+            //.taskExecutor(new VirtualThreadTaskExecutor("web-virtual-thread"))
             .processor(processor)
             .writer(itemWriter)
-            .faultTolerant().retry(Exception.class).retryLimit(5)
+            //.faultTolerant().retry(Exception.class).retryLimit(5)
             .build();
 
     return new JobBuilder("web", jobRepository)

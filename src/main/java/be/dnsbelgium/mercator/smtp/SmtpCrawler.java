@@ -20,14 +20,16 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
 
-  private final SmtpRepository smtpRepository;
+  //private final SmtpRepository smtpRepository;
   private final SmtpAnalyzer smtpAnalyzer;
   private final SmtpConversationCache cache;
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpCrawler.class);
 
-  public SmtpCrawler(SmtpRepository smtpRepository, SmtpAnalyzer smtpAnalyzer, SmtpConversationCache cache) {
-    this.smtpRepository = smtpRepository;
+  public SmtpCrawler(
+          SmtpRepository smtpRepository,
+          SmtpAnalyzer smtpAnalyzer, SmtpConversationCache cache) {
+    //this.smtpRepository = smtpRepository;
     this.smtpAnalyzer = smtpAnalyzer;
     this.cache = cache;
   }
@@ -48,7 +50,7 @@ public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
 
   @Override
   public void saveItem(SmtpVisit visit) {
-    smtpRepository.saveVisit(visit);
+    //smtpRepository.saveVisit(visit);
   }
 
   public void save(Object item) {
@@ -89,11 +91,12 @@ public class SmtpCrawler implements CrawlerModule<SmtpVisit> {
   @Override
   public List<SmtpVisit> find(String visitId) {
     // we will never return more than one SmtpVisit
-    return smtpRepository.findVisit(visitId).stream().toList();
+    //return smtpRepository.findVisit(visitId).stream().toList();
+    return null;
   }
 
   @Override
   public void createTables() {
-    smtpRepository.createTables();
+    //smtpRepository.createTables();
   }
 }

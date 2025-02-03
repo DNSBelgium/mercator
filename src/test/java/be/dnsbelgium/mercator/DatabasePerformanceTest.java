@@ -66,29 +66,29 @@ public class DatabasePerformanceTest {
   public void init() {
   }
 
-  @Test
-  @Transactional
-  public void htmlFeatures() throws InterruptedException {
-    visitRepository.attachAndUse();
-    for (int k=0; k<10; k++) {
-      Instant start = Instant.now();
-      for (int i=0; i<10; i++ ) {
-        HtmlFeatures htmlFeatures = new HtmlFeatures();
-        htmlFeatures.visitId = VisitIdGenerator.generate();
-        htmlFeatures.domainName = "google.com";
-        htmlFeatures.crawlTimestamp = Instant.now();
-        htmlFeatures.body_text = "hello world";
-        htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
-        htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
-        webRepository.save(htmlFeatures);
-      }
-      Instant done = Instant.now();
-      Duration duration = Duration.between(start, done);
-      logger.info("saving rows took {}", duration);
-      logger.info("Sleeping 60s to give prometheus time to scrape us");
-      Thread.sleep(60_000);
-    }
-  }
+//  @Test
+//  @Transactional
+//  public void htmlFeatures() throws InterruptedException {
+//    visitRepository.attachAndUse();
+//    for (int k=0; k<10; k++) {
+//      Instant start = Instant.now();
+//      for (int i=0; i<10; i++ ) {
+//        HtmlFeatures htmlFeatures = new HtmlFeatures();
+//        htmlFeatures.visitId = VisitIdGenerator.generate();
+//        htmlFeatures.domainName = "google.com";
+//        htmlFeatures.crawlTimestamp = Instant.now();
+//        htmlFeatures.body_text = "hello world";
+//        htmlFeatures.external_hosts = List.of("google.com", "facebook.com");
+//        htmlFeatures.linkedin_links = List.of("linkedin.com/abc", "https://linkedin.com/xxx");
+//        webRepository.save(htmlFeatures);
+//      }
+//      Instant done = Instant.now();
+//      Duration duration = Duration.between(start, done);
+//      logger.info("saving rows took {}", duration);
+//      logger.info("Sleeping 60s to give prometheus time to scrape us");
+//      Thread.sleep(60_000);
+//    }
+//  }
 
   private HtmlFeatures features() {
     HtmlFeatures htmlFeatures = new HtmlFeatures();
@@ -128,95 +128,95 @@ public class DatabasePerformanceTest {
     return htmlFeatures;
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  @Test
-  @Disabled
-  public void multiThreaded() throws InterruptedException {
-    int loops = 5;
-    int threads = 100;
-    int rows = 10_000;
-    logger.info("loop starting");
-    for (int k=0; k<loops; k++) {
-      logger.info("starting with loop {} out of {}", k+1, loops);
-      ExecutorService executorService = Executors.newFixedThreadPool(threads);
-      Instant start = Instant.now();
-      for (int i=0; i<rows; i++ ) {
-        executorService.submit(() -> {
-          try {
-            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-            transactionTemplate.execute(status -> {
-              visitRepository.attachAndUse();
-              webRepository.save(features());
-              return null;
-            });
-          } catch (Exception e) {
-            logger.error("error", e);
-          }
-        });
-      }
-      logger.info("loop done");
-      executorService.shutdown();
-      executorService.awaitTermination(10, TimeUnit.MINUTES);
-      Instant done = Instant.now();
-      Duration duration = Duration.between(start, done);
-      logger.info("saving {} rows with {} threads took {}", rows, threads, duration);
-      logger.info("Sleeping 5s");
-      Thread.sleep(5_000);
+//  @SuppressWarnings("ResultOfMethodCallIgnored")
+//  @Test
+//  @Disabled
+//  public void multiThreaded() throws InterruptedException {
+//    int loops = 5;
+//    int threads = 100;
+//    int rows = 10_000;
+//    logger.info("loop starting");
+//    for (int k=0; k<loops; k++) {
+//      logger.info("starting with loop {} out of {}", k+1, loops);
+//      ExecutorService executorService = Executors.newFixedThreadPool(threads);
+//      Instant start = Instant.now();
+//      for (int i=0; i<rows; i++ ) {
+//        executorService.submit(() -> {
+//          try {
+//            TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+//            transactionTemplate.execute(status -> {
+//              visitRepository.attachAndUse();
+//              webRepository.save(features());
+//              return null;
+//            });
+//          } catch (Exception e) {
+//            logger.error("error", e);
+//          }
+//        });
+//      }
+//      logger.info("loop done");
+//      executorService.shutdown();
+//      executorService.awaitTermination(10, TimeUnit.MINUTES);
+//      Instant done = Instant.now();
+//      Duration duration = Duration.between(start, done);
+//      logger.info("saving {} rows with {} threads took {}", rows, threads, duration);
+//      logger.info("Sleeping 5s");
+//      Thread.sleep(5_000);
+//
+//    }
+//    logger.info("Sleeping 60s to give prometheus time to scrape us");
+//    Thread.sleep(60_000);
+//  }
 
-    }
-    logger.info("Sleeping 60s to give prometheus time to scrape us");
-    Thread.sleep(60_000);
-  }
-
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  @Test
-  @Disabled
-  public void multiThreaded_v2() throws InterruptedException {
-    int loops = 2;
-    int threads = 5;
-    int rows = 10;
-    logger.info("loop starting");
-    for (int k=0; k<loops; k++) {
-      logger.info("starting with loop {} out of {}", k+1, loops);
-      ExecutorService executorService = Executors.newFixedThreadPool(threads);
-      Instant start = Instant.now();
-
-
-      for (int i=0; i<rows; i++ ) {
-        executorService.submit(() -> {
-          try {
-            List<HtmlFeatures> featuresList = List.of(features());
-            Map<CrawlerModule<?>, List<?>> data = new HashMap<>();
-
-            List<WebCrawlResult> crawlResults = new ArrayList<>();
-            WebCrawlResult webCrawlResult = WebCrawlResult.builder().htmlFeatures(featuresList).build();
-            crawlResults.add(webCrawlResult);
-            data.put(webCrawler, crawlResults);
-
-            VisitResult result = VisitResult.builder()
-                    .collectedData(data)
-                    .build();
-
-            visitService.save(result);
-          } catch (Exception e) {
-            logger.error("failed", e);
-          }
-        });
-      }
-      logger.info("loop done");
-      executorService.shutdown();
-      executorService.awaitTermination(10, TimeUnit.MINUTES);
-      Instant done = Instant.now();
-      Duration duration = Duration.between(start, done);
-      logger.info("saving {} rows with {} threads took {}", rows, threads, duration);
-      //logger.info("Sleeping 5s");
-      //Thread.sleep(5_000);
-
-    }
-    //logger.info("Sleeping 60s to give prometheus time to scrape us");
-    //Thread.sleep(60_000);
-
-
-  }
+//  @SuppressWarnings("ResultOfMethodCallIgnored")
+//  @Test
+//  @Disabled
+//  public void multiThreaded_v2() throws InterruptedException {
+//    int loops = 2;
+//    int threads = 5;
+//    int rows = 10;
+//    logger.info("loop starting");
+//    for (int k=0; k<loops; k++) {
+//      logger.info("starting with loop {} out of {}", k+1, loops);
+//      ExecutorService executorService = Executors.newFixedThreadPool(threads);
+//      Instant start = Instant.now();
+//
+//
+//      for (int i=0; i<rows; i++ ) {
+//        executorService.submit(() -> {
+//          try {
+//            List<HtmlFeatures> featuresList = List.of(features());
+//            Map<CrawlerModule<?>, List<?>> data = new HashMap<>();
+//
+//            List<WebCrawlResult> crawlResults = new ArrayList<>();
+//            WebCrawlResult webCrawlResult = WebCrawlResult.builder().htmlFeatures(featuresList).build();
+//            crawlResults.add(webCrawlResult);
+//            data.put(webCrawler, crawlResults);
+//
+//            VisitResult result = VisitResult.builder()
+//                    .collectedData(data)
+//                    .build();
+//
+//            visitService.save(result);
+//          } catch (Exception e) {
+//            logger.error("failed", e);
+//          }
+//        });
+//      }
+//      logger.info("loop done");
+//      executorService.shutdown();
+//      executorService.awaitTermination(10, TimeUnit.MINUTES);
+//      Instant done = Instant.now();
+//      Duration duration = Duration.between(start, done);
+//      logger.info("saving {} rows with {} threads took {}", rows, threads, duration);
+//      //logger.info("Sleeping 5s");
+//      //Thread.sleep(5_000);
+//
+//    }
+//    //logger.info("Sleeping 60s to give prometheus time to scrape us");
+//    //Thread.sleep(60_000);
+//
+//
+//  }
 
 }

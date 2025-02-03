@@ -1,7 +1,6 @@
-package be.dnsbelgium.mercator.batch;
+package be.dnsbelgium.mercator.vat;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.WebCrawler;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +8,6 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class WebProcessor implements ItemProcessor<VisitRequest, WebCrawlResult> {
@@ -23,23 +20,12 @@ public class WebProcessor implements ItemProcessor<VisitRequest, WebCrawlResult>
     this.webCrawler = webCrawler;
   }
 
-  WebProcessor() {
-    this.webCrawler = null;
-  }
-
   @Override
   public WebCrawlResult process(@NonNull VisitRequest request) {
     logger.info("request = {}", request);
-
-    if (webCrawler != null) {
-      List<WebCrawlResult> results = webCrawler.collectData(request);
-      return results.isEmpty() ? null : results.getFirst();
-    }
-
-    return WebCrawlResult.builder()
-            .visitId(request.getVisitId())
-            .domainName(request.getDomainName())
-            .build();
-
+    WebCrawlResult result = webCrawler.crawl(request);
+    logger.info("result = {}", result);
+    return result;
   }
+
 }

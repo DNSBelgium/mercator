@@ -10,8 +10,6 @@ import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import be.dnsbelgium.mercator.vat.WebCrawler;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
-import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.persistence.Repository;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
@@ -35,8 +33,8 @@ public class MainCrawler {
   private final SmtpCrawler smtpCrawler;
   private final MeterRegistry meterRegistry;
 
-  private final Repository repository;
-  private final VisitService visitService;
+  //private final Repository repository;
+  //private final VisitService visitService;
 
   @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   private final List<CrawlerModule<?>> crawlerModules;
@@ -49,17 +47,18 @@ public class MainCrawler {
   @Autowired
   public MainCrawler(DnsCrawlService dnsCrawlService,
                      WebCrawler webCrawler,
-                     Repository repository,
+               //      Repository repository,
                      SmtpCrawler smtpCrawler,
                      TlsCrawler tlsCrawler,
-                     MeterRegistry meterRegistry,
-                     VisitService visitService) {
+                     MeterRegistry meterRegistry
+                     //VisitService visitService
+  ) {
     this.dnsCrawlService = dnsCrawlService;
     this.webCrawler = webCrawler;
     this.tlsCrawler = tlsCrawler;
-    this.repository = repository;
+    //this.repository = repository;
     this.meterRegistry = meterRegistry;
-    this.visitService = visitService;
+    //this.visitService = visitService;
     this.smtpCrawler = smtpCrawler;
     crawlerModules = new ArrayList<>();
   }
@@ -71,28 +70,28 @@ public class MainCrawler {
 
   public void visit(VisitRequest visitRequest) {
     VisitResult visitResult = collectData(visitRequest);
-    visitService.save(visitResult);
-    repository.markDone(visitRequest);
-    postSave(visitResult);
+//    visitService.save(visitResult);
+//    repository.markDone(visitRequest);
+//    postSave(visitResult);
   }
 
-  private void postSave(VisitResult visitResult) {
-    Threads.POST_SAVE.incrementAndGet();
-    try {
-
-      var dataPerModule = visitResult.getCollectedData();
-
-      if (dataPerModule != null) {
-        for (CrawlerModule<?> crawlerModule : dataPerModule.keySet()) {
-          var data = dataPerModule.get(crawlerModule);
-          crawlerModule.afterSave(data);
-        }
-      }
-
-    } finally {
-      Threads.POST_SAVE.decrementAndGet();
-    }
-  }
+//  private void postSave(VisitResult visitResult) {
+//    Threads.POST_SAVE.incrementAndGet();
+//    try {
+//
+//      var dataPerModule = visitResult.getCollectedData();
+//
+//      if (dataPerModule != null) {
+//        for (CrawlerModule<?> crawlerModule : dataPerModule.keySet()) {
+//          var data = dataPerModule.get(crawlerModule);
+//          crawlerModule.afterSave(data);
+//        }
+//      }
+//
+//    } finally {
+//      Threads.POST_SAVE.decrementAndGet();
+//    }
+//  }
 
   private VisitResult collectData(VisitRequest visitRequest) {
     Timer.Sample sample = Timer.start(meterRegistry);
@@ -107,7 +106,7 @@ public class MainCrawler {
       Map<CrawlerModule<?>, List<?>> collectedData = new HashMap<>();
 
       List<WebCrawlResult> webCrawlResults = webCrawler.collectData(visitRequest);
-      collectedData.put(webCrawler, webCrawlResults);
+      //collectedData.put(webCrawler, webCrawlResults);
 
       List<TlsCrawlResult> tlsCrawlResults = tlsCrawler.collectData(visitRequest);
       collectedData.put(tlsCrawler, tlsCrawlResults);

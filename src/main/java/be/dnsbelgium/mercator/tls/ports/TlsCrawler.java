@@ -2,7 +2,6 @@ package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
-import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.visits.CrawlerModule;
@@ -32,7 +31,7 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
 
   private final FullScanCache fullScanCache;
   private final TlsScanner tlsScanner;
-  private final TlsRepository tlsRepository;
+  //private final TlsRepository tlsRepository;
   private final BlackList blackList;
   private final MeterRegistry meterRegistry;
 
@@ -47,11 +46,11 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
   public TlsCrawler(
           TlsScanner tlsScanner,
           FullScanCache fullScanCache,
-          TlsRepository tlsRepository,
+          //TlsRepository tlsRepository,
           BlackList blackList, MeterRegistry meterRegistry) {
       this.fullScanCache = fullScanCache;
       this.tlsScanner = tlsScanner;
-      this.tlsRepository = tlsRepository;
+      //this.tlsRepository = tlsRepository;
       this.blackList = blackList;
       this.meterRegistry = meterRegistry;
   }
@@ -152,7 +151,7 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
 
   @Override
   public void saveItem(TlsCrawlResult tlsCrawlResult) {
-    tlsRepository.persist(tlsCrawlResult);
+//    tlsRepository.persist(tlsCrawlResult);
   }
 
   @Override
@@ -172,6 +171,6 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
 
   @Override
   public void createTables() {
-    tlsRepository.createTablesTls();
+    //tlsRepository.createTablesTls();
   }
 }

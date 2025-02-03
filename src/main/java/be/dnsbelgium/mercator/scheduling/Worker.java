@@ -16,10 +16,10 @@ public class Worker {
 
   private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
-  private final MainCrawler mainCrawler;
-  private final WorkQueue workQueue;
-
-  private final JmsListenerEndpointRegistry jmsListenerEndpointRegistry;
+//  private final MainCrawler mainCrawler;
+//  private final WorkQueue workQueue;
+//
+//  private final JmsListenerEndpointRegistry jmsListenerEndpointRegistry;
 
   /**
    * The JmsListener annotation defines the name of the Destination that this method should listen to
@@ -34,46 +34,46 @@ public class Worker {
   private final AtomicInteger messagesReceived = new AtomicInteger();
   private final AtomicInteger failures = new AtomicInteger();
 
-  public Worker(MainCrawler mainCrawler, WorkQueue workQueue, JmsListenerEndpointRegistry jmsListenerEndpointRegistry) {
-    this.mainCrawler = mainCrawler;
-    this.workQueue = workQueue;
-    this.jmsListenerEndpointRegistry = jmsListenerEndpointRegistry;
-  }
+//  public Worker(MainCrawler mainCrawler, WorkQueue workQueue, JmsListenerEndpointRegistry jmsListenerEndpointRegistry) {
+//    this.mainCrawler = mainCrawler;
+//    this.workQueue = workQueue;
+//    this.jmsListenerEndpointRegistry = jmsListenerEndpointRegistry;
+//  }
+//
+//  @JmsListener(destination = "visit_requests", containerFactory = "myFactory", concurrency = "${worker.concurrency:10-30}")
+//  public void receiveMessage(VisitRequest visitRequest) {
+//    Threads.PROCESS_MESSAGE.incrementAndGet();
+//    messagesReceived.incrementAndGet();
+//    workQueue.messagePopped();
+//    logger.debug("messagesReceived: {}", messagesReceived);
+//    logger.debug("** Starting visit on <{}>", visitRequest);
+//    try {
+//      mainCrawler.visit(visitRequest);
+//      logger.debug("** Finished visit on <{}>", visitRequest);
+//      workQueue.remove(visitRequest);
+//
+//    } catch (Exception e) {
+//      onFailure(e);
+//    } finally {
+//      Threads.PROCESS_MESSAGE.decrementAndGet();
+//    }
+//  }
 
-  @JmsListener(destination = "visit_requests", containerFactory = "myFactory", concurrency = "${worker.concurrency:10-30}")
-  public void receiveMessage(VisitRequest visitRequest) {
-    Threads.PROCESS_MESSAGE.incrementAndGet();
-    messagesReceived.incrementAndGet();
-    workQueue.messagePopped();
-    logger.debug("messagesReceived: {}", messagesReceived);
-    logger.debug("** Starting visit on <{}>", visitRequest);
-    try {
-      mainCrawler.visit(visitRequest);
-      logger.debug("** Finished visit on <{}>", visitRequest);
-      workQueue.remove(visitRequest);
-
-    } catch (Exception e) {
-      onFailure(e);
-    } finally {
-      Threads.PROCESS_MESSAGE.decrementAndGet();
-    }
-  }
-
-  private void onFailure(Exception e) {
-    int failureCount = failures.incrementAndGet();
-    logger.atError()
-            .setMessage("mainCrawler.visit(visitRequest) failed")
-            .setCause(e)
-            .log();
-    if (failureCount > 10) {
-      logger.error("We got over 10 exceptions => stopping the listener until someone looks at the issue.");
-      jmsListenerEndpointRegistry.getListenerContainers().forEach(
-              container -> logger.info("container: {}", container)
-      );
-      jmsListenerEndpointRegistry.stop();
-    }
-
-  }
+//  private void onFailure(Exception e) {
+//    int failureCount = failures.incrementAndGet();
+//    logger.atError()
+//            .setMessage("mainCrawler.visit(visitRequest) failed")
+//            .setCause(e)
+//            .log();
+//    if (failureCount > 10) {
+//      logger.error("We got over 10 exceptions => stopping the listener until someone looks at the issue.");
+//      jmsListenerEndpointRegistry.getListenerContainers().forEach(
+//              container -> logger.info("container: {}", container)
+//      );
+//      jmsListenerEndpointRegistry.stop();
+//    }
+//
+//  }
 
 }
 

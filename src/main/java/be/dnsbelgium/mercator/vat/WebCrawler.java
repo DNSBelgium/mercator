@@ -31,7 +31,7 @@ import static be.dnsbelgium.mercator.vat.metrics.MetricName.COUNTER_WEB_CRAWLS_D
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class WebCrawler implements CrawlerModule<WebCrawlResult> {
+public class WebCrawler { //implements CrawlerModule<WebCrawlResult> {
 
     private static final Logger logger = getLogger(WebCrawler.class);
 
@@ -148,8 +148,7 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
         }
     }
 
-    @Override
-    public List<WebCrawlResult> collectData(VisitRequest visitRequest) {
+    public WebCrawlResult crawl(VisitRequest visitRequest) {
         SiteVisit siteVisit = this.visit(visitRequest);
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
         meterRegistry.counter(COUNTER_WEB_CRAWLS_DONE).increment();
@@ -164,45 +163,51 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
             pageVisits.add(pageVisit);
         }
         webCrawlResult.setPageVisits(pageVisits);
+        return webCrawlResult;
+    }
+
+//    @Override
+    public List<WebCrawlResult> collectData(VisitRequest visitRequest) {
+        WebCrawlResult webCrawlResult = crawl(visitRequest);
         return List.of(webCrawlResult);
     }
 
-    @Override
-    public void save(List<?> collectedData) {
-        collectedData.forEach(this::saveObject);
-    }
+//    @Override
+//    public void save(List<?> collectedData) {
+//        collectedData.forEach(this::saveObject);
+//    }
 
-    public void saveObject(Object object) {
-        if (object instanceof WebCrawlResult webCrawlResult) {
-            saveItem(webCrawlResult);
-        } else {
-            logger.error("Cannot save {}", object);
-        }
-    }
+//    public void saveObject(Object object) {
+//        if (object instanceof WebCrawlResult webCrawlResult) {
+//            saveItem(webCrawlResult);
+//        } else {
+//            logger.error("Cannot save {}", object);
+//        }
+//    }
 
-    @Override
-    public void saveItem(WebCrawlResult webCrawlResult) {
-        webRepository.saveWebVisit(webCrawlResult);
-        logger.debug("Persisting the {} page visits for {}",
-                webCrawlResult.getPageVisits().size(), webCrawlResult.getStartUrl());
-        webRepository.savePageVisits(webCrawlResult.getPageVisits());
-        for (HtmlFeatures htmlFeatures : webCrawlResult.getHtmlFeatures()) {
-            webRepository.save(htmlFeatures);
-        }
-    }
+//    @Override
+//    public void saveItem(WebCrawlResult webCrawlResult) {
+//        webRepository.saveWebVisit(webCrawlResult);
+//        logger.debug("Persisting the {} page visits for {}",
+//                webCrawlResult.getPageVisits().size(), webCrawlResult.getStartUrl());
+//        webRepository.savePageVisits(webCrawlResult.getPageVisits());
+//        for (HtmlFeatures htmlFeatures : webCrawlResult.getHtmlFeatures()) {
+//            webRepository.save(htmlFeatures);
+//        }
+//    }
 
-    @Override
-    public void afterSave(List<?> collectedData) {
-        // nothing to do
-    }
-
-    @Override
-    public List<WebCrawlResult> find(String visitId) {
-        return webRepository.findWebCrawlResult(visitId);
-    }
-
-    @Override
-    public void createTables() {
-        webRepository.createTables();
-    }
+//    @Override
+//    public void afterSave(List<?> collectedData) {
+//        // nothing to do
+//    }
+//
+//    @Override
+//    public List<WebCrawlResult> find(String visitId) {
+//        return webRepository.findWebCrawlResult(visitId);
+//    }
+//
+//    @Override
+//    public void createTables() {
+//        webRepository.createTables();
+//    }
 }

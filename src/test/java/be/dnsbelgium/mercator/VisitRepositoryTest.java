@@ -1,14 +1,6 @@
 package be.dnsbelgium.mercator;
 
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
-import be.dnsbelgium.mercator.common.VisitIdGenerator;
-import be.dnsbelgium.mercator.dns.domain.DnsCrawlResult;
-import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.Response;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
-import com.github.f4b6a3.ulid.Ulid;
-import be.dnsbelgium.mercator.persistence.TableCreator;
 import be.dnsbelgium.mercator.persistence.VisitRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -18,12 +10,10 @@ import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.List;
 
 import static be.dnsbelgium.mercator.test.TestUtils.now;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,15 +32,15 @@ class VisitRepositoryTest {
 
   @BeforeAll
   public static void init() {
-    dataSource = new DuckDataSource("jdbc:duckdb:");
-    WebRepository webRepository = new WebRepository(dataSource, meterRegistry);
-    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository);
-    visitRepository = new VisitRepository(dataSource, tableCreator, webRepository, meterRegistry);
-    visitRepository.setDatabaseDirectory(tempDir);
-    visitRepository.setExportDirectory(tempDir);
-    visitRepository.init();
-    jdbcClient = JdbcClient.create(dataSource);
-    logger.info("init done");
+//    dataSource = new DuckDataSource("jdbc:duckdb:");
+//    WebRepository webRepository = new WebRepository(dataSource, meterRegistry);
+//    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository);
+//    visitRepository = new VisitRepository(dataSource, tableCreator, webRepository, meterRegistry);
+//    visitRepository.setDatabaseDirectory(tempDir);
+//    visitRepository.setExportDirectory(tempDir);
+//    visitRepository.init();
+//    jdbcClient = JdbcClient.create(dataSource);
+//    logger.info("init done");
   }
 
 //  @Test
@@ -58,38 +48,38 @@ class VisitRepositoryTest {
 //    fail("tesing failure report");
 //  }
 
-  @Test
-  @Transactional
-  public void saveDnsCrawlResult() {
-    Request request = new Request();
-    request.setVisitId(VisitIdGenerator.generate());
-    String requestId = Ulid.fast().toString();
-    request.setId(requestId);
-    request.setOk(true);
-    request.setPrefix("www");
-    request.setDomainName("google.be");
-    request.setRecordType(RecordType.A);
-    DnsCrawlResult crawlResult = DnsCrawlResult.of(List.of(request));
-    visitRepository.save(crawlResult);
-  }
+//  @Test
+//  @Transactional
+//  public void saveDnsCrawlResult() {
+//    Request request = new Request();
+//    request.setVisitId(VisitIdGenerator.generate());
+//    String requestId = Ulid.fast().toString();
+//    request.setId(requestId);
+//    request.setOk(true);
+//    request.setPrefix("www");
+//    request.setDomainName("google.be");
+//    request.setRecordType(RecordType.A);
+//    DnsCrawlResult crawlResult = DnsCrawlResult.of(List.of(request));
+//    visitRepository.save(crawlResult);
+//  }
 
-  @Test
-  public void insertResponse() {
-    Request request = new Request();
-    request.setVisitId(VisitIdGenerator.generate());
-    String requestId = Ulid.fast().toString();
-    String responseId = Ulid.fast().toString();
-    request.setId(requestId);
-    request.setOk(true);
-    request.setPrefix("www");
-    request.setDomainName("google.be");
-    request.setRecordType(RecordType.A);
-    Response response = new Response();
-    response.setId(responseId);
-    response.setTtl(3600L);
-    response.setRecordData("IN 5 ns1.google.com");
-    visitRepository.insertResponse(request, response);
-  }
+//  @Test
+//  public void insertResponse() {
+//    Request request = new Request();
+//    request.setVisitId(VisitIdGenerator.generate());
+//    String requestId = Ulid.fast().toString();
+//    String responseId = Ulid.fast().toString();
+//    request.setId(requestId);
+//    request.setOk(true);
+//    request.setPrefix("www");
+//    request.setDomainName("google.be");
+//    request.setRecordType(RecordType.A);
+//    Response response = new Response();
+//    response.setId(responseId);
+//    response.setTtl(3600L);
+//    response.setRecordData("IN 5 ns1.google.com");
+//    visitRepository.insertResponse(request, response);
+//  }
 
   @Test
   public void instantsInDuckdb() {

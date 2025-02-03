@@ -10,80 +10,85 @@
 
 <body>
 
+
     <div layout:fragment="content">
-        <div class="container">
-            <div class="grid">
-                <article>
-                    <header>
-                        <h1>Visits to do</h1>
-                    </header>
-                    <h1 class="right" th:text="${#numbers.formatDecimal(stats.todo(), 1, 'COMMA', 0, 'POINT')}"></h1>
-                </article>
 
-                <article>
-                    <header>
-                        <h1>Visits done</h1>
-                    </header>
-                    <h1 class="right" th:text="${#numbers.formatDecimal(stats.done(), 1, 'COMMA', 0, 'POINT')}"></h1>
+        <h2>Still to do</h2>
 
-                </article>
-            </div>
-            <progress th:value="${stats.done()}" th:max="${stats.todo() + stats.done()}"></progress>
-            <p></p>
 
-            <h1>Crawl rates per hour</h1>
+        <!--        <div class="container">-->
+<!--            <div class="grid">-->
+<!--                <article>-->
+<!--                    <header>-->
+<!--                        <h1>Visits to do</h1>-->
+<!--                    </header>-->
+<!--                    <h1 class="right" th:text="${#numbers.formatDecimal(stats.todo(), 1, 'COMMA', 0, 'POINT')}"></h1>-->
+<!--                </article>-->
 
-            <table>
-                <thead>
-                    <tr>
-                        <td>Hour</td>
-                        <td class="right">Crawls/hour</td>
-                        <td class="right">Crawls/minute</td>
-                        <td class="right">Crawls/second</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="rate : ${perHour}">
-                        <th scope="row" th:text="${#temporals.format(rate.dateTime(), 'dd-MM-yyyy HH:mm')}"></th>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perHour(), 1, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perMinute(), 1, 'COMMA', 2, 'POINT')}"></td>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perSecond(), 1, 'COMMA', 2, 'POINT')}"></td>
-                    </tr>
-                </tbody>
-            </table>
+<!--                <article>-->
+<!--                    <header>-->
+<!--                        <h1>Visits done</h1>-->
+<!--                    </header>-->
+<!--                    <h1 class="right" th:text="${#numbers.formatDecimal(stats.done(), 1, 'COMMA', 0, 'POINT')}"></h1>-->
 
-            <h1>Crawl rates per minute</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <td>Minute</td>
-                        <td class="right">Crawls/hour (extrapolated)</td>
-                        <td class="right">Crawls/minute</td>
-                        <td class="right">Crawls/second</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="rate : ${perMinute}">
-                        <th scope="row" th:text="${#temporals.format(rate.dateTime(), 'dd-MM-yyyy HH:mm')}"></th>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perHour(), 1, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perMinute(), 1, 'COMMA', 0, 'POINT')}"></td>
-                        <td class="right" th:text="${#numbers.formatDecimal(rate.perSecond(), 1, 'COMMA', 2, 'POINT')}"></td>
-                    </tr>
-                </tbody>
-            </table>
+<!--                </article>-->
+<!--            </div>-->
+<!--            <progress th:value="${stats.done()}" th:max="${stats.todo() + stats.done()}"></progress>-->
+<!--            <p></p>-->
 
-            <hr/>
+<!--            <h1>Crawl rates per hour</h1>-->
 
-            <h1>Database size</h1>
+<!--            <table>-->
+<!--                <thead>-->
+<!--                    <tr>-->
+<!--                        <td>Hour</td>-->
+<!--                        <td class="right">Crawls/hour</td>-->
+<!--                        <td class="right">Crawls/minute</td>-->
+<!--                        <td class="right">Crawls/second</td>-->
+<!--                    </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                    <tr th:each="rate : ${perHour}">-->
+<!--                        <th scope="row" th:text="${#temporals.format(rate.dateTime(), 'dd-MM-yyyy HH:mm')}"></th>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perHour(), 1, 'COMMA', 0, 'POINT')}"></td>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perMinute(), 1, 'COMMA', 2, 'POINT')}"></td>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perSecond(), 1, 'COMMA', 2, 'POINT')}"></td>-->
+<!--                    </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
 
-            <table>
-                <tr th:each="item : ${databaseSize}">
-                    <td th:text="${item.key}">key </td>
-                    <td th:text="${item.value}">value</td>
-                </tr>
-            </table>
-        </div>
-    </div>
+<!--            <h1>Crawl rates per minute</h1>-->
+<!--            <table>-->
+<!--                <thead>-->
+<!--                    <tr>-->
+<!--                        <td>Minute</td>-->
+<!--                        <td class="right">Crawls/hour (extrapolated)</td>-->
+<!--                        <td class="right">Crawls/minute</td>-->
+<!--                        <td class="right">Crawls/second</td>-->
+<!--                    </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                    <tr th:each="rate : ${perMinute}">-->
+<!--                        <th scope="row" th:text="${#temporals.format(rate.dateTime(), 'dd-MM-yyyy HH:mm')}"></th>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perHour(), 1, 'COMMA', 0, 'POINT')}"></td>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perMinute(), 1, 'COMMA', 0, 'POINT')}"></td>-->
+<!--                        <td class="right" th:text="${#numbers.formatDecimal(rate.perSecond(), 1, 'COMMA', 2, 'POINT')}"></td>-->
+<!--                    </tr>-->
+<!--                </tbody>-->
+<!--            </table>-->
+
+<!--            <hr/>-->
+
+<!--            <h1>Database size</h1>-->
+
+<!--            <table>-->
+<!--                <tr th:each="item : ${databaseSize}">-->
+<!--                    <td th:text="${item.key}">key </td>-->
+<!--                    <td th:text="${item.value}">value</td>-->
+<!--                </tr>-->
+<!--            </table>-->
+<!--        </div>-->
+<!--    </div>-->
 
 
 </body>

@@ -1,23 +1,14 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.scheduling.Scheduler;
 import be.dnsbelgium.mercator.scheduling.WorkQueue;
-import lombok.Getter;
-import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.io.File;
-import java.util.List;
 
 @Controller
 @RequestMapping("/")
@@ -26,13 +17,13 @@ public class HomeController {
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
   private final WorkQueue workQueue;
-    private final DuckDataSource dataSource;
-    private final Scheduler scheduler;
+//    private final DuckDataSource dataSource;
+//    private final Scheduler scheduler;
 
-   public HomeController(WorkQueue workQueue, DuckDataSource dataSource, Scheduler scheduler) {
+   public HomeController(WorkQueue workQueue) {
       this.workQueue = workQueue;
-      this.dataSource = dataSource;
-      this.scheduler = scheduler;
+//      this.dataSource = dataSource;
+//      this.scheduler = scheduler;
     }
 
     @GetMapping
@@ -93,15 +84,15 @@ public class HomeController {
         return "submit-crawl";
     }
 
-    @PostMapping("/submit_crawl")
-    public String submitCrawl(@RequestParam String domainName,
-                              RedirectAttributes redirectAttributes) {
-        logger.info("/submit_crawl called with domainName = {}", domainName);
-        VisitRequest visitRequest = new VisitRequest(domainName);
-        workQueue.add(visitRequest);
-        redirectAttributes.addFlashAttribute("visitRequest", visitRequest);
-        return "redirect:submit_crawl";
-    }
+//    @PostMapping("/submit_crawl")
+//    public String submitCrawl(@RequestParam String domainName,
+//                              RedirectAttributes redirectAttributes) {
+//        logger.info("/submit_crawl called with domainName = {}", domainName);
+//        VisitRequest visitRequest = new VisitRequest(domainName);
+//        workQueue.add(visitRequest);
+//        redirectAttributes.addFlashAttribute("visitRequest", visitRequest);
+//        return "redirect:submit_crawl";
+//    }
 
 }
 

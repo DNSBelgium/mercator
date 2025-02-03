@@ -9,26 +9,26 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 
 import javax.sql.DataSource;
 
-@Configuration
+//@Configuration
 public class DataSourceConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
-
-    @Value("${duckdb.datasource.url:jdbc:duckdb:mercator.duckdb}")
-    private String url;
-
-    @Bean
-    public DuckDataSource dataSource() {
-        logger.info("creating DuckDataSource using url=[{}]", url);
-        DuckDataSource duckDataSource = new DuckDataSource();
-        duckDataSource.setUrl(url);
-        duckDataSource.init();
-        return duckDataSource;
-    }
-
-    @Bean
-    public JdbcTransactionManager transactionManager(DataSource dataSource) {
-        return new JdbcTransactionManager(dataSource);
-    }
+//    private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
+//
+//    @Value("${duckdb.datasource.url:jdbc:duckdb:mercator.duckdb}")
+//    private String url;
+//
+//    @Bean
+//    public DuckDataSource dataSource() {
+//        logger.info("creating DuckDataSource using url=[{}]", url);
+//        DuckDataSource duckDataSource = new DuckDataSource();
+//        duckDataSource.setUrl(url);
+//        duckDataSource.init();
+//        return duckDataSource;
+//    }
+//
+//    @Bean
+//    public JdbcTransactionManager transactionManager(DataSource dataSource) {
+//        return new JdbcTransactionManager(dataSource);
+//    }
 
 }
