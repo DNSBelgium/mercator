@@ -81,7 +81,10 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
 
-
-#      - name: Publish container image to Docker Hub
-#        id: publish
-#        run: DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build
+      - name: Publish container image to Docker Hub
+        id: publish_dockerhub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_REGISTRY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
+        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
