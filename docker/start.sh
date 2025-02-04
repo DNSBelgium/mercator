@@ -1,4 +1,4 @@
-export repo="ghcr.io/dnsbelgium/mercator"
+export repo="dnsbelgium/mercator"
 
 export MERCATOR_DATA_DIR=~/mercator_data
 mkdir -p ${MERCATOR_DATA_DIR}

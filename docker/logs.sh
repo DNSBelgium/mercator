@@ -1,4 +1,4 @@
-export repo="ghcr.io/dnsbelgium/mercator"
+export repo="dnsbelgium/mercator"
 
 container_id=$(docker ps --filter ancestor=$repo --format {{.ID}})
 
