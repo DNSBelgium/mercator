@@ -5,8 +5,8 @@ import java.util.Arrays;
 public enum CrawlerModule {
 
   DNS(),
-  MUPPETS(false),
-      WAPPALYZER(false),
+  MUPPETS(true),
+  WAPPALYZER(false),
   SMTP(),
   VAT(),
   TLS(),

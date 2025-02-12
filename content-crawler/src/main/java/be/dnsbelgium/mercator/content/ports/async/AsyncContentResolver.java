@@ -31,6 +31,8 @@ public class AsyncContentResolver implements ContentResolver {
     this.meterRegistry = meterRegistry;
     this.resolvingConfigurationProperties = resolvingConfigurationProperties;
     this.queueClient = queueClient;
+    logger.info("requestQueues  : {}", resolvingConfigurationProperties.getRequestQueues());
+    logger.info("responseQueues : {}", resolvingConfigurationProperties.getResponseQueues());
   }
 
   public void requestContentResolving(VisitRequest visitRequest, List<String> urlCandidates) {
