@@ -46,8 +46,6 @@ public class TechnologyAnalyzerWebCrawlRepository {
                 (
                     visit_id       varchar(26)              not null,
                     domain_name    varchar(255),
-                    crawl_started  timestamp,
-                    crawl_finished timestamp,
                     detected_technologies varchar[]
                 )
                 """;
@@ -67,11 +65,9 @@ public class TechnologyAnalyzerWebCrawlRepository {
             (
                 visit_id,
                 domain_name,
-                crawl_started,
-                crawl_finished,
                 detected_technologies
             )
-            values (?, ?, ?, ?, ?)
+            values (?, ?, ?)
             """;
         Array detectedTechnologies = jdbcTemplate.execute(
                 (ConnectionCallback<Array>) con ->
@@ -81,8 +77,6 @@ public class TechnologyAnalyzerWebCrawlRepository {
                 insert,
                 crawlResult.getVisitId(),
                 crawlResult.getDomainName(),
-                timestamp(crawlResult.getCrawlStarted()),
-                timestamp(crawlResult.getCrawlFinished()),
                 detectedTechnologies
         );
         logger.debug("domain={} rowsInserted={}", crawlResult.getDomainName(), rowsInserted);
@@ -95,8 +89,6 @@ public class TechnologyAnalyzerWebCrawlRepository {
         .param(visitId)
         .query((rs, rowNum) -> {
             String domainName = rs.getString("domain_name");
-            Instant crawlStarted = rs.getTimestamp("crawl_started").toInstant();
-            Instant crawlFinished = rs.getTimestamp("crawl_finished").toInstant();
             List<String> detectedTechnologies = getList(rs, "detected_technologies");
 
 
@@ -108,8 +100,6 @@ public class TechnologyAnalyzerWebCrawlRepository {
             return TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId(visitId)
                 .domainName(domainName)
-                .crawlStarted(crawlStarted)
-                .crawlFinished(crawlFinished)
                 .detectedTechnologies(Set.copyOf(detectedTechnologies)) 
                 .build();
         })

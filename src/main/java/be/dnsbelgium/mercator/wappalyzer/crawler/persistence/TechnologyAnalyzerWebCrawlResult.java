@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.Instant;
+
 import java.util.List;
 import java.util.Set;
 
@@ -21,9 +21,6 @@ public class TechnologyAnalyzerWebCrawlResult {
 
   private String startUrl;
   private String matchingUrl;
-
-  private Instant crawlStarted;
-  private Instant crawlFinished;
 
   private List<String> visitedUrls;
 
