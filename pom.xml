@@ -428,6 +428,15 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- java implementation of wappalyzer parsing (https://github.com/freekoder/jappalyzer) library recompiled with more up to date json's from here: https://github.com/enthec/webappanalyzer/tree/main/src/technologies -->
+        <dependency>
+			<groupId>com.vampbear</groupId>
+			<artifactId>jappalyzer</artifactId>
+			<version>0.5.3</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/libs/jappalyzer-0.5.3-standalonev2.jar</systemPath>
+		</dependency>
+
     </dependencies>
 
     <build>

@@ -16,6 +16,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.net.http.HttpClient;
 import java.util.Set;
 
+
+
 @Controller
 @RequestMapping("/")
 public class HomeController { 
@@ -28,8 +30,8 @@ public class HomeController {
     // Constructor
     public HomeController(WorkQueue workQueue) {
         this.workQueue = workQueue;
-        // Initialize TechnologyAnalyzer with HttpClient
-        this.technologyAnalyzer = new TechnologyAnalyzer(HttpClient.newHttpClient());
+        this.technologyAnalyzer = new TechnologyAnalyzer();
+       
     }
 
     @GetMapping("/submit_crawl")
