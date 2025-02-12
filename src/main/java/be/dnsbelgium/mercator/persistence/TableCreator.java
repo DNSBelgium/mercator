@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.smtp.SmtpCrawler;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
+import be.dnsbelgium.mercator.wappalyzer.TechnologAnalyzerWebCrawler;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,13 +21,15 @@ public class TableCreator {
     private final SmtpCrawler smtpCrawler;
     private final TlsCrawler tlsCrawler;
     private final WebRepository webRepository;
+    private final TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler;
 
     @Autowired
-    public TableCreator(DuckDataSource dataSource, SmtpCrawler smtpCrawler, TlsCrawler tlsCrawler, WebRepository webRepository) {
+    public TableCreator(DuckDataSource dataSource, SmtpCrawler smtpCrawler, TlsCrawler tlsCrawler, WebRepository webRepository, TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler) {
         this.template = new JdbcTemplate(dataSource);
         this.smtpCrawler = smtpCrawler;
         this.tlsCrawler = tlsCrawler;
         this.webRepository = webRepository;
+        this.technologAnalyzerWebCrawler = technologAnalyzerWebCrawler;
     }
 
     @PostConstruct
@@ -47,6 +50,9 @@ public class TableCreator {
         }
         if (tlsCrawler != null) {
             tlsCrawler.createTables();
+        }
+        if (technologAnalyzerWebCrawler != null) {
+            technologAnalyzerWebCrawler.createTables(); // hier dees extra toegevoegd
         }
     }
 

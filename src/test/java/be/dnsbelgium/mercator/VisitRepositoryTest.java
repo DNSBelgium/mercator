@@ -44,7 +44,7 @@ class VisitRepositoryTest {
   public static void init() {
     dataSource = new DuckDataSource("jdbc:duckdb:");
     WebRepository webRepository = new WebRepository(dataSource, meterRegistry);
-    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository);
+    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository); // dees gaat wss failen door die nieuwe table, nog aanpassen.
     visitRepository = new VisitRepository(dataSource, tableCreator, webRepository, meterRegistry);
     visitRepository.setDatabaseDirectory(tempDir);
     visitRepository.setExportDirectory(tempDir);

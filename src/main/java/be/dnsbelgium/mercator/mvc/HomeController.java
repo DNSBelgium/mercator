@@ -2,7 +2,6 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.scheduling.WorkQueue;
-import be.dnsbelgium.mercator.wappalyzer.TechnologyAnalyzer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -45,15 +44,8 @@ public class HomeController {
 
         VisitRequest visitRequest = new VisitRequest(domainName);
         workQueue.add(visitRequest);
-
-/*         String url = "https://" + domainName; 
-        Set<String> detectedTechnologies = technologyAnalyzer.analyze(url);
-
-        logger.info("Detected technologies for domain '{}': {}", domainName, detectedTechnologies);
- */
         redirectAttributes.addFlashAttribute("visitRequest", visitRequest);
-     /*    redirectAttributes.addFlashAttribute("detectedTechnologies", detectedTechnologies);
- */
+        
         return "redirect:submit_crawl";
     }
 }

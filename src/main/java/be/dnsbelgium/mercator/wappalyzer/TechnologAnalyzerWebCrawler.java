@@ -1,6 +1,8 @@
 package be.dnsbelgium.mercator.wappalyzer;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlRepository;
 import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlResult;
 import be.dnsbelgium.mercator.visits.CrawlerModule;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -21,44 +23,60 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     private final TechnologyAnalyzer technologyAnalyzer;
     private final MeterRegistry meterRegistry;
+    private final TechnologyAnalyzerWebCrawlRepository repository;
 
-    @Value("${technology.analyzer.persist.results:false}")
+    @Value("${technology.analyzer.persist.results:true}") // dees
     private boolean persistResults;
 
     @Autowired
-    public TechnologAnalyzerWebCrawler(TechnologyAnalyzer technologyAnalyzer, MeterRegistry meterRegistry) {
+    public TechnologAnalyzerWebCrawler(TechnologyAnalyzer technologyAnalyzer, MeterRegistry meterRegistry, TechnologyAnalyzerWebCrawlRepository repository) {
         this.technologyAnalyzer = technologyAnalyzer;
         this.meterRegistry = meterRegistry;
+        this.repository = repository;
     }
 
     @Override
     public List<TechnologyAnalyzerWebCrawlResult> collectData(VisitRequest visitRequest) {
-        String url = "https://" + visitRequest.getDomainName();
-        Set<String> detectedTechnologies = technologyAnalyzer.analyze(url);
-        logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
+        Threads.TECHNOLOGY_ANALYZER.incrementAndGet(); // Increment the counter
+        try {
+            String url = "https://" + visitRequest.getDomainName();
+            Set<String> detectedTechnologies = technologyAnalyzer.analyze(url);
+            logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
 
-        TechnologyAnalyzerWebCrawlResult webCrawlResult = TechnologyAnalyzerWebCrawlResult.builder()
-                .visitId(visitRequest.getVisitId())
-                .domainName(visitRequest.getDomainName())
-                .detectedTechnologies(detectedTechnologies)
-                .build();
+            TechnologyAnalyzerWebCrawlResult webCrawlResult = TechnologyAnalyzerWebCrawlResult.builder()
+                    .visitId(visitRequest.getVisitId())
+                    .domainName(visitRequest.getDomainName())
+                    .detectedTechnologies(detectedTechnologies)
+                    .build();
 
-                // DEBUG log voor te zien of da werkt
-        logger.info( "Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
-        meterRegistry.counter("technology.analyzer.crawls.done").increment();
+            logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
+            meterRegistry.counter("technology.analyzer.crawls.done").increment();
 
-        return List.of(webCrawlResult);
+            // voor nu save da hier want geen idee waar anders
+
+            logger.info("Saving the detected technologies for {}", webCrawlResult.getDomainName());
+            save(List.of(webCrawlResult));
+
+            return List.of(webCrawlResult);
+        } finally {
+            Threads.TECHNOLOGY_ANALYZER.decrementAndGet(); 
+        }
     }
 
     @Override
     public void save(List<?> collectedData) {
+        logger.info("step 1");
         if (persistResults) {
+            logger.info("condition persistresults was true here");
             collectedData.forEach(this::saveObject);
         }
     }
 
     public void saveObject(Object object) {
+        logger.info("step 3");
+
         if (object instanceof TechnologyAnalyzerWebCrawlResult webCrawlResult) {
+            logger.info("it wa instance, saving... ");
             saveItem(webCrawlResult);
         } else {
             logger.error("Cannot save {}", object);
@@ -67,23 +85,25 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public void saveItem(TechnologyAnalyzerWebCrawlResult webCrawlResult) {
-        
+        logger.info("step 4 actual save method");
+        repository.saveTechnologyAnalyzerWebCrawlResult(webCrawlResult);
         logger.debug("Persisting the detected technologies for {}", webCrawlResult.getDomainName());
     }
 
     @Override
     public void afterSave(List<?> collectedData) {
-        // placehoder?
+        // Placeholder 
     }
 
     @Override
     public List<TechnologyAnalyzerWebCrawlResult> find(String visitId) {
-        // placeholder?
-        return List.of(); 
+        return repository.findTechnologyAnalyzerWebCrawlResults(visitId);
     }
 
+    
     @Override
     public void createTables() {
-        // placeholder?
+        logger.info("creating tables for TechnologyAnalyzerWebCrawlResult");
+        repository.createTables();
     }
 }

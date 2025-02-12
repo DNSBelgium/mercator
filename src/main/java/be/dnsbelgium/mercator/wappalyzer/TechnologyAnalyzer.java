@@ -25,7 +25,8 @@ public class TechnologyAnalyzer {
     public Set<String> analyze(String url) {
         Set<TechnologyMatch> technologyMatches;
         try {
-            technologyMatches = jappalyzer.fromUrl(url);
+            technologyMatches = jappalyzer.fromUrl(url); // analyze by url, can also be done by html content
+            // TODO: implement this with existing requests somewhere else in mercator to the site because the compiled library uses a seperate httpclient request to the site
         } catch (IOException e) {
             throw new RuntimeException("Failed to analyze URL: " + url, e);
         }
