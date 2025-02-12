@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.net.http.HttpClient;
-import java.util.Set;
 
 
 
@@ -25,12 +23,12 @@ public class HomeController {
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     private final WorkQueue workQueue;
-    private final TechnologyAnalyzer technologyAnalyzer;
+    // private final TechnologyAnalyzer technologyAnalyzer;
 
     // Constructor
     public HomeController(WorkQueue workQueue) {
         this.workQueue = workQueue;
-        this.technologyAnalyzer = new TechnologyAnalyzer();
+        // this.technologyAnalyzer = new TechnologyAnalyzer();
        
     }
 
@@ -48,14 +46,14 @@ public class HomeController {
         VisitRequest visitRequest = new VisitRequest(domainName);
         workQueue.add(visitRequest);
 
-        String url = "https://" + domainName; 
+/*         String url = "https://" + domainName; 
         Set<String> detectedTechnologies = technologyAnalyzer.analyze(url);
 
         logger.info("Detected technologies for domain '{}': {}", domainName, detectedTechnologies);
-
+ */
         redirectAttributes.addFlashAttribute("visitRequest", visitRequest);
-        redirectAttributes.addFlashAttribute("detectedTechnologies", detectedTechnologies);
-
+     /*    redirectAttributes.addFlashAttribute("detectedTechnologies", detectedTechnologies);
+ */
         return "redirect:submit_crawl";
     }
 }

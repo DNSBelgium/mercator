@@ -10,6 +10,8 @@ import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import be.dnsbelgium.mercator.vat.WebCrawler;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
+import be.dnsbelgium.mercator.wappalyzer.TechnologAnalyzerWebCrawler;
+import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlResult;
 import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.persistence.Repository;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -34,6 +36,7 @@ public class MainCrawler {
   private final TlsCrawler tlsCrawler;
   private final SmtpCrawler smtpCrawler;
   private final MeterRegistry meterRegistry;
+  private final TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler;
 
   private final Repository repository;
   private final VisitService visitService;
@@ -53,7 +56,8 @@ public class MainCrawler {
                      SmtpCrawler smtpCrawler,
                      TlsCrawler tlsCrawler,
                      MeterRegistry meterRegistry,
-                     VisitService visitService) {
+                     VisitService visitService,
+                     TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler) {
     this.dnsCrawlService = dnsCrawlService;
     this.webCrawler = webCrawler;
     this.tlsCrawler = tlsCrawler;
@@ -61,6 +65,7 @@ public class MainCrawler {
     this.meterRegistry = meterRegistry;
     this.visitService = visitService;
     this.smtpCrawler = smtpCrawler;
+    this.technologAnalyzerWebCrawler = technologAnalyzerWebCrawler;
     crawlerModules = new ArrayList<>();
   }
 
@@ -112,6 +117,14 @@ public class MainCrawler {
       List<TlsCrawlResult> tlsCrawlResults = tlsCrawler.collectData(visitRequest);
       collectedData.put(tlsCrawler, tlsCrawlResults);
 
+      // Call the Wappalyzer crawler to process the visit request
+      System.out.println("starting wappalyzer crawler");
+      logger.info("crawling Wappalyzer for {}", visitRequest.getDomainName());
+      List<TechnologyAnalyzerWebCrawlResult> wappalyzerResults = technologAnalyzerWebCrawler.collectData(visitRequest);
+      logger.info("DONE crawling Wappalyzer for {} => {}", visitRequest.getDomainName(), wappalyzerResults);
+      collectedData.put(technologAnalyzerWebCrawler, wappalyzerResults);
+
+
       if (smtpEnabled) {
         logger.info("crawling SMTP for {}", visitRequest.getDomainName());
         List<SmtpVisit> smtpVisits = smtpCrawler.collectData(visitRequest);
@@ -119,6 +132,7 @@ public class MainCrawler {
         collectedData.put(smtpCrawler, smtpVisits);
       }
 
+      
       return VisitResult.builder()
               .visitRequest(visitRequest)
               .dnsCrawlResult(dnsCrawlResult)

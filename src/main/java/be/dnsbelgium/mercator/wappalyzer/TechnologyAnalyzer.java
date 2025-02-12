@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+
 // japalyzer library imports
 
-import com.vampbear.jappalyzer.DataLoader;
 import com.vampbear.jappalyzer.Technology;
 import com.vampbear.jappalyzer.Jappalyzer;
 import com.vampbear.jappalyzer.TechnologyMatch;
-
+@Service
 public class TechnologyAnalyzer {
 
     private final Jappalyzer jappalyzer;
