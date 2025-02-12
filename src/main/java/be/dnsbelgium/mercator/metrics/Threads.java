@@ -54,8 +54,8 @@ public class Threads {
     int featureExtraction = FEATURE_EXTRACTION.get();
     int database = SAVE.get();
     int postSave = POST_SAVE.get();
-    int technologyAnalyzer = TECHNOLOGY_ANALYZER.get(); // Add this line
-    int tracked = smtp + dns + web + tls + featureExtraction + database + postSave + technologyAnalyzer; // Update this line
+    int technologyAnalyzer = TECHNOLOGY_ANALYZER.get();
+    int tracked = smtp + dns + web + tls + featureExtraction + database + postSave + technologyAnalyzer;
     int processMessage = Threads.PROCESS_MESSAGE.get();
     if (tracked > activeThreads) {
       logger.error("trackedThreads={} > activeThreads={} which is weird!",  tracked, activeThreads);
@@ -67,13 +67,13 @@ public class Threads {
     double pct_featureExtraction = featureExtraction / (double) tracked;
     double pct_database = database / (double) tracked;
     double pct_postSave = postSave / (double) tracked;
-    double pct_technologyAnalyzer = technologyAnalyzer / (double) tracked; // Add this line
+    double pct_technologyAnalyzer = technologyAnalyzer / (double) tracked; 
     logger.info("active:{}, tracked:{}", activeThreads, tracked);
-    logger.info("percentages: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}", // Update this line
-            pct_smtp, pct_dns, pct_web, pct_tls, pct_featureExtraction, pct_database, pct_postSave, pct_technologyAnalyzer // Update this line
+    logger.info("percentages: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}",
+            pct_smtp, pct_dns, pct_web, pct_tls, pct_featureExtraction, pct_database, pct_postSave, pct_technologyAnalyzer
     );
-    logger.info("Absolute numbers: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}", // Update this line
-            smtp, dns, web, tls, featureExtraction, database, postSave, technologyAnalyzer // Update this line
+    logger.info("Absolute numbers: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}",
+            smtp, dns, web, tls, featureExtraction, database, postSave, technologyAnalyzer 
     );
     logger.info("process message: {}", processMessage);
 
@@ -81,7 +81,7 @@ public class Threads {
         "<p>Active: " + activeThreads + "</p>" +
         "<p>Tracked: " + tracked +"</p>" +
         "<p>process message: " + processMessage +"</p>" +
-        "<p>Numbers    : smtp=" + smtp + " dns=" + dns + " web=" + web + " tls=" + tls + " features=" + featureExtraction + " database=" + database + " postSave=" + postSave + " technologyAnalyzer=" + technologyAnalyzer + "</p>" + // Update this line
-        "<p>Percentages: smtp=" + pct_smtp + " dns=" + pct_dns + " web=" + pct_web + " tls=" + pct_tls + " features=" + pct_featureExtraction + " database=" + pct_database + " postSave=" + pct_postSave + " technologyAnalyzer=" + pct_technologyAnalyzer + "</p>"; // Update this line
+        "<p>Numbers    : smtp=" + smtp + " dns=" + dns + " web=" + web + " tls=" + tls + " features=" + featureExtraction + " database=" + database + " postSave=" + postSave + " technologyAnalyzer=" + technologyAnalyzer + "</p>" + 
+        "<p>Percentages: smtp=" + pct_smtp + " dns=" + pct_dns + " web=" + pct_web + " tls=" + pct_tls + " features=" + pct_featureExtraction + " database=" + pct_database + " postSave=" + pct_postSave + " technologyAnalyzer=" + pct_technologyAnalyzer + "</p>";
   }
 }
