@@ -166,6 +166,19 @@
         </dependency>
 
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.21.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20211205</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
             <version>4.2.0</version>
@@ -428,7 +441,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- java implementation of wappalyzer parsing (https://github.com/freekoder/jappalyzer) library recompiled with more up to date json's from here: https://github.com/enthec/webappanalyzer/tree/main/src/technologies -->
+        <!-- java implementation of wappalyzer parsing (https://github.com/freekoder/jappalyzer) library recompiled with more up to date json's from-->
         <dependency>
 			<groupId>com.vampbear</groupId>
 			<artifactId>jappalyzer</artifactId>

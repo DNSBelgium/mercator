@@ -52,7 +52,7 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
             logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
             meterRegistry.counter("technology.analyzer.crawls.done").increment();
 
-            // voor nu save da hier want geen idee waar anders
+            
 
             logger.info("Saving the detected technologies for {}", webCrawlResult.getDomainName());
             save(List.of(webCrawlResult));

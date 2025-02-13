@@ -22,6 +22,11 @@ public class TechnologyAnalyzer {
         this.jappalyzer = Jappalyzer.create();
     }
 
+    
+    public TechnologyAnalyzer(Jappalyzer jappalyzer) {
+        this.jappalyzer = jappalyzer;
+    }
+
     public Set<String> analyze(String url) {
         Set<TechnologyMatch> technologyMatches;
         try {
