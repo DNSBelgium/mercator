@@ -77,8 +77,6 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
         assertThat(result).isNotEmpty();
         assertThat(result.get(0).get("visit_id")).isEqualTo(visitId);
         assertThat(result.get(0).get("domain_name")).isEqualTo(domainName);
-       /*  assertThat(result.get(0).get("detected_technologies")).isEqualTo(detectedTechnologies); */ 
-       /*  assertThat(result.get(0).get("detected_technologies")).containsExactlyInAnyOrder(detectedTechnologies); */
     }
 
    
