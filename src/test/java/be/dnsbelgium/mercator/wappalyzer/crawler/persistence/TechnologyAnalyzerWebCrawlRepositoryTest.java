@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 
+
+
 import static org.assertj.core.api.Assertions.*;
 
 
@@ -66,18 +68,30 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
         String visitId = VisitIdGenerator.generate();
         String domainName = "www.example.com";
         String[] detectedTechnologies = {"Java", "Spring"};
+
         TechnologyAnalyzerWebCrawlResult crawlResult = TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId(visitId)
                 .domainName(domainName)
-                .detectedTechnologies(Set.of(detectedTechnologies))
+                .detectedTechnologies(Set.of(detectedTechnologies)) // Set may change order
                 .build();
+
         technologyAnalyzerWebCrawlRepository.saveTechnologyAnalyzerWebCrawlResult(crawlResult);
         logger.info("insert done");
+
         List<Map<String, Object>> result = jdbcClient.sql("select * from technology_analyzer_web_crawl_result;").query().listOfRows();
         assertThat(result).isNotEmpty();
         assertThat(result.get(0).get("visit_id")).isEqualTo(visitId);
         assertThat(result.get(0).get("domain_name")).isEqualTo(domainName);
+        // DEBUG
+        System.out.println(result.get(0).get("detected_technologies").toString());
+        
+        // de duckdbarray in een string array omzetten omdat die geen functie heeft daarvoor
+        String techonologyStringObject = result.get(0).get("detected_technologies").toString();
+        String[] resultArray = techonologyStringObject.replaceAll("[\\[\\]]", "").split(", ");
+        
+        assertThat(resultArray).containsExactlyInAnyOrder(detectedTechnologies);
     }
+
 
    
     @Test
