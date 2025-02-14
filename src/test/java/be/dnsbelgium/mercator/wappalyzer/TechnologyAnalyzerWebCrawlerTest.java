@@ -37,16 +37,17 @@ public class TechnologyAnalyzerWebCrawlerTest {
     @Test
     public void givenVisitRequest_whenCollectData_thenReturnDetectedTechnologies() {
 
-        VisitRequest visitRequest = new VisitRequest("01JKZDXS4QFF16YAF8A4KR4RS1", "example.com");
-        Set<String> detectedTechnologies = Set.of("HTTP/3");
-        when(technologyAnalyzer.analyze("https://example.com")).thenReturn(detectedTechnologies);
+        VisitRequest visitRequest = new VisitRequest("01JKZDXS4QFF16YAF8A4KR4RS1", "wikipedia.org");
+        Set<String> detectedTechnologies = Set.of("Apache Traffic Server", "HSTS", "Open Graph");
+        when(technologyAnalyzer.analyze("https://wikipedia.org")).thenReturn(detectedTechnologies);
 
         List<TechnologyAnalyzerWebCrawlResult> results = webCrawler.collectData(visitRequest);
         assertThat(results).hasSize(1); // 1 technologoy crawl object is returned
         TechnologyAnalyzerWebCrawlResult result = results.get(0);
         assertThat(result.getVisitId()).isEqualTo("01JKZDXS4QFF16YAF8A4KR4RS1");
-        assertThat(result.getDomainName()).isEqualTo("example.com");
-        assertThat(result.getDetectedTechnologies()).containsExactlyInAnyOrder("HTTP/3");
+        assertThat(result.getDomainName()).isEqualTo("wikipedia.org");
+        assertThat(result.getDetectedTechnologies()).containsExactlyInAnyOrder("Apache Traffic Server", "HSTS",
+                "Open Graph");
 
         verify(meterRegistry).counter("technology.analyzer.crawls.done");
 
@@ -56,8 +57,8 @@ public class TechnologyAnalyzerWebCrawlerTest {
     public void givenCollectedData_whenSave_thenPersistResults() {
         TechnologyAnalyzerWebCrawlResult result = TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId("01JKZDXS4QFF16YAF8A4KR4RS1")
-                .domainName("example.com")
-                .detectedTechnologies(Set.of("HTTP/3"))
+                .domainName("wikipedia.org")
+                .detectedTechnologies(Set.of("Apache Traffic Server", "HSTS", "Open Graph"))
                 .build();
 
         webCrawler.save(List.of(result));
@@ -68,6 +69,7 @@ public class TechnologyAnalyzerWebCrawlerTest {
 
         assertThat(results).hasSize(1);
         TechnologyAnalyzerWebCrawlResult savedResult = results.get(0);
-        assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("HTTP/3");
+        assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("Apache Traffic Server", "HSTS",
+                "Open Graph");
     }
 }

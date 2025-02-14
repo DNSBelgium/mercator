@@ -55,7 +55,7 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
     @Test
     public void givenTechnologyAnalyzerWebCrawlRepository_whenInsert_thenDataInserted() {
         String visitId = VisitIdGenerator.generate();
-        String domainName = "www.example.com";
+        String domainName = "www.wikipedia.org";
         String[] detectedTechnologies = { "Java", "Spring" };
 
         TechnologyAnalyzerWebCrawlResult crawlResult = TechnologyAnalyzerWebCrawlResult.builder()
@@ -85,7 +85,7 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
     @Test
     public void givenTechnologyAnalyzerWebCrawlRepository_WhenFindTechnologyAnalyzerWebCrawlResultsByVisitId_ThenResultsReturned() {
         String visitId = VisitIdGenerator.generate();
-        String domainName = "www.example.com";
+        String domainName = "www.wikipedia.org";
         String[] detectedTechnologies = { "Java", "Spring" };
         TechnologyAnalyzerWebCrawlResult crawlResult = TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId(visitId)
