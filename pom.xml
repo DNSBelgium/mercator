@@ -442,7 +442,7 @@
             <artifactId>jappalyzer</artifactId>
             <version>0.5.3</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/libs/jappalyzer-0.5.3-standalonev3.jar</systemPath>
+            <systemPath>${project.basedir}/libs/jappalyzer-0.5.3-standalonev2.jar</systemPath>
         </dependency>
 
     </dependencies>
