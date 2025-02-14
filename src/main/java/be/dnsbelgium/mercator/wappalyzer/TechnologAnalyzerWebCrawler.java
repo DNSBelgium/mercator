@@ -25,11 +25,12 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
     private final MeterRegistry meterRegistry;
     private final TechnologyAnalyzerWebCrawlRepository repository;
 
-    @Value("${technology.analyzer.persist.results:true}") // dees
+    @Value("${technology.analyzer.persist.results:true}")
     private boolean persistResults;
 
     @Autowired
-    public TechnologAnalyzerWebCrawler(TechnologyAnalyzer technologyAnalyzer, MeterRegistry meterRegistry, TechnologyAnalyzerWebCrawlRepository repository) {
+    public TechnologAnalyzerWebCrawler(TechnologyAnalyzer technologyAnalyzer, MeterRegistry meterRegistry,
+            TechnologyAnalyzerWebCrawlRepository repository) {
         this.technologyAnalyzer = technologyAnalyzer;
         this.meterRegistry = meterRegistry;
         this.repository = repository;
@@ -37,7 +38,7 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public List<TechnologyAnalyzerWebCrawlResult> collectData(VisitRequest visitRequest) {
-        Threads.TECHNOLOGY_ANALYZER.incrementAndGet(); // Increment the counter
+        Threads.TECHNOLOGY_ANALYZER.incrementAndGet();
         try {
             String url = "https://" + visitRequest.getDomainName();
             Set<String> detectedTechnologies = technologyAnalyzer.analyze(url);
@@ -52,14 +53,12 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
             logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
             meterRegistry.counter("technology.analyzer.crawls.done").increment();
 
-            
-
             logger.info("Saving the detected technologies for {}", webCrawlResult.getDomainName());
             save(List.of(webCrawlResult));
 
             return List.of(webCrawlResult);
         } finally {
-            Threads.TECHNOLOGY_ANALYZER.decrementAndGet(); 
+            Threads.TECHNOLOGY_ANALYZER.decrementAndGet();
         }
     }
 
@@ -92,7 +91,6 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public void afterSave(List<?> collectedData) {
-        // Placeholder 
     }
 
     @Override
@@ -100,7 +98,6 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
         return repository.findTechnologyAnalyzerWebCrawlResults(visitId);
     }
 
-    
     @Override
     public void createTables() {
         logger.info("creating tables for TechnologyAnalyzerWebCrawlResult");

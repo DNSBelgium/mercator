@@ -15,11 +15,9 @@ import be.dnsbelgium.mercator.persistence.ArrayConvertor;
 
 import javax.sql.DataSource;
 import java.sql.Array;
-import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-import static be.dnsbelgium.mercator.persistence.Repository.timestamp;
 import static be.dnsbelgium.mercator.persistence.VisitRepository.getList;
 
 @Component
@@ -29,7 +27,7 @@ public class TechnologyAnalyzerWebCrawlRepository {
     private final JdbcTemplate jdbcTemplate;
     private final JdbcClient jdbcClient;
     private final MeterRegistry meterRegistry;
-    private final RowMapper<HtmlFeatures> htmlFeaturesRowMapper; // gedefinieerd in andere files misschien nog nodig
+    private final RowMapper<HtmlFeatures> htmlFeaturesRowMapper;
 
     public TechnologyAnalyzerWebCrawlRepository(DataSource dataSource, MeterRegistry meterRegistry) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -61,49 +59,45 @@ public class TechnologyAnalyzerWebCrawlRepository {
     public void saveTechnologyAnalyzerWebCrawlResult(@NotNull TechnologyAnalyzerWebCrawlResult crawlResult) {
         var sample = Timer.start(meterRegistry);
         var insert = """
-            insert into technology_analyzer_web_crawl_result
-            (
-                visit_id,
-                domain_name,
-                detected_technologies
-            )
-            values (?, ?, ?)
-            """;
+                insert into technology_analyzer_web_crawl_result
+                (
+                    visit_id,
+                    domain_name,
+                    detected_technologies
+                )
+                values (?, ?, ?)
+                """;
         Array detectedTechnologies = jdbcTemplate.execute(
-                (ConnectionCallback<Array>) con ->
-                        con.createArrayOf("text", crawlResult.getDetectedTechnologies().toArray())
-        );
+                (ConnectionCallback<Array>) con -> con.createArrayOf("text",
+                        crawlResult.getDetectedTechnologies().toArray()));
         int rowsInserted = jdbcTemplate.update(
                 insert,
                 crawlResult.getVisitId(),
                 crawlResult.getDomainName(),
-                detectedTechnologies
-        );
+                detectedTechnologies);
         logger.debug("domain={} rowsInserted={}", crawlResult.getDomainName(), rowsInserted);
         sample.stop(meterRegistry.timer("repository.insert.technology.analyzer.web.crawl.result"));
     }
 
     public List<TechnologyAnalyzerWebCrawlResult> findTechnologyAnalyzerWebCrawlResults(String visitId) {
-    return jdbcClient
-        .sql("select * from technology_analyzer_web_crawl_result where visit_id = ?")
-        .param(visitId)
-        .query((rs, rowNum) -> {
-            String domainName = rs.getString("domain_name");
-            List<String> detectedTechnologies = getList(rs, "detected_technologies");
+        return jdbcClient
+                .sql("select * from technology_analyzer_web_crawl_result where visit_id = ?")
+                .param(visitId)
+                .query((rs, rowNum) -> {
+                    String domainName = rs.getString("domain_name");
+                    List<String> detectedTechnologies = getList(rs, "detected_technologies");
 
+                    for (String detectedTechnology : detectedTechnologies) {
+                        logger.info("Detected technology: {}", detectedTechnology);
+                    }
 
-            for (String detectedTechnology : detectedTechnologies) {
-                logger.info("Detected technology: {}", detectedTechnology);
-            }
-
-            
-            return TechnologyAnalyzerWebCrawlResult.builder()
-                .visitId(visitId)
-                .domainName(domainName)
-                .detectedTechnologies(Set.copyOf(detectedTechnologies)) 
-                .build();
-        })
-        .list();
+                    return TechnologyAnalyzerWebCrawlResult.builder()
+                            .visitId(visitId)
+                            .domainName(domainName)
+                            .detectedTechnologies(Set.copyOf(detectedTechnologies))
+                            .build();
+                })
+                .list();
     }
 
 }

@@ -30,35 +30,34 @@ public class TechnologyAnalyzerWebCrawlerTest {
         repository = mock(TechnologyAnalyzerWebCrawlRepository.class);
         webCrawler = new TechnologAnalyzerWebCrawler(technologyAnalyzer, meterRegistry, repository);
 
-        
         Counter counter = mock(Counter.class);
         when(meterRegistry.counter(anyString(), any(String[].class))).thenReturn(counter);
     }
 
     @Test
     public void givenVisitRequest_whenCollectData_thenReturnDetectedTechnologies() {
-        
-        VisitRequest visitRequest = new VisitRequest("01JKZDXS4QFF16YAF8A4KR4RS1", "google.com");
-        Set<String> detectedTechnologies = Set.of("Google Web Server", "HTTP/3");
-        when(technologyAnalyzer.analyze("https://google.com")).thenReturn(detectedTechnologies);
+
+        VisitRequest visitRequest = new VisitRequest("01JKZDXS4QFF16YAF8A4KR4RS1", "example.com");
+        Set<String> detectedTechnologies = Set.of("HTTP/3");
+        when(technologyAnalyzer.analyze("https://example.com")).thenReturn(detectedTechnologies);
 
         List<TechnologyAnalyzerWebCrawlResult> results = webCrawler.collectData(visitRequest);
         assertThat(results).hasSize(1); // 1 technologoy crawl object is gereturned
         TechnologyAnalyzerWebCrawlResult result = results.get(0);
         assertThat(result.getVisitId()).isEqualTo("01JKZDXS4QFF16YAF8A4KR4RS1");
-        assertThat(result.getDomainName()).isEqualTo("google.com");
-        assertThat(result.getDetectedTechnologies()).containsExactlyInAnyOrder("Google Web Server", "HTTP/3");
+        assertThat(result.getDomainName()).isEqualTo("example.com");
+        assertThat(result.getDetectedTechnologies()).containsExactlyInAnyOrder("HTTP/3");
 
         verify(meterRegistry).counter("technology.analyzer.crawls.done");
-        
+
     }
 
     @Test
     public void givenCollectedData_whenSave_thenPersistResults() {
         TechnologyAnalyzerWebCrawlResult result = TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId("01JKZDXS4QFF16YAF8A4KR4RS1")
-                .domainName("google.com")
-                .detectedTechnologies(Set.of("Google Web Server", "HTTP/3"))
+                .domainName("example.com")
+                .detectedTechnologies(Set.of("HTTP/3"))
                 .build();
 
         webCrawler.save(List.of(result));
@@ -69,6 +68,6 @@ public class TechnologyAnalyzerWebCrawlerTest {
 
         assertThat(results).hasSize(1);
         TechnologyAnalyzerWebCrawlResult savedResult = results.get(0);
-        assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("Google Web Server", "HTTP/3");
+        assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("HTTP/3");
     }
 }

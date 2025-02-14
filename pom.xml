@@ -165,20 +165,14 @@
             <version>1.15.3</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>3.21.0</version>
-            <scope>test</scope>
-        </dependency>
-
+        <!-- Used in the Jappalyzer library and is required for the givenTechnologyAnalyzer_whenAnalyzeGoogleCom_ReturnDetectedTechnologies test in technologyAnalyzerTest.java.  -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20211205</version>
         </dependency>
 
-        <dependency>
+        <dependency> 
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
             <version>4.2.0</version>

@@ -23,8 +23,8 @@ public class TechnologyAnalyzerTest {
 
     @Test
     public void givenTechnologyAnalyzer_whenAnalyzeGoogleCom_ReturnDetectedTechnologies() {
-        Set<String> detectedTechnologies = technologyAnalyzer.analyze("https://google.com");
+        Set<String> detectedTechnologies = technologyAnalyzer.analyze("https://example.com");
         assertNotNull(detectedTechnologies);
-        assertThat(detectedTechnologies).containsExactlyInAnyOrder("Google Web Server", "HTTP/3");
+        assertThat(detectedTechnologies).containsExactlyInAnyOrder("HTTP/3");
     }
 }

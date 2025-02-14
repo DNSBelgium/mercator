@@ -52,7 +52,7 @@ public class TableCreator {
             tlsCrawler.createTables();
         }
         if (technologAnalyzerWebCrawler != null) {
-            technologAnalyzerWebCrawler.createTables(); // hier dees extra toegevoegd
+            technologAnalyzerWebCrawler.createTables();
         }
     }
 
