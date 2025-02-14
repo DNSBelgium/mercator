@@ -42,7 +42,7 @@ public class TechnologyAnalyzerWebCrawlerTest {
         when(technologyAnalyzer.analyze("https://example.com")).thenReturn(detectedTechnologies);
 
         List<TechnologyAnalyzerWebCrawlResult> results = webCrawler.collectData(visitRequest);
-        assertThat(results).hasSize(1); // 1 technologoy crawl object is gereturned
+        assertThat(results).hasSize(1); // 1 technologoy crawl object is returned
         TechnologyAnalyzerWebCrawlResult result = results.get(0);
         assertThat(result.getVisitId()).isEqualTo("01JKZDXS4QFF16YAF8A4KR4RS1");
         assertThat(result.getDomainName()).isEqualTo("example.com");
