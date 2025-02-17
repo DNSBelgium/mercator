@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-// we use the existing jappalyzer code for using fromPageResponse method in mercator ()
+// we use an existing implementation of (https://github.com/freekoder/jappalyzer) for json parsing
 public class Jappalyzer {
 
     private List<Technology> technologies = new LinkedList<>();
