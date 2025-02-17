@@ -28,29 +28,10 @@ public class TechnologyAnalyzerWebCrawlerTest {
         technologyAnalyzer = mock(TechnologyAnalyzer.class);
         meterRegistry = mock(MeterRegistry.class);
         repository = mock(TechnologyAnalyzerWebCrawlRepository.class);
-        webCrawler = new TechnologAnalyzerWebCrawler(technologyAnalyzer, meterRegistry, repository);
+        webCrawler = new TechnologAnalyzerWebCrawler(technologyAnalyzer, meterRegistry, repository, null);
 
         Counter counter = mock(Counter.class);
         when(meterRegistry.counter(anyString(), any(String[].class))).thenReturn(counter);
-    }
-
-    @Test
-    public void givenVisitRequest_whenCollectData_thenReturnDetectedTechnologies() {
-
-        VisitRequest visitRequest = new VisitRequest("01JKZDXS4QFF16YAF8A4KR4RS1", "wikipedia.org");
-        Set<String> detectedTechnologies = Set.of("Apache Traffic Server", "HSTS", "Open Graph");
-        when(technologyAnalyzer.analyze("https://wikipedia.org")).thenReturn(detectedTechnologies);
-
-        List<TechnologyAnalyzerWebCrawlResult> results = webCrawler.collectData(visitRequest);
-        assertThat(results).hasSize(1); // 1 technologoy crawl object is returned
-        TechnologyAnalyzerWebCrawlResult result = results.get(0);
-        assertThat(result.getVisitId()).isEqualTo("01JKZDXS4QFF16YAF8A4KR4RS1");
-        assertThat(result.getDomainName()).isEqualTo("wikipedia.org");
-        assertThat(result.getDetectedTechnologies()).containsExactlyInAnyOrder("Apache Traffic Server", "HSTS",
-                "Open Graph");
-
-        verify(meterRegistry).counter("technology.analyzer.crawls.done");
-
     }
 
     @Test

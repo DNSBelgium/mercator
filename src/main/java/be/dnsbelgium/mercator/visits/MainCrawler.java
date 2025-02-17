@@ -51,13 +51,13 @@ public class MainCrawler {
 
   @Autowired
   public MainCrawler(DnsCrawlService dnsCrawlService,
-                     WebCrawler webCrawler,
-                     Repository repository,
-                     SmtpCrawler smtpCrawler,
-                     TlsCrawler tlsCrawler,
-                     MeterRegistry meterRegistry,
-                     VisitService visitService,
-                     TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler) {
+      WebCrawler webCrawler,
+      Repository repository,
+      SmtpCrawler smtpCrawler,
+      TlsCrawler tlsCrawler,
+      MeterRegistry meterRegistry,
+      VisitService visitService,
+      TechnologAnalyzerWebCrawler technologAnalyzerWebCrawler) {
     this.dnsCrawlService = dnsCrawlService;
     this.webCrawler = webCrawler;
     this.tlsCrawler = tlsCrawler;
@@ -105,9 +105,9 @@ public class MainCrawler {
       DnsCrawlResult dnsCrawlResult = dnsCrawlService.visit(visitRequest);
       if (dnsCrawlResult.getStatus() == CrawlStatus.NXDOMAIN) {
         return VisitResult.builder()
-                .visitRequest(visitRequest)
-                .dnsCrawlResult(dnsCrawlResult)
-                .build();
+            .visitRequest(visitRequest)
+            .dnsCrawlResult(dnsCrawlResult)
+            .build();
       }
       Map<CrawlerModule<?>, List<?>> collectedData = new HashMap<>();
 
@@ -124,7 +124,6 @@ public class MainCrawler {
       logger.info("DONE crawling Wappalyzer for {} => {}", visitRequest.getDomainName(), wappalyzerResults);
       collectedData.put(technologAnalyzerWebCrawler, wappalyzerResults);
 
-
       if (smtpEnabled) {
         logger.info("crawling SMTP for {}", visitRequest.getDomainName());
         List<SmtpVisit> smtpVisits = smtpCrawler.collectData(visitRequest);
@@ -132,12 +131,11 @@ public class MainCrawler {
         collectedData.put(smtpCrawler, smtpVisits);
       }
 
-      
       return VisitResult.builder()
-              .visitRequest(visitRequest)
-              .dnsCrawlResult(dnsCrawlResult)
-              .collectedData(collectedData)
-              .build();
+          .visitRequest(visitRequest)
+          .dnsCrawlResult(dnsCrawlResult)
+          .collectedData(collectedData)
+          .build();
     } finally {
       sample.stop(meterRegistry.timer("crawler.collectData"));
     }

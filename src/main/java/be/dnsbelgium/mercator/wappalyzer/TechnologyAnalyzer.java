@@ -1,15 +1,15 @@
 package be.dnsbelgium.mercator.wappalyzer;
 
-import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-// japalyzer library imports
-
 import com.vampbear.jappalyzer.Technology;
 import com.vampbear.jappalyzer.Jappalyzer;
+import com.vampbear.jappalyzer.PageResponse;
 import com.vampbear.jappalyzer.TechnologyMatch;
 
 @Service
@@ -29,20 +29,19 @@ public class TechnologyAnalyzer {
         this.jappalyzer = jappalyzer;
     }
 
-    public Set<String> analyze(String url) {
-        Set<TechnologyMatch> technologyMatches;
-        try {
-            technologyMatches = jappalyzer.fromUrl(url); // analyze by url, can also be done by html content
-            // TODO: implement this with existing requests somewhere else in mercator to the
-            // site because the compiled library uses a seperate httpclient request to the
-            // site
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to analyze URL: " + url, e);
+    public Set<String> analyze(List<PageResponse> pageResponses) {
+        Set<TechnologyMatch> allTechnologyMatches = new HashSet<>();
+
+        for (PageResponse pageResponse : pageResponses) {
+            Set<TechnologyMatch> technologyMatches = jappalyzer.fromPageResponse(pageResponse);
+            allTechnologyMatches.addAll(technologyMatches);
         }
-        Set<String> detectedTechnologies = technologyMatches.stream()
+
+        Set<String> detectedTechnologies = allTechnologyMatches.stream()
                 .map(TechnologyMatch::getTechnology)
                 .map(Technology::getName)
                 .collect(Collectors.toSet());
+
         return detectedTechnologies;
     }
 }
