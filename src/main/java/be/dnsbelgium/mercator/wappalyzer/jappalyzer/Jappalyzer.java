@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// we use the existing jappalyzer code for using fromPageResponse method in mercator ()
 public class Jappalyzer {
 
     private List<Technology> technologies = new LinkedList<>();
