@@ -7,10 +7,12 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.vampbear.jappalyzer.Technology;
-import com.vampbear.jappalyzer.Jappalyzer;
-import com.vampbear.jappalyzer.PageResponse;
-import com.vampbear.jappalyzer.TechnologyMatch;
+// japalyzer library imports
+
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Technology;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Jappalyzer;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyMatch;
 
 @Service
 public class TechnologyAnalyzer {

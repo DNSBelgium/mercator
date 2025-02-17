@@ -15,8 +15,8 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vampbear.jappalyzer.Jappalyzer;
-import com.vampbear.jappalyzer.PageResponse;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Jappalyzer;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -33,7 +33,7 @@ public class TechnologyAnalyzerTest {
 
     @Test
     public void testAnalyze() {
-
+        // Create a list of PageResponse objects with valid content
         List<PageResponse> pageResponses = new ArrayList<>();
         String content1 = "<html><head><meta name=\"generator\" content=\"WordPress 5.8\" /></head><body></body></html>";
         String content2 = "<html><head><meta name=\"generator\" content=\"Joomla! - Open Source Content Management\" /></head><body></body></html>";

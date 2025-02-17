@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.vampbear.jappalyzer.PageResponse;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 
 import static org.slf4j.LoggerFactory.getLogger;
 

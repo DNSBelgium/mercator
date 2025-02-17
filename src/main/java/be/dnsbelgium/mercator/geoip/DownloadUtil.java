@@ -21,7 +21,7 @@ import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.util.Timeout;
 
-import com.vampbear.jappalyzer.PageResponse;
+import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 
 @Log4j2
 public class DownloadUtil {
