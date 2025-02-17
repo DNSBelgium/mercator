@@ -158,7 +158,7 @@ public class PageFetcher {
   }
 
   public Page fetch(HttpUrl url) throws IOException {
-    logger.info("fetched httpurl is hkhkhkh" + url);
+
     Instant started = Instant.now();
     String cacheControl = "max-stale=" + config.getCacheMaxStale().toSeconds();
     Request request = new Request.Builder()
