@@ -1,0 +1,16 @@
+{
+  "cats": [
+    62,
+    88
+  ],
+  "description": "WP Engine is a website hosting provider.",
+  "headers": {
+    "X-Pass-Why": "",
+    "X-Powered-By": "WP Engine",
+    "X-WPE-Loopback-Upstream-Addr": "",
+    "wpe-backend": ""
+  },
+  "icon": "wpengine.svg",
+  "implies": "WordPress",
+  "website": "https://wpengine.com"
+}

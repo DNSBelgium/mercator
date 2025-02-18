@@ -33,7 +33,6 @@ public class TechnologyAnalyzerTest {
 
     @Test
     public void testAnalyze() {
-        // Create a list of PageResponse objects with valid content
         List<PageResponse> pageResponses = new ArrayList<>();
         String content1 = "<html><head><meta name=\"generator\" content=\"WordPress 5.8\" /></head><body></body></html>";
         String content2 = "<html><head><meta name=\"generator\" content=\"Joomla! - Open Source Content Management\" /></head><body></body></html>";
@@ -52,4 +51,6 @@ public class TechnologyAnalyzerTest {
         Set<String> expectedTechnologies = new HashSet<>(Arrays.asList("WordPress", "Joomla", "MySQL", "PHP"));
         assertEquals(expectedTechnologies, detectedTechnologies);
     }
+
+
 }

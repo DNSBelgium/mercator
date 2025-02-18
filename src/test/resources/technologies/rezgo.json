@@ -1,0 +1,25 @@
+{
+  "cats": [
+    5,
+    72
+  ],
+  "description": "Rezgo is a tour operator software that provides online booking system.",
+  "dom": {
+    "iframe": {
+      "attributes": {
+        "id": "rezgo_content_frame"
+      }
+    },
+    "link": {
+      "attributes": {
+        "href": "wp-content/plugins/rezgo/rezgo/templates"
+      }
+    }
+  },
+  "icon": "Rezgo.svg",
+  "pricing": [
+    "payg"
+  ],
+  "saas": true,
+  "website": "https://www.rezgo.com"
+}

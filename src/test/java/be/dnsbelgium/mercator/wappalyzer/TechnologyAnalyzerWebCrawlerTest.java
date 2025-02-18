@@ -51,6 +51,6 @@ public class TechnologyAnalyzerWebCrawlerTest {
         assertThat(results).hasSize(1);
         TechnologyAnalyzerWebCrawlResult savedResult = results.get(0);
         assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("Apache Traffic Server", "HSTS",
-                "Open Graph");
+                "Open Graph"); // It could fail due to HSTS sometimes being blocked by firewall, if persists then remove.
     }
 }
