@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
 import be.dnsbelgium.mercator.tls.metrics.MetricName;
 import com.github.f4b6a3.ulid.Ulid;
 import io.micrometer.core.instrument.Gauge;

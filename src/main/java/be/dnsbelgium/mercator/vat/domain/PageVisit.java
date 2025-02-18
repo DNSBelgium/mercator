@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.vat.crawler.persistence;
+package be.dnsbelgium.mercator.vat.domain;
 
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;

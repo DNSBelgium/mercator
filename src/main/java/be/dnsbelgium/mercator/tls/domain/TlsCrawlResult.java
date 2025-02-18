@@ -1,18 +1,12 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CrawlResultEntity;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
-import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.Getter;
 import lombok.ToString;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
-import static java.time.Instant.now;
 
 @ToString
 public class TlsCrawlResult {
@@ -23,6 +17,7 @@ public class TlsCrawlResult {
 
   private final SingleVersionScan singleVersionScan;
 
+  @Getter
   private final VisitRequest visitRequest;
 
   private final FullScan fullScan;
@@ -49,7 +44,7 @@ public class TlsCrawlResult {
     return new TlsCrawlResult(hostName, visitRequest, null, fullScanEntity, fullScan);
   }
 
-    public boolean isFresh() {
+  public boolean isFresh() {
     return fullScan != null;
   }
 
@@ -73,7 +68,7 @@ public class TlsCrawlResult {
     return false;
   }
 
-  public Optional<List<Certificate>> getCertificateChain() {
+  public Optional<List<be.dnsbelgium.mercator.tls.domain.certificates.Certificate>> getCertificateChain() {
     if (fullScan != null) {
       return fullScan.getCertificateChain();
     }
@@ -83,7 +78,7 @@ public class TlsCrawlResult {
     return Optional.empty();
   }
 
-  public Optional<Certificate> getPeerCertificate() {
+  public Optional<be.dnsbelgium.mercator.tls.domain.certificates.Certificate> getPeerCertificate() {
     if (fullScan != null) {
       return fullScan.getPeerCertificate();
     }
@@ -91,26 +86,6 @@ public class TlsCrawlResult {
       return Optional.ofNullable(singleVersionScan.getPeerCertificate());
     }
     return Optional.empty();
-  }
-
-  public CrawlResultEntity convertToEntity() {
-    Optional<Certificate> peerCertificate = this.getPeerCertificate();
-    boolean certificateExpired = peerCertificate.isPresent() && now().isAfter(peerCertificate.get().getNotAfter());
-    boolean certificateTooSoon = peerCertificate.isPresent() && now().isBefore(peerCertificate.get().getNotBefore());
-    CertificateEntity leafCertificateEntity = peerCertificate.map(Certificate::asEntity).orElse(null);
-
-    return CrawlResultEntity.builder()
-        .fullScanEntity(this.fullScanEntity)
-        .visitId(this.visitRequest.getVisitId())
-        .domainName(this.visitRequest.getDomainName())
-        .hostName(this.hostName)
-        .crawlTimestamp(this.crawlTimestamp)
-        .leafCertificateEntity(leafCertificateEntity)
-        .certificateExpired(certificateExpired)
-        .certificateTooSoon(certificateTooSoon)
-        .hostNameMatchesCertificate(this.hostNameMatchesCertificate())
-        .chainTrustedByJavaPlatform(this.chainTrustedByJavaPlatform())
-        .build();
   }
 
   public static FullScanEntity convert(Instant timestamp, FullScan fullScan) {

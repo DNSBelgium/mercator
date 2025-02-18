@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Disabled;

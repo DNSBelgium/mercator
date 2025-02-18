@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.dns.persistence;
+package be.dnsbelgium.mercator.dns.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import lombok.Getter;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;

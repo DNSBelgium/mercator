@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

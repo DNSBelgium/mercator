@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.geoip.DisabledGeoIPService;
 import be.dnsbelgium.mercator.smtp.domain.crawler.*;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Disabled;

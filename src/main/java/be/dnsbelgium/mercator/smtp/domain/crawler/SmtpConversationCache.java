@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;

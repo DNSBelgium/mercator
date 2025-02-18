@@ -1,14 +1,15 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.idn.IdnException;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
 import be.dnsbelgium.mercator.dns.dto.DnsRequest;
 import be.dnsbelgium.mercator.dns.dto.RRecord;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.Response;
+import be.dnsbelgium.mercator.dns.dto.Request;
+import be.dnsbelgium.mercator.dns.dto.Response;
 import be.dnsbelgium.mercator.metrics.Threads;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

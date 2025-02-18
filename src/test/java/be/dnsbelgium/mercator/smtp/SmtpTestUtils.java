@@ -2,10 +2,10 @@ package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.TestUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;

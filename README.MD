@@ -72,6 +72,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 java -jar -Dspring.active.profiles=local  target/mercator-*-SNAPSHOT.jar
 ```
 
+```shell
+java -Dspring.profiles.active=batch -jar target/mercator-*-SNAPSHOT.jar --in=./in/file.csv --out=./out
+```
+
+
 >[!NOTE]
 > You need to run `mvn package` first.
 

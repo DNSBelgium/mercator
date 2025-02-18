@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.dns;
+package be.dnsbelgium.mercator.dns.dto;
 
 public enum CrawlStatus {
 

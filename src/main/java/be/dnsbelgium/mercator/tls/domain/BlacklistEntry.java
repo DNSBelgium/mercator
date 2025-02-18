@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.tls.crawler.persistence.entities;
+package be.dnsbelgium.mercator.tls.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

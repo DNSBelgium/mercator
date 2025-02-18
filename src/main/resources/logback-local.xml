@@ -15,8 +15,8 @@
     </appender>
 
     <root level="INFO">
-<!--        <appender-ref ref="CONSOLE" />-->
-        <appender-ref ref="Throttle" />
+        <appender-ref ref="CONSOLE" />
+<!--        <appender-ref ref="Throttle" />-->
     </root>
 
 </configuration>

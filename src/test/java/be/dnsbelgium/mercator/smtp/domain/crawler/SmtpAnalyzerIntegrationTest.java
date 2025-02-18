@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.MercatorApplication;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;

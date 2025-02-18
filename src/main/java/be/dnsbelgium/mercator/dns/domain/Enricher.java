@@ -1,9 +1,9 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.dns.domain.geoip.GeoIpEnricher;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.Response;
-import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.dns.dto.Request;
+import be.dnsbelgium.mercator.dns.dto.Response;
+import be.dnsbelgium.mercator.dns.dto.ResponseGeoIp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

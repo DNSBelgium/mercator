@@ -1,7 +1,5 @@
-package be.dnsbelgium.mercator.dns.domain;
+package be.dnsbelgium.mercator.dns.dto;
 
-import be.dnsbelgium.mercator.dns.CrawlStatus;
-import be.dnsbelgium.mercator.dns.persistence.Request;
 import lombok.Getter;
 import lombok.ToString;
 

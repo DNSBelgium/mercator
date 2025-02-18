@@ -2,8 +2,8 @@ package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.dns.domain.geoip.GeoIpEnricher;
 import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.dns.dto.Request;
+import be.dnsbelgium.mercator.dns.dto.ResponseGeoIp;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;

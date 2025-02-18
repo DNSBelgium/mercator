@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.SmtpTestUtils;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.junit.jupiter.api.Tag;

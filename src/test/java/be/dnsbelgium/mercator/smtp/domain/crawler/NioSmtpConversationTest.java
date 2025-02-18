@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import com.hubspot.smtp.client.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;

@@ -1,10 +1,8 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.CertificateEntity;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 
 import javax.crypto.interfaces.DHPublicKey;
@@ -32,7 +30,7 @@ public class Certificate {
   // It must be unique for each certificate issued by a given CA
   private String serialNumberHex;
 
-  // in DB we have these values:
+  // in DB, we have these values:
   // RSAPublicKey,  EllipticCurvePublicKey, DSAPublicKey, Ed25519PublicKey
   // I suggest to strip off the "PublicKey" suffix
   private final String publicKeySchema;
@@ -69,7 +67,7 @@ public class Certificate {
 
   public static Certificate from(X509Certificate x509Certificate) throws CertificateParsingException {
     PublicKey pubKey = x509Certificate.getPublicKey();
-    return Certificate.builder()
+    return be.dnsbelgium.mercator.tls.domain.certificates.Certificate.builder()
         .issuer(x509Certificate.getIssuerX500Principal().getName())
         .subject(x509Certificate.getSubjectX500Principal().getName(RFC2253, OID_MAP))
         .version(x509Certificate.getVersion())
@@ -123,30 +121,6 @@ public class Certificate {
     return 0;
   }
 
-  public static boolean isEV() {
-    /*
-    https://en.wikipedia.org/wiki/Extended_Validation_Certificate
-    EV certificates are standard X.509 digital certificates.
-    The primary way to identify an EV certificate is by referencing the Certificate Policies extension field.
-    Each issuer uses a different object identifier (OID) in this field to identify their EV certificates,
-    and each OID is documented in the issuer's Certification Practice Statement.
-    As with root certificate authorities in general, browsers may not recognize all issuers.
-
-    EV HTTPS certificates contain a subject with X.509 OIDs for
-      jurisdictionOfIncorporationCountryName (OID: 1.3.6.1.4.1.311.60.2.1.3),[12]
-      jurisdictionOfIncorporationStateOrProvinceName (OID: 1.3.6.1.4.1.311.60.2.1.2) (optional),
-      jurisdictionLocalityName (OID: 1.3.6.1.4.1.311.60.2.1.1) (optional),[14]
-      businessCategory (OID: 2.5.4.15)[15] and
-      serialNumber (OID: 2.5.4.5),[16]
-      with the serialNumber pointing to the ID at the relevant secretary of state (US) or government business registrar (outside US)
-      as well as a CA-specific policy identifier so that EV-aware software, such as a web browser,
-      can recognize them.
-      This identifier is what defines EV certificate and is the difference with OV certificate.
-     */
-    throw new NotImplementedException("not yet");
-
-  }
-
   public static String sha256_fingerprint(X509Certificate x509Certificate) {
     try {
       byte[] encodedCertificate = x509Certificate.getEncoded();
@@ -184,25 +158,6 @@ public class Certificate {
       throw e;
     }
     return subjectAlternativeNames;
-  }
-
-  public CertificateEntity asEntity() {
-    String signedBy = (this.getSignedBy() == null) ?
-        null : this.getSignedBy().getSha256Fingerprint();
-    return CertificateEntity.builder()
-        .sha256fingerprint(this.getSha256Fingerprint())
-        .version(this.getVersion())
-        .subjectAltNames(this.getSubjectAlternativeNames())
-        .serialNumberHex(this.getSerialNumberHex())
-        .signatureHashAlgorithm(this.getSignatureHashAlgorithm())
-        .notBefore(this.getNotBefore())
-        .notAfter(this.getNotAfter())
-        .publicKeyLength(this.getPublicKeyLength())
-        .publicKeySchema(this.getPublicKeySchema())
-        .issuer(this.getIssuer())
-        .subject(this.getSubject())
-        .signedBySha256(signedBy)
-        .build();
   }
 
   public static String convertBigIntegerToHexString(BigInteger bigInteger){

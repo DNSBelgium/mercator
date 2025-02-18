@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
+import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
 import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.metrics.Threads;
 import io.micrometer.core.instrument.MeterRegistry;

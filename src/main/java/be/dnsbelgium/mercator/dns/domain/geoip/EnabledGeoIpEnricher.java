@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.dns.domain.geoip;
 
 import be.dnsbelgium.mercator.dns.metrics.MetricName;
-import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.dns.dto.ResponseGeoIp;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import io.micrometer.core.annotation.Timed;
 import org.apache.commons.lang3.tuple.Pair;

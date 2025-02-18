@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.vat.crawler.persistence;
+package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import lombok.Builder;

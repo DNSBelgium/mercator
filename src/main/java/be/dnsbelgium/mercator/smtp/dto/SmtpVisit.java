@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.smtp.persistence.entities;
+package be.dnsbelgium.mercator.smtp.dto;
 
 import com.github.f4b6a3.ulid.Ulid;
 import lombok.*;

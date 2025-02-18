@@ -1,6 +1,5 @@
-package be.dnsbelgium.mercator.smtp.persistence.entities;
+package be.dnsbelgium.mercator.smtp.dto;
 
-import be.dnsbelgium.mercator.smtp.dto.Error;
 import lombok.*;
 import org.springframework.util.StringUtils;
 

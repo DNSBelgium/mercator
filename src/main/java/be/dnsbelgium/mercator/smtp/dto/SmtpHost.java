@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.smtp.persistence.entities;
+package be.dnsbelgium.mercator.smtp.dto;
 
 import lombok.*;
 

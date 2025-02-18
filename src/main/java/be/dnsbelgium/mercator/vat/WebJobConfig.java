@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.vat;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
+import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;

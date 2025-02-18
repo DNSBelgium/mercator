@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
@@ -19,6 +19,7 @@ import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
 import org.springframework.batch.item.json.JsonFileItemWriter;
 import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -62,6 +63,7 @@ public class SmtpJobConfig {
   }
 
   @Bean(name = "smtpJob")
+  @ConditionalOnProperty(name = "job.smtp.enabled", havingValue = "true", matchIfMissing = false)
   public Job smtpJob(JobRepository jobRepository,
                     JdbcTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
@@ -76,7 +78,7 @@ public class SmtpJobConfig {
             .writer(itemWriter)
             .build();
 
-    return new JobBuilder("smtp-job", jobRepository)
+    return new JobBuilder("smtp", jobRepository)
             .start(step)
             .build();
   }

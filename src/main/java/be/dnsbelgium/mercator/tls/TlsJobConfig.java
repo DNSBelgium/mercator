@@ -80,7 +80,7 @@ public class TlsJobConfig {
             .writer(itemWriter)
             .build();
 
-    return new JobBuilder("tls-job", jobRepository)
+    return new JobBuilder("tls", jobRepository)
             .start(step)
             .build();
   }

@@ -3,7 +3,6 @@ package be.dnsbelgium.mercator.vat.domain;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.test.TestUtils;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import org.apache.commons.lang3.StringUtils;

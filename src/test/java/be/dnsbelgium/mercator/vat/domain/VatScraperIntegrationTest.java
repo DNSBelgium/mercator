@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;

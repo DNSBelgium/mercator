@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 
 public interface Conversation {
 

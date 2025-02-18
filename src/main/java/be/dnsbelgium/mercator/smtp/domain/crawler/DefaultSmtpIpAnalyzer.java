@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.TxLogger;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.metrics.Threads;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
