@@ -18,8 +18,6 @@ import org.junit.Test;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Jappalyzer;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 
-import static org.assertj.core.api.Assertions.*;
-
 public class TechnologyAnalyzerTest {
 
     private Jappalyzer jappalyzer;
@@ -51,6 +49,5 @@ public class TechnologyAnalyzerTest {
         Set<String> expectedTechnologies = new HashSet<>(Arrays.asList("WordPress", "Joomla", "MySQL", "PHP"));
         assertEquals(expectedTechnologies, detectedTechnologies);
     }
-
 
 }

@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.wappalyzer;
 
-import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlRepository;
 import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlResult;
 import io.micrometer.core.instrument.Counter;
@@ -51,6 +50,7 @@ public class TechnologyAnalyzerWebCrawlerTest {
         assertThat(results).hasSize(1);
         TechnologyAnalyzerWebCrawlResult savedResult = results.get(0);
         assertThat(savedResult.getDetectedTechnologies()).containsExactlyInAnyOrder("Apache Traffic Server", "HSTS",
-                "Open Graph"); // It could fail due to HSTS sometimes being blocked by firewall, if persists then remove.
+                "Open Graph"); // It could fail due to HSTS sometimes being blocked by firewall, if persists
+                               // then remove.
     }
 }
