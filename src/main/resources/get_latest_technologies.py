@@ -10,7 +10,7 @@ json_files = [
     "x.json", "y.json", "z.json"
 ]
 
-output_dir_technologies = "technologies_backup/downloaded_jsons"
+output_dir_technologies = "technologies_backup/downloaded_jsons" # Change this to the path where you want to save the downloaded JSON files, else manually copy downloaded_jsons into resources/technologies and categories.json and groups.json in /resources
 output_dir_normal = "technologies_backup"
 os.makedirs(output_dir_technologies, exist_ok=True)
 os.makedirs(output_dir_normal, exist_ok=True)
