@@ -57,13 +57,13 @@ pipeline {
 //     }
 
     // this takes 50 minutes without an API key.
-    stage('OWASP dependency check') {
-      steps {
-        sh './gradlew dependencyCheckAggregate'
-        dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
-        archiveArtifacts artifacts: 'build/reports/dependency-check-report.html'
-      }
-    }
+//     stage('OWASP dependency check') {
+//       steps {
+//         sh './gradlew dependencyCheckAggregate'
+//         dependencyCheckPublisher pattern: 'build/reports/dependency-check-report.xml'
+//         archiveArtifacts artifacts: 'build/reports/dependency-check-report.html'
+//       }
+//     }
 
     stage('Docker and Helm login') {
       steps {
