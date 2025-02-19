@@ -7,8 +7,6 @@ import be.dnsbelgium.mercator.content.domain.content.ContentResolver;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResult;
 import be.dnsbelgium.mercator.content.persistence.ContentCrawlResultRepository;
 import be.dnsbelgium.mercator.content.dto.MuppetsResolution;
-import be.dnsbelgium.mercator.content.dto.WappalyzerResolution;
-import be.dnsbelgium.mercator.content.persistence.WappalyzerResult;
 import be.dnsbelgium.mercator.content.persistence.WappalyzerResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,16 +57,6 @@ public class ContentCrawlService {
     }
     if (muppetsRepo.countByVisitId(result.getVisitId()) == urlsToCrawl.size()) {
       ackMessageService.sendAck(result.getVisitId(), result.getDomainName(), CrawlerModule.MUPPETS);
-    }
-  }
-
-  public void contentRetrieved(WappalyzerResolution resolution) {
-    logger.debug("Content retrieved for {}", resolution.getUrl());
-    var result = WappalyzerResult.of(resolution);
-    wappalyzerRepo.save(result);
-    logger.debug("Content saved for {}", resolution.getUrl());
-    if (wappalyzerRepo.countByVisitId(result.getVisitId()) == urlsToCrawl.size()) {
-      ackMessageService.sendAck(result.getVisitId(), result.getDomainName(), CrawlerModule.WAPPALYZER);
     }
   }
 

@@ -33,7 +33,6 @@ class ContentCrawlerApplicationTest {
   static void init() throws IOException, InterruptedException {
     localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "mercator-content-crawler-input");
     localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "mercator-muppets-output");
-    localstack.execInContainer("awslocal", "sqs", "create-queue", "--queue-name", "mercator-wappalyzer-output");
   }
 
   @Test
