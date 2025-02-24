@@ -166,13 +166,6 @@
             <version>1.15.3</version>
         </dependency>
 
-        <!-- Used in Jappalyzer tests -->
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20211205</version>
-        </dependency>
-
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>

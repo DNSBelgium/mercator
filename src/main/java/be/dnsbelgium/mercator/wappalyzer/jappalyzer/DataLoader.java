@@ -2,14 +2,23 @@ package be.dnsbelgium.mercator.wappalyzer.jappalyzer;
 
 import java.util.*;
 
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+
+
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.BufferedReader;
-import org.json.JSONException;
+
 import java.io.InputStreamReader;
 
 public class DataLoader {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     public List<Technology> loadInternalTechnologies() {
         Map<Integer, Group> idGroupMap = readInternalGroups();
@@ -22,100 +31,47 @@ public class DataLoader {
     private Map<Integer, Group> readInternalGroups() {
         try {
             String groupsContent = readFileContentFromResource("groups.json");
-            return createGroupsMap(new JSONObject(groupsContent));
-        } catch (IOException | JSONException ignore) {
+            return createGroupsMap(objectMapper.readTree(groupsContent));
+        } catch (IOException  ignore) {
         }
         return Collections.emptyMap();
     }
 
-    /*
-     * public List<Technology> loadLatestTechnologies() {
-     * Map<Integer, Group> idGroupMap = readLatestGroups();
-     * List<Category> categories = readLatestCategories(idGroupMap);
-     * return readTechnologiestFromGit(categories);
-     * }
-     * 
-     * private Map<Integer, Group> readLatestGroups() {
-     * HttpClient httpClient = new HttpClient();
-     * try {
-     * PageResponse pageResponse = httpClient.getPageByUrl(GROUPS_GIT_PATH);
-     * JSONObject groupsContent = new JSONObject(pageResponse.getOrigContent());
-     * return createGroupsMap(new JSONObject(groupsContent));
-     * } catch (IOException | JSONException ignore) {
-     * }
-     * return Collections.emptyMap();
-     * }
-     */
 
-    private Map<Integer, Group> createGroupsMap(JSONObject groupsJSON) {
+    private Map<Integer, Group> createGroupsMap(JsonNode groupsJSON) {
         Map<Integer, Group> idGroupMap = new HashMap<>();
-        for (String key : groupsJSON.keySet()) {
-            JSONObject groupObject = groupsJSON.getJSONObject(key);
-            int id = Integer.parseInt(key);
-            idGroupMap.put(id, new Group(id, groupObject.getString("name")));
-        }
+        groupsJSON.fields().forEachRemaining(entry -> {
+            int id = Integer.parseInt(entry.getKey());
+            JsonNode groupObject = entry.getValue();
+            idGroupMap.put(id, new Group(id, groupObject.get("name").asText()));
+        });
         return idGroupMap;
+
     }
 
-    /*
-     * private List<Category> readLatestCategories(Map<Integer, Group> idGroupMap) {
-     * List<Category> categories = new LinkedList<>();
-     * HttpClient httpClient = new HttpClient();
-     * try {
-     * PageResponse pageResponse = httpClient.getPageByUrl(CATEGORIES_GIT_PATH);
-     * JSONObject categoriesJSON = new JSONObject(pageResponse.getOrigContent());
-     * for (String key : categoriesJSON.keySet()) {
-     * JSONObject categoryJSON = categoriesJSON.getJSONObject(key);
-     * categories.add(extractCategory(categoryJSON, key, idGroupMap));
-     * }
-     * } catch (IOException | JSONException ignore) {
-     * }
-     * return categories;
-     * }
-     */
 
-    private Category extractCategory(JSONObject categoryJSON, String key, Map<Integer, Group> idGroupMap) {
+
+    private Category extractCategory(JsonNode categoryJSON, String key, Map<Integer, Group> idGroupMap) {
         List<Integer> groupsIds = readGroupIds(categoryJSON);
         List<Group> groups = convertIdsToGroups(idGroupMap, groupsIds);
         Category category = new Category(
-                Integer.parseInt(key), categoryJSON.getString("name"), categoryJSON.getInt("priority"));
+                Integer.parseInt(key), categoryJSON.get("name").asText(), categoryJSON.get("priority").asInt());
         category.setGroups(groups);
         return category;
     }
 
-    /*
-     * private List<Technology> readTechnologiestFromGit(List<Category> categories)
-     * {
-     * List<Technology> technologies = new LinkedList<>();
-     * HttpClient httpClient = new HttpClient();
-     * String[] keys = new String[] {
-     * "a", "b", "c", "d", "e", "f", "g", "h", "i",
-     * "j", "k", "l", "m", "n", "o", "p", "q", "r",
-     * "s", "t", "u", "v", "w", "x", "y", "z", "_" };
-     * try {
-     * for (String key : keys) {
-     * String techGithubUrl = String.format(TECHNOLOGIES_GIT_PATH_TEMPLATE, key);
-     * PageResponse pageResponse = httpClient.getPageByUrl(techGithubUrl);
-     * technologies.addAll(
-     * readTechnologiesFromString(pageResponse.getOrigContent(), categories));
-     * }
-     * } catch (IOException e) {
-     * e.printStackTrace();
-     * }
-     * return technologies;
-     * }
-     */
+
 
     private List<Category> readInternalCategories(Map<Integer, Group> idGroupMap) {
         List<Category> categories = new LinkedList<>();
         try {
             String categoriesContent = readFileContentFromResource("categories.json");
-            JSONObject categoriesJSON = new JSONObject(categoriesContent);
-            for (String key : categoriesJSON.keySet()) {
-                JSONObject categoryJSON = categoriesJSON.getJSONObject(key);
-                categories.add(extractCategory(categoryJSON, key, idGroupMap));
-            }
-        } catch (IOException | JSONException ignore) {
+            JsonNode categoriesJSON = objectMapper.readTree(categoriesContent);
+            categoriesJSON.fields().forEachRemaining(entry -> {
+                JsonNode categoryJson = entry.getValue();
+                categories.add(extractCategory(categoryJson, entry.getKey(), idGroupMap));
+            });
+        } catch (IOException  ignore) {
         }
         return categories;
     }
@@ -130,12 +86,12 @@ public class DataLoader {
         return groups;
     }
 
-    private List<Integer> readGroupIds(JSONObject categoryObject) {
+    private List<Integer> readGroupIds(JsonNode categoryObject) {
         List<Integer> groupsIds = new LinkedList<>();
         if (categoryObject.has("groups")) {
-            for (int i = 0; i < categoryObject.getJSONArray("groups").length(); i++) {
-                int id = categoryObject.getJSONArray("groups").getInt(i);
-                groupsIds.add(id);
+            ArrayNode groupsArray = (ArrayNode) categoryObject.get("groups");
+            for (JsonNode groupIdNode : groupsArray) {
+                groupsIds.add(groupIdNode.asInt());
             }
         }
         return groupsIds;
@@ -175,18 +131,25 @@ public class DataLoader {
 
     private List<Technology> readTechnologiesFromString(String technologiesString, List<Category> categories) {
         List<Technology> technologies = new LinkedList<>();
-        JSONObject fileJSON = new JSONObject(technologiesString);
+        JsonNode fileJSON;
+        try {
+            fileJSON = objectMapper.readTree(technologiesString);
+        } catch (IOException e) {
+            return technologies;
+        }
         TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories);
-        for (String key : fileJSON.keySet()) {
-            JSONObject object = (JSONObject) fileJSON.get(key);
+        fileJSON.fields().forEachRemaining(entry -> {
+            JsonNode object = entry.getValue();
             try {
-                Technology technology = technologyBuilder.fromJSON(key, object);
+                Technology technology = technologyBuilder.fromJSON(entry.getKey(), object);
                 technologies.add(technology);
-            } catch (JSONException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        });
         return technologies;
+
+   
     }
 
 }
