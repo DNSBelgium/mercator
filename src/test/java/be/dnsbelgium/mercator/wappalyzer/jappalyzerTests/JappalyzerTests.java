@@ -1,6 +1,7 @@
 // copied from jappalyzer library
 package be.dnsbelgium.mercator.wappalyzer.jappalyzerTests;
 
+import be.dnsbelgium.mercator.test.ResourceReader;
 import org.junit.Test;
 
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Jappalyzer;
@@ -8,7 +9,6 @@ import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Technology;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyBuilder;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyMatch;
-import be.dnsbelgium.mercator.wappalyzer.jappalyzerTests.utils.TestUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -23,9 +23,9 @@ public class JappalyzerTests {
     @Test
     public void shouldDetectAbicartTechnology() throws IOException {
         TechnologyBuilder technologyBuilder = new TechnologyBuilder();
-        String techDesc = TestUtils.readContentFromResource("technologies/abicart.json");
+        String techDesc = ResourceReader.readFileToString("technologies/abicart.json");
         Technology technology = technologyBuilder.fromString("Abicart", techDesc);
-        String htmlContent = TestUtils.readContentFromResource("contents/abicart_meta.html");
+        String htmlContent = ResourceReader.readFileToString("contents/abicart_meta.html");
         PageResponse pageResponse = new PageResponse(200, null, htmlContent);
         TechnologyMatch match = new TechnologyMatch(technology, TechnologyMatch.META);
         assertThat(technology.applicableTo(pageResponse)).isEqualTo(match);

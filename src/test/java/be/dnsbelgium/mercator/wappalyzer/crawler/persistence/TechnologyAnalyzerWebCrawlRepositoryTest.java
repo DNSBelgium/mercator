@@ -36,7 +36,7 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
         technologyAnalyzerWebCrawlRepository = new TechnologyAnalyzerWebCrawlRepository(dataSource, meterRegistry);
         jdbcClient = JdbcClient.create(dataSource);
         technologyAnalyzerWebCrawlRepository.createTables();
-        logger.info("init done");
+        logger.debug("init done for technologyzanalyzerwebcrawlrepotest");
 
     }
 
@@ -65,7 +65,7 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
                 .build();
 
         technologyAnalyzerWebCrawlRepository.saveTechnologyAnalyzerWebCrawlResult(crawlResult);
-        logger.info("insert done");
+        logger.debug("insert done for technologyzanalyzerwebcrawlrepotest");
 
         List<Map<String, Object>> result = jdbcClient.sql("select * from technology_analyzer_web_crawl_result;").query()
                 .listOfRows();

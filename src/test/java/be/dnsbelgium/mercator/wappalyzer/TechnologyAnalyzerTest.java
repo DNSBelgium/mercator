@@ -15,18 +15,15 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Jappalyzer;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 
 public class TechnologyAnalyzerTest {
 
-    private Jappalyzer jappalyzer;
     private TechnologyAnalyzer technologyAnalyzer;
 
     @Before
     public void setUp() {
-        jappalyzer = Jappalyzer.create();
-        technologyAnalyzer = new TechnologyAnalyzer(jappalyzer);
+        technologyAnalyzer = new TechnologyAnalyzer();
     }
 
     @Test

@@ -55,7 +55,7 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
         try {
             String url = "https://" + visitRequest.getDomainName();
             HttpUrl httpUrl = HttpUrl.parse(url);
-            logger.info("Visiting {}", httpUrl);
+            logger.debug("Visiting {}", httpUrl);
 
             SiteVisit siteVisit = vatScraper.visit(httpUrl, 10);
 
@@ -75,14 +75,14 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
                 PageResponse resp = new PageResponse(status, convertedHeaders, html);
 
-                logger.info("page.url = {}", page.getUrl());
+                logger.debug("page.url = {}", page.getUrl());
                 pageResponses.add(resp);
 
             }
 
             Set<String> detectedTechnologies = technologyAnalyzer.analyze(pageResponses);
 
-            logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
+            logger.debug("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
 
             TechnologyAnalyzerWebCrawlResult webCrawlResult = TechnologyAnalyzerWebCrawlResult.builder()
                     .visitId(visitRequest.getVisitId())
@@ -90,10 +90,10 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
                     .detectedTechnologies(detectedTechnologies)
                     .build();
 
-            logger.info("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
+            logger.debug("Detected technologies for {}: {}", visitRequest.getDomainName(), detectedTechnologies);
             meterRegistry.counter("technology.analyzer.crawls.done").increment();
 
-            logger.info("Saving the detected technologies for {}", webCrawlResult.getDomainName());
+            logger.debug("Saving the detected technologies for {}", webCrawlResult.getDomainName());
             save(List.of(webCrawlResult));
 
             return List.of(webCrawlResult);
@@ -104,18 +104,14 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public void save(List<?> collectedData) {
-        logger.info("step 1");
-        if (persistResults) {
-            logger.info("condition persistresults was true here");
+        if (persistResults) {   
             collectedData.forEach(this::saveObject);
         }
     }
 
     public void saveObject(Object object) {
-        logger.info("step 3");
 
         if (object instanceof TechnologyAnalyzerWebCrawlResult webCrawlResult) {
-            logger.info("it wa instance, saving... ");
             saveItem(webCrawlResult);
         } else {
             logger.error("Cannot save {}", object);
@@ -124,7 +120,6 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public void saveItem(TechnologyAnalyzerWebCrawlResult webCrawlResult) {
-        logger.info("step 4 actual save method");
         repository.saveTechnologyAnalyzerWebCrawlResult(webCrawlResult);
         logger.debug("Persisting the detected technologies for {}", webCrawlResult.getDomainName());
     }
@@ -140,7 +135,7 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
 
     @Override
     public void createTables() {
-        logger.info("creating tables for TechnologyAnalyzerWebCrawlResult");
+        logger.debug("creating tables for TechnologyAnalyzerWebCrawlResult");
         repository.createTables();
     }
 }

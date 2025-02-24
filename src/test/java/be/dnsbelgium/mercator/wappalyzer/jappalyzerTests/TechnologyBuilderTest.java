@@ -1,6 +1,7 @@
 // copied from jappalyzer library
 package be.dnsbelgium.mercator.wappalyzer.jappalyzerTests;
 
+import be.dnsbelgium.mercator.test.ResourceReader;
 import org.junit.Test;
 
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Category;
@@ -8,7 +9,6 @@ import be.dnsbelgium.mercator.wappalyzer.jappalyzer.DomPattern;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PatternWithVersion;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Technology;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyBuilder;
-import be.dnsbelgium.mercator.wappalyzer.jappalyzerTests.utils.TestUtils;
 
 import java.util.*;
 import java.io.IOException;
@@ -119,7 +119,7 @@ public class TechnologyBuilderTest {
     }
 
     private Technology buildTechnologyFromFile(String Abicart, String techFilename) throws IOException {
-        String techDesc = TestUtils.readContentFromResource("technologies/" + techFilename);
+        String techDesc =  ResourceReader.readFileToString("technologies/" + techFilename);
         List<Category> categories = Arrays.asList(
                 new Category(41, "Payment processors", 8),
                 new Category(91, "Buy now pay later", 9),

@@ -117,9 +117,9 @@ public class MainCrawler {
       List<TlsCrawlResult> tlsCrawlResults = tlsCrawler.collectData(visitRequest);
       collectedData.put(tlsCrawler, tlsCrawlResults);
 
-      logger.info("crawling Wappalyzer for {}", visitRequest.getDomainName());
+      logger.debug("crawling Wappalyzer for {}", visitRequest.getDomainName());
       List<TechnologyAnalyzerWebCrawlResult> wappalyzerResults = technologAnalyzerWebCrawler.collectData(visitRequest);
-      logger.info("DONE crawling Wappalyzer for {} => {}", visitRequest.getDomainName(), wappalyzerResults);
+      logger.debug("DONE crawling Wappalyzer for {} => {}", visitRequest.getDomainName(), wappalyzerResults);
       collectedData.put(technologAnalyzerWebCrawler, wappalyzerResults);
 
       if (smtpEnabled) {

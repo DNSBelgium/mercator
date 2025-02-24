@@ -1,6 +1,7 @@
 // copied from jappalyzer library
 package be.dnsbelgium.mercator.wappalyzer.jappalyzerTests;
 
+import be.dnsbelgium.mercator.test.ResourceReader;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -8,7 +9,6 @@ import be.dnsbelgium.mercator.wappalyzer.jappalyzer.PageResponse;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.Technology;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyBuilder;
 import be.dnsbelgium.mercator.wappalyzer.jappalyzer.TechnologyMatch;
-import be.dnsbelgium.mercator.wappalyzer.jappalyzerTests.utils.TestUtils;
 
 import java.util.*;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class TechnologyTests {
 
     @Test
     public void shouldMatchHTMLTemplate() throws IOException {
-        String pageContent = TestUtils.readContentFromResource("contents/font_awesome.html");
+        String pageContent = ResourceReader.readFileToString("contents/font_awesome.html");
         Technology technology = new Technology("Font Awesome");
         technology.addHtmlTemplate(
                 "<link[^>]* href=[^>]+(?:([\\d.]+)/)?(?:css/)?font-awesome(?:\\.min)?\\.css\\;version:\\1");
@@ -103,7 +103,7 @@ public class TechnologyTests {
     public void scriptTest() throws IOException {
         Technology technology = new Technology("test");
         technology.addScriptSrc("livewire(?:\\.min)?\\.js");
-        String htmlContent = TestUtils.readContentFromResource("contents/page_with_script.html");
+        String htmlContent = ResourceReader.readFileToString("contents/page_with_script.html");
         PageResponse pageResponse = new PageResponse(200, null, htmlContent);
         TechnologyMatch expected = new TechnologyMatch(technology, TechnologyMatch.SCRIPT);
         assertThat(technology.applicableTo(pageResponse)).isEqualTo(expected);
@@ -111,9 +111,9 @@ public class TechnologyTests {
 
     @Test
     public void shouldMatchWithMeta() throws IOException {
-        String techDescription = TestUtils.readContentFromResource("technologies/joomla.json");
+        String techDescription = ResourceReader.readFileToString("technologies/joomla.json");
         Technology technology = this.technologyBuilder.fromString("Joomla", techDescription);
-        String htmlContent = TestUtils.readContentFromResource("contents/joomla_meta.html");
+        String htmlContent = ResourceReader.readFileToString("contents/joomla_meta.html");
         PageResponse pageResponse = new PageResponse(200, null, htmlContent);
         TechnologyMatch expected = new TechnologyMatch(technology, TechnologyMatch.META, 0L);
         assertThat(technology.applicableTo(pageResponse)).isEqualTo(expected);
@@ -121,9 +121,9 @@ public class TechnologyTests {
 
     @Test
     public void shouldMatchMetaWithEmptyPattern() throws IOException {
-        String techDesc = TestUtils.readContentFromResource("technologies/jquery_pjax.json");
+        String techDesc = ResourceReader.readFileToString("technologies/jquery_pjax.json");
         Technology technology = this.technologyBuilder.fromString("JQuery pjax", techDesc);
-        String htmlContent = TestUtils.readContentFromResource("contents/page_with_meta.html");
+        String htmlContent = ResourceReader.readFileToString("contents/page_with_meta.html");
         PageResponse pageResponse = new PageResponse(200, null, htmlContent);
         TechnologyMatch expected = new TechnologyMatch(technology, TechnologyMatch.META, 0L);
         assertThat(technology.applicableTo(pageResponse)).isEqualTo(expected);
@@ -131,7 +131,7 @@ public class TechnologyTests {
 
     @Test
     public void shouldMatchWithHeader() throws IOException {
-        String techDesc = TestUtils.readContentFromResource("technologies/wpengine.json");
+        String techDesc = ResourceReader.readFileToString("technologies/wpengine.json");
         Technology technology = this.technologyBuilder.fromString("WP Engine", techDesc);
         PageResponse pageResponse = new PageResponse(200, null, "");
         pageResponse.addHeader("X-Powered-By", "WP Engine");

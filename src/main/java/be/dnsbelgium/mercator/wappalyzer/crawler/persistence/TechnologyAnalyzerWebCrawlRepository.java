@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.wappalyzer.crawler.persistence;
 
-import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,6 @@ public class TechnologyAnalyzerWebCrawlRepository {
     private final JdbcTemplate jdbcTemplate;
     private final JdbcClient jdbcClient;
     private final MeterRegistry meterRegistry;
-    private final RowMapper<HtmlFeatures> htmlFeaturesRowMapper;
 
     public TechnologyAnalyzerWebCrawlRepository(DataSource dataSource, MeterRegistry meterRegistry) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
@@ -35,11 +33,10 @@ public class TechnologyAnalyzerWebCrawlRepository {
         this.meterRegistry = meterRegistry;
         ApplicationConversionService applicationConversionService = new ApplicationConversionService();
         applicationConversionService.addConverter(new ArrayConvertor());
-        this.htmlFeaturesRowMapper = new SimplePropertyRowMapper<>(HtmlFeatures.class, applicationConversionService);
     }
 
     public void createTables() {
-        var ddl_technology_analyzer_web_crawl_result = """
+        String ddl_technology_analyzer_web_crawl_result = """
                 create table if not exists technology_analyzer_web_crawl_result
                 (
                     visit_id       varchar(26)              not null,
@@ -58,7 +55,7 @@ public class TechnologyAnalyzerWebCrawlRepository {
 
     public void saveTechnologyAnalyzerWebCrawlResult(@NotNull TechnologyAnalyzerWebCrawlResult crawlResult) {
         var sample = Timer.start(meterRegistry);
-        var insert = """
+        String insert = """
                 insert into technology_analyzer_web_crawl_result
                 (
                     visit_id,
@@ -88,7 +85,7 @@ public class TechnologyAnalyzerWebCrawlRepository {
                     List<String> detectedTechnologies = getList(rs, "detected_technologies");
 
                     for (String detectedTechnology : detectedTechnologies) {
-                        logger.info("Detected technology: {}", detectedTechnology);
+                        logger.debug("Detected technology: {}", detectedTechnology);
                     }
 
                     return TechnologyAnalyzerWebCrawlResult.builder()
