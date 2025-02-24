@@ -1,0 +1,11 @@
+{
+  "cats": [
+    22
+  ],
+  "headers": {
+    "Server": "^Warp/(\\d+(?:\\.\\d+)+)?$\\;version:\\1"
+  },
+  "icon": "Warp.png",
+  "implies": "Haskell",
+  "website": "http://www.stackage.org/package/warp"
+}

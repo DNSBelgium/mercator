@@ -7,6 +7,8 @@ import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.persistence.Request;
 import be.dnsbelgium.mercator.dns.persistence.Response;
 import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
+import be.dnsbelgium.mercator.wappalyzer.crawler.persistence.TechnologyAnalyzerWebCrawlRepository;
+
 import com.github.f4b6a3.ulid.Ulid;
 import be.dnsbelgium.mercator.persistence.TableCreator;
 import be.dnsbelgium.mercator.persistence.VisitRepository;
@@ -34,6 +36,7 @@ class VisitRepositoryTest {
   static VisitRepository visitRepository;
   static JdbcClient jdbcClient;
   static MeterRegistry meterRegistry = new SimpleMeterRegistry();
+  static TechnologyAnalyzerWebCrawlRepository technologyAnalyzerWebCrawlRepository;
 
   @TempDir
   static File tempDir;
@@ -44,7 +47,8 @@ class VisitRepositoryTest {
   public static void init() {
     dataSource = new DuckDataSource("jdbc:duckdb:");
     WebRepository webRepository = new WebRepository(dataSource, meterRegistry);
-    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository);
+    technologyAnalyzerWebCrawlRepository = new TechnologyAnalyzerWebCrawlRepository(dataSource, meterRegistry);
+    TableCreator tableCreator = new TableCreator(dataSource, null, null, webRepository, null);
     visitRepository = new VisitRepository(dataSource, tableCreator, webRepository, meterRegistry);
     visitRepository.setDatabaseDirectory(tempDir);
     visitRepository.setExportDirectory(tempDir);
@@ -52,11 +56,6 @@ class VisitRepositoryTest {
     jdbcClient = JdbcClient.create(dataSource);
     logger.info("init done");
   }
-
-//  @Test
-//  void failOnPurpose() {
-//    fail("tesing failure report");
-//  }
 
   @Test
   @Transactional

@@ -1,0 +1,13 @@
+{
+  "cats": [
+    27
+  ],
+  "cpe": "cpe:/a:adobe:flash",
+  "description": "Adobe Flash is a multimedia software platform used for production of animations, rich web applications and embedded web browser video players.",
+  "dom": [
+    "object[type='application/x-shockwave-flash']",
+    "param[value*='.swf']"
+  ],
+  "icon": "Adobe Flash.svg",
+  "website": "https://www.adobe.com/products/flashplayer"
+}

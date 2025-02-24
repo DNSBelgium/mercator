@@ -57,7 +57,8 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
     private boolean persistBodyText = false;
 
     @Autowired
-    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, WebRepository webRepository) {
+    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor,
+            WebRepository webRepository) {
         this.vatScraper = vatScraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
@@ -99,7 +100,8 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
         SiteVisit siteVisit = vatScraper.visit(url, maxVisitsPerDomain);
         logger.debug("siteVisit = {}", siteVisit);
 
-        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
+        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(),
+                siteVisit.getVatValues());
         return siteVisit;
     }
 
@@ -131,12 +133,13 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
             List<HtmlFeatures> featuresList = new ArrayList<>();
             for (Page page : siteVisit.getVisitedPages().values()) {
                 var html = page.getDocument().html();
+
+                logger.info(html);
                 logger.info("page.url = {}", page.getUrl());
                 var features = htmlFeatureExtractor.extractFromHtml(
                         html,
                         page.getUrl().url().toExternalForm(),
-                        visitRequest.getDomainName()
-                );
+                        visitRequest.getDomainName());
                 features.visitId = visitRequest.getVisitId();
                 features.crawlTimestamp = Instant.now();
                 features.domainName = visitRequest.getDomainName();

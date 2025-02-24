@@ -89,7 +89,7 @@ class PageTest {
   private Page makePageFrom(String responseBody) {
     HttpUrl url = HttpUrl.get("http://www.example.com/");
     MediaType mediaType = MediaType.parse("text/html");
-    return new Page(url, TestUtils.now(), TestUtils.now().plusMillis(120), 200, responseBody, -1, mediaType);
+    return new Page(url, TestUtils.now(), TestUtils.now().plusMillis(120), 200, responseBody, -1, mediaType, null);
   }
 
   private String getHtml(String resourcePath) throws IOException {
@@ -153,13 +153,14 @@ class PageTest {
 
   @Test
   public void ignoreInvalidLinks() {
-    String validLink   = "http://café-" + StringUtils.repeat("a", 25) + ".be";
+    String validLink = "http://café-" + StringUtils.repeat("a", 25) + ".be";
     String invalidLink = "http://café-" + StringUtils.repeat("a", 256) + ".be";
     String html = String.format(
         "<html><body>" +
             "<a href='%s'>valid link</a>" +
             "<a href='%s'>invalid link</a>" +
-        "</body></html>", validLink, invalidLink);
+            "</body></html>",
+        validLink, invalidLink);
     logger.info("html = {}", html);
     Page page = makePageFrom(html);
     logger.info("page.getLinks() = {}", page.getLinks());
