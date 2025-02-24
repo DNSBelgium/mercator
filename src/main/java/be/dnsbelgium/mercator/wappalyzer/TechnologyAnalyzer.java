@@ -20,10 +20,6 @@ public class TechnologyAnalyzer {
     private final Jappalyzer jappalyzer;
 
     public TechnologyAnalyzer() {
-        // create method uses the internal json lists compiled with the library, using
-        // .latest() would retrieve the latest filterlists from the original wappalyzer
-        // repo (to be implemented with webappanalyzer)
-        // it will not work because wappalyzer repository has been privated
         this.jappalyzer = Jappalyzer.create();
     }
 
