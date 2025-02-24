@@ -61,7 +61,7 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
         TechnologyAnalyzerWebCrawlResult crawlResult = TechnologyAnalyzerWebCrawlResult.builder()
                 .visitId(visitId)
                 .domainName(domainName)
-                .detectedTechnologies(Set.of(detectedTechnologies)) // Set may change order
+                .detectedTechnologies(Set.of(detectedTechnologies))
                 .build();
 
         technologyAnalyzerWebCrawlRepository.saveTechnologyAnalyzerWebCrawlResult(crawlResult);
@@ -72,8 +72,6 @@ public class TechnologyAnalyzerWebCrawlRepositoryTest {
         assertThat(result).isNotEmpty();
         assertThat(result.get(0).get("visit_id")).isEqualTo(visitId);
         assertThat(result.get(0).get("domain_name")).isEqualTo(domainName);
-        // DEBUG
-        System.out.println(result.get(0).get("detected_technologies").toString());
 
         // convert duckdb array into a string and then convert back to an array
         String techonologyStringObject = result.get(0).get("detected_technologies").toString();

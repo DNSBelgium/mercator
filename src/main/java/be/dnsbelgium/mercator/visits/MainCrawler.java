@@ -117,8 +117,6 @@ public class MainCrawler {
       List<TlsCrawlResult> tlsCrawlResults = tlsCrawler.collectData(visitRequest);
       collectedData.put(tlsCrawler, tlsCrawlResults);
 
-      // Call the Wappalyzer crawler to process the visit request
-      System.out.println("starting wappalyzer crawler");
       logger.info("crawling Wappalyzer for {}", visitRequest.getDomainName());
       List<TechnologyAnalyzerWebCrawlResult> wappalyzerResults = technologAnalyzerWebCrawler.collectData(visitRequest);
       logger.info("DONE crawling Wappalyzer for {} => {}", visitRequest.getDomainName(), wappalyzerResults);

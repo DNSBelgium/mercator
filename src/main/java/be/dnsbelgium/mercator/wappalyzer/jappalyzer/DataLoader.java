@@ -22,9 +22,7 @@ public class DataLoader {
 
     public List<Technology> loadInternalTechnologies() {
         Map<Integer, Group> idGroupMap = readInternalGroups();
-        System.out.println("Loaded " + idGroupMap.size() + " groups.");
         List<Category> categories = readInternalCategories(idGroupMap);
-        System.out.println("Loaded " + categories.size() + " categories.");
         return readTechnologiesFromInternalResources(categories);
     }
 
@@ -111,7 +109,6 @@ public class DataLoader {
             } catch (IOException ignore) {
             }
         }
-        System.out.println("Loaded " + technologies.size() + " technologies.");
         return technologies;
     }
 

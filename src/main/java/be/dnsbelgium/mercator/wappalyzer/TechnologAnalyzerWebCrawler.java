@@ -58,7 +58,6 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
             logger.info("Visiting {}", httpUrl);
 
             SiteVisit siteVisit = vatScraper.visit(httpUrl, 10);
-            System.out.println(siteVisit.getVisitedPages());
 
             Map<Link, Page> pages = siteVisit.getVisitedPages();
 

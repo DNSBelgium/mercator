@@ -27,7 +27,6 @@ public class DataLoaderTests {
         if (technology.isPresent()) {
             List<Category> categories = technology.get().getCategories();
             List<Group> groups = getCategoriesGroups(categories);
-            System.out.println("groeps are: "+ groups);
             assertThat(categories.size()).isEqualTo(1);
             assertThat(groups).containsExactlyInAnyOrder(new Group(8, "Analytics"));
         } else {
@@ -43,12 +42,9 @@ public class DataLoaderTests {
         Optional<Technology> technology = technologies.stream()
                 .filter(item -> item.getName().equals("Genesys Cloud"))
                 .findFirst();
-        System.out.println(technology + "this one");
         if (technology.isPresent()) {
             List<Category> categories = technology.get().getCategories();
-            System.out.println("cats are: "+ categories);
             List<Group> groups = getCategoriesGroups(categories);
-            System.out.println("groeps are: "+ groups);
             assertThat(categories.size()).isEqualTo(2);
             assertThat(groups).containsExactlyInAnyOrder(
                     new Group(2, "Marketing"),
