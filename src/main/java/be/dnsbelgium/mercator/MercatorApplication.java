@@ -8,17 +8,14 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
-import org.springframework.context.annotation.Profile;
 
 @ConfigurationPropertiesScan
 @SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
 exclude = {
-        DataSourceAutoConfiguration.class,
         BatchAutoConfiguration.class,
-        DataSourceTransactionManagerAutoConfiguration.class,
 })
 @EnableBatchProcessing
-@Profile("web")
+//@Profile("web")
 public class MercatorApplication {
 
   public static void main(String[] args) {

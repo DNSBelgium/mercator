@@ -25,7 +25,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 
-@SuppressWarnings("SpringElInspection")
+@SuppressWarnings({"SpringElInspection", "SpringJavaInjectionPointsAutowiringInspection"})
 @Configuration
 public class WebJobConfig {
 

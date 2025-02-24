@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @ToString
+@NoArgsConstructor(force = true)
 @EqualsAndHashCode
 public class PageVisit {
 

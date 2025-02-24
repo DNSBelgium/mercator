@@ -1,42 +1,32 @@
 package be.dnsbelgium.mercator;
 
-import be.dnsbelgium.mercator.persistence.DuckDataSource;
-import be.dnsbelgium.mercator.scheduling.BatchConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
-@Profile("batch")
-@SpringBootApplication
-@ComponentScan(
-    basePackages = "be.dnsbelgium.mercator",
-
-    includeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*JobConfig$"),
-        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = BatchConfig.class)
-    }
-)
+//@Profile("batch")
+//@SpringBootApplication
+//@ComponentScan(
+//    basePackages = "be.dnsbelgium.mercator",
+//
+//    includeFilters = {
+//        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*JobConfig$"),
+//        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = BatchConfig.class)
+//    }
+//)
+@ComponentScan
 public class BatchApplication implements CommandLineRunner {
 
   private final ApplicationContext context;

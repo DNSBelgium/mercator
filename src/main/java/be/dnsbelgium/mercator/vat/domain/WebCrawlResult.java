@@ -1,10 +1,7 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
@@ -13,6 +10,8 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @ToString(exclude = {"pageVisits", "htmlFeatures"})
 public class WebCrawlResult {
 
