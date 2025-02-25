@@ -1,0 +1,34 @@
+{
+  "cats": [
+    41
+  ],
+  "cpe": "cpe:/a:paypal:paypal",
+  "description": "PayPal is an online payments system that supports online money transfers and serves as an electronic alternative to traditional paper methods like checks and money orders.",
+  "dom": {
+    "button": {
+      "text": "PayPal"
+    },
+    "iframe[src*='paypal.com'], img[src*='paypal.com'], img[src*='paypalobjects.com'], [aria-labelledby='pi-paypal'], [data-paypal-v4='true']": {
+      "exists": ""
+    }
+  },
+  "icon": "PayPal.svg",
+  "js": {
+    "PAYPAL": "",
+    "__paypal_global__": "",
+    "checkout.enabledpayments.paypal": "^true$",
+    "enablePaypal": "",
+    "paypalClientId": "",
+    "paypalJs": ""
+  },
+  "meta": {
+    "id": "in-context-paypal-metadata"
+  },
+  "pricing": [
+    "payg"
+  ],
+  "saas": true,
+  "scriptSrc": "paypalobjects\\.com",
+  "website": "https://paypal.com",
+  "xhr": "\\.paypal\\.com"
+}

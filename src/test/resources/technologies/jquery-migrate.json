@@ -1,0 +1,15 @@
+{
+  "cats": [
+    59
+  ],
+  "description": "Query Migrate is a javascript library that allows you to preserve the compatibility of your jQuery code developed for versions of jQuery older than 1.9.",
+  "icon": "jQuery.svg",
+  "implies": "jQuery",
+  "js": {
+    "jQuery.migrateVersion": "([\\d.]+)\\;version:\\1",
+    "jQuery.migrateWarnings": "",
+    "jqueryMigrate": ""
+  },
+  "scriptSrc": "jquery[.-]migrate(?:-([\\d.]+))?(?:\\.min)?\\.js(?:\\?ver=([\\d.]+))?\\;version:\\1?\\1:\\2",
+  "website": "https://github.com/jquery/jquery-migrate"
+}

@@ -1,0 +1,27 @@
+{
+  "cats": [
+    12
+  ],
+  "cpe": "cpe:/a:facebook:react",
+  "description": "React is an open-source JavaScript library for building user interfaces or UI components.",
+  "dom": {
+    "body > div": {
+      "properties": {
+        "_reactRootContainer": ""
+      }
+    }
+  },
+  "html": "<[^>]+data-react",
+  "icon": "React.png",
+  "js": {
+    "React.version": "^(.+)$\\;version:\\1",
+    "ReactOnRails": "",
+    "__REACT_ON_RAILS_EVENT_HANDLERS_RAN_ONCE__": ""
+  },
+  "scriptSrc": [
+    "react(?:-with-addons)?[.-]([\\d.]*\\d)[^/]*\\.js\\;version:\\1",
+    "/([\\d.]+)/react(?:\\.min)?\\.js\\;version:\\1",
+    "^react\\b.*\\.js"
+  ],
+  "website": "https://reactjs.org"
+}
