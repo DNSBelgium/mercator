@@ -23,13 +23,13 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="visit : ${visits}">
-                <td>
-                    <a th:href="@{/visits/{id}(id=${visit.visitId()})}" th:text="${visit.visitId()}"> </a>
-                </td>
-                <td th:text="${visit.domainName()}">5</td>
-                <td th:text="${visit.done()}">3</td>
-            </tr>
+                <tr th:each="visit : ${visits}">
+                    <td>
+                        <a th:href="@{/visits/{id}(id=${visit.visitId})}" th:text="${visit.visitId}"> </a>
+                    </td>
+                    <td th:text="${visit.domainName}"></td>
+                    <td th:text="${visit.crawlStarted}"></td>
+                </tr>                
             </tbody>
         </table>
 

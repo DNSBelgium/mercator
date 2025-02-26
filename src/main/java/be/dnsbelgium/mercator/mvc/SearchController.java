@@ -2,6 +2,8 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
+import io.micrometer.core.instrument.search.Search;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -26,7 +28,31 @@ public class SearchController {
   @GetMapping("/search")
   public String search(Model model, @RequestParam(name = "search", defaultValue = "") String search) {
     logger.info("search for [{}]", search);
+
+    JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule()); // support for Instant
+    
+    List<String> jsonResults = jdbcClient
+      .sql("select to_json(p) from 'web.parquet' p where domainName = ? limit 10")
+      .param(search)
+      .query(String.class)
+      .list();
+
+    List<WebCrawlResult> webCrawlResults = jsonResults.stream()
+      .map(json -> {
+        try {
+          return objectMapper.readValue(json, WebCrawlResult.class);
+        } catch (JsonProcessingException e) {
+          logger.error("Failed to parse JSON: {}", json, e);
+          return null;
+        }
+      })
+      .filter(result -> result != null)
+      .toList();
+    logger.info("our results: " + webCrawlResults.toString());
     model.addAttribute("search", search);
+    model.addAttribute("visits", webCrawlResults);
     return "search-results";
   }
 
