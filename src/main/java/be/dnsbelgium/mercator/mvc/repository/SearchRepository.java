@@ -57,9 +57,19 @@ public class SearchRepository {
 
     public Optional<String> searchVisitIdWithOption(String visitId, String option)  {
         JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        if (option.equals("tls")) {
+            Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
+                    .sql("SELECT to_json(p) FROM '" + option + ".parquet' p WHERE CAST(p.visitRequest.visitId AS VARCHAR) = ? LIMIT 10")
+                    .param(visitId)
+                    .query(String.class)
+                    .optional();
+
+            return json;
+        }
         // get one row from the parquet file
         Optional<String> json = jdbcClient
-                .sql("select to_json(p) from '" + option + ".parquet' p where visitId = ? limit 10")
+                .sql("select to_json(p) from " + option + ".parquet p where CAST(p.visitId as varchar) = ? limit 10"
+                )
                 .param(visitId)
                 .query(String.class)
                 .optional();

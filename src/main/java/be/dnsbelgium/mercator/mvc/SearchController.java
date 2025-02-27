@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.mvc.repository.SearchRepository;
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,6 +49,7 @@ public class SearchController {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
     model.addAttribute("visitId", visitId);
+    String returnTemplate = "";
 
     List<WebCrawlResult> webCrawlResults = null;
     model.addAttribute("webCrawlResults", webCrawlResults);
@@ -55,15 +57,34 @@ public class SearchController {
     Optional<String> json = searchRepository.searchVisitIdWithOption(visitId, option);
     if (json.isPresent()) {
       try {
-        WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);
-        model.addAttribute("webCrawlResults", List.of(webCrawlResult));
-        logger.info("webCrawlResult = {}", webCrawlResult);
-
+        if ("web".equals(option)) {
+          WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
+          model.addAttribute("webCrawlResults", List.of(webCrawlResult));
+          logger.info("webCrawlResult = {}", webCrawlResult);
+        } else if ("tls".equals(option)) {
+          TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
+          model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult));
+          logger.info("tlsCrawlResult = {}", tlsCrawlResult);
+        } else {
+          WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
+          model.addAttribute("webCrawlResults", List.of(webCrawlResult));
+          logger.info("webCrawlResult = {}", webCrawlResult);
+        }
       } catch (JsonProcessingException e) {
         logger.error(e.getMessage());
       }
     }
-    return "visit-details";
+    if ("web".equals(option)) {
+      returnTemplate = "visit-details-web";
+    } else if ("tls".equals(option)) {
+      returnTemplate = "visit-details-tls";
+    } else if ("smtp".equals(option)) {
+      returnTemplate = "visit-details-smtp";
+    } else {
+      returnTemplate = "search"; // fallback for now
+    }
+
+    return returnTemplate;
   }
 
 }
