@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+  <title>Mercator | Details</title>
+</head>
+
+<body>
+
+<main class="container" layout:fragment="content">
+
+  <h2 th:if="${tlsCrawlResults == null or tlsCrawlResults.isEmpty()}">
+    No TLS crawl results found for visitId <span th:text="${visitId}"></span>
+  </h2>
+
+  <div class="container-fluid" th:if="${tlsCrawlResults != null and not tlsCrawlResults.isEmpty()}">
+
+    
+  </div>
+
+</main>
+
+</body>
+</html>
