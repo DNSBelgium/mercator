@@ -1,20 +1,17 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.persistence.DuckDataSource;
+import be.dnsbelgium.mercator.mvc.repository.SearchRepository;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import io.micrometer.core.instrument.search.Search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -24,56 +21,38 @@ import java.util.Optional;
 public class SearchController {
 
   private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
+  private final SearchRepository searchRepository;
 
-  @GetMapping("/search")
-  public String search(Model model, @RequestParam(name = "search", defaultValue = "") String search) {
-    logger.info("search for [{}]", search);
-
-    JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule()); // support for Instant
-    
-    List<String> jsonResults = jdbcClient
-      .sql("select to_json(p) from 'web.parquet' p where domainName = ? limit 10")
-      .param(search)
-      .query(String.class)
-      .list();
-
-    List<WebCrawlResult> webCrawlResults = jsonResults.stream()
-      .map(json -> {
-        try {
-          return objectMapper.readValue(json, WebCrawlResult.class);
-        } catch (JsonProcessingException e) {
-          logger.error("Failed to parse JSON: {}", json, e);
-          return null;
-        }
-      })
-      .filter(result -> result != null)
-      .toList();
-    logger.info("our results: " + webCrawlResults.toString());
-    model.addAttribute("search", search);
-    model.addAttribute("visits", webCrawlResults);
-    return "search-results";
+  public SearchController(SearchRepository searchRepository) {
+    this.searchRepository = searchRepository;
   }
 
-  @GetMapping("/visits/{id}")
-  public String visit(Model model, @PathVariable(name = "id") String visitId) {
+  @GetMapping("/search")
+  public String search(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+    if (domainName.isEmpty()) {
+      return "search";
+    }
+    logger.info("search for [{}]", domainName);
+
+    List<WebCrawlResult> webCrawlResults = searchRepository.searchVisitIds(domainName);
+    logger.info("our results: " + webCrawlResults);
+
+    model.addAttribute("search", domainName);
+    model.addAttribute("visits", webCrawlResults);
+
+    return "search-results";
+  }
+  @GetMapping("/visits")
+  public String visit(Model model, @RequestParam(name = "visitId", defaultValue = "") String visitId, @RequestParam(name = "option", defaultValue = "") String option) {
     logger.info("/visits/{}", visitId);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
     model.addAttribute("visitId", visitId);
 
     List<WebCrawlResult> webCrawlResults = null;
     model.addAttribute("webCrawlResults", webCrawlResults);
 
-    // TODO:  move to repository class
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-    JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-    // get one row from the parquet file
-    Optional<String> json = jdbcClient
-            .sql("select to_json(p) from 'web.parquet' p where visitId = ? limit 10")
-            .param(visitId)
-            .query(String.class)
-            .optional();
+    Optional<String> json = searchRepository.searchVisitIdWithOption(visitId, option);
     if (json.isPresent()) {
       try {
         WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);
