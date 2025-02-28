@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
