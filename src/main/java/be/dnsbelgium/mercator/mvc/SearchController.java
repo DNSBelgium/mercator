@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.SearchRepository;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 
@@ -65,10 +66,10 @@ public class SearchController {
           TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
           model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult));
           logger.info("tlsCrawlResult = {}", tlsCrawlResult);
-        } else {
-          WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
-          model.addAttribute("webCrawlResults", List.of(webCrawlResult));
-          logger.info("webCrawlResult = {}", webCrawlResult);
+        } else if ("smtp".equals(option)) {
+          SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);;
+          model.addAttribute("smtpConversationResults", List.of(smtpConversation));
+          logger.info("smtpconversation = {}", smtpConversation);
         }
       } catch (JsonProcessingException e) {
         logger.error(e.getMessage());

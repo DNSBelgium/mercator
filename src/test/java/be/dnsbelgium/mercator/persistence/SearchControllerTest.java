@@ -1,6 +1,6 @@
-package be.dnsbelgium.mercator.mvc;
+package be.dnsbelgium.mercator.persistence;
 
-import be.dnsbelgium.mercator.persistence.SearchRepository;
+import be.dnsbelgium.mercator.mvc.SearchController;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;

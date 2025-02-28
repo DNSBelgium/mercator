@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.persistence;
 
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -98,6 +99,15 @@ public class SearchRepository {
         if (json.isPresent()) {
             TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
             return tlsCrawlResult;
+        }
+        return null;
+    }
+
+    public SmtpConversation findSmtpConversationResult(String visitId) throws JsonProcessingException {
+        Optional<String> json = searchVisitIdWithOption(visitId, "smtp");
+        if (json.isPresent()) {
+            SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);
+            return smtpConversation;
         }
         return null;
     }
