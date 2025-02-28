@@ -2,10 +2,9 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
-import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
@@ -30,18 +29,14 @@ public class TlsCrawlResult {
   @Getter
   private final FullScanEntity fullScanEntity;
 
-  public void setCertificateChain(List<be.dnsbelgium.mercator.tls.domain.certificates.Certificate> chain) {
-    System.out.println("setCertificateChain: " + chain);
-  }
+  @Setter
+  private List<Certificate> certificateChain;
 
-  public void setPeerCertificate(Certificate certificate) {
-    System.out.println("setPeerCertificate: " + certificate);
-  }
-
-  public void setFresh(Boolean fresh) {
-    System.out.println("setFresh: " + fresh);
-
-  }
+  @Setter
+  private Certificate peerCertificate;
+  
+  @Setter
+  private Boolean fresh;
 
   private TlsCrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
     this.crawlTimestamp = Instant.now();
@@ -51,6 +46,8 @@ public class TlsCrawlResult {
     this.fullScanEntity = fullScanEntity;
     this.hostName = hostName;
   }
+
+
 
   public static TlsCrawlResult fromCache(String hostName, VisitRequest visitRequest, FullScanEntity fullScanEntity, SingleVersionScan singleVersionScan) {
     return new TlsCrawlResult(hostName, visitRequest, singleVersionScan, fullScanEntity, null);
@@ -86,25 +83,31 @@ public class TlsCrawlResult {
     return false;
   }
 
-  public Optional<List<be.dnsbelgium.mercator.tls.domain.certificates.Certificate>> getCertificateChain() {
+  public Optional<List<Certificate>> getCertificateChain() {
+    if (certificateChain != null) {
+        return Optional.of(certificateChain);
+    }
     if (fullScan != null) {
-      return fullScan.getCertificateChain();
+        return fullScan.getCertificateChain();
     }
     if (singleVersionScan != null) {
-      return Optional.ofNullable(singleVersionScan.getCertificateChain());
+        return Optional.ofNullable(singleVersionScan.getCertificateChain());
     }
     return Optional.empty();
-  }
+}
 
-  public Optional<be.dnsbelgium.mercator.tls.domain.certificates.Certificate> getPeerCertificate() {
+public Optional<Certificate> getPeerCertificate() {
+    if (peerCertificate != null) {
+        return Optional.of(peerCertificate);
+    }
     if (fullScan != null) {
-      return fullScan.getPeerCertificate();
+        return fullScan.getPeerCertificate();
     }
     if (singleVersionScan != null) {
-      return Optional.ofNullable(singleVersionScan.getPeerCertificate());
+        return Optional.ofNullable(singleVersionScan.getPeerCertificate());
     }
     return Optional.empty();
-  }
+}
 
   public static FullScanEntity convert(Instant timestamp, FullScan fullScan) {
     var tls13 = fullScan.get(TlsProtocolVersion.TLS_1_3);
