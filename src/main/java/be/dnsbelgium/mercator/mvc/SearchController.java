@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.mvc.repository.SearchRepository;
+import be.dnsbelgium.mercator.persistence.SearchRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 

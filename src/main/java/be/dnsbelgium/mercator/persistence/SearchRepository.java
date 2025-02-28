@@ -1,4 +1,4 @@
-package be.dnsbelgium.mercator.mvc.repository;
+package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
@@ -6,8 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
-import be.dnsbelgium.mercator.persistence.DuckDataSource;
 
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

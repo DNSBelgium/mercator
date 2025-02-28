@@ -1,10 +1,9 @@
 package be.dnsbelgium.mercator.mvc.repository;
 
+import be.dnsbelgium.mercator.persistence.SearchRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SearchRepositoryTest {
 

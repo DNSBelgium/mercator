@@ -1,11 +1,9 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.mvc.repository.SearchRepository;
+import be.dnsbelgium.mercator.persistence.SearchRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SearchControllerTest {
 
