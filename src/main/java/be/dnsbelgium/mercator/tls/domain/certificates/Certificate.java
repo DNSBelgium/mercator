@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
@@ -24,6 +25,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Data
 @Builder
 @AllArgsConstructor
+@Jacksonized
 public class Certificate {
 
   // Have only seen version 3 (99%) and version 1
