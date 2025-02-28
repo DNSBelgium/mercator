@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc.repository;
 
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
 
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -30,6 +32,7 @@ public class SearchRepository {
         this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule()); // Support for Instant
+        this.objectMapper.registerModule(new Jdk8Module()); // Support for Instant
     }
 
     public List<WebCrawlResult> searchVisitIds(String domainName) {
@@ -77,5 +80,31 @@ public class SearchRepository {
         return json;
 
     }
+
+    public WebCrawlResult findWebCrawlResult(String visitId) {
+//        Optional<String> json = searchVisitIdWithOption(visitId, option);
+//        if (json.isPresent()) {
+//            try {
+//                if ("web".equals(option)) {
+//                    WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
+//                    model.addAttribute("webCrawlResults", List.of(webCrawlResult));
+//                    logger.info("webCrawlResult = {}", webCrawlResult);
+//
+//                }
+        // TODO
+        return null;
+    }
+
+    public TlsCrawlResult findTlsCrawlResult(String visitId) throws JsonProcessingException {
+        Optional<String> json = searchVisitIdWithOption(visitId, "tls");
+        if (json.isPresent()) {
+            TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
+            return tlsCrawlResult;
+        }
+        return null;
+    }
+
+
 }
+
 

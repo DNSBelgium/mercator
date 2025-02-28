@@ -1,7 +1,9 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.Instant;
@@ -9,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @ToString
+@NoArgsConstructor(force = true)
 public class TlsCrawlResult {
 
   private final Instant crawlTimestamp;
@@ -24,6 +27,10 @@ public class TlsCrawlResult {
 
   @Getter
   private final FullScanEntity fullScanEntity;
+
+  public void setCertificateChain(List<be.dnsbelgium.mercator.tls.domain.certificates.Certificate> chain) {
+    System.out.println("setCertificateChain: " + chain);
+  }
 
   private TlsCrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
     this.crawlTimestamp = Instant.now();

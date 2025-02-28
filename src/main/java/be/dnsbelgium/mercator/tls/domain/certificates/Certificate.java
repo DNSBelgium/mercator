@@ -1,7 +1,9 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 
@@ -21,6 +23,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 @Data
 @Builder
+@AllArgsConstructor
 public class Certificate {
 
   // Have only seen version 3 (99%) and version 1
