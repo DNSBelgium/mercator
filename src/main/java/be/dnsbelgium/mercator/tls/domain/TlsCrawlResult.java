@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,15 @@ public class TlsCrawlResult {
 
   public void setCertificateChain(List<be.dnsbelgium.mercator.tls.domain.certificates.Certificate> chain) {
     System.out.println("setCertificateChain: " + chain);
+  }
+
+  public void setPeerCertificate(Certificate certificate) {
+    System.out.println("setPeerCertificate: " + certificate);
+  }
+
+  public void setFresh(Boolean fresh) {
+    System.out.println("setFresh: " + fresh);
+
   }
 
   private TlsCrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
