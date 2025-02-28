@@ -34,8 +34,7 @@ public class TlsCrawlResult {
 
   @Setter
   private Certificate peerCertificate;
-  
-  @Setter
+
   private Boolean fresh;
 
   private TlsCrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
@@ -61,6 +60,10 @@ public class TlsCrawlResult {
 
   public boolean isFresh() {
     return fullScan != null;
+  }
+
+  public boolean getFresh() {
+    return fresh;
   }
 
   public boolean hostNameMatchesCertificate() {
@@ -95,6 +98,7 @@ public class TlsCrawlResult {
     }
     return Optional.empty();
 }
+
 
 public Optional<Certificate> getPeerCertificate() {
     if (peerCertificate != null) {
