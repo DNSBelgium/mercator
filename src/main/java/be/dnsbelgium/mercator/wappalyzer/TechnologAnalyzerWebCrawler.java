@@ -94,7 +94,6 @@ public class TechnologAnalyzerWebCrawler implements CrawlerModule<TechnologyAnal
             meterRegistry.counter("technology.analyzer.crawls.done").increment();
 
             logger.debug("Saving the detected technologies for {}", webCrawlResult.getDomainName());
-            save(List.of(webCrawlResult));
 
             return List.of(webCrawlResult);
         } finally {

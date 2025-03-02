@@ -18,7 +18,6 @@ public class ResourceReader {
     }
   }
 
-  @SuppressWarnings("unused")
   public static String readFileToString(String path) {
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     Resource resource = resourceLoader.getResource(path);

@@ -133,8 +133,6 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
             List<HtmlFeatures> featuresList = new ArrayList<>();
             for (Page page : siteVisit.getVisitedPages().values()) {
                 var html = page.getDocument().html();
-
-                logger.info(html);
                 logger.info("page.url = {}", page.getUrl());
                 var features = htmlFeatureExtractor.extractFromHtml(
                         html,

@@ -5,8 +5,8 @@ import java.util.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ import java.io.InputStreamReader;
 public class DataLoader {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
 
     public List<Technology> loadInternalTechnologies() {
         Map<Integer, Group> idGroupMap = readInternalGroups();
@@ -30,7 +30,8 @@ public class DataLoader {
         try {
             String groupsContent = readFileContentFromResource("groups.json");
             return createGroupsMap(objectMapper.readTree(groupsContent));
-        } catch (IOException  ignore) {
+        } catch (IOException  e) {
+            logger.error("Failed to load 'groups.json'", e);
         }
         return Collections.emptyMap();
     }
@@ -69,7 +70,8 @@ public class DataLoader {
                 JsonNode categoryJson = entry.getValue();
                 categories.add(extractCategory(categoryJson, entry.getKey(), idGroupMap));
             });
-        } catch (IOException  ignore) {
+        } catch (IOException  e) {
+            logger.error("Failed to load 'categories.json'", e);
         }
         return categories;
     }
@@ -106,7 +108,8 @@ public class DataLoader {
             try {
                 String fileContent = readFileContentFromResource(techFilename);
                 technologies.addAll(readTechnologiesFromString(fileContent, categories));
-            } catch (IOException ignore) {
+            } catch (IOException e) {
+                logger.error("Failed to load " + techFilename, e);
             }
         }
         return technologies;
@@ -132,6 +135,7 @@ public class DataLoader {
         try {
             fileJSON = objectMapper.readTree(technologiesString);
         } catch (IOException e) {
+            logger.error("Failed to load " + technologiesString, e);
             return technologies;
         }
         TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories);
@@ -141,7 +145,11 @@ public class DataLoader {
                 Technology technology = technologyBuilder.fromJSON(entry.getKey(), object);
                 technologies.add(technology);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.atError()
+                        .setMessage("Failed to load JSON for {}")
+                        .addArgument(technologiesString)
+                        .setCause(e)
+                        .log();
             }
         });
         return technologies;
