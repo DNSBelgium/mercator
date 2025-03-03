@@ -20,12 +20,15 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class CaffeineTest {
 
     private static final Logger logger = getLogger(CaffeineTest.class);
-    public static final int CACHE_TIME = 10;
+    public static final int CACHE_TIME = 100;
+
+    int crawlCount = 0;
 
     private SmtpConversation findByIp(InetAddress ip) {
         logger.info("crawling for ip = {}", ip);
         SmtpConversation smtpConversation = new SmtpConversation(ip);
         smtpConversation.setBanner("banner for " + ip);
+        crawlCount++;
         return smtpConversation;
     }
 
@@ -38,20 +41,26 @@ public class CaffeineTest {
                 .build(this::findByIp);
 
         InetAddress ip = ip("10.20.30.40");
+        crawlCount = 0;
 
         // first miss
         SmtpConversation foundNothing = cache.getIfPresent(ip);
         assertThat(foundNothing).isNull();
+        assertThat(crawlCount).isEqualTo(0);
 
         // second miss but it populates the cache
         SmtpConversation cacheMiss = cache.get(ip);
         assertThat(cacheMiss).isNotNull();
         assertThat(cacheMiss.getBanner()).isEqualTo("banner for " + ip);
+        logger.info("cache.estimatedSize() = {}", cache.estimatedSize());
+        logger.info("cache.stats() = {}", cache.stats());
+        assertThat(crawlCount).isEqualTo(1);
 
         // first hit
         SmtpConversation cacheHit = cache.get(ip);
         assertThat(cacheHit).isNotNull();
         assertThat(cacheHit).isEqualTo(cacheMiss);
+        assertThat(crawlCount).isEqualTo(1);
 
         SmtpTestUtils.sleep(CACHE_TIME);
         // third miss
