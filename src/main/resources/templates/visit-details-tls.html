@@ -21,7 +21,7 @@
     <div th:each="result : ${tlsCrawlResults}">
       <h3>Fresh</h3>
       <p th:text="${result.getFresh()}"></p>
-      <h2>result for domain: <span th:text="${result.visitRequest.domainName}">domain name</span></h2>
+      <h2>TLS result for domain: <span th:text="${result.visitRequest.domainName}">domain name</span></h2>
 
       <h3>visitRequest: </h3>
       <table>
