@@ -17,16 +17,13 @@
   </h2>
 
   <div class="container-fluid" th:if="${tlsCrawlResults != null and not tlsCrawlResults.isEmpty()}">
-
     <div th:each="result : ${tlsCrawlResults}">
       <h3>Fresh</h3>
       <p th:text="${result.getFresh()}"></p>
       <h2>TLS result for domain: <span th:text="${result.visitRequest.domainName}">domain name</span></h2>
-
       <h3>visitRequest: </h3>
       <table>
         <tbody>
-
         <tr>
           <th>visitId</th>
           <td th:text="${result.visitRequest.visitId}"></td>
@@ -37,11 +34,9 @@
         </tr>
         </tbody>
       </table>
-
       <h3>fullScanEntity:</h3>
       <table>
         <tbody>
-
           <tr>
             <th>Id: </th>
             <td th:text="${result.fullScanEntity.id}"></td>
@@ -168,8 +163,6 @@
           </tr>
         </tbody>
       </table>
-
-
       <h3>Certificate chain</h3>
       <div th:each="cert, iterStat : ${result.certificateChain.get()}">
         <table>
@@ -212,7 +205,6 @@
           </tbody>
         </table>
       </div>
-
       <p>peer certificate: </p>
       <h3>Peer Certificate</h3>
       <div th:with="peerCert=${result.peerCertificate.get()}">
@@ -242,21 +234,8 @@
         </table>
         </div>
       </div>
-
-
       <pre th:text="${tlsCrawlResults}"></pre>
-
-
-
-
-
-
     </div>
-
-
-
-  </div>
-
 </main>
 
 </body>

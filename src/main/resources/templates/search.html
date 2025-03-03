@@ -7,10 +7,6 @@
 <head>
     <title>Mercator | Search Results</title>
     <script>
-        function setOption(option) {
-            document.getElementById('optionInput').value = option;
-
-        }
         function submit() {
             document.getElementById('searchForm').submit();
         }
@@ -23,7 +19,6 @@
     <div layout:fragment="content">
         <h1>Input domain name you would like to search.</h1>
         <form id="searchForm" method="get" th:action="@{/search}">
-
             <div>
                 <label for="textinput">Domain Name:</label>
                 <input id="textinput" name="domainName" th:value="${domainName}" type="text">
