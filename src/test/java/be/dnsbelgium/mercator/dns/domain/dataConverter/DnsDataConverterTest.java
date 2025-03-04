@@ -19,6 +19,12 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 public class DnsDataConverterTest {
 
@@ -46,16 +52,23 @@ public class DnsDataConverterTest {
     }
 
     @Test
-    public void testConvertDnsCrawlResultToJsonToParquet() throws JsonProcessingException {
+    public void testConvertDnsCrawlResultToJsonToParquet() throws IOException {
 
         VisitRequest visitRequest = new VisitRequest("dnsbelgium.be");
 
         DnsCrawlResult result = service.retrieveDnsRecords(visitRequest);
         String json = mapper.writeValueAsString(result);
-        System.out.println(json);
+
+        objectMapper.writeValue(new File("dns-data.json"), result);
+
+        Path p = Paths.get("dns-data.json");
+
+
 
         String query = String.format(
                 """
+            
+            WITH save_parq as (
     
             SELECT
                 request.visitId as visit_id,
@@ -68,15 +81,22 @@ public class DnsDataConverterTest {
                 response->'unnest'->>'ttl' AS ttl
             FROM (
                 SELECT unnest(requests) AS request
-                FROM %s r
+                FROM '%s' r
                 ) AS unnested_requests,
                 LATERAL unnest(request.responses) AS response
             ORDER BY record_type;
+            )
+            
+            
+            COPY
+                (SELECT * FROM save_parq)
+                TO 'dns-crawl-result.parquet'
+                (FORMAT PARQUET);
                 
-    """, json);
-        String returnst = jdbcClient.sql(query).query().toString();
+    """, p);
+        jdbcClient.sql(query);
 
-        System.out.println(returnst);
+        System.out.println("done.. ");
 
 
 
