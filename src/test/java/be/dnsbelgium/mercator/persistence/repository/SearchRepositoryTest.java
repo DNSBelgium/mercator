@@ -6,6 +6,8 @@ import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 class SearchRepositoryTest {
 
     SearchRepository searchRepository = new SearchRepository();
@@ -22,6 +24,12 @@ class SearchRepositoryTest {
     public void findSmtpConversationResult() throws JsonProcessingException {
         SmtpConversation smtpConversation = searchRepository.findSmtpConversationResult("d1894946-e41d-42f7-9096-939a18bbc3dd");
         System.out.println("Smtp: " + smtpConversation);
+    }
+
+    @Test
+    public void findLatestTlsResult() throws JsonProcessingException {
+        Optional<String> result = searchRepository.searchlatestTlsResult();
+        System.out.println(result);
     }
 
 }

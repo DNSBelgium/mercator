@@ -32,10 +32,25 @@ public class SearchController {
 
 
   @GetMapping("/search/web")
-  public String searchWeb(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+  public String searchWeb(Model model, 
+  @RequestParam(name = "domainName", defaultValue = "") String domainName,
+  @RequestParam(name = "fetch_latest", defaultValue = "") String fetch_latest) throws JsonProcessingException {
     if (domainName.isEmpty()) {
       return "search";
     }
+    if (fetch_latest.contains("on")) {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.registerModule(new JavaTimeModule());
+      Optional<String> json = searchRepository.searchlatestWebResult();
+      if (json.isPresent()) {
+        WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
+        model.addAttribute("webCrawlResults", List.of(webCrawlResult));
+        logger.info("webcrawlresult = {}", webCrawlResult);
+      }
+      return "visit-details-web";
+
+    }
+
     logger.info("search for [{}]", domainName);
 
     List<WebCrawlResult> webCrawlResults = searchRepository.searchVisitIdsWeb(domainName);
@@ -49,10 +64,25 @@ public class SearchController {
 
 
   @GetMapping("/search/tls")
-  public String searchTls(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+  public String searchTls(Model model, 
+  @RequestParam(name = "domainName", defaultValue = "") String domainName,
+  @RequestParam(name = "fetch_latest", defaultValue = "") String fetch_latest) throws JsonProcessingException {
     if (domainName.isEmpty()) {
       return "search";
     }
+    if (fetch_latest.contains("on")) {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.registerModule(new JavaTimeModule());
+      Optional<String> json = searchRepository.searchlatestTlsResult();
+      if (json.isPresent()) {
+        TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
+        model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult));
+        logger.info("tlsCrawlResult = {}", tlsCrawlResult);
+      }
+      return "visit-details-tls";
+
+    }
+
     logger.info("search for [{}]", domainName);
 
     List<TlsCrawlResult> tlsCrawlResults = searchRepository.searchVisitIdsTls(domainName);
@@ -65,9 +95,22 @@ public class SearchController {
   }
 
   @GetMapping("/search/smtp")
-  public String searchSmtp(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+  public String searchSmtp(Model model, 
+  @RequestParam(name = "domainName", defaultValue = "") String domainName,
+  @RequestParam(name = "fetch_latest", defaultValue = "") String fetch_latest) throws JsonProcessingException {
     if (domainName.isEmpty()) {
       return "search";
+    }
+    if (fetch_latest.contains("on")) {
+      ObjectMapper objectMapper = new ObjectMapper();
+      objectMapper.registerModule(new JavaTimeModule());
+      Optional<String> json = searchRepository.searchlatestSmtpResult();
+      if (json.isPresent()) {
+        SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);;
+        model.addAttribute("smtpConversationResults", List.of(smtpConversation));
+        logger.info("tlsCrawlResult = {}", smtpConversation);
+      }
+      return "visit-details-smtp";
     }
     logger.info("search for [{}]", domainName);
 

@@ -141,6 +141,54 @@ public class SearchRepository {
 
     }
 
+    public Optional<String> searchlatestTlsResult()  {
+
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        String visitId = jdbcClient.sql("SELECT p.visitRequest.visitId FROM 'tls.parquet' p ORDER BY fullScanEntity.crawlTimestamp DESC LIMIT 1")
+            .query(String.class)
+                .single();
+        System.out.println(visitId);
+        Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
+                .sql("SELECT to_json(p) FROM 'tls.parquet' p WHERE CAST(p.visitRequest.visitId AS VARCHAR) = ?")
+                .param(visitId)
+                .query(String.class)
+                .optional();
+
+        return json;
+
+
+    }
+
+    public Optional<String> searchlatestSmtpResult()  {
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        String visitId = jdbcClient.sql("SELECT p.visitId FROM 'smtp.parquet' p ORDER BY timestamp DESC LIMIT 1")
+                .query(String.class)
+                .single();
+        System.out.println(visitId);
+        Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
+                .sql("SELECT to_json(p) FROM 'smtp.parquet' p WHERE CAST(p.visitId AS VARCHAR) = ?")
+                .param(visitId)
+                .query(String.class)
+                .optional();
+        return json;
+
+    }
+
+    public Optional<String> searchlatestWebResult()  {
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        String visitId = jdbcClient.sql("SELECT p.visitId FROM 'web.parquet' p ORDER BY crawlFinished DESC LIMIT 1")
+                .query(String.class)
+                .single();
+        System.out.println(visitId);
+        Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
+                .sql("SELECT to_json(p) FROM 'web.parquet' p WHERE CAST(p.visitId AS VARCHAR) = ?")
+                .param(visitId)
+                .query(String.class)
+                .optional();
+        return json;
+
+    }
+
 
 
     public WebCrawlResult findWebCrawlResult(String visitId) {
