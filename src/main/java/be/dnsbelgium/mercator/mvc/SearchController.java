@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,63 +30,94 @@ public class SearchController {
     this.searchRepository = searchRepository;
   }
 
-  @GetMapping("/search")
-  public String search(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+
+  @GetMapping("/search/web")
+  public String searchWeb(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
     if (domainName.isEmpty()) {
       return "search";
     }
     logger.info("search for [{}]", domainName);
 
-    List<WebCrawlResult> webCrawlResults = searchRepository.searchVisitIds(domainName);
+    List<WebCrawlResult> webCrawlResults = searchRepository.searchVisitIdsWeb(domainName);
     logger.info("our results: " + webCrawlResults);
 
     model.addAttribute("search", domainName);
     model.addAttribute("visits", webCrawlResults);
 
-    return "search-results";
+    return "search-results-web";
   }
-  @GetMapping("/visits")
-  public String visit(Model model, @RequestParam(name = "visitId", defaultValue = "") String visitId, @RequestParam(name = "option", defaultValue = "") String option) {
-    logger.info("/visits/{}", visitId);
+
+
+  @GetMapping("/search/tls")
+  public String searchTls(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+    if (domainName.isEmpty()) {
+      return "search";
+    }
+    logger.info("search for [{}]", domainName);
+
+    List<TlsCrawlResult> tlsCrawlResults = searchRepository.searchVisitIdsTls(domainName);
+    logger.info("our results: " + tlsCrawlResults);
+
+    model.addAttribute("category", "tls");
+    model.addAttribute("visits", tlsCrawlResults);
+
+    return "search-results-tls";
+  }
+
+  @GetMapping("/search/smtp")
+  public String searchSmtp(Model model, @RequestParam(name = "domainName", defaultValue = "") String domainName) {
+    if (domainName.isEmpty()) {
+      return "search";
+    }
+    logger.info("search for [{}]", domainName);
+
+    List<SmtpConversation> smtpConversations = searchRepository.searchVisitIdsSmtp(domainName);
+    logger.info("our results: " + smtpConversations);
+
+    model.addAttribute("search", domainName);
+    model.addAttribute("visits", smtpConversations);
+
+    return "search-results-smtp";
+  }
+
+  @GetMapping("/visits/web")
+  public String visitWeb(Model model, @RequestParam(name = "visitId", defaultValue = "") String visitId) throws JsonMappingException, JsonProcessingException {
+    logger.info("/visits/web/{}", visitId);
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
-    model.addAttribute("visitId", visitId);
-    String returnTemplate = "";
-
-    List<WebCrawlResult> webCrawlResults = null;
-    model.addAttribute("webCrawlResults", webCrawlResults);
-
-    Optional<String> json = searchRepository.searchVisitIdWithOption(visitId, option);
+    Optional<String> json = searchRepository.searchVisitIdWeb(visitId);
     if (json.isPresent()) {
-      try {
-        if ("web".equals(option)) {
-          WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
-          model.addAttribute("webCrawlResults", List.of(webCrawlResult));
-          logger.info("webCrawlResult = {}", webCrawlResult);
-        } else if ("tls".equals(option)) {
-          TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
-          model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult));
-          logger.info("tlsCrawlResult = {}", tlsCrawlResult);
-        } else if ("smtp".equals(option)) {
-          SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);;
-          model.addAttribute("smtpConversationResults", List.of(smtpConversation));
-          logger.info("smtpconversation = {}", smtpConversation);
-        }
-      } catch (JsonProcessingException e) {
-        logger.error(e.getMessage());
-      }
+      WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);;
+      model.addAttribute("webCrawlResults", List.of(webCrawlResult));
+      logger.info("webcrawlresult = {}", webCrawlResult);
     }
-    if ("web".equals(option)) {
-      returnTemplate = "visit-details-web";
-    } else if ("tls".equals(option)) {
-      returnTemplate = "visit-details-tls";
-    } else if ("smtp".equals(option)) {
-      returnTemplate = "visit-details-smtp";
-    } else {
-      returnTemplate = "search"; // fallback for now
+    return "visit-details-web";
+  }
+  @GetMapping("/visits/smtp")
+  public String visitSmtp(Model model, @RequestParam(name = "visitId", defaultValue = "") String visitId) throws JsonMappingException, JsonProcessingException {
+    logger.info("/visits/smtp/{}", visitId);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    Optional<String> json = searchRepository.searchVisitIdSmtp(visitId);
+    if (json.isPresent()) {
+      SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);;
+      model.addAttribute("smtpConversationResults", List.of(smtpConversation));
+      logger.info("tlsCrawlResult = {}", smtpConversation);
     }
-
-    return returnTemplate;
+    return "visit-details-smtp";
+  }
+  @GetMapping("/visits/tls")
+  public String visitTls(Model model, @RequestParam(name = "visitId", defaultValue = "") String visitId) throws JsonMappingException, JsonProcessingException {
+    logger.info("/visits/tls/{}", visitId);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    Optional<String> json = searchRepository.searchVisitIdTls(visitId);
+    if (json.isPresent()) {
+      TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
+      model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult));
+      logger.info("tlsCrawlResult = {}", tlsCrawlResult);
+    }
+    return "visit-details-tls";
   }
 
 }

@@ -5,38 +5,72 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>Mercator | Home </title>
+    <script>
+        function updateFormAction() {
+            const form = document.getElementById('searchForm');
+            const selectedOption = document.querySelector('input[name="option"]:checked').value;
+            form.action = '/search/' + selectedOption;
+        }
+    </script>
 </head>
 
 <body >
 
-    <div layout:fragment="content">
-        <h2>Welcome to Mercator</h2>
+<div layout:fragment="content">
+    <h2>Welcome to Mercator</h2>
 
-        <h3>The web interface has no functionality currently.</h3>
+    <h3>The web interface has no functionality currently.</h3>
 
-        <p>
-            <a th:href="@{/query}">Query</a>
-        </p>
-<!--        <p>-->
-<!--            <a th:href="@{/status}"> Check the crawling status </a>-->
-<!--        </p>-->
+    <p>
+        <a th:href="@{/query}">Query</a>
+    </p>
+    <!--        <p>-->
+    <!--            <a th:href="@{/status}"> Check the crawling status </a>-->
+    <!--        </p>-->
 
-<!--        <p>-->
-<!--            <a th:href="@{/hello}"> Test visualisation of a visit (fake data for now) </a>-->
-<!--        </p>-->
+    <!--        <p>-->
+    <!--            <a th:href="@{/hello}"> Test visualisation of a visit (fake data for now) </a>-->
+    <!--        </p>-->
 
-<!--        <p>-->
-<!--            <a th:href="@{/test-htmx}"> Experiment with htmx </a>-->
-<!--        </p>-->
+    <!--        <p>-->
+    <!--            <a th:href="@{/test-htmx}"> Experiment with htmx </a>-->
+    <!--        </p>-->
 
-<!--        <p>-->
-<!--            <a target="_blank" th:href="@{/actuator/scheduledtasks}">/actuator/scheduledtasks</a>-->
-<!--        </p>-->
-<!--        <p>-->
-<!--            <a target="_blank" th:href="@{/actuator/threaddump}">/actuator/threaddump</a>-->
-<!--        </p>-->
+    <!--        <p>-->
+    <!--            <a target="_blank" th:href="@{/actuator/scheduledtasks}">/actuator/scheduledtasks</a>-->
+    <!--        </p>-->
+    <!--        <p>-->
+    <!--            <a target="_blank" th:href="@{/actuator/threaddump}">/actuator/threaddump</a>-->
+    <!--        </p>-->
 
-    </div>
+    <h1>Input domain name you would like to search.</h1>
+    <form id="searchForm" method="get" th:action="@{/search}" onsubmit="updateFormAction()">
+        <div>
+            <label for="textinput">Domain Name:</label>
+            <input id="textinput" name="domainName" th:value="${domainName}" type="text">
+        </div>
+        <label>
+            <input type="radio" name="option" value="web" th:checked="${option == 'web'}">
+            Web
+        </label>
+        <label>
+            <input type="radio" name="option" value="tls" th:checked="${option == 'tls'}">
+            Tls
+        </label>
+        <label>
+            <input type="radio" name="option" value="smtp" th:checked="${option == 'smtp'}">
+            Smtp
+        </label>
+        <label>
+            <input type="checkbox" name="fetch_latest" th:checked="${fetch_latest}">
+            Fetch Latest
+        </label>
+        <button type="submit">submit</button>
+    </form>
+
+</div>
+
+
 
 <th:block layout:fragment="page-scripts">
     <!-- Add additional scripts there that are only needed for this page (Application wide scripts should be added in layout/layout.html) -->

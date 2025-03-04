@@ -7,10 +7,7 @@
 <head>
     <title>Mercator | Search Results</title>
     <script>
-        function setOption(option) {
-            document.getElementById('optionInput').value = option;
-            document.getElementById('selectedOptionDisplay').innerText = option;
-        }
+
         function handleVisitClick(event) {
             event.preventDefault();
             let visitId = event.target.getAttribute("data-visit-id");
@@ -18,6 +15,8 @@
             document.getElementById("selectedVisitIdDisplay").innerText = visitId;
         }
         function submitForm() {
+            const form = document.getElementById('searchForm');
+            form.action = "/visits/smtp"
             document.getElementById('searchForm').submit();
         }
     </script>
@@ -42,7 +41,6 @@
                 <tr>
                     <td>Visit Id</td>
                     <td>Domain name</td>
-                    <td>Crawled</td>
                 </tr>
                 </thead>
                 <tbody>
@@ -51,16 +49,10 @@
                         <a href="#" th:text="${visit.visitId}" th:attr="data-visit-id=${visit.visitId}" onclick="handleVisitClick(event)"></a>
                     </td>
                     <td th:text="${visit.domainName}"></td>
-                    <td th:text="${visit.crawlStarted}"></td>
                 </tr>
                 </tbody>
             </table>
 
-            <div>
-                <button type="button" class="web" onclick="setOption('web')">Web</button>
-                <button type="button" class="tls" onclick="setOption('tls')">TLS</button>
-                <button type="button" class="smtp" onclick="setOption('smtp')">SMTP</button>
-            </div>
 
             <button type="button" onclick="submitForm()">Submit</button>
         </form>

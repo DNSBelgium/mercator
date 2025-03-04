@@ -33,8 +33,8 @@ public class SearchRepository {
         this.objectMapper.registerModule(new JavaTimeModule()); // Support for Instant
         this.objectMapper.registerModule(new Jdk8Module()); // Support for Instant
     }
-
-    public List<WebCrawlResult> searchVisitIds(String domainName) {
+    
+    public List<WebCrawlResult> searchVisitIdsWeb(String domainName) {
         List<String> jsonResults = jdbcClient
                 .sql("select to_json(p) from 'web.parquet' p where domainName = ? limit 10")
                 .param(domainName)
@@ -57,28 +57,91 @@ public class SearchRepository {
         return webCrawlResults;
     }
 
-    public Optional<String> searchVisitIdWithOption(String visitId, String option)  {
-        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-        if (option.equals("tls")) {
-            Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
-                    .sql("SELECT to_json(p) FROM '" + option + ".parquet' p WHERE CAST(p.visitRequest.visitId AS VARCHAR) = ? LIMIT 10")
-                    .param(visitId)
-                    .query(String.class)
-                    .optional();
+    public List<SmtpConversation> searchVisitIdsSmtp(String domainName) {
+        List<String> jsonResults = jdbcClient
+                .sql("select to_json(p) from 'smtp.parquet' p where domainName = ? limit 10")
+                .param(domainName)
+                .query(String.class)
+                .list();
 
-            return json;
-        }
-        // get one row from the parquet file
+        List<SmtpConversation> smtpConversations = jsonResults.stream()
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, SmtpConversation.class);
+                    } catch (JsonProcessingException e) {
+                        logger.error("Failed to parse JSON: {}", json, e);
+                        return null;
+                    }
+                })
+                .filter(result -> result != null)
+                .toList();
+
+        logger.info("our results: " + smtpConversations.toString());
+        return smtpConversations;
+    }
+
+    public List<TlsCrawlResult> searchVisitIdsTls(String domainName) {
+        List<String> jsonResults = jdbcClient
+                .sql("select to_json(p) from 'tls.parquet' p where visitRequest.domainName = ? limit 10")
+                .param(domainName)
+                .query(String.class)
+                .list();
+
+        List<TlsCrawlResult> tlsCrawlResults = jsonResults.stream()
+                .map(json -> {
+                    try {
+                        return objectMapper.readValue(json, TlsCrawlResult.class);
+                    } catch (JsonProcessingException e) {
+                        logger.error("Failed to parse JSON: {}", json, e);
+                        return null;
+                    }
+                })
+                .filter(result -> result != null)
+                .toList();
+
+        logger.info("our results: " + tlsCrawlResults.toString());
+        return tlsCrawlResults;
+    }
+
+    public Optional<String> searchVisitIdWeb(String visitId)  {
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
         Optional<String> json = jdbcClient
-                .sql("select to_json(p) from " + option + ".parquet p where CAST(p.visitId as varchar) = ? limit 10"
+                .sql("select to_json(p) from 'web.parquet' p where CAST(p.visitId as varchar) = ? limit 10"
                 )
+                .param(visitId)
+                .query(String.class)
+                .optional();
+        return json;
+
+    }
+
+    public Optional<String> searchVisitIdSmtp(String visitId)  {
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        Optional<String> json = jdbcClient
+                .sql("select to_json(p) from 'smtp.parquet' p where CAST(p.visitId as varchar) = ? limit 10"
+                )
+                .param(visitId)
+                .query(String.class)
+                .optional();
+        return json;
+
+    }
+
+
+    public Optional<String> searchVisitIdTls(String visitId)  {
+        JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+        Optional<String> json = jdbcClient // condition because tls contains the visitId in visitRequest
+                .sql("SELECT to_json(p) FROM 'tls.parquet' p WHERE CAST(p.visitRequest.visitId AS VARCHAR) = ? LIMIT 10")
                 .param(visitId)
                 .query(String.class)
                 .optional();
 
         return json;
 
+
     }
+
+
 
     public WebCrawlResult findWebCrawlResult(String visitId) {
 //        Optional<String> json = searchVisitIdWithOption(visitId, option);
@@ -95,7 +158,7 @@ public class SearchRepository {
     }
 
     public TlsCrawlResult findTlsCrawlResult(String visitId) throws JsonProcessingException {
-        Optional<String> json = searchVisitIdWithOption(visitId, "tls");
+        Optional<String> json = searchVisitIdTls(visitId);
         if (json.isPresent()) {
             TlsCrawlResult tlsCrawlResult = objectMapper.readValue(json.get(), TlsCrawlResult.class);;
             return tlsCrawlResult;
@@ -104,13 +167,14 @@ public class SearchRepository {
     }
 
     public SmtpConversation findSmtpConversationResult(String visitId) throws JsonProcessingException {
-        Optional<String> json = searchVisitIdWithOption(visitId, "smtp");
+        Optional<String> json = searchVisitIdSmtp(visitId);
         if (json.isPresent()) {
             SmtpConversation smtpConversation = objectMapper.readValue(json.get(), SmtpConversation.class);
             return smtpConversation;
         }
         return null;
     }
+
 
 
 }
