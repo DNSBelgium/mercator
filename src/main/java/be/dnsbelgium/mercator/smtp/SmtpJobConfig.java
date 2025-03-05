@@ -62,6 +62,7 @@ public class SmtpJobConfig {
             .build();
   }
 
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   @Bean(name = "smtpJob")
   @ConditionalOnProperty(name = "job.smtp.enabled", havingValue = "true", matchIfMissing = false)
   public Job smtpJob(JobRepository jobRepository,

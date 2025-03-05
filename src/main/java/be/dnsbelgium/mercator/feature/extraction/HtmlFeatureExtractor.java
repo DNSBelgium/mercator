@@ -60,14 +60,14 @@ public class HtmlFeatureExtractor {
 
   private final static int MAX_LENGTH_HTMLSTRUCT = 2000;
 
-  public HtmlFeatureExtractor(MeterRegistry meterRegistry) {
+  public HtmlFeatureExtractor(MeterRegistry meterRegistry, boolean languageDetectionEnabled) {
     this.meterRegistry = meterRegistry;
     this.maxBodyTextLength = 20_000;
     this.maxMetaTextLength =  1_000;
     this.maxTitleLength    =  2_000;
     this.maxExternalHosts  =  2_000;
     this.maxLinksSocial    =  10;
-    this.languageDetectionEnabled = true;
+    this.languageDetectionEnabled = languageDetectionEnabled;
   }
 
   @Autowired

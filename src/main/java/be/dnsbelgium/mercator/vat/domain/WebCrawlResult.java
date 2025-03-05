@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"pageVisits", "htmlFeatures"})
+@EqualsAndHashCode
 public class WebCrawlResult {
 
   private String visitId;

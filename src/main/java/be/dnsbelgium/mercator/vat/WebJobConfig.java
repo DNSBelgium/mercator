@@ -2,8 +2,6 @@ package be.dnsbelgium.mercator.vat;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -48,12 +46,7 @@ public class WebJobConfig {
   @StepScope
   public JsonFileItemWriter<WebCrawlResult> webCrawlResultJsonFileItemWriter(
           @Value("#{jobParameters[outputFile]}") WritableResource resource,
-          JavaTimeModule javaTimeModule) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(javaTimeModule);
-    JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller
-            = new JacksonJsonObjectMarshaller<>(objectMapper);
-
+          JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller) {
     return new JsonFileItemWriterBuilder<WebCrawlResult>()
             .name("WebCrawlResultWriter")
             .jsonObjectMarshaller(jsonObjectMarshaller)
@@ -71,10 +64,8 @@ public class WebJobConfig {
     Step step = new StepBuilder("web", jobRepository)
             .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
             .reader(itemReader)
-            //.taskExecutor(new VirtualThreadTaskExecutor("web-virtual-thread"))
             .processor(processor)
             .writer(itemWriter)
-            //.faultTolerant().retry(Exception.class).retryLimit(5)
             .build();
 
     return new JobBuilder("web", jobRepository)

@@ -43,6 +43,7 @@ public class JsonTest {
   private static final Logger logger = LoggerFactory.getLogger(JsonTest.class);
 
   @Test
+  @Disabled // TODO: first generate the data or remove the test
   public void readJson() throws Exception {
     String inputFileName = "./target/test-outputs/web.json";
     JsonItemReader<WebCrawlResult> jsonItemReader = new JsonItemReader<>();
@@ -57,6 +58,7 @@ public class JsonTest {
   }
 
   @Test
+  @Disabled // TODO: first generate the data
   public void read() throws Exception {
     JavaTimeModule javaTimeModule = new JavaTimeModule();
     ObjectMapper objectMapper = new ObjectMapper();
