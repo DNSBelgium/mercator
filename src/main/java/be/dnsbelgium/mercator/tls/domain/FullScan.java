@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
+import java.time.Instant;
 import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -15,11 +16,13 @@ public class FullScan {
   private final Map<TlsProtocolVersion, SingleVersionScan> scanPerVersionMap = new HashMap<>();
 
   private final boolean connectOK;
+  private final Instant crawlTimestamp;
 
   private static final Logger logger = getLogger(FullScan.class);
 
   public FullScan(boolean connectOK) {
     this.connectOK = connectOK;
+    this.crawlTimestamp = Instant.now();
   }
 
   public static FullScan connectFailed(InetSocketAddress address, String errorMessage) {
@@ -79,7 +82,7 @@ public class FullScan {
     return getCertificateChain()
         .stream()
         .filter(list -> !list.isEmpty())
-        .map(list -> list.get(0))
+        .map(List::getFirst)
         .findFirst();
   }
 

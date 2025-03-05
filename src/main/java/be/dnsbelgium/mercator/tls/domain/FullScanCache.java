@@ -106,11 +106,6 @@ public class FullScanCache {
       // No need to cache when we could not find an IP
       return;
     }
-    if (fullScanEntity.getId() == null) {
-      // Makes no sense the cache a FullScanEntity that was not yet persisted
-      logger.warn("Attempted to cache a FullScanEntity that has no id: {}", fullScanEntity);
-      return;
-    }
     logger.info("Adding to cache: IP = {} : fullScanEntity: {}", fullScanEntity.getIp(), fullScanEntity.summary());
     readWriteLock.writeLock().lock();
     String ip = fullScanEntity.getIp();
@@ -120,10 +115,6 @@ public class FullScanCache {
         logger.info("First time we see this IP: {}", ip);
         mapPerIp.put(ip, CacheEntry.of(added, fullScanEntity));
       } else {
-        if (fullScanEntity.getId().equals(entry.majority.getId())) {
-          // given FullScanEntity already cached => do nothing
-          return;
-        }
         if (entry.serverNames.contains(fullScanEntity.getServerName())) {
           // only cache each serverName once
           return;

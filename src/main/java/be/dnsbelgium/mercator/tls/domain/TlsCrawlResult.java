@@ -2,118 +2,83 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 
 @ToString
+@Getter
+@Setter
 @NoArgsConstructor(force = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class TlsCrawlResult {
 
+  private final VisitRequest visitRequest;
+  private final FullScanEntity fullScanEntity;
+  private final String hostName;
+  private final boolean hostNameMatchesCertificate;
+  private final boolean chainTrustedByJavaPlatform;
+  private boolean certificateExpired;
+  private boolean certificateTooSoon;
+  private final String leafCertificate;
   private final Instant crawlTimestamp;
 
-  private final String hostName;
-
-  private final SingleVersionScan singleVersionScan;
-
-  @Getter
-  private final VisitRequest visitRequest;
-
-  private final FullScan fullScan;
-
-  @Getter
-  private final FullScanEntity fullScanEntity;
-
-  @Setter
-  private List<Certificate> certificateChain;
-
-  @Setter
-  private Certificate peerCertificate;
-
-  private Boolean fresh;
-
-  private TlsCrawlResult(String hostName, VisitRequest visitRequest, SingleVersionScan singleVersionScan, FullScanEntity fullScanEntity, FullScan fullScan) {
+  private TlsCrawlResult(
+          String hostName,
+          VisitRequest visitRequest,
+          FullScanEntity fullScanEntity,
+          FullScan fullScan,
+          SingleVersionScan singleVersionScan
+  ) {
     this.crawlTimestamp = Instant.now();
-    this.singleVersionScan = singleVersionScan;
     this.visitRequest = visitRequest;
-    this.fullScan = fullScan;
     this.fullScanEntity = fullScanEntity;
     this.hostName = hostName;
+    Certificate certificate = null;
+
+    if (fullScan != null) {
+      this.hostNameMatchesCertificate = fullScan.isHostNameMatchesCertificate();
+      this.chainTrustedByJavaPlatform = fullScan.isChainTrustedByJavaPlatform();
+      if (fullScan.getPeerCertificate().isPresent()) {
+        certificate = fullScan.getPeerCertificate().get();
+      }
+    } else {
+      this.hostNameMatchesCertificate = (singleVersionScan != null) && singleVersionScan.isHostNameMatchesCertificate();
+      this.chainTrustedByJavaPlatform = (singleVersionScan != null) && singleVersionScan.isChainTrustedByJavaPlatform();
+      if (singleVersionScan != null && singleVersionScan.getPeerCertificate() != null) {
+        certificate = singleVersionScan.getPeerCertificate();
+      }
+    }
+    if (certificate != null) {
+      this.certificateTooSoon = Instant.now().isBefore(certificate.getNotBefore());
+      this.certificateExpired = Instant.now().isAfter(certificate.getNotAfter());
+      this.leafCertificate = certificate.getSha256Fingerprint();
+    } else {
+      this.certificateTooSoon = false;
+      this.certificateExpired = false;
+      this.leafCertificate = null;
+    }
   }
 
-
-
-  public static TlsCrawlResult fromCache(String hostName, VisitRequest visitRequest, FullScanEntity fullScanEntity, SingleVersionScan singleVersionScan) {
-    return new TlsCrawlResult(hostName, visitRequest, singleVersionScan, fullScanEntity, null);
+  public static TlsCrawlResult fromCache(
+          String hostName,
+          VisitRequest visitRequest,
+          FullScanEntity fullScanEntity,
+          SingleVersionScan singleVersionScan) {
+    return new TlsCrawlResult(hostName, visitRequest, fullScanEntity, null, singleVersionScan);
   }
 
   public static TlsCrawlResult fromScan(String hostName, VisitRequest visitRequest, FullScan fullScan) {
-    Instant crawlTimestamp = Instant.now();
-    FullScanEntity fullScanEntity = convert(crawlTimestamp, fullScan);
-    return new TlsCrawlResult(hostName, visitRequest, null, fullScanEntity, fullScan);
+    FullScanEntity fullScanEntity = convert(fullScan);
+    return new TlsCrawlResult(hostName, visitRequest, fullScanEntity, fullScan, null);
   }
 
-  public boolean isFresh() {
-    return fullScan != null;
-  }
-
-  public boolean getFresh() {
-    return fresh;
-  }
-
-  public boolean hostNameMatchesCertificate() {
-    if (fullScan != null) {
-      return fullScan.isHostNameMatchesCertificate();
-    }
-    if (singleVersionScan != null) {
-      return singleVersionScan.isHostNameMatchesCertificate();
-    }
-    return false;
-  }
-
-  public boolean chainTrustedByJavaPlatform() {
-    if (fullScan != null) {
-      return fullScan.isChainTrustedByJavaPlatform();
-    }
-    if (singleVersionScan != null) {
-      return singleVersionScan.isChainTrustedByJavaPlatform();
-    }
-    return false;
-  }
-
-  public Optional<List<Certificate>> getCertificateChain() {
-    if (certificateChain != null) {
-        return Optional.of(certificateChain);
-    }
-    if (fullScan != null) {
-        return fullScan.getCertificateChain();
-    }
-    if (singleVersionScan != null) {
-        return Optional.ofNullable(singleVersionScan.getCertificateChain());
-    }
-    return Optional.empty();
-}
-
-
-public Optional<Certificate> getPeerCertificate() {
-    if (peerCertificate != null) {
-        return Optional.of(peerCertificate);
-    }
-    if (fullScan != null) {
-        return fullScan.getPeerCertificate();
-    }
-    if (singleVersionScan != null) {
-        return Optional.ofNullable(singleVersionScan.getPeerCertificate());
-    }
-    return Optional.empty();
-}
-
-  public static FullScanEntity convert(Instant timestamp, FullScan fullScan) {
+  public static FullScanEntity convert(FullScan fullScan) {
     var tls13 = fullScan.get(TlsProtocolVersion.TLS_1_3);
     var tls12 = fullScan.get(TlsProtocolVersion.TLS_1_2);
     var tls11 = fullScan.get(TlsProtocolVersion.TLS_1_1);
@@ -153,7 +118,7 @@ public Optional<Certificate> getPeerCertificate() {
         .selectedCipherTls_1_1(tls11.getSelectedCipherSuite())
         .selectedCipherTls_1_0(tls10.getSelectedCipherSuite())
         .selectedCipherSsl_3_0(ssl3.getSelectedCipherSuite())
-        .crawlTimestamp(timestamp)
+        .fullScanCrawlTimestamp(fullScan.getCrawlTimestamp())
         .build();
   }
 }

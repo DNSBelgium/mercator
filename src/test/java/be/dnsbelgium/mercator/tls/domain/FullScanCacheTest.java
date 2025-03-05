@@ -22,10 +22,6 @@ class FullScanCacheTest {
   private final static String IP2 = "1.2.3.4";
   private final static String IP3 = "3.3.3.3";
 
-  private String newId() {
-    return Ulid.fast().toString();
-  }
-
   private static final Logger logger = getLogger(FullScanCacheTest.class);
 
   @Test
@@ -105,7 +101,6 @@ class FullScanCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_first.be")
-        .id(newId())
         .build();
     fullScanCache.add(result1);
     // minimumEntriesPerIp not reached
@@ -115,7 +110,6 @@ class FullScanCacheTest {
         .ip(IP1)
         .supportTls_1_2(true)
         .serverName("tls12_deviant.be")
-        .id(newId())
         .build();
     fullScanCache.add(result2);
     // minimumEntriesPerIp reached but ratio = 0.5 < 0.75
@@ -125,7 +119,6 @@ class FullScanCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_second.be")
-        .id(newId())
         .build();
 
     fullScanCache.add(result3);
@@ -136,7 +129,6 @@ class FullScanCacheTest {
         .ip(IP1)
         .supportTls_1_3(true)
         .serverName("tls13_third.be")
-        .id(newId())
         .build();
     fullScanCache.add(result4);
     // ratio = 0.75 => OK
@@ -166,7 +158,6 @@ class FullScanCacheTest {
         .ip(ip)
         .supportTls_1_3(true)
         .serverName(serverName)
-        .id(newId())
         .build();
   }
 

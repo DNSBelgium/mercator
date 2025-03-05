@@ -1,6 +1,10 @@
 package be.dnsbelgium.mercator.tls.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 
@@ -12,10 +16,7 @@ import java.time.Instant;
 @ToString
 public class FullScanEntity {
 
-  @Setter
-  private String id;
-
-  private Instant crawlTimestamp;
+  private Instant fullScanCrawlTimestamp;
 
   private String ip;
 

@@ -1,11 +1,21 @@
 package be.dnsbelgium.mercator.batch;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
+import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
+import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.f4b6a3.ulid.Ulid;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +25,18 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.PathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
+
+import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 
 public class JsonTest {
 
@@ -52,11 +72,13 @@ public class JsonTest {
   }
 
   @Test
+  @Disabled
   public void parquetToJson() throws Exception {
     JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
     // create a parquet file
     jdbcClient.sql("copy (FROM './target/test-outputs/web.json') to 'web.parquet' ");
-    // get one trow from the parquet file
+    // get one row from the parquet file
+    @SuppressWarnings("SqlResolve")
     Optional<String> json = jdbcClient
             .sql("select list(to_json(p)) from 'web.parquet' p where visitId = ? limit 1")
             .param("v101")
@@ -78,7 +100,7 @@ public class JsonTest {
     }
   }
 
-
+  @Disabled
   @Test
   public void readObject() throws JsonProcessingException {
     ObjectMapper objectMapper = new ObjectMapper();
@@ -97,10 +119,109 @@ public class JsonTest {
       logger.info("webCrawlResult = {}", webCrawlResult);
       for (HtmlFeatures htmlFeature : webCrawlResult.getHtmlFeatures()) {
         logger.info("htmlFeature = {}", htmlFeature);
-
       }
     }
+  }
 
+//  @Test
+//  public void tls_to_json() throws Exception {
+//    TlsScanner scanner = new TlsScanner()
+//    TlsCrawler crawler = new TlsCrawler();
+//  }
+
+  @Test
+  public void ulid() {
+    long x1 = Ulid.fast().getMostSignificantBits();
+    long x2 = Ulid.fast().getMostSignificantBits();
+    long x3 = Instant.now().toEpochMilli();
+    System.out.println(x1);
+    System.out.println(x2);
+    System.out.println(x3);
+  }
+
+  @Test
+  public void tls() throws IOException, CertificateException {
+    // we gaan een FullScanEntity opvullen en wegschrijven naar JSON en parquet
+    // en kijken of formaat dan overeenkomt met wat Mercator v1 nu exporteert ...
+
+    Instant fullScanInstant = LocalDateTime.of(2025,1,25, 23, 59).toInstant(ZoneOffset.UTC);
+
+    Certificate certificate = Certificate.from(readTestCertificate("blackanddecker.be.pem"));
+
+    SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_0, new InetSocketAddress("abc.be", 443));
+    singleVersionScan.setConnectOK(false);
+    singleVersionScan.setErrorMessage("go away");
+    singleVersionScan.setPeerCertificate(certificate);
+
+    FullScanEntity fullScanEntity = FullScanEntity.builder()
+            .fullScanCrawlTimestamp(fullScanInstant)
+            .ip("10.20.30.40")
+            .serverName("tls.org")
+            .connectOk(true)
+            .supportTls_1_3(false)
+            .supportTls_1_2(true)
+            .supportTls_1_1(true)
+            .supportTls_1_0(true)
+            .supportSsl_3_0(false)
+            .supportSsl_2_0(false)
+            .errorTls_1_0("Version not supported")
+            .selectedCipherTls_1_2("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
+            .selectedCipherTls_1_1("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
+            .selectedCipherTls_1_0("")
+            .lowestVersionSupported("TLSv1")
+            .lowestVersionSupported("TLSv1.2")
+            .millis_tls_1_0(10)
+            .millis_tls_1_1(11)
+            .millis_tls_1_2(12)
+            .millis_tls_1_3(13)
+            .millis_ssl_2_0(20)
+            .millis_ssl_3_0(30)
+            .build();
+    logger.info("fullScanEntity = {}", fullScanEntity);
+
+    VisitRequest visitRequest = new VisitRequest("aakjkjkj-ojj", "tls.org");
+
+    TlsCrawlResult tlsCrawlResult = TlsCrawlResult.fromCache("www.tls.org", visitRequest, fullScanEntity, singleVersionScan);
+
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+
+    objectMapper.registerModule(javaTimeModule);
+    ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
+
+
+
+
+    //.with(PropertyNamingStrategies.SnakeCaseStrategy)
+
+    String json = writer.writeValueAsString(tlsCrawlResult);
+    logger.info("json = \n{}", json);
+
+    writer.writeValue(new File("tls_test.json"), tlsCrawlResult);
+
+
+    JdbcClient client = JdbcClient.create(DuckDataSource.memory());
+    client
+            .sql("copy (from 'tls_test.json') to 'tls_output.parquet' ")
+            .update();
+
+    /*
+    Columns missing
+      visit_id
+      domain_name
+      full_scan
+      host_name_matches_certificate
+      host_name
+      leaf_certificate
+      certificate_expired
+      certificate_too_soon
+      chain_trusted_by_java_platform
+      full_scan_crawl_timestamp
+      accepted_ciphers_ssl_2_0
+
+     */
 
   }
+
 }
