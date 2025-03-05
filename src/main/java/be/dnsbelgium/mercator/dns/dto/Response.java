@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class Response {
 
-    private String id;
+    private Long id;
     private String recordData;
     private Long ttl;
 

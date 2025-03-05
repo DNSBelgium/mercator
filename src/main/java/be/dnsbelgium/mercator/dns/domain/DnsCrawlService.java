@@ -11,6 +11,7 @@ import be.dnsbelgium.mercator.dns.dto.RecordType;
 import be.dnsbelgium.mercator.dns.dto.Request;
 import be.dnsbelgium.mercator.dns.dto.Response;
 import be.dnsbelgium.mercator.metrics.Threads;
+import com.github.f4b6a3.ulid.Ulid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -125,6 +126,7 @@ public class DnsCrawlService {
     for (RRecord record: dnsRequest.records()) {
       Response response = Response.builder()
               .recordData(record.getData())
+              .id(Ulid.fast().getMostSignificantBits())
               .ttl(record.getTtl())
               .build();
       request.getResponses().add(response);
