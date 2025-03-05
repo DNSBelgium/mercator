@@ -1,16 +1,13 @@
 package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
-import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
+import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.vat.WebProcessor;
-import be.dnsbelgium.mercator.vat.domain.PageVisit;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.f4b6a3.ulid.Ulid;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -40,8 +37,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -68,78 +63,19 @@ public class BatchTest {
   @Autowired JdbcTransactionManager transactionManager;
   @Autowired ObjectMapper objectMapper;
 
+  ObjectMother objectMother = new ObjectMother();
+
   @Test
   public void webJob() throws Exception {
-
-    Instant started  = LocalDateTime.of(2024,11,28, 23, 59).toInstant(ZoneOffset.UTC);
-    Instant finished = started.plusSeconds(3);
-
-    PageVisit pageVisit1 = PageVisit.builder()
-            .visitId("v104")
-            .html("<h1>I am a page </h1>")
-            .url("https://www.dnsbelgium.be/")
-            .bodyText("I am a page")
-            .domainName("dnsbelgium.be")
-            .statusCode(200)
-            .path("/")
-            .build();
-    PageVisit pageVisit2 = PageVisit.builder()
-            .visitId("v104")
-            .html("<h1>I am the EN page </h1>")
-            .url("https://www.dnsbelgium.be/en")
-            .bodyText("I am the EN page")
-            .domainName("dnsbelgium.be")
-            .statusCode(200)
-            .path("/en")
-            .build();
-    PageVisit pageVisit3 = PageVisit.builder()
-            .visitId("v104")
-            .html("<h1>I am the contact page </h1>")
-            .url("https://www.dnsbelgium.be/en/contact")
-            .bodyText("I am the contact page")
-            .domainName("dnsbelgium.be")
-            .vatValues(List.of("BE0466158640", "BE0841242495"))
-            .statusCode(200)
-            .path("/en/contact")
-            .build();
-
-
-    HtmlFeatureExtractor htmlFeatureExtractor = new HtmlFeatureExtractor(new SimpleMeterRegistry(), false);
-    HtmlFeatures features1 = htmlFeatureExtractor.extractFromHtml("<h1>I am a page </h1>", "https://www.dnsbelgium.be/", "dnsbelgium.be");
-    HtmlFeatures features2 = htmlFeatureExtractor.extractFromHtml("<h1>I the EN page </h1>", "https://www.dnsbelgium.be/en", "dnsbelgium.be");
-    HtmlFeatures features3 = htmlFeatureExtractor.extractFromHtml("<h1>I the contact page </h1>", "https://www.dnsbelgium.be/en/contact", "dnsbelgium.be");
-
-    WebCrawlResult crawlResult1 = WebCrawlResult.builder()
-            .crawlFinished(started)
-            .crawlFinished(finished)
-            .domainName("dnsbelgium.be")
-            .matchingUrl("https://www.dnsbelgium.be/en/contact")
-            .vatValues(List.of("BE0466158640", "BE0841242495"))
-            .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en","https://www.dnsbelgium.be/en/contact"))
-            .startUrl("https://www.dnsbelgium.be/")
-            .htmlFeatures(List.of(features1, features2, features3))
-            .pageVisits(List.of(pageVisit1, pageVisit2, pageVisit3))
-            .build();
-    WebCrawlResult crawlResult2 = WebCrawlResult.builder()
-            .crawlFinished(started.plusSeconds(10))
-            .crawlFinished(finished.plusSeconds(15))
-            .domainName("no-website.org")
-            .visitedUrls(List.of())
-            .startUrl("https://www.no-website.be/")
-            .htmlFeatures(List.of())
-            .pageVisits(List.of())
-            .build();
-
+    WebCrawlResult crawlResult1 = objectMother.webCrawlResult1();
+    WebCrawlResult crawlResult2 = objectMother.webCrawlResult2();
     when(webProcessor.process(any(VisitRequest.class)))
             .thenReturn(crawlResult1)
             .thenReturn(crawlResult2);
-
     run(webJob);
-
     // Now check the resulting output
     JacksonJsonObjectReader<WebCrawlResult> jsonObjectMarshaller
             = new JacksonJsonObjectReader<>(objectMapper, WebCrawlResult.class);
-
     jsonObjectMarshaller.open(new PathResource("target/test-outputs/web.json"));
     WebCrawlResult w1 = jsonObjectMarshaller.read();
     WebCrawlResult w2 = jsonObjectMarshaller.read();
