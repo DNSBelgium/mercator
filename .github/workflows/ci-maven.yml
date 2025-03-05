@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-  schedule:
-    - cron: '30 5 * * *'
+      - batch2
+#  schedule:
+#    - cron: '30 5 * * *'
 
 permissions:
   contents: read
@@ -59,27 +60,27 @@ jobs:
 #          reporter: java-junit
 #          fail-on-error: true
 #
-      - name: Set short git commit SHA
-        id: vars
-        run: |
-          calculatedSha=$(git rev-parse --short ${{ github.sha }})
-          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish container image to GitHub Container registry
-        id: publish
-        env:
-          REGISTRY: ${{ env.REGISTRY }}
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
+#      - name: Set short git commit SHA
+#        id: vars
+#        run: |
+#          calculatedSha=$(git rev-parse --short ${{ github.sha }})
+#          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+#
+#      - name: Log in to the Container registry
+#        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+#
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Publish container image to GitHub Container registry
+#        id: publish
+#        env:
+#          REGISTRY: ${{ env.REGISTRY }}
+#          DOCKER_USERNAME: ${{ github.actor }}
+#          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+#        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
 
 
 #      - name: Publish container image to Docker Hub

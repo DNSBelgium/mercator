@@ -3,9 +3,10 @@ name: Run unit tests
 on:
   push:
     branches:
-      - v2.0
-  schedule:
-    - cron: '30 5 * * *'
+      - main
+      - batch2
+#  schedule:
+#    - cron: '30 5 * * *'
 
 jobs:
   build:

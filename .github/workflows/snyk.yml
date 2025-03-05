@@ -3,7 +3,8 @@ name: Check vulnerabilities
 on:
   push:
     branches:
-      - v2.0
+      - main
+      - batch2
   schedule:
     - cron: '30 5 * * *'
 
