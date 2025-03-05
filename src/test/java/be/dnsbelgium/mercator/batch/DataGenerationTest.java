@@ -65,7 +65,7 @@ public class DataGenerationTest {
     String hostname = "www.dnsbelgium.be";
     InetSocketAddress address = new InetSocketAddress(hostname, 443);
     FullScan fullScan = tlsScanner.scan(address);
-    FullScanEntity fullScanEntity = TlsCrawlResult.convert(Instant.now(), fullScan);
+    FullScanEntity fullScanEntity = TlsCrawlResult.convert(fullScan);
     logger.info("fullScanEntity = {}", fullScanEntity);
 
     objectMapper.writeValue(writer, fullScanEntity);
