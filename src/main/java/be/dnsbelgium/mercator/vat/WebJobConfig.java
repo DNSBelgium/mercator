@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.vat;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -43,12 +44,17 @@ public class WebJobConfig {
   }
 
   @Bean
+  public JacksonJsonObjectMarshaller<WebCrawlResult> webCrawlResultReaderMarshaller(ObjectMapper objectMapper) {
+    return new JacksonJsonObjectMarshaller<>(objectMapper);
+  }
+
+  @Bean
   @StepScope
   public JsonFileItemWriter<WebCrawlResult> webCrawlResultJsonFileItemWriter(
           @Value("#{jobParameters[outputFile]}") WritableResource resource,
           JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller) {
     return new JsonFileItemWriterBuilder<WebCrawlResult>()
-            .name("WebCrawlResultWriter")
+            .name("web-writer")
             .jsonObjectMarshaller(jsonObjectMarshaller)
             .resource(resource)
             .build();

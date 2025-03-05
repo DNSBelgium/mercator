@@ -4,8 +4,6 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -28,7 +26,7 @@ import org.springframework.core.io.WritableResource;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.jdbc.support.JdbcTransactionManager;
 
-@SuppressWarnings("SpringElInspection")
+@SuppressWarnings({"SpringElInspection", "SpringJavaInjectionPointsAutowiringInspection"})
 @Configuration
 public class TlsJobConfig {
 
@@ -48,19 +46,18 @@ public class TlsJobConfig {
   }
 
   @Bean
+  public JacksonJsonObjectMarshaller<TlsCrawlResult> tlsCrawlResultReaderMarshaller(ObjectMapper objectMapper) {
+    return new JacksonJsonObjectMarshaller<>(objectMapper);
+  }
+
+  @Bean
   @StepScope
   public JsonFileItemWriter<TlsCrawlResult> tlsJsonFileItemWriter(
           @Value("#{jobParameters[outputFile]}") WritableResource resource,
-          JavaTimeModule javaTimeModule) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(javaTimeModule);
-    objectMapper.registerModule(new Jdk8Module());
-    JacksonJsonObjectMarshaller<TlsCrawlResult> jsonObjectMarshaller
-            = new JacksonJsonObjectMarshaller<>(objectMapper);
-
+          JacksonJsonObjectMarshaller<TlsCrawlResult> marshaller) {
     return new JsonFileItemWriterBuilder<TlsCrawlResult>()
             .name("tls-writer")
-            .jsonObjectMarshaller(jsonObjectMarshaller)
+            .jsonObjectMarshaller(marshaller)
             .resource(resource)
             .build();
   }
