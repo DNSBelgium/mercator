@@ -1,5 +1,10 @@
 package be.dnsbelgium.mercator.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,4 +27,25 @@ public class TestUtils {
   public static Instant now() {
     return Instant.now(microsecondClock);
   }
+
+  /**
+   * An ObjectWriter to be used in tests.
+   * Alternative would be to inject the one from the ApplicationContext but that would force many tests
+   * to be a @SpringBootTest which is usually slower.
+   * <p>
+   * One caveat is that we PropertyNamingStrategy should be the same as the one used by the production code.
+   * </p>
+   * <p>
+   *   If this comes to bite us too often, we should remove this method and inject an ObjectWriter in the tests.
+   * </p>
+   * @return an ObjectWriter to be used in tests
+   */
+  public static ObjectWriter jsonWriter() {
+    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
+    objectMapper.registerModule(javaTimeModule);
+    return objectMapper.writerWithDefaultPrettyPrinter();
+  }
+
 }

@@ -193,8 +193,6 @@ public class JsonTest {
     ObjectWriter writer = objectMapper.writerWithDefaultPrettyPrinter();
 
 
-
-
     //.with(PropertyNamingStrategies.SnakeCaseStrategy)
 
     String json = writer.writeValueAsString(tlsCrawlResult);
