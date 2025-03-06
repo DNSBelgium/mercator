@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.batch;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
+import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
 import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
@@ -155,30 +156,9 @@ public class JsonTest {
     singleVersionScan.setErrorMessage("go away");
     singleVersionScan.setPeerCertificate(certificate);
 
-    FullScanEntity fullScanEntity = FullScanEntity.builder()
-            .fullScanCrawlTimestamp(fullScanInstant)
-            .ip("10.20.30.40")
-            .serverName("tls.org")
-            .connectOk(true)
-            .supportTls_1_3(false)
-            .supportTls_1_2(true)
-            .supportTls_1_1(true)
-            .supportTls_1_0(true)
-            .supportSsl_3_0(false)
-            .supportSsl_2_0(false)
-            .errorTls_1_0("Version not supported")
-            .selectedCipherTls_1_2("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
-            .selectedCipherTls_1_1("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
-            .selectedCipherTls_1_0("")
-            .lowestVersionSupported("TLSv1")
-            .lowestVersionSupported("TLSv1.2")
-            .millis_tls_1_0(10)
-            .millis_tls_1_1(11)
-            .millis_tls_1_2(12)
-            .millis_tls_1_3(13)
-            .millis_ssl_2_0(20)
-            .millis_ssl_3_0(30)
-            .build();
+    ObjectMother objectMother = new ObjectMother();
+
+    FullScanEntity fullScanEntity = objectMother.fullScanEntity("example.org");
     logger.info("fullScanEntity = {}", fullScanEntity);
 
     VisitRequest visitRequest = new VisitRequest("aakjkjkj-ojj", "tls.org");

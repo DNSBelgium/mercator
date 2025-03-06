@@ -1,15 +1,25 @@
 package be.dnsbelgium.mercator.test;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
+import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
+import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
+import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import be.dnsbelgium.mercator.vat.domain.PageVisit;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import lombok.SneakyThrows;
 
+import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+
+import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 
 public class ObjectMother {
 
@@ -116,4 +126,61 @@ public class ObjectMother {
             .pageVisits(List.of(pageVisit4()))
             .build();
   }
+
+  public TlsCrawlResult tlsCrawlResult1()  {
+    VisitRequest visitRequest = new VisitRequest("aakjkjkj-ojj", "example.org");
+    return TlsCrawlResult.fromCache("www.tls.org", visitRequest, fullScanEntity("example.org"), singleVersionScan1());
+  }
+
+  public TlsCrawlResult tlsCrawlResult2()  {
+    VisitRequest visitRequest = new VisitRequest("454545-54545", "example.be");
+    return TlsCrawlResult.fromCache("www.example.org", visitRequest, fullScanEntity("example.org"), singleVersionScan2());
+  }
+
+  @SneakyThrows
+  SingleVersionScan singleVersionScan1()  {
+    Certificate certificate = Certificate.from(readTestCertificate("blackanddecker.be.pem"));
+    SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_0, new InetSocketAddress("abc.be", 443));
+    singleVersionScan.setConnectOK(false);
+    singleVersionScan.setErrorMessage("go away");
+    singleVersionScan.setPeerCertificate(certificate);
+    return singleVersionScan;
+  }
+
+  @SneakyThrows
+  SingleVersionScan singleVersionScan2()  {
+    Certificate certificate = Certificate.from(readTestCertificate("cll.be.pem"));
+    SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_3, new InetSocketAddress("cll.be", 443));
+    singleVersionScan.setConnectOK(true);
+    singleVersionScan.setPeerCertificate(certificate);
+    return singleVersionScan;
+  }
+
+  public FullScanEntity fullScanEntity(String serverName) {
+    return FullScanEntity.builder()
+            .fullScanCrawlTimestamp(started)
+            .ip("10.20.30.40")
+            .serverName(serverName)
+            .connectOk(true)
+            .supportTls_1_3(false)
+            .supportTls_1_2(true)
+            .supportTls_1_1(true)
+            .supportTls_1_0(true)
+            .supportSsl_3_0(false)
+            .supportSsl_2_0(false)
+            .errorTls_1_0("Version not supported")
+            .selectedCipherTls_1_2("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
+            .selectedCipherTls_1_1("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
+            .selectedCipherTls_1_0("")
+            .lowestVersionSupported("TLSv1")
+            .lowestVersionSupported("TLSv1.2")
+            .millis_tls_1_0(10)
+            .millis_tls_1_1(11)
+            .millis_tls_1_2(12)
+            .millis_tls_1_3(13)
+            .millis_ssl_2_0(20)
+            .millis_ssl_3_0(30)
+            .build();
+    }
+
 }

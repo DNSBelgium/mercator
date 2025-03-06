@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
 import be.dnsbelgium.mercator.test.ResourceReader;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,8 @@ public class CertificateReader {
    * @throws IOException when reading the file failed
    * @throws CertificateException when certificate could not be loaded
    */
-  public static X509Certificate readTestCertificate(String filename) throws IOException, CertificateException {
+  @SneakyThrows
+  public static X509Certificate readTestCertificate(String filename) {
     try (InputStream is = ResourceReader.read("classpath:/test-certificates/" + filename)) {
       CertificateFactory fact = CertificateFactory.getInstance("X.509");
       return (X509Certificate) fact.generateCertificate(is);
