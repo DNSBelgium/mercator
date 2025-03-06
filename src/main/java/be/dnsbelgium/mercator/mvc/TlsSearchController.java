@@ -2,9 +2,6 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -46,5 +43,29 @@ public class TlsSearchController {
     }
     return "visit-details-tls";
   }
+
+  @GetMapping("/search/tls/ids")
+  public String getTlsIds(Model model, @RequestParam(name = "domainName") String domainName) {
+    logger.info("domainName = {}", domainName);
+    model.addAttribute("domainName", domainName);
+    List<String> idList = tlsRepository.searchVisitIds(domainName);
+    if (!idList.isEmpty()) {
+      model.addAttribute("idList", idList);
+      logger.debug("We found {} for {}", idList, domainName);
+    }
+    return "search-results-tls";
+  }
+
+  @GetMapping("/search/tls/ids")
+  public String getTls(Model model, @RequestParam(name = "id") String id) {
+    logger.info("id = {}", id);
+    model.addAttribute("id", id);
+    Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(id);
+    if(tlsCrawlResult.isPresent()) {
+      model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult.get()));
+    }
+    return "search-results-tls";
+  }
+
 
 }

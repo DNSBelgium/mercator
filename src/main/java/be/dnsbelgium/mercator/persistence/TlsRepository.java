@@ -1,12 +1,14 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -21,34 +23,47 @@ public class TlsRepository {
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
 
-  public TlsRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
+  public TlsRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation, LogbackMetrics logbackMetrics) {
     this.dataLocation = dataLocation;
   }
 
   public List<String> searchVisitIds(String domainName) {
     // TODO
+    logger.info("Searching visitIds for domainName={}", domainName);
     return List.of();
   }
 
   public Optional<TlsCrawlResult> findLatestCrawlResult(String domainName) {
     // TODO
+    logger.info("Finding latest crawl result for domainName={}", domainName);
     return Optional.empty();
   }
 
   public Optional<TlsCrawlResult> findByVisitId(String visitId) {
-    // TODO
-    return Optional.empty();
+    JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+    Path parquetFilePath = Path.of("test");
+
+    // TODO: use location given to teh repository to search instead of hardcoded
+    String query = String.format("select to_json(p) from '%s' p where visit_id = ?", parquetFilePath);
+      return jdbcClient
+              .sql(query)
+              .param(visitId)
+              .query(TlsCrawlResult.class)
+              .optional();
   }
 
   public void saveToParquet(Path jsonFile, String parquetFileName) {
-    // TODO
-    // bepaal pad adhv parquetFileName
+    // TODO: partitioned
+    String path = dataLocation + File.separator + parquetFileName;
     // copy json to parquet
-    // rename velden
+    // rename fields
+    String query = String.format("COPY (FROM '%s') TO '%s' (FORMAT parquet)", jsonFile, path);
     // partitioned
-    jdbcClient
-            .sql("copy (from 'tls_test.json') to 'tls_output.parquet' ")
+      //noinspection SqlSourceToSinkFlow
+      jdbcClient
+            .sql(query)
             .update();
+    logger.info("Saved to parquet file at {}", path);
 
 
   }
