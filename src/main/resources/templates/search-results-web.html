@@ -44,11 +44,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="visit : ${visits}">
-                    <td>
-                        <a href="#" th:text="${visit.visitId}" th:attr="data-visit-id=${visit.visitId}" onclick="handleVisitClick(event)"></a>
-                    </td>
-                    <td th:text="${visit.domainName}"></td>
+                <tr th:each="visitId : ${visitIds}">
+                    <td th:text="${visitId}"></td>
                 </tr>
                 </tbody>
             </table>

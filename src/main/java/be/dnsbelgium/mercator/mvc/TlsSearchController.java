@@ -29,10 +29,10 @@ public class TlsSearchController {
    * @return the view
    */
   @GetMapping("/search/tls/latest")
-  public String getLatest(Model model, @RequestParam(name = "domainName") String domainName) {
+  public String getTlsLatest(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
-    Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestCrawlResult(domainName);
+    Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
     if (crawlResult.isPresent()) {
       // TODO: maybe we should just render ONE crawlResult in the view??
       // In other words the view should expect ONE TlsCrawlResult instead of a list
@@ -56,7 +56,7 @@ public class TlsSearchController {
     return "search-results-tls";
   }
 
-  @GetMapping("/search/tls/ids")
+  @GetMapping("/search/tls/id")
   public String getTls(Model model, @RequestParam(name = "id") String id) {
     logger.info("id = {}", id);
     model.addAttribute("id", id);
@@ -64,7 +64,7 @@ public class TlsSearchController {
     if(tlsCrawlResult.isPresent()) {
       model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult.get()));
     }
-    return "search-results-tls";
+    return "visit-details-tls";
   }
 
 

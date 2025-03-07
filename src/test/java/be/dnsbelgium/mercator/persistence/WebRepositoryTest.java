@@ -38,7 +38,7 @@ class WebRepositoryTest {
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(webCrawlResult1, webCrawlResult2));
 
-    repository.toParquet(jsonFile.toPath(), "WebRepositoryTest_test1.parquet");
+    repository.saveToParquet(jsonFile.toPath(), "WebRepositoryTest_test1.parquet");
     // todo: add asserts
   }
 

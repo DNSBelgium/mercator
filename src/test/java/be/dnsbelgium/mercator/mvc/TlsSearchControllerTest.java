@@ -25,11 +25,11 @@ class TlsSearchControllerTest {
   public void findLatestCrawlResult_NotFound() {
     tlsRepository = mock(TlsRepository.class);
     logger.info("tlsRepository = {}", tlsRepository);
-    when(tlsRepository.findLatestCrawlResult("abc.be")).thenReturn(Optional.empty());
+    when(tlsRepository.findLatestResult("abc.be")).thenReturn(Optional.empty());
     TlsSearchController controller = new TlsSearchController(tlsRepository);
     Model model = new ConcurrentModel();
-    String viewName = controller.getLatest(model, "abc.be");
-    verify(tlsRepository).findLatestCrawlResult("abc.be");
+    String viewName = controller.getTlsLatest(model, "abc.be");
+    verify(tlsRepository).findLatestResult("abc.be");
     verifyNoMoreInteractions(tlsRepository);
     assertThat(model.containsAttribute("tlsCrawlResults")).isFalse();
   }
@@ -38,11 +38,11 @@ class TlsSearchControllerTest {
   public void findLatestCrawlResult_IsFound() {
     tlsRepository = mock(TlsRepository.class);
     TlsCrawlResult crawlResult = objectMother.tlsCrawlResult1();
-    when(tlsRepository.findLatestCrawlResult("abc.be")).thenReturn(Optional.of(crawlResult));
+    when(tlsRepository.findLatestResult("abc.be")).thenReturn(Optional.of(crawlResult));
     TlsSearchController controller = new TlsSearchController(tlsRepository);
     Model model = new ConcurrentModel();
-    String viewName = controller.getLatest(model, "abc.be");
-    verify(tlsRepository).findLatestCrawlResult("abc.be");
+    String viewName = controller.getTlsLatest(model, "abc.be");
+    verify(tlsRepository).findLatestResult("abc.be");
     verifyNoMoreInteractions(tlsRepository);
     assertThat(model.getAttribute("tlsCrawlResults")).isEqualTo(List.of(crawlResult));
   }

@@ -1,22 +1,30 @@
 package be.dnsbelgium.mercator.persistence;
 
-import com.github.f4b6a3.ulid.Ulid;
+import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
-@Component
+@Repository
 public class WebRepository {
 
   private final String dataLocation;
   private static final Logger logger = LoggerFactory.getLogger(WebRepository.class);
-  private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+  private final JdbcClient jdbcClient;
+  
+  private final ObjectMapper objectMapper;
 
   public WebRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
+
     if (dataLocation == null || dataLocation.isEmpty()) {
       throw new IllegalArgumentException("dataLocation must not be null or empty");
     }
@@ -26,27 +34,43 @@ public class WebRepository {
       this.dataLocation = dataLocation + "/";
     }
     logger.info("dataLocation = [{}]", dataLocation);
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.registerModule(new JavaTimeModule()); // Support for Instant
+    this.objectMapper.registerModule(new Jdk8Module()); // Support for Instantthis.jdbcClient = JdbcClient.create(DuckDataSource.memory());
+    this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
+    }
+
+  public List<String> searchVisitIds(String domainName) {
+    // TODO
+    logger.info("Searching visitIds for domainName={}", domainName);
+    return List.of();
   }
 
-  public void toParquet(Path jsonFile) {
-    String fileName = Ulid.fast() + ".parquet";
-    toParquet(jsonFile, fileName);
-
+  public Optional<WebCrawlResult> findLatestResult(String domainName) {
+    // TODO
+    logger.info("Finding latest crawl result for domainName={}", domainName);
+    return Optional.empty();
   }
 
-  /**
-   * Converts the given JSON file to parquet format.
-   */
-  public void toParquet(Path jsonFile, String fileName) {
-    String destination = dataLocation + fileName;
-    logger.debug("copying file {} to {}", jsonFile, destination);
-    String copy = String.format("copy (select * from '%s') to '%s'", jsonFile, destination);
-    logger.debug("copy stmt: {}", copy);
-    // TODO: make sure the output parquet matches with what we already have (= exports of the old Mercator)
-    //noinspection SqlSourceToSinkFlow
-    jdbcClient.sql(copy).update();
-    long rowCount = jdbcClient.sql("select count(1) from '" + destination + "'").query(Long.class).single();
-    logger.info("parquet file created with {} rows", rowCount);
+  public Optional<WebCrawlResult> findByVisitId(String visitId) {
+   // TODO
+    logger.info("Finding latest crawl result for visitId={}", visitId);
+    return Optional.empty();
+  }
+
+  public void saveToParquet(Path jsonFile, String parquetFileName) {
+    // TODO: partitioned
+    // TODO
+    // copy json to parquet
+    // rename fields
+    // partitioned
+    // noinspection SqlSourceToSinkFlow
+    jdbcClient
+            .sql("")
+            .update();
+    logger.info("Parquet file name = [{}]", parquetFileName + "with pathname: " + jsonFile.toString());
+
+
   }
 
 }

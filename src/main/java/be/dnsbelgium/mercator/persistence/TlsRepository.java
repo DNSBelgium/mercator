@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import io.micrometer.core.instrument.binder.logging.LogbackMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,7 @@ public class TlsRepository {
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
 
-  public TlsRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation, LogbackMetrics logbackMetrics) {
+  public TlsRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
     this.dataLocation = dataLocation;
   }
 
@@ -33,7 +32,7 @@ public class TlsRepository {
     return List.of();
   }
 
-  public Optional<TlsCrawlResult> findLatestCrawlResult(String domainName) {
+  public Optional<TlsCrawlResult> findLatestResult(String domainName) {
     // TODO
     logger.info("Finding latest crawl result for domainName={}", domainName);
     return Optional.empty();
@@ -43,7 +42,7 @@ public class TlsRepository {
     JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
     Path parquetFilePath = Path.of("test");
 
-    // TODO: use location given to teh repository to search instead of hardcoded
+    // TODO: use location given to the repository to search instead of hardcoded
     String query = String.format("select to_json(p) from '%s' p where visit_id = ?", parquetFilePath);
       return jdbcClient
               .sql(query)
