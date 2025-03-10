@@ -9,8 +9,15 @@
         function updateFormAction() {
             const form = document.getElementById('searchForm');
             const selectedOption = document.querySelector('input[name="option"]:checked').value;
-            form.action = '/search/' + selectedOption;
+            const fetchLatest = document.getElementById('fetchLatest');
+
+            if (fetchLatest.checked) {
+                form.action = '/search/' + selectedOption + '/latest';
+            } else {
+                form.action = '/search/' + selectedOption + '/ids';
+            }
         }
+
     </script>
 </head>
 
@@ -62,10 +69,10 @@
             Smtp
         </label>
         <label>
-            <input type="checkbox" name="fetch_latest" th:checked="${fetch_latest}">
+            <input type="checkbox" id="fetchLatest" th:checked="${fetch_latest}">
             Fetch Latest
         </label>
-        <button type="submit">submit</button>
+        <button type="submit" onsubmit="updateFormAction()">submit</button>
     </form>
 
 </div>

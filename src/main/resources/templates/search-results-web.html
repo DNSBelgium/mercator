@@ -6,52 +6,35 @@
 
 <head>
     <title>Mercator | Search Results</title>
-    <script>
-
-        function handleVisitClick(event) {
-            event.preventDefault();
-            let visitId = event.target.getAttribute("data-visit-id");
-            document.getElementById("visitIdInput").value = visitId;
-            document.getElementById("selectedVisitIdDisplay").innerText = visitId;
-        }
-        function submitForm() {
-            const form = document.getElementById('searchForm');
-            form.action = "/visits/web"
-            document.getElementById('searchForm').submit();
-        }
-    </script>
 </head>
 
 <body>
 <main>
     <div layout:fragment="content">
         <h1>Search results</h1>
-        <p>Found: <span th:text="${search}"> </span></p>
-        <p>Select a visit ID and an option for which information you want, then click submit.</p>
-
-        <p>Selected Visit ID: <span id="selectedVisitIdDisplay">None</span></p>
-        <p>Selected Option: <span id="selectedOptionDisplay">None</span></p>
-
-        <form id="searchForm" method="get" th:action="@{/visits}">
-            <input type="hidden" id="visitIdInput" name="visitId" value="">
-            <input type="hidden" id="optionInput" name="option" value="">
-
+        <p>Found:</p>
+        <p>Select a visit ID, then click submit.</p>
+        <form id="searchForm" method="get" th:action="@{/search/web/id}">
             <table class="overflow-auto">
                 <thead>
                 <tr>
                     <td>Visit Id</td>
-                    <td>Domain name</td>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="visitId : ${visitIds}">
-                    <td th:text="${visitId}"></td>
+                <tr th:each="visit : ${visitIds}">
+                    <td>
+                        <label>
+                            <input type="radio" name="visitId" th:value="${visit}" th:checked="${selectedVisitId == visit}">
+                        </label>
+                        <label th:for="${visit}" th:text="${visit}"></label>
+                    </td>
+                    <td th:text="${domainName}"></td>
                 </tr>
                 </tbody>
             </table>
 
-
-            <button type="button" onclick="submitForm()">Submit</button>
+            <button type="submit">Submit</button>
         </form>
     </div>
 </main>
