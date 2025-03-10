@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
+import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
@@ -31,14 +33,9 @@ public class SearchWebResultTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Test
-    public void test() throws Exception {
-        System.out.println(objectMother);
-    }
-
     // This tests the html that is returned from the endpoint
     @Test
-    public void getWebSearchResultsPage_findsIds() throws Exception {
+    public void getWebIds_findsIds() throws Exception {
         when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
         // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
@@ -49,6 +46,31 @@ public class SearchWebResultTest {
                 .andExpect(content().string(containsString("v101")))
         ;
 
+    }
+
+    @Test
+    public void getWeb_findsVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(webCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists( "webCrawlResults"))
+                .andExpect(content().string(containsString("dnsbelgium.be")));
+    }
+
+
+    @Test
+    public void getWebLatest_findsLatestVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(webCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists( "webCrawlResults"))
+                .andExpect(content().string(containsString("dnsbelgium.be")));
     }
 
 }

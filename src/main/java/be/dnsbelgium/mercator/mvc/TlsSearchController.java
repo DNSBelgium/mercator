@@ -50,17 +50,18 @@ public class TlsSearchController {
     model.addAttribute("domainName", domainName);
     List<String> idList = tlsRepository.searchVisitIds(domainName);
     if (!idList.isEmpty()) {
-      model.addAttribute("idList", idList);
+      model.addAttribute("visitIds", idList);
       logger.debug("We found {} for {}", idList, domainName);
     }
     return "search-results-tls";
   }
 
   @GetMapping("/search/tls/id")
-  public String getTls(Model model, @RequestParam(name = "id") String id) {
-    logger.info("id = {}", id);
-    model.addAttribute("id", id);
-    Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(id);
+  public String getTls(Model model, @RequestParam(name = "visitId") String visitId) {
+    logger.info("visitId= {}", visitId);
+    model.addAttribute("visitId", visitId);
+    Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(visitId);
+    logger.info(tlsCrawlResult.toString());
     if(tlsCrawlResult.isPresent()) {
       model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult.get()));
     }

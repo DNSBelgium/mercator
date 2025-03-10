@@ -3,8 +3,6 @@ package be.dnsbelgium.mercator.mvc;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import org.slf4j.Logger;
@@ -42,10 +40,10 @@ public class SmtpSearchController {
 
   @GetMapping("/search/smtp/latest")
   public String getLatestSmtp(Model model, @RequestParam("domainName") String domainName) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
     Optional<SmtpConversation> smtpConversationResult = searchRepository.findLatestResult(domainName);
-    model.addAttribute("smtpConversationResults", List.of(smtpConversationResult));
+    if (smtpConversationResult.isPresent()) {
+      model.addAttribute("smtpConversationResults", List.of(smtpConversationResult.get()));
+    }
     return "visit-details-smtp";
   }
 
@@ -62,7 +60,10 @@ public class SmtpSearchController {
   public String getSmtp(Model model, @RequestParam(name = "visitId") String visitId) {
     logger.info("/visits/smtp/{}", visitId);
     Optional<SmtpConversation> smtpConversation = searchRepository.findByVisitId(visitId);
-      model.addAttribute("smtpConversationResults", List.of(smtpConversation));
+    if (smtpConversation.isPresent()) {
+      model.addAttribute("smtpConversationResults", List.of(smtpConversation.get()));
+
+    }
       logger.info("tlsCrawlResult = {}", smtpConversation);
     return "visit-details-smtp";
   }
