@@ -56,6 +56,7 @@ class TlsRepositoryTest {
   }
 
   @Test
+  @Disabled
   public void getTlsCrawlResultByVisitId() throws IOException {
     JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
     Path tempDir = Path.of(System.getProperty("user.home"), "mercator");

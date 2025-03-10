@@ -76,7 +76,7 @@ class TlsSearchControllerTest {
     logger.info("model = {}", model);
     verify(tlsRepository).searchVisitIds("abc.be");
     verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.getAttribute("idList")).isEqualTo(idsList);
+    assertThat(model.getAttribute("visitIds")).isEqualTo(idsList);
   }
 
   @Test
