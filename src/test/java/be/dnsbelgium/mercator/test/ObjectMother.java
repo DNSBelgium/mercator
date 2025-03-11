@@ -31,9 +31,12 @@ public class ObjectMother {
 
   Instant started  = LocalDateTime.of(2024,11,28, 23, 59).toInstant(ZoneOffset.UTC);
 
+  public static String VISIT_ID_1 = "v104";
+  public static String VISIT_ID_2 = "v105";
+
   public PageVisit pageVisit1() {
     return PageVisit.builder()
-            .visitId("v104")
+            .visitId(VISIT_ID_1)
             .html("<h1>I am a page </h1>")
             .url("https://www.dnsbelgium.be/")
             .bodyText("I am a page")
@@ -45,7 +48,7 @@ public class ObjectMother {
 
   public PageVisit pageVisit2() {
     return PageVisit.builder()
-            .visitId("v104")
+            .visitId(VISIT_ID_1)
             .html("<h1>I am the EN page </h1>")
             .url("https://www.dnsbelgium.be/en")
             .bodyText("I am the EN page")
@@ -57,7 +60,7 @@ public class ObjectMother {
 
   public PageVisit pageVisit3() {
     return PageVisit.builder()
-            .visitId("v104")
+            .visitId(VISIT_ID_1)
             .html("<h1>I am the contact page </h1>")
             .url("https://www.dnsbelgium.be/en/contact")
             .bodyText("I am the contact page")
@@ -70,7 +73,7 @@ public class ObjectMother {
 
   public PageVisit pageVisit4() {
     return PageVisit.builder()
-            .visitId("v105")
+            .visitId(VISIT_ID_2)
             .html(null)
             .url("https://www.no-website.org/")
             .bodyText(null)
@@ -81,32 +84,51 @@ public class ObjectMother {
   }
 
   public HtmlFeatures htmlFeatures1() {
-    return htmlFeatureExtractor
+    HtmlFeatures features = htmlFeatureExtractor
             .extractFromHtml(
                     "<h1>I am a page </h1>",
                     "https://www.dnsbelgium.be/",
                     "dnsbelgium.be");
+    features.visitId = VISIT_ID_1;
+    features.crawlTimestamp = started.plusMillis(11);
+    features.domainName = "dnsbelgium.be";
+    features.body_text_language = "nl";
+    features.body_text_language_2 = "nl";
+    return features;
   }
 
   public HtmlFeatures htmlFeatures2() {
-    return htmlFeatureExtractor
+    HtmlFeatures features =  htmlFeatureExtractor
             .extractFromHtml(
                     "<h1>I am the English page </h1>",
                     "https://www.dnsbelgium.be/en",
                     "dnsbelgium.be");
+    features.visitId = VISIT_ID_1;
+    features.crawlTimestamp = started.plusMillis(12);
+    features.domainName = "dnsbelgium.be";
+    features.body_text_language = "en";
+    features.body_text_language_2 = "en";
+    return features;
   }
 
   public HtmlFeatures htmlFeatures3() {
-    return htmlFeatureExtractor
+    HtmlFeatures features =  htmlFeatureExtractor
             .extractFromHtml(
                     "<h1>I am the Contact page </h1>",
                     "https://www.dnsbelgium.be/en/contact",
                     "dnsbelgium.be");
+    features.visitId = VISIT_ID_1;
+    features.crawlTimestamp = started.plusMillis(13);
+    features.domainName = "dnsbelgium.be";
+    features.body_text_language = "en";
+    features.body_text_language_2 = "en";
+    return features;
   }
 
   public WebCrawlResult webCrawlResult1() {
     return WebCrawlResult.builder()
-            .crawlFinished(started)
+            .visitId(VISIT_ID_1)
+            .crawlStarted(started)
             .crawlFinished(started.plusMillis(235))
             .domainName("dnsbelgium.be")
             .matchingUrl("https://www.dnsbelgium.be/en/contact")
@@ -121,8 +143,9 @@ public class ObjectMother {
 
   public WebCrawlResult webCrawlResult2() {
     return WebCrawlResult.builder()
-            .crawlFinished(started.plusMillis(10))
+            .crawlStarted(started.plusMillis(10))
             .crawlFinished(started.plusSeconds(115))
+            .visitId(VISIT_ID_2)
             .domainName("no-website.org")
             .visitedUrls(List.of())
             .startUrl("https://www.no-website.be/")

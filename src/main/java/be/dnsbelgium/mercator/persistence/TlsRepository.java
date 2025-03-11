@@ -23,7 +23,16 @@ public class TlsRepository {
 
 
   public TlsRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
-    this.dataLocation = dataLocation;
+    if (dataLocation == null || dataLocation.isEmpty()) {
+      throw new IllegalArgumentException("dataLocation must not be null or empty");
+    }
+    if (dataLocation.endsWith("/")) {
+      this.dataLocation = dataLocation;
+    } else {
+      this.dataLocation = dataLocation + "/";
+    }
+    logger.info("dataLocation = [{}]", dataLocation);
+
   }
 
   public List<String> searchVisitIds(String domainName) {

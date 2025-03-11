@@ -3,43 +3,65 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.time.Instant;
+import java.util.*;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class WebRepositoryTest {
 
+  private static final Logger logger = LoggerFactory.getLogger(WebRepositoryTest.class);
+
   @TempDir
   static Path tempDir;
-
-  //@TempDir
-  //static Path tempDir = Path.of(System.getProperty("user.home"), "mercator");
-
-  private static final Logger logger = LoggerFactory.getLogger(WebRepositoryTest.class);
-  ObjectMother objectMother = new ObjectMother();
+  static {
+    if (System.getProperty("mercator_temp_dir") != null) {
+      // this allows to run the tests with a folder that does not disappear after the test completes.
+      tempDir = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
+      logger.info("Using temp dir {}", tempDir);
+    }
+  }
+  private final ObjectMother objectMother = new ObjectMother();
+  private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), tempDir.toString());
 
   @Test
   public void toParquet() throws IOException {
     logger.info("tempDir = {}", tempDir);
-    WebRepository repository = new WebRepository(tempDir.toAbsolutePath().toString());
-
+    Files.createDirectories(tempDir);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
     WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
 
+    logger.info("webCrawlResult1 = {}", webCrawlResult1);
+    logger.info("webCrawlResult2 = {}", webCrawlResult2);
+
     File jsonFile = tempDir.resolve("webCrawlResult1.json").toFile();
+    logger.info("jsonFile = {}", jsonFile);
 
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(webCrawlResult1, webCrawlResult2));
 
-    repository.saveToParquet(jsonFile.toPath(), "WebRepositoryTest_test1.parquet");
-    // todo: add asserts
+    repository.toParquet(jsonFile.toPath());
+
+    List<WebCrawlResult> webCrawlResults = repository.find("dnsbelgium.be");
+    logger.info("webCrawlResults found: {}", webCrawlResults.size());
+    logger.info("webCrawlResults = {}", webCrawlResults);
+    for (WebCrawlResult webCrawlResult : webCrawlResults) {
+      logger.info("webCrawlResult = {}", webCrawlResult);
+    }
+    assertThat(webCrawlResults.size()).isEqualTo(1);
+    assertThat(webCrawlResults.getFirst()).isEqualTo(webCrawlResult1);
   }
 
 }
