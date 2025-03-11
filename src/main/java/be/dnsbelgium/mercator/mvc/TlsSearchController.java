@@ -49,10 +49,8 @@ public class TlsSearchController {
     logger.info("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
     List<String> idList = tlsRepository.searchVisitIds(domainName);
-    if (!idList.isEmpty()) {
-      model.addAttribute("visitIds", idList);
-      logger.debug("We found {} for {}", idList, domainName);
-    }
+    model.addAttribute("visitIds", idList);
+    logger.debug("We found {} for {}", idList, domainName);
     return "search-results-tls";
   }
 

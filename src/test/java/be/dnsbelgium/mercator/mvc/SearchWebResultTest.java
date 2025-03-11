@@ -76,7 +76,6 @@ public class SearchWebResultTest {
 
     @Test
     public void getWeb_doesNotfindVisitDetails() throws Exception {
-        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/id")

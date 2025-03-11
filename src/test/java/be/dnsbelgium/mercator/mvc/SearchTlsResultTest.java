@@ -86,7 +86,6 @@ public class SearchTlsResultTest {
 
     @Test
     public void gettls_doesNotfindVisitDetails() throws Exception {
-        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/id")

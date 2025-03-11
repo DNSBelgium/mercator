@@ -74,7 +74,6 @@ public class SearchSmtpResultTest {
 
     @Test
     public void getSmtp_doesNotfindVisitDetails() throws Exception {
-        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/smtp/id")
