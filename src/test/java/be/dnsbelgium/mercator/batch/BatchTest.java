@@ -10,6 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.f4b6a3.ulid.Ulid;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
@@ -36,6 +37,7 @@ import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.lang.NonNull;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,6 @@ public class BatchTest {
   private static final Logger logger = LoggerFactory.getLogger(BatchTest.class);
 
   @Autowired @Qualifier("webJob") Job webJob;
-  @Autowired @Qualifier("tlsJob") Job tlsJob;
 
   @MockitoBean
   WebProcessor webProcessor;
@@ -62,6 +63,9 @@ public class BatchTest {
   @Autowired JobLauncher jobLauncher;
   @Autowired JdbcTransactionManager transactionManager;
   @Autowired ObjectMapper objectMapper;
+
+  @TempDir
+  Path tempDir;
 
   ObjectMother objectMother = new ObjectMother();
 
@@ -72,11 +76,13 @@ public class BatchTest {
     when(webProcessor.process(any(VisitRequest.class)))
             .thenReturn(crawlResult1)
             .thenReturn(crawlResult2);
-    run(webJob);
+    Path outputPath = tempDir.resolve("web.json");
+    run(webJob, outputPath);
+
     // Now check the resulting output
     JacksonJsonObjectReader<WebCrawlResult> jsonObjectMarshaller
             = new JacksonJsonObjectReader<>(objectMapper, WebCrawlResult.class);
-    jsonObjectMarshaller.open(new PathResource("target/test-outputs/web.json"));
+    jsonObjectMarshaller.open(new PathResource(outputPath));
     WebCrawlResult w1 = jsonObjectMarshaller.read();
     WebCrawlResult w2 = jsonObjectMarshaller.read();
 
@@ -87,21 +93,14 @@ public class BatchTest {
     assertThat(w2).isEqualTo(crawlResult2);
   }
 
-  @Test
-  public void tls() {
-    logger.info("tlsJob = {}", tlsJob);
-    // TODO: add test for tls
-  }
 
-
-  public void run(Job job) throws JobExecutionException {
-    String outputFileName = "file:./target/test-outputs/" + job.getName() + ".json";
+  public void run(Job job, Path outputPath) throws JobExecutionException {
     logger.info("jobRepository = {}", jobRepository);
     logger.info("jobLauncher = {}", jobLauncher);
 
     JobParameters jobParameters = new JobParametersBuilder()
             .addString("inputFile", "test-data/visit_requests.csv")
-            .addString("outputFile", outputFileName)
+            .addString("outputFile", "file:" + outputPath.toAbsolutePath())
             .addString("job_uuid", UUID.randomUUID().toString())
             .toJobParameters();
     JobExecution jobExecution = jobLauncher.run(job, jobParameters);
@@ -129,12 +128,13 @@ public class BatchTest {
     JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller
             = new JacksonJsonObjectMarshaller<>(objectMapper);
 
-    PathResource output = new PathResource("output.json");
+    PathResource jsonResource = new PathResource(tempDir.resolve("simpleJob-output.json"));
+    PathResource parquetResource = new PathResource(tempDir.resolve("simpleJob-output.parquet"));
 
     JsonFileItemWriter<WebCrawlResult> itemWriter = new JsonFileItemWriterBuilder<WebCrawlResult>()
             .name("WebCrawlResultWriter")
             .jsonObjectMarshaller(jsonObjectMarshaller)
-            .resource(output)
+            .resource(jsonResource)
             .build();
 
     Step step = new StepBuilder("web", jobRepository)
@@ -146,7 +146,7 @@ public class BatchTest {
 
     Job job = new JobBuilder("web", jobRepository)
             .start(step)
-            .listener(new ParquetMaker(output))
+            .listener(new ParquetMaker(jsonResource, parquetResource))
             .build();
 
     JobParameters jobParameters = new JobParametersBuilder()
@@ -173,7 +173,7 @@ public class BatchTest {
     }
   }
 
-  private record ParquetMaker(PathResource inputFile) implements JobExecutionListener {
+  private record ParquetMaker(PathResource jsonResource, PathResource parquetResource) implements JobExecutionListener {
 
       @SneakyThrows
       @Override
@@ -183,7 +183,10 @@ public class BatchTest {
 
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
           JdbcClient client = JdbcClient.create(DuckDataSource.memory());
-          String copy = String.format("copy (select * from '%s') to 'web-output.parquet'", inputFile.getFile().getAbsolutePath());
+          String copy = String.format("copy (select * from '%s') to '%s'",
+                  jsonResource.getFile().getAbsolutePath(),
+                  parquetResource.getFile().getAbsolutePath()
+          );
           logger.info("copy stmt = {}", copy);
           client.sql(copy).update();
           logger.info("parquet file created");
