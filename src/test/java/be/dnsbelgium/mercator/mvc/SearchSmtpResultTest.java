@@ -48,6 +48,19 @@ public class SearchSmtpResultTest {
     }
 
     @Test
+    public void getSmtpIds_doesNotfindIds() throws Exception {
+        when(smtpRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        // Might need to be modified in the future to contain more data than just Id's
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-smtp"))
+                .andExpect(model().attributeExists("visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for smtp of this domain")))
+        ;
+    }
+
+    @Test
     public void getSmtp_findsVisitDetails() throws Exception {
         SmtpConversation smtpConversation1 = objectMother.smtpConversation1();
         when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(smtpConversation1));
@@ -57,6 +70,16 @@ public class SearchSmtpResultTest {
                 .andExpect(view().name("visit-details-smtp"))
                 .andExpect(model().attributeExists( "smtpConversationResults"))
                 .andExpect(content().string(containsString("software host2")));
+    }
+
+    @Test
+    public void getSmtp_doesNotfindVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(content().string(containsString("No SMTP conversations results found for visitId")));
     }
 
 

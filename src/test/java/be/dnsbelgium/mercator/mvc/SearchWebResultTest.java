@@ -49,6 +49,20 @@ public class SearchWebResultTest {
     }
 
     @Test
+    public void getWebIds_doesNotfindIds() throws Exception {
+        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        // Might need to be modified in the future to contain more data than just Id's
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-web"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for web of this domain")))
+        ;
+
+    }
+
+    @Test
     public void getWeb_findsVisitDetails() throws Exception {
         WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(webCrawlResult1));
@@ -58,6 +72,17 @@ public class SearchWebResultTest {
                 .andExpect(view().name("visit-details-web"))
                 .andExpect(model().attributeExists( "webCrawlResults"))
                 .andExpect(content().string(containsString("dnsbelgium.be")));
+    }
+
+    @Test
+    public void getWeb_doesNotfindVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(content().string(containsString("No web crawl results found for visitId")));
     }
 
 

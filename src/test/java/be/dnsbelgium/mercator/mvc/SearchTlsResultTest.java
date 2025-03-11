@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,21 @@ public class SearchTlsResultTest {
         ;
 
     }
+
+    @Test
+    public void getTlsIds_doesNotfindIds() throws Exception {
+        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        // Might need to be modified in the future to contain more data than just Id's
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-tls"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for tls of this domain")))
+        ;
+
+    }
+
     @Test
     public void getTls_FindsVisitDetails() throws Exception {
         // this test assumes that the correct tlsCrawlResult object looks like the one in tlsCrawlresult1
@@ -66,6 +82,16 @@ public class SearchTlsResultTest {
                 .andExpect(model().attributeExists( "visitId"))
                 .andExpect(content().string(containsString("aakjkjkj-ojj")));
 
+    }
+
+    @Test
+    public void gettls_doesNotfindVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(content().string(containsString("No tls crawl results found for visitId")));
     }
 
     @Test

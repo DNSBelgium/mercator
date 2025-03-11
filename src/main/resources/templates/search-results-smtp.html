@@ -11,6 +11,9 @@
 <body>
 <main>
     <div layout:fragment="content">
+        <h2 th:if="${visitIds == null or visitIds.isEmpty()}">
+            No visitIds found for smtp of this domain
+        </h2>
         <h1>Search results</h1>
         <p>Found:</p>
         <p>Select a visit ID, then click submit.</p>
