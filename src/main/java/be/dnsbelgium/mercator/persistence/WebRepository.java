@@ -2,43 +2,45 @@ package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.f4b6a3.ulid.Ulid;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+@SuppressWarnings("SqlSourceToSinkFlow")
+@Component
 public class WebRepository {
 
-  private final String dataLocation;
   private static final Logger logger = LoggerFactory.getLogger(WebRepository.class);
-  private final JdbcClient jdbcClient;
-  
+  private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
+
+  private final Path webCrawlDestination;
+  private final Path pageVisitDestination;
+  private final Path featuresDestination;
   private final ObjectMapper objectMapper;
 
-  public WebRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
 
+  public WebRepository(
+          ObjectMapper objectMapper,
+          @Value("${mercator.data.location:mercator/data/}") String dataLocation) {
+    this.objectMapper = objectMapper;
     if (dataLocation == null || dataLocation.isEmpty()) {
       throw new IllegalArgumentException("dataLocation must not be null or empty");
     }
-    if (dataLocation.endsWith("/")) {
-      this.dataLocation = dataLocation;
-    } else {
-      this.dataLocation = dataLocation + "/";
-    }
     logger.info("dataLocation = [{}]", dataLocation);
-    this.objectMapper = new ObjectMapper();
-    this.objectMapper.registerModule(new JavaTimeModule()); // Support for Instant
-    this.objectMapper.registerModule(new Jdk8Module()); // Support for Instantthis.jdbcClient = JdbcClient.create(DuckDataSource.memory());
-    this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
-    }
+    webCrawlDestination = Path.of(dataLocation, "web", "crawl_result");
+    pageVisitDestination = Path.of(dataLocation, "web", "page_visit");
+    featuresDestination = Path.of(dataLocation, "web", "html_features");
+  }
 
   public List<String> searchVisitIds(String domainName) {
     // TODO
@@ -53,24 +55,116 @@ public class WebRepository {
   }
 
   public Optional<WebCrawlResult> findByVisitId(String visitId) {
-   // TODO
+    // TODO
     logger.info("Finding latest crawl result for visitId={}", visitId);
     return Optional.empty();
   }
 
-  public void saveToParquet(Path jsonFile, String parquetFileName) {
-    // TODO: partitioned
-    // TODO
-    // copy json to parquet
-    // rename fields
-    // partitioned
-    // noinspection SqlSourceToSinkFlow
-    jdbcClient
-            .sql("")
-            .update();
-    logger.info("Parquet file name = [{}]", parquetFileName + "with pathname: " + jsonFile.toString());
 
+  /**
+   * Converts the given JSON file to parquet format.
+   */
+  @SneakyThrows
+  public void toParquet(Path jsonFile) {
+    Files.createDirectories(webCrawlDestination);
+    Files.createDirectories(pageVisitDestination);
+    Files.createDirectories(featuresDestination);
 
+    // generate a unique tableName since to avoid collisions with other threads
+    String tableName = "webCrawlResult_" + Ulid.fast();
+    String createTable = """
+      create table %s
+      as
+      select *,
+             to_timestamp(crawl_started) as ts,
+             extract('year' from ts) as year,
+             extract('month' from ts) as month,
+      from '%s'
+      """.formatted(tableName, jsonFile);
+    logger.info("createTable = \n{}", createTable);
+    jdbcClient.sql(createTable).update();
+
+    String copyWebCrawlResult = """
+            copy (
+                select * exclude (ts, html_features, page_visits)
+                from %s
+              )
+            to '%s' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'web_{uuid}' )
+            """.formatted(tableName, webCrawlDestination);
+    logger.debug("copyWebCrawlResult: \n{}", copyWebCrawlResult);
+    jdbcClient.sql(copyWebCrawlResult).update();
+
+    String copyPageVisits = """
+            copy (
+              select unnest(page_visits, recursive:=True), year, month
+              from %s
+            )
+            to '%s' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'page_visit_{uuid}' )
+            """
+            .formatted(tableName, pageVisitDestination);
+    logger.info("copyPageVisits = \n{}", copyPageVisits);
+    jdbcClient.sql(copyPageVisits).update();
+
+    String copyHtmlFeatures = """
+            copy (
+              select unnest(html_features, recursive:=True), year, month
+              from %s
+            )
+            to '%s' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'html_{uuid}' )
+            """
+            .formatted(tableName, featuresDestination);
+    logger.info("copyHtmlFeatures = \n{}", copyHtmlFeatures);
+    jdbcClient.sql(copyHtmlFeatures).update();
   }
+
+  @SneakyThrows
+  public List<WebCrawlResult> find(String domainName) {
+    String query = """
+      with
+          crawl_result as (select * exclude (year, month) from '%s/**/*.parquet'),
+          html_feature as (select * exclude (year, month) from '%s/**/*.parquet'),
+          page_visit   as (select * exclude (year, month) from '%s/**/*.parquet'),
+          features_per_visit as (
+             select visit_id,
+                    list(html_feature order by crawl_timestamp) as html_features
+             from html_feature
+             group by visit_id
+          ),
+          pages_per_visit as (
+             select visit_id,
+                    list(page_visit order by crawl_started) as page_visits
+             from page_visit
+             group by visit_id
+          ),
+          combined as (
+              select
+                 crawl_result.*,
+                 coalesce(features_per_visit.html_features, []) as html_features,
+                 coalesce(pages_per_visit.page_visits, []) as page_visits
+              from crawl_result
+              left join features_per_visit on crawl_result.visit_id = features_per_visit.visit_id
+              left join pages_per_visit    on crawl_result.visit_id = pages_per_visit.visit_id
+              where crawl_result.domain_name = ?
+          )
+      select row_to_json(combined)
+      from combined
+      order by visit_id
+    """.formatted(webCrawlDestination, featuresDestination, pageVisitDestination);
+    logger.info("query = {}", query);
+
+    List<String> jsonList = jdbcClient.sql(query)
+            .param(domainName)
+            .query(String.class)
+            .list();
+    List<WebCrawlResult> found = new ArrayList<>();
+    for (String json : jsonList) {
+      WebCrawlResult webCrawlResult = objectMapper.readValue(json, WebCrawlResult.class);
+      found.add(webCrawlResult);
+    }
+
+    return found;
+  }
+
+
 
 }

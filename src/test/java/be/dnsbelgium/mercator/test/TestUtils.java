@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Clock;
@@ -13,6 +14,13 @@ public class TestUtils {
 
   // a clock that ticks only once per microsecond
   private static final Clock microsecondClock = Clock.tick(Clock.systemUTC(), Duration.ofNanos(1000));
+
+  private final static ObjectMapper objectMapper = new ObjectMapper();
+  static {
+    objectMapper.registerModule(new Jdk8Module());
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+  }
 
   /**
    * Useful in tests because some operating systems support nanosecond precision
@@ -41,11 +49,11 @@ public class TestUtils {
    * @return an ObjectWriter to be used in tests
    */
   public static ObjectWriter jsonWriter() {
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.setPropertyNamingStrategy(new PropertyNamingStrategies.SnakeCaseStrategy());
-    objectMapper.registerModule(javaTimeModule);
     return objectMapper.writerWithDefaultPrettyPrinter();
+  }
+
+  public static ObjectMapper jsonReader() {
+    return objectMapper;
   }
 
 }
