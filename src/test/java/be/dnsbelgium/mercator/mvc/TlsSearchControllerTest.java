@@ -4,119 +4,91 @@ import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ui.ConcurrentModel;
-import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// TODO BRAM: this test can be removed
-// since evrything should already be tested by SearchTlsResultTest
+@SpringBootTest
+@AutoConfigureMockMvc
+@ComponentScan(basePackages = "be.dnsbelgium.mercator.mvc")
+public class TlsSearchControllerTest {
 
+    @MockitoBean
+    private TlsRepository tlsRepository;
 
-class TlsSearchControllerTest {
+    private final ObjectMother objectMother = new ObjectMother();
 
-  TlsRepository tlsRepository;
-  private static final Logger logger = LoggerFactory.getLogger(TlsSearchControllerTest.class);
-  private final ObjectMother objectMother = new ObjectMother();
+    @Autowired
+    private MockMvc mockMvc;
 
-  @Test
-  public void findLatestCrawlResult_NotFound() {
-    tlsRepository = mock(TlsRepository.class);
-    logger.info("tlsRepository = {}", tlsRepository);
-    when(tlsRepository.findLatestResult("abc.be")).thenReturn(Optional.empty());
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTlsLatest(model, "abc.be");
-    assertThat(viewName).isEqualTo("visit-details-tls");
-    verify(tlsRepository).findLatestResult("abc.be");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.containsAttribute("tlsCrawlResults")).isFalse();
-  }
+    @Test
+    public void searchVisitIds_found() throws Exception {
+        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-tls"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("v101")))
+        ;
 
-  @Test
-  public void findLatestCrawlResult_IsFound() {
-    tlsRepository = mock(TlsRepository.class);
-    TlsCrawlResult crawlResult = objectMother.tlsCrawlResult1();
-    when(tlsRepository.findLatestResult("abc.be")).thenReturn(Optional.of(crawlResult));
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTlsLatest(model, "abc.be");
-    assertThat(viewName).isEqualTo("visit-details-tls");
-    verify(tlsRepository).findLatestResult("abc.be");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.getAttribute("tlsCrawlResults")).isEqualTo(List.of(crawlResult));
-  }
+    }
 
-  @Test
-  public void getIdsAreNotFound() {
-    tlsRepository = mock(TlsRepository.class);
-    logger.info("tlsRepository = {}", tlsRepository);
-    List<String> emptyIdsList = List.of();
-    when(tlsRepository.searchVisitIds("abc.be")).thenReturn(emptyIdsList);
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTlsIds(model, "abc.be");
-    logger.info("viewName = {}", viewName);
-    logger.info("model = {}", model);
-    verify(tlsRepository).searchVisitIds("abc.be");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.containsAttribute("idList")).isFalse();
-  }
+    @Test
+    public void searchVisitIds_notFound() throws Exception {
+        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-tls"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for tls of this domain")))
+        ;
+    }
 
-  @Test
-  public void getIdsAreFound() {
-    tlsRepository = mock(TlsRepository.class);
-    logger.info("tlsRepository = {}", tlsRepository);
-    List<String> idsList = List.of("id1", "id2", "id3");
-    when(tlsRepository.searchVisitIds("abc.be")).thenReturn(idsList);
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTlsIds(model, "abc.be");
-    logger.info("viewName = {}", viewName);
-    logger.info("model = {}", model);
-    verify(tlsRepository).searchVisitIds("abc.be");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.getAttribute("visitIds")).isEqualTo(idsList);
-  }
+    @Test
+    public void findByVisitId_found() throws Exception {
+        TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
+        when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/id")
+                        .param("visitId", "aakjkjkj-ojj"))
+                .andExpect(view().name("visit-details-tls"))
+                .andExpect(model().attributeExists( "visitId"))
+                .andExpect(content().string(containsString("aakjkjkj-ojj")));
 
-  @Test
-  public void getByIdIsNotFound() {
-    tlsRepository = mock(TlsRepository.class);
-    logger.info("tlsRepository = {}", tlsRepository);
-    when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.empty());
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTls(model, "aakjkjkj-ojj");
-    logger.info("viewName = {}", viewName);
-    logger.info("model = {}", model);
-    verify(tlsRepository).findByVisitId("aakjkjkj-ojj");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.containsAttribute("tlsCrawlResults")).isFalse();
+    }
 
-  }
+    @Test
+    public void findByVisitId_notFound() throws Exception {
+        when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(content().string(containsString("No tls crawl results found for visitId")));
+    }
 
-  @Test
-  public void getByIdIsFound() {
-    tlsRepository = mock(TlsRepository.class);
-    logger.info("tlsRepository = {}", tlsRepository);
-    TlsCrawlResult crawlResult = objectMother.tlsCrawlResult1();
-    when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.of(crawlResult));
-    TlsSearchController controller = new TlsSearchController(tlsRepository);
-    Model model = new ConcurrentModel();
-    String viewName = controller.getTls(model, "aakjkjkj-ojj");
-    logger.info("viewName = {}", viewName);
-    logger.info("model = {}", model);
-    verify(tlsRepository).findByVisitId("aakjkjkj-ojj");
-    verifyNoMoreInteractions(tlsRepository);
-    assertThat(model.getAttribute("tlsCrawlResults")).isEqualTo(List.of(crawlResult));
+    @Test
+    public void findLatestResult_found() throws Exception {
+        TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
+        when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-tls"))
+                .andExpect(model().attributeExists( "domainName"))
+                .andExpect(content().string(containsString("aakjkjkj-ojj")));
 
-  }
-
-
+    }
 }

@@ -4,100 +4,97 @@ import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ui.ConcurrentModel;
-import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-// TODO: Bram: we probably do not need this test anymore.
+@SpringBootTest
+@AutoConfigureMockMvc
+@ComponentScan(basePackages = "be.dnsbelgium.mercator.mvc")
+public class WebSearchControllerTest {
 
-class WebSearchControllerTest {
-
+    @MockitoBean
     private WebRepository webRepository;
-    private static final Logger logger = LoggerFactory.getLogger(WebSearchControllerTest.class);
+
     private final ObjectMother objectMother = new ObjectMother();
 
-    @Test
-    public void findLatestResult_NotFound() {
-        webRepository = mock(WebRepository.class);
-        logger.info("webRepository = {}", webRepository);
-        when(webRepository.findLatestResult("abc.be")).thenReturn(Optional.empty());
-        WebSearchController controller = new WebSearchController(webRepository);
-        Model model = new ConcurrentModel();
-        controller.findLatestResult(model, "abc.be");
-        verify(webRepository).findLatestResult("abc.be");
-        verifyNoMoreInteractions(webRepository);
-        assertThat(model.containsAttribute("webCrawlResults")).isFalse();
-    }
-
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
-    public void searchVisitIds_NotFound() {
-        webRepository = mock(WebRepository.class);
-        logger.info("webRepository = {}", webRepository);
-        when(webRepository.searchVisitIds("abc.be")).thenReturn(List.of());
-        WebSearchController controller = new WebSearchController(webRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.searchVisitIds(model, "abc.be");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(webRepository).searchVisitIds("abc.be");
-        verifyNoMoreInteractions(webRepository);
-        assertThat(model.containsAttribute("idList")).isFalse();
-    }
-
-    @Test
-    public void searchVisitIds_Found() {
-        webRepository = mock(WebRepository.class);
-        logger.info("webRepository = {}", webRepository);
-        List<String> visitIds = List.of("id1", "id2", "id3");
-        when(webRepository.searchVisitIds("abc.be")).thenReturn(visitIds);
-        WebSearchController controller = new WebSearchController(webRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.searchVisitIds(model, "abc.be");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(webRepository).searchVisitIds("abc.be");
-        verifyNoMoreInteractions(webRepository);
-        assertThat(model.getAttribute("visitIds")).isEqualTo(visitIds);
-    }
-
-    @Test
-    public void findByVisitId_NotFound() {
-        webRepository = mock(WebRepository.class);
-        logger.info("webRepository = {}", webRepository);
-        when(webRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.empty());
-        WebSearchController controller = new WebSearchController(webRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.findByVisitId(model, "aakjkjkj-ojj");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(webRepository).findByVisitId("aakjkjkj-ojj");
-        verifyNoMoreInteractions(webRepository);
-        assertThat(model.containsAttribute("webCrawlResults")).isFalse();
+    public void getWebIds_findsIds() throws Exception {
+        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
+        // Might need to be modified in the future to contain more data than just Id's
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-web"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("v101")))
+                .andExpect(content().string(containsString("v102")))
+                .andExpect(content().string(containsString("v103")))
+        ;
 
     }
 
     @Test
-    public void findByVisitId_IsFound() {
-        webRepository = mock(WebRepository.class);
-        logger.info("webRepository = {}", webRepository);
-        WebCrawlResult crawlResult = objectMother.webCrawlResult1();
-        when(webRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.of(crawlResult));
-        WebSearchController controller = new WebSearchController(webRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.findByVisitId(model, "aakjkjkj-ojj");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(webRepository).findByVisitId("aakjkjkj-ojj");
-        verifyNoMoreInteractions(webRepository);
-        assertThat(model.getAttribute("webCrawlResults")).isEqualTo(List.of(crawlResult));
+    public void getWebIds_doesNotfindIds() throws Exception {
+        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-web"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for web of this domain")))
+        ;
+
+    }
+
+    @Test
+    public void getWeb_findsVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(webCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists( "webCrawlResult"))
+                .andExpect(content().string(containsString("dnsbelgium.be")));
+    }
+
+    @Test
+    public void getWeb_doesNotfindVisitDetails() throws Exception {
+        when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(content().string(containsString("No web crawl results found for visitId")));
+    }
+
+
+    @Test
+    public void getWebLatest_findsLatestVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists( "webCrawlResult"))
+                .andExpect(content().string(containsString("dnsbelgium.be")));
     }
 
 }

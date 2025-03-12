@@ -29,7 +29,7 @@ public class TlsSearchController {
    * @return the view
    */
   @GetMapping("/search/tls/latest")
-  public String getTlsLatest(Model model, @RequestParam(name = "domainName") String domainName) {
+  public String findLatestResult(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.debug("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
     Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
@@ -43,7 +43,7 @@ public class TlsSearchController {
   }
 
   @GetMapping("/search/tls/ids")
-  public String getTlsIds(Model model, @RequestParam(name = "domainName") String domainName) {
+  public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
     List<String> visitIds = tlsRepository.searchVisitIds(domainName);
@@ -53,7 +53,7 @@ public class TlsSearchController {
   }
 
   @GetMapping("/search/tls/id")
-  public String getTls(Model model, @RequestParam(name = "visitId") String visitId) {
+  public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
     logger.info("visitId= {}", visitId);
     model.addAttribute("visitId", visitId);
     Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(visitId);

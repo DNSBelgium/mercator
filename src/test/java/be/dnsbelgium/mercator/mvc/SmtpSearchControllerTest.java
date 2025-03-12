@@ -1,116 +1,96 @@
 package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
-import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.test.ObjectMother;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ui.ConcurrentModel;
-import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class SmtpSearchControllerTest {
+@SpringBootTest
+@AutoConfigureMockMvc
+@ComponentScan(basePackages = "be.dnsbelgium.mercator.mvc")
+public class SmtpSearchControllerTest {
 
-    SmtpRepository smtpRepository;
-    private static final Logger logger = LoggerFactory.getLogger(SmtpSearchControllerTest.class);
+    @MockitoBean
+    private SmtpRepository smtpRepository;
+
     private final ObjectMother objectMother = new ObjectMother();
 
+    @Autowired
+    private MockMvc mockMvc;
+
     @Test
-    public void findLatestCrawlResult_NotFound() {
-        smtpRepository = mock(SmtpRepository.class);
-        logger.info("smtpRepository = {}", smtpRepository);
-        when(smtpRepository.findLatestResult("abc.be")).thenReturn(Optional.empty());
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getLatestSmtp(model, "abc.be");
-        verify(smtpRepository).findLatestResult("abc.be");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.containsAttribute("smtpConversationResults")).isFalse();
+    public void searchVisitIds_found() throws Exception {
+        when(smtpRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-smtp"))
+                .andExpect(model().attributeExists( "visitIds"))
+                .andExpect(content().string(containsString("v101")))
+                .andExpect(content().string(containsString("v102")))
+                .andExpect(content().string(containsString("v103")))
+        ;
+
     }
 
     @Test
-    public void findLatestCrawlResult_IsFound() {
-        smtpRepository = mock(SmtpRepository.class);
+    public void searchVisitIds_notFound() throws Exception {
+        when(smtpRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/ids")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("search-results-smtp"))
+                .andExpect(model().attributeExists("visitIds"))
+                .andExpect(content().string(containsString("No visitIds found for smtp of this domain")))
+        ;
+    }
+
+    @Test
+    public void getSmtp_findsVisitDetails() throws Exception {
+        SmtpConversation smtpConversation1 = objectMother.smtpConversation1();
+        when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(smtpConversation1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(view().name("visit-details-smtp"))
+                .andExpect(model().attributeExists( "smtpConversationResult"))
+                .andExpect(content().string(containsString("software host2")));
+    }
+
+    @Test
+    public void getSmtp_doesNotfindVisitDetails() throws Exception {
+        when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/id")
+                        .param("visitId", "idjsfijoze-er-ze"))
+                .andExpect(content().string(containsString("No SMTP conversations results found for visitId")));
+    }
+
+
+    @Test
+    public void getSmtpLatest_findsLatestVisitDetails() throws Exception {
         SmtpConversation smtpConversation = objectMother.smtpConversation1();
-        when(smtpRepository.findLatestResult("abc.be")).thenReturn(Optional.of(smtpConversation));
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getLatestSmtp(model, "abc.be");
-        verify(smtpRepository).findLatestResult("abc.be");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.getAttribute("smtpConversationResults")).isEqualTo(List.of(smtpConversation));
+        when(smtpRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(smtpConversation));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-smtp"))
+                .andExpect(model().attributeExists( "smtpConversationResult"))
+                .andExpect(content().string(containsString("software host2")));
     }
-
-    @Test
-    public void getIdsAreNotFound() {
-        smtpRepository = mock(SmtpRepository.class);
-        logger.info("smtpRepository = {}", smtpRepository);
-        List<String> emptyIdsList = List.of();
-        when(smtpRepository.searchVisitIds("abc.be")).thenReturn(emptyIdsList);
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getSmtpIds(model, "abc.be");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(smtpRepository).searchVisitIds("abc.be");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.containsAttribute("idList")).isFalse();
-    }
-
-    @Test
-    public void getIdsAreFound() {
-        smtpRepository = mock(SmtpRepository.class);
-        logger.info("smtpRepository = {}", smtpRepository);
-        List<String> idsList = List.of("id1", "id2", "id3");
-        when(smtpRepository.searchVisitIds("abc.be")).thenReturn(idsList);
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getSmtpIds(model, "abc.be");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(smtpRepository).searchVisitIds("abc.be");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.getAttribute("visitIds")).isEqualTo(idsList);
-    }
-
-    @Test
-    public void getByIdIsNotFound() {
-        smtpRepository = mock(SmtpRepository.class);
-        logger.info("smtpRepository = {}", smtpRepository);
-        when(smtpRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.empty());
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getSmtp(model, "aakjkjkj-ojj");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(smtpRepository).findByVisitId("aakjkjkj-ojj");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.containsAttribute("smtpConversationResults")).isFalse();
-
-    }
-
-    @Test
-    public void getByIdIsFound() {
-        smtpRepository = mock(SmtpRepository.class);
-        logger.info("smtpRepository = {}", smtpRepository);
-        SmtpConversation smtpConversation = objectMother.smtpConversation1();
-        when(smtpRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.of(smtpConversation));
-        SmtpSearchController controller = new SmtpSearchController(smtpRepository);
-        Model model = new ConcurrentModel();
-        String viewName = controller.getSmtp(model, "aakjkjkj-ojj");
-        logger.info("viewName = {}", viewName);
-        logger.info("model = {}", model);
-        verify(smtpRepository).findByVisitId("aakjkjkj-ojj");
-        verifyNoMoreInteractions(smtpRepository);
-        assertThat(model.getAttribute("smtpConversationResults")).isEqualTo(List.of(smtpConversation));
-
-    }
-
 
 }

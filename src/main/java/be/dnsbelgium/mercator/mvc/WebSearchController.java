@@ -25,9 +25,8 @@ public class WebSearchController {
     @GetMapping("/search/web/latest")
     public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
         Optional<WebCrawlResult> webCrawlResult = webRepository.findLatestResult(domainName);
-        // TODO: do not pass a list
         if (webCrawlResult.isPresent()) {
-            model.addAttribute("webCrawlResults", List.of(webCrawlResult.get()));
+            model.addAttribute("webCrawlResult", webCrawlResult.get());
         }
         return "visit-details-web";
     }
@@ -47,8 +46,7 @@ public class WebSearchController {
         Optional<WebCrawlResult> webCrawlResult = webRepository.findByVisitId(visitId);
         logger.info(webCrawlResult.toString());
         if (webCrawlResult.isPresent()) {
-            // TODO: pass one WebCrawlResult instead of list
-            model.addAttribute("webCrawlResults", List.of(webCrawlResult.get()));
+            model.addAttribute("webCrawlResult", webCrawlResult.get());
         }
         return "visit-details-web";
     }

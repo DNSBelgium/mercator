@@ -26,17 +26,16 @@ public class SmtpSearchController {
   }
 
   @GetMapping("/search/smtp/latest")
-  public String getLatestSmtp(Model model, @RequestParam("domainName") String domainName) {
+  public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
     Optional<SmtpConversation> smtpConversationResult = searchRepository.findLatestResult(domainName);
-    // todo: pass a single smtpConversationResult to the Thymeleaf template
     if (smtpConversationResult.isPresent()) {
-      model.addAttribute("smtpConversationResults", List.of(smtpConversationResult.get()));
+      model.addAttribute("smtpConversationResult", smtpConversationResult.get());
     }
     return "visit-details-smtp";
   }
 
   @GetMapping("/search/smtp/ids")
-  public String getSmtpIds(Model model, @RequestParam(name = "domainName") String domainName) {
+  public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("search for [{}]", domainName);
     List<String> visitIds = searchRepository.searchVisitIds(domainName);
     logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
@@ -45,12 +44,11 @@ public class SmtpSearchController {
   }
 
   @GetMapping("/search/smtp/id")
-  public String getSmtp(Model model, @RequestParam(name = "visitId") String visitId) {
+  public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
     logger.info("/visits/smtp/{}", visitId);
     Optional<SmtpConversation> smtpConversation = searchRepository.findByVisitId(visitId);
     if (smtpConversation.isPresent()) {
-      // TODO: do not pass a list
-      model.addAttribute("smtpConversationResults", List.of(smtpConversation.get()));
+      model.addAttribute("smtpConversationResult", smtpConversation.get());
     }
     return "visit-details-smtp";
   }
