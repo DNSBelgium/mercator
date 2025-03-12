@@ -33,35 +33,10 @@
 ## To be decided
 * either use @Scheduled every x minutes (Java process keeps running) 
 * or define a K8S cronjob to start the Batch jobs (Java process stops when no more files to process)
+* or support both
+  * spring profile : batch => no webgui and stop when done
+  * spring profile : web => webgui and @scheduled: to be checked how does job work when no CSV is found 
 
-## JSON to parquet
-
-Suppose the batch jobs writes WebCrawlResult to WebCrawlResult.json
-Do these steps to create parquet files:
-
-create table WebCrawlResult as select * from 'WebCrawlResult.json';
-create table pageVisits as select unnest(pageVisits) as s from WebCrawlResult;
-copy (select s.* from pageVisits) to 'pageVisits.parquet';
-
-create table htmlFeatures as select unnest(htmlFeatures) as s from WebCrawlResult;
-copy (select s.* from htmlFeatures) to 'htmlFeatures.parquet';
-
-copy (
-  select * 
-        exclude(pageVisits, htmlFeatures) 
-        replace(
-            to_timestamp(crawlStarted)::timestamp as crawlStarted, 
-            to_timestamp(crawlFinished) as crawlFinished 
-        ) 
-  from WebCrawlResult
-) to web_site_visit.parquet;
-
-# Benefits
-
-* All the code to create (duckdb) table can be removed.
-* All the code to insert rows into these tables can be removed (serialization will be done by Jackson)
-* All modules (at least WEB, SMTP, TLS) can be run in parallel and independed from each other
-* No more commit per visit => should lead to higher throughput
 
 # Potential issues
 * Changing the layout of classes like WebCrawlResult will result in (unintentional) differences in output structure  

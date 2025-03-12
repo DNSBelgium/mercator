@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -54,7 +53,7 @@ class WebRepositoryTest {
 
     repository.toParquet(jsonFile.toPath());
 
-    List<WebCrawlResult> webCrawlResults = repository.find("dnsbelgium.be");
+    List<WebCrawlResult> webCrawlResults = repository.findByDomainName("dnsbelgium.be");
     logger.info("webCrawlResults found: {}", webCrawlResults.size());
     logger.info("webCrawlResults = {}", webCrawlResults);
     for (WebCrawlResult webCrawlResult : webCrawlResults) {

@@ -28,6 +28,37 @@ public class WebRepository {
   private final Path featuresDestination;
   private final ObjectMapper objectMapper;
 
+  private final static String QUERY = """
+      with
+          crawl_result as (select * exclude (year, month) from '%s/**/*.parquet'),
+          html_feature as (select * exclude (year, month) from '%s/**/*.parquet'),
+          page_visit   as (select * exclude (year, month) from '%s/**/*.parquet'),
+          features_per_visit as (
+             select visit_id,
+                    list(html_feature order by crawl_timestamp) as html_features
+             from html_feature
+             group by visit_id
+          ),
+          pages_per_visit as (
+             select visit_id,
+                    list(page_visit order by crawl_started) as page_visits
+             from page_visit
+             group by visit_id
+          ),
+          combined as (
+              select
+                 crawl_result.*,
+                 coalesce(features_per_visit.html_features, []) as html_features,
+                 coalesce(pages_per_visit.page_visits, []) as page_visits
+              from crawl_result
+              left join features_per_visit on crawl_result.visit_id = features_per_visit.visit_id
+              left join pages_per_visit    on crawl_result.visit_id = pages_per_visit.visit_id
+              %s
+          )
+      select row_to_json(combined)
+      from combined
+      order by visit_id
+    """;
 
   public WebRepository(
           ObjectMapper objectMapper,
@@ -43,7 +74,7 @@ public class WebRepository {
   }
 
   public List<String> searchVisitIds(String domainName) {
-    // TODO
+    // TODO: add maxResults parameter
     logger.info("Searching visitIds for domainName={}", domainName);
     return List.of();
   }
@@ -79,7 +110,7 @@ public class WebRepository {
              to_timestamp(crawl_started) as ts,
              extract('year' from ts) as year,
              extract('month' from ts) as month,
-      from '%s'
+      from read_json('%s')
       """.formatted(tableName, jsonFile);
     logger.info("createTable = \n{}", createTable);
     jdbcClient.sql(createTable).update();
@@ -118,40 +149,11 @@ public class WebRepository {
   }
 
   @SneakyThrows
-  public List<WebCrawlResult> find(String domainName) {
-    String query = """
-      with
-          crawl_result as (select * exclude (year, month) from '%s/**/*.parquet'),
-          html_feature as (select * exclude (year, month) from '%s/**/*.parquet'),
-          page_visit   as (select * exclude (year, month) from '%s/**/*.parquet'),
-          features_per_visit as (
-             select visit_id,
-                    list(html_feature order by crawl_timestamp) as html_features
-             from html_feature
-             group by visit_id
-          ),
-          pages_per_visit as (
-             select visit_id,
-                    list(page_visit order by crawl_started) as page_visits
-             from page_visit
-             group by visit_id
-          ),
-          combined as (
-              select
-                 crawl_result.*,
-                 coalesce(features_per_visit.html_features, []) as html_features,
-                 coalesce(pages_per_visit.page_visits, []) as page_visits
-              from crawl_result
-              left join features_per_visit on crawl_result.visit_id = features_per_visit.visit_id
-              left join pages_per_visit    on crawl_result.visit_id = pages_per_visit.visit_id
-              where crawl_result.domain_name = ?
-          )
-      select row_to_json(combined)
-      from combined
-      order by visit_id
-    """.formatted(webCrawlDestination, featuresDestination, pageVisitDestination);
+  public List<WebCrawlResult> findByDomainName(String domainName) {
+    // TODO: add limit parameter and order by crawl_timestamp desc
+    String query = QUERY.formatted(
+            webCrawlDestination, featuresDestination, pageVisitDestination, "where crawl_result.domain_name = ?");
     logger.info("query = {}", query);
-
     List<String> jsonList = jdbcClient.sql(query)
             .param(domainName)
             .query(String.class)
@@ -161,7 +163,6 @@ public class WebRepository {
       WebCrawlResult webCrawlResult = objectMapper.readValue(json, WebCrawlResult.class);
       found.add(webCrawlResult);
     }
-
     return found;
   }
 
