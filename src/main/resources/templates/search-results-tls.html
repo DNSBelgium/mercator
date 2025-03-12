@@ -12,33 +12,40 @@
 <main>
     <div layout:fragment="content">
         <h2 th:if="${visitIds == null or visitIds.isEmpty()}">
-            No visitIds found for tls of this domain
+            No TLS visits found for this domain name
         </h2>
-        <h1>Search results</h1>
-        <p>Found:</p>
-        <p>Select a visit ID, then click submit.</p>
-        <form id="searchForm" method="get" th:action="@{/search/tls/id}">
-            <table class="overflow-auto">
-                <thead>
-                <tr>
-                    <td>Visit Id</td>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="visit : ${visitIds}">
-                    <td>
-                        <label>
-                            <input type="radio" name="visitId" th:value="${visit}" th:checked="${selectedVisitId == visit}">
-                        </label>
-                        <label th:for="${visit}" th:text="${visit}"></label>
-                    </td>
-                    <td th:text="${domainName}"></td>
-                </tr>
-                </tbody>
-            </table>
 
-            <button type="submit">Submit</button>
-        </form>
+<!--        TODO Bram: We should not show a form (and h1 header) when no visitId's were found  -->
+<!--        TODO Bram: Why not turn every visitId into a link instead of creating a form ?-->
+<!--        TODO Bram: show the actual domain name in the message above, instead of 'this domain name' -->
+
+        <div th:if="${visitIds != null and not visitIds.isEmpty()}">
+
+            <h1>Search results</h1>
+            <p>Select a visit ID, then click submit.</p>
+            <form id="searchForm" method="get" th:action="@{/search/tls/id}">
+                <table class="overflow-auto">
+                    <thead>
+                    <tr>
+                        <td>Visit Id</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="visit : ${visitIds}">
+                        <td>
+                            <label>
+                                <input type="radio" name="visitId" th:value="${visit}" th:checked="${selectedVisitId == visit}">
+                            </label>
+                            <label th:for="${visit}" th:text="${visit}"></label>
+                        </td>
+                        <td th:text="${domainName}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <button type="submit">Submit</button>
+            </form>
+        </div>
     </div>
 </main>
 </body>

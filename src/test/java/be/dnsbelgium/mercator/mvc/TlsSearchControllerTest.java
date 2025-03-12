@@ -53,7 +53,7 @@ public class TlsSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-tls"))
                 .andExpect(model().attributeExists( "visitIds"))
-                .andExpect(content().string(containsString("No visitIds found for tls of this domain")))
+                .andExpect(content().string(containsString("No TLS visits found for this domain name")))
         ;
     }
 
@@ -74,9 +74,10 @@ public class TlsSearchControllerTest {
     public void findByVisitId_notFound() throws Exception {
         when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
-                .perform(MockMvcRequestBuilders.get("/search/tls/id")
-                        .param("visitId", "idjsfijoze-er-ze"))
-                .andExpect(content().string(containsString("No tls crawl results found for visitId")));
+                .perform(MockMvcRequestBuilders
+                        .get("/search/tls/id")
+                        .param("visitId", "idjsfijoze-er-ze")
+                ).andExpect(content().string(containsString("No TLS crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
     }
 
     @Test
@@ -85,7 +86,8 @@ public class TlsSearchControllerTest {
         when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/latest")
-                        .param("domainName", "dnsbelgium.be"))
+                        .param("domainName", "dnsbelgium.be")
+                        .param("fetchLatest", "true"))
                 .andExpect(view().name("visit-details-tls"))
                 .andExpect(model().attributeExists( "domainName"))
                 .andExpect(content().string(containsString("aakjkjkj-ojj")));

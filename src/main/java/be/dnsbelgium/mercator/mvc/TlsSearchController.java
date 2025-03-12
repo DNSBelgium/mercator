@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalIsPresent")
 @Controller
 public class TlsSearchController {
 
@@ -23,28 +24,44 @@ public class TlsSearchController {
     this.tlsRepository = tlsRepository;
   }
 
+  @GetMapping("/search/tls")
+  public String searchForm() {
+    return "search-tls";
+  }
+
   /**
    * show the most recent TLS crawl result for give domain name
    * @param domainName the domainName to search for
    * @return the view
    */
   @GetMapping("/search/tls/latest")
-  public String findLatestResult(Model model, @RequestParam(name = "domainName") String domainName) {
-    logger.debug("domainName = {}", domainName);
+  // TODO: discuss with Pieter and Bram: get or post ?
+  //@PostMapping("/search/tls/latest")
+  public String findLatestResult(Model model,
+                                 @RequestParam(name = "domainName") String domainName,
+                                 @RequestParam(name = "fetchLatest", defaultValue = "false") boolean fetchLatest) {
+    logger.debug("findLatestResult: domainName={}, fetchLatest={}", domainName, fetchLatest);
     model.addAttribute("domainName", domainName);
-    Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
-    if (crawlResult.isPresent()) {
-      model.addAttribute("tlsCrawlResults", List.of(crawlResult.get()));
-      logger.debug("We found {} for {}", crawlResult, domainName);
-    } else {
-      logger.debug("No TLS crawl result found for domainName = {}", domainName);
+
+    if (fetchLatest) {
+      Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
+      if (crawlResult.isPresent()) {
+        model.addAttribute("tlsCrawlResults", List.of(crawlResult.get()));
+        logger.debug("We found {} for {}", crawlResult, domainName);
+      } else {
+        logger.debug("No TLS crawl result found for domainName = {}", domainName);
+      }
+      return "visit-details-tls";
     }
-    return "visit-details-tls";
+    List<String> visitIds = tlsRepository.searchVisitIds(domainName);
+    model.addAttribute("visitIds", visitIds);
+    logger.debug("For {} we found {}", domainName, visitIds);
+    return "search-results-tls";
   }
 
   @GetMapping("/search/tls/ids")
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
-    logger.info("domainName = {}", domainName);
+    logger.info("searchVisitIds: domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
     List<String> visitIds = tlsRepository.searchVisitIds(domainName);
     model.addAttribute("visitIds", visitIds);
@@ -54,7 +71,7 @@ public class TlsSearchController {
 
   @GetMapping("/search/tls/id")
   public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
-    logger.info("visitId= {}", visitId);
+    logger.info("findByVisitId: visitId= {}", visitId);
     model.addAttribute("visitId", visitId);
     Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(visitId);
     logger.info(tlsCrawlResult.toString());
