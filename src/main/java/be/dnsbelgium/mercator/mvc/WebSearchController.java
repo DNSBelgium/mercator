@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalIsPresent")
 @Controller
 public class WebSearchController {
     private static final Logger logger = LoggerFactory.getLogger(WebSearchController.class);
@@ -22,8 +23,9 @@ public class WebSearchController {
     }
 
     @GetMapping("/search/web/latest")
-    public String getWebLatest(Model model, @RequestParam("domainName") String domainName) {
+    public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
         Optional<WebCrawlResult> webCrawlResult = webRepository.findLatestResult(domainName);
+        // TODO: do not pass a list
         if (webCrawlResult.isPresent()) {
             model.addAttribute("webCrawlResults", List.of(webCrawlResult.get()));
         }
@@ -31,20 +33,21 @@ public class WebSearchController {
     }
 
     @GetMapping("/search/web/ids")
-    public String getWebIds(Model model, @RequestParam(name = "domainName") String domainName) {
+    public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
         logger.info("search for [{}]", domainName);
-        List<String> idList = webRepository.searchVisitIds(domainName);
-        logger.info("our results: " + idList);
-        model.addAttribute("visitIds", idList);
+        List<String> visitIds = webRepository.searchVisitIds(domainName);
+        logger.info("visitIds found: {}", visitIds);
+        model.addAttribute("visitIds", visitIds);
         return "search-results-web";
     }
 
     @GetMapping("/search/web/id")
-    public String getWeb(Model model, @RequestParam(name = "visitId") String visitId) {
+    public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
         logger.info("/visits/web/{}", visitId);
         Optional<WebCrawlResult> webCrawlResult = webRepository.findByVisitId(visitId);
         logger.info(webCrawlResult.toString());
         if (webCrawlResult.isPresent()) {
+            // TODO: pass one WebCrawlResult instead of list
             model.addAttribute("webCrawlResults", List.of(webCrawlResult.get()));
         }
         return "visit-details-web";

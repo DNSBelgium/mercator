@@ -33,7 +33,6 @@ public class SearchWebResultTest {
     @Autowired
     private MockMvc mockMvc;
 
-    // This tests the html that is returned from the endpoint
     @Test
     public void getWebIds_findsIds() throws Exception {
         when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
@@ -44,6 +43,8 @@ public class SearchWebResultTest {
                 .andExpect(view().name("search-results-web"))
                 .andExpect(model().attributeExists( "visitIds"))
                 .andExpect(content().string(containsString("v101")))
+                .andExpect(content().string(containsString("v102")))
+                .andExpect(content().string(containsString("v103")))
         ;
 
     }
@@ -51,7 +52,6 @@ public class SearchWebResultTest {
     @Test
     public void getWebIds_doesNotfindIds() throws Exception {
         when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
-        // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/ids")
                         .param("domainName", "dnsbelgium.be"))
@@ -88,7 +88,7 @@ public class SearchWebResultTest {
     @Test
     public void getWebLatest_findsLatestVisitDetails() throws Exception {
         WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
-        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(webCrawlResult1));
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/latest")
                         .param("domainName", "dnsbelgium.be"))

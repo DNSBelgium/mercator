@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalIsPresent")
 @Controller
 public class SmtpSearchController {
 
@@ -24,23 +25,10 @@ public class SmtpSearchController {
     this.searchRepository = searchRepository;
   }
 
-
-
-
-  // TODO: try to use a Boolean for fetch_latest instead of a String representing a boolean
-  // TODO: or maybe better: consider using separate methods for findLatest and findAll
-  // TODO: are the defaultValue's needed ?
-  // TODO: searchRepository.searchlatestTlsResult should return an Optional<TlsCrawlResult> instead of a (JSON) String
-  // TODO: inject ObjectMapper from application context instead of creating a new one very time (and should move to Repository)
-  // TODO: same things for searchSmtp and searchweb
-  // TODO: make sure the test methods do not depend on state that is not in git (like tls.parquet)
-  // * use a mocked Repository when testing the SearchController
-  // * create (and remove) the needed parquet files IN the test for the repository (or in a BeforeEach method)
-
-
   @GetMapping("/search/smtp/latest")
   public String getLatestSmtp(Model model, @RequestParam("domainName") String domainName) {
     Optional<SmtpConversation> smtpConversationResult = searchRepository.findLatestResult(domainName);
+    // todo: pass a single smtpConversationResult to the Thymeleaf template
     if (smtpConversationResult.isPresent()) {
       model.addAttribute("smtpConversationResults", List.of(smtpConversationResult.get()));
     }
@@ -50,9 +38,9 @@ public class SmtpSearchController {
   @GetMapping("/search/smtp/ids")
   public String getSmtpIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("search for [{}]", domainName);
-    List<String> idLIst = searchRepository.searchVisitIds(domainName);
-    logger.info("our results: " + idLIst);
-    model.addAttribute("visitIds", idLIst);
+    List<String> visitIds = searchRepository.searchVisitIds(domainName);
+    logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
+    model.addAttribute("visitIds", visitIds);
     return "search-results-smtp";
   }
 
@@ -61,10 +49,9 @@ public class SmtpSearchController {
     logger.info("/visits/smtp/{}", visitId);
     Optional<SmtpConversation> smtpConversation = searchRepository.findByVisitId(visitId);
     if (smtpConversation.isPresent()) {
+      // TODO: do not pass a list
       model.addAttribute("smtpConversationResults", List.of(smtpConversation.get()));
-
     }
-      logger.info("tlsCrawlResult = {}", smtpConversation);
     return "visit-details-smtp";
   }
 }

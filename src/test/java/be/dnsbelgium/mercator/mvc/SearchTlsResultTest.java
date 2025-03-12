@@ -3,10 +3,7 @@ package be.dnsbelgium.mercator.mvc;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +15,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.List;
 import java.util.Optional;
 
-import static org.slf4j.LoggerFactory.getLogger;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,17 +27,14 @@ public class SearchTlsResultTest {
     @MockitoBean
     private TlsRepository tlsRepository;
 
-    private final Logger logger = getLogger(SearchTlsResultTest.class);
-
     private final ObjectMother objectMother = new ObjectMother();
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void getTlsIds_findsIds() throws Exception {
+    public void searchVisitIds_found() throws Exception {
         when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
-        // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/ids")
                         .param("domainName", "dnsbelgium.be"))
@@ -53,10 +46,8 @@ public class SearchTlsResultTest {
     }
 
     @Test
-    @Disabled // todo Bram: check why this test fails
-    public void getTlsIds_doesNotfindIds() throws Exception {
+    public void searchVisitIds_notFound() throws Exception {
         when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
-        // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/ids")
                         .param("domainName", "dnsbelgium.be"))
@@ -64,12 +55,10 @@ public class SearchTlsResultTest {
                 .andExpect(model().attributeExists( "visitIds"))
                 .andExpect(content().string(containsString("No visitIds found for tls of this domain")))
         ;
-
     }
 
     @Test
-    public void getTls_FindsVisitDetails() throws Exception {
-        // this test assumes that the correct tlsCrawlResult object looks like the one in tlsCrawlresult1
+    public void findByVisitId_found() throws Exception {
         TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
         when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
         this.mockMvc
@@ -82,7 +71,7 @@ public class SearchTlsResultTest {
     }
 
     @Test
-    public void gettls_doesNotfindVisitDetails() throws Exception {
+    public void findByVisitId_notFound() throws Exception {
         when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/id")
@@ -91,8 +80,7 @@ public class SearchTlsResultTest {
     }
 
     @Test
-    public void getTlsLatest_FindsLatestVisitDetails() throws Exception {
-        // this test assumes that the correct tlsCrawlResult object looks like the one in tlsCrawlresult1
+    public void findLatestResult_found() throws Exception {
         TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
         when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
         this.mockMvc

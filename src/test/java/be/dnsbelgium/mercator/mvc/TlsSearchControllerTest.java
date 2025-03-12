@@ -15,6 +15,10 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
+// TODO BRAM: this test can be removed
+// since evrything should already be tested by SearchTlsResultTest
+
+
 class TlsSearchControllerTest {
 
   TlsRepository tlsRepository;
@@ -29,6 +33,7 @@ class TlsSearchControllerTest {
     TlsSearchController controller = new TlsSearchController(tlsRepository);
     Model model = new ConcurrentModel();
     String viewName = controller.getTlsLatest(model, "abc.be");
+    assertThat(viewName).isEqualTo("visit-details-tls");
     verify(tlsRepository).findLatestResult("abc.be");
     verifyNoMoreInteractions(tlsRepository);
     assertThat(model.containsAttribute("tlsCrawlResults")).isFalse();
@@ -42,6 +47,7 @@ class TlsSearchControllerTest {
     TlsSearchController controller = new TlsSearchController(tlsRepository);
     Model model = new ConcurrentModel();
     String viewName = controller.getTlsLatest(model, "abc.be");
+    assertThat(viewName).isEqualTo("visit-details-tls");
     verify(tlsRepository).findLatestResult("abc.be");
     verifyNoMoreInteractions(tlsRepository);
     assertThat(model.getAttribute("tlsCrawlResults")).isEqualTo(List.of(crawlResult));
@@ -83,7 +89,6 @@ class TlsSearchControllerTest {
   public void getByIdIsNotFound() {
     tlsRepository = mock(TlsRepository.class);
     logger.info("tlsRepository = {}", tlsRepository);
-    TlsCrawlResult crawlResult = objectMother.tlsCrawlResult1();
     when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.empty());
     TlsSearchController controller = new TlsSearchController(tlsRepository);
     Model model = new ConcurrentModel();

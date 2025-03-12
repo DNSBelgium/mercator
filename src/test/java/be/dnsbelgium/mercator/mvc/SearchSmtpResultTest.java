@@ -3,7 +3,6 @@ package be.dnsbelgium.mercator.mvc;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.test.ObjectMother;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -34,23 +33,23 @@ public class SearchSmtpResultTest {
     private MockMvc mockMvc;
 
     @Test
-    public void getSmtpIds_findsIds() throws Exception {
+    public void searchVisitIds_found() throws Exception {
         when(smtpRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
-        // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/smtp/ids")
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-smtp"))
                 .andExpect(model().attributeExists( "visitIds"))
                 .andExpect(content().string(containsString("v101")))
+                .andExpect(content().string(containsString("v102")))
+                .andExpect(content().string(containsString("v103")))
         ;
 
     }
 
     @Test
-    public void getSmtpIds_doesNotfindIds() throws Exception {
+    public void searchVisitIds_notFound() throws Exception {
         when(smtpRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
-        // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/smtp/ids")
                         .param("domainName", "dnsbelgium.be"))

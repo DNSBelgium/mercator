@@ -30,16 +30,14 @@ public class TlsSearchController {
    */
   @GetMapping("/search/tls/latest")
   public String getTlsLatest(Model model, @RequestParam(name = "domainName") String domainName) {
-    logger.info("domainName = {}", domainName);
+    logger.debug("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
     Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
     if (crawlResult.isPresent()) {
-      // TODO: maybe we should just render ONE crawlResult in the view??
-      // In other words the view should expect ONE TlsCrawlResult instead of a list
       model.addAttribute("tlsCrawlResults", List.of(crawlResult.get()));
       logger.debug("We found {} for {}", crawlResult, domainName);
     } else {
-      logger.debug("No crawl result found for domainName = {}", domainName);
+      logger.debug("No TLS crawl result found for domainName = {}", domainName);
     }
     return "visit-details-tls";
   }
@@ -48,9 +46,9 @@ public class TlsSearchController {
   public String getTlsIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
-    List<String> idList = tlsRepository.searchVisitIds(domainName);
-    model.addAttribute("visitIds", idList);
-    logger.debug("We found {} for {}", idList, domainName);
+    List<String> visitIds = tlsRepository.searchVisitIds(domainName);
+    model.addAttribute("visitIds", visitIds);
+    logger.debug("For {} we found {}", domainName, visitIds);
     return "search-results-tls";
   }
 
@@ -60,7 +58,7 @@ public class TlsSearchController {
     model.addAttribute("visitId", visitId);
     Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(visitId);
     logger.info(tlsCrawlResult.toString());
-    if(tlsCrawlResult.isPresent()) {
+    if (tlsCrawlResult.isPresent()) {
       model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult.get()));
     }
     return "visit-details-tls";
