@@ -60,7 +60,7 @@ public class SmtpSearchControllerTest {
     }
 
     @Test
-    public void getSmtp_findsVisitDetails() throws Exception {
+    public void findByVisitId_findsVisitDetails() throws Exception {
         SmtpConversation smtpConversation1 = objectMother.smtpConversation1();
         when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(smtpConversation1));
         this.mockMvc
@@ -72,17 +72,17 @@ public class SmtpSearchControllerTest {
     }
 
     @Test
-    public void getSmtp_doesNotfindVisitDetails() throws Exception {
+    public void findByVisitId_doesNotfindVisitDetails() throws Exception {
         when(smtpRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/smtp/id")
                         .param("visitId", "idjsfijoze-er-ze"))
-                .andExpect(content().string(containsString("No SMTP conversations results found for visitId")));
+                .andExpect(content().string(containsString("No SMTP conversation result found for visitId")));
     }
 
 
     @Test
-    public void getSmtpLatest_findsLatestVisitDetails() throws Exception {
+    public void findLatestResult_findsLatestVisitDetails() throws Exception {
         SmtpConversation smtpConversation = objectMother.smtpConversation1();
         when(smtpRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(smtpConversation));
         this.mockMvc

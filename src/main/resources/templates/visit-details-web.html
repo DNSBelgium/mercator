@@ -11,10 +11,10 @@
 <body >
 
 <main class="container" layout:fragment="content">
-    <div class="container-fluid">
-        <h2 th:if="${webCrawlResult == null}">
-            No web crawl results found for visitId
-        </h2>
+    <h2 th:if="${webCrawlResult == null}">
+        No web crawl result found for visitId
+    </h2>
+    <div class="container-fluid" th:if="${webCrawlResult != null}">
         <header>
             <h4 th:text="${webCrawlResult.domainName}"></h4>
         </header>

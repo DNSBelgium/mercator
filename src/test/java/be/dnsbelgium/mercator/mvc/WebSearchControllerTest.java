@@ -50,7 +50,7 @@ public class WebSearchControllerTest {
     }
 
     @Test
-    public void getWebIds_doesNotfindIds() throws Exception {
+    public void searchVisitIds_doesNotfindIds() throws Exception {
         when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/ids")
@@ -63,7 +63,7 @@ public class WebSearchControllerTest {
     }
 
     @Test
-    public void getWeb_findsVisitDetails() throws Exception {
+    public void findByVisitId_findsVisitDetails() throws Exception {
         WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.ofNullable(webCrawlResult1));
         this.mockMvc
@@ -75,18 +75,18 @@ public class WebSearchControllerTest {
     }
 
     @Test
-    public void getWeb_doesNotfindVisitDetails() throws Exception {
+    public void findByVisitId_doesNotfindVisitDetails() throws Exception {
         when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/id")
                         .param("visitId", "idjsfijoze-er-ze"))
                 .andExpect(view().name("visit-details-web"))
-                .andExpect(content().string(containsString("No web crawl results found for visitId")));
+                .andExpect(content().string(containsString("No web crawl result found for visitId")));
     }
 
 
     @Test
-    public void getWebLatest_findsLatestVisitDetails() throws Exception {
+    public void findLatestResult_findsLatestVisitDetails() throws Exception {
         WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
         when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
         this.mockMvc
