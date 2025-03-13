@@ -3,8 +3,8 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.testcontainers.containers.GenericContainer;
 
@@ -27,6 +27,7 @@ public class NioSmtpConversationIntegrationTest {
 
   @SneakyThrows
   @Test
+  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
   public void talk() {
     GenericContainer<?> mailpit = getMailPitContainer(true);
     mailpit.start();
@@ -84,7 +85,8 @@ public class NioSmtpConversationIntegrationTest {
   }
 
   @Test
-  @Disabled // comment out this line to test an SMTP conversation with a server on the internet
+  // set environment variable 'smtp-outbound-test' to 'true' to test an SMTP conversation with a server on the internet
+  @EnabledIfEnvironmentVariable(named="smtp-outbound-test", matches = "true")
   public void outbound_test() throws KeyManagementException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
     NioSmtpConversationFactory factory = new NioSmtpConversationFactory(new SimpleMeterRegistry(), SmtpConfig.testConfig());
     // this IP of "cavin.kuleuven.be" takes around 5.900 before accepting a connection
