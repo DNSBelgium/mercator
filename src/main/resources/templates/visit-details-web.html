@@ -46,6 +46,10 @@
                 <td th:text="${webCrawlResult.vatValues}"></td>
             </tr>
             <tr>
+                <th>Detected Technologies used in the site</th>
+                <td th:text="${webCrawlResult.detectedTechnologies}"></td>
+            </tr>
+            <tr>
                 <th>Number of visited URLs</th>
                 <td th:text="${webCrawlResult.visitedUrls.size()}"></td>
             </tr>

@@ -71,7 +71,8 @@ public class WebSearchControllerTest {
                         .param("visitId", "idjsfijoze-er-ze"))
                 .andExpect(view().name("visit-details-web"))
                 .andExpect(model().attributeExists( "webCrawlResult"))
-                .andExpect(content().string(containsString("dnsbelgium.be")));
+                .andExpect(content().string(containsString("dnsbelgium.be")))
+                .andExpect(content().string(containsString("Google Tag Manager")));
     }
 
     @Test
@@ -94,7 +95,8 @@ public class WebSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("visit-details-web"))
                 .andExpect(model().attributeExists( "webCrawlResult"))
-                .andExpect(content().string(containsString("dnsbelgium.be")));
+                .andExpect(content().string(containsString("dnsbelgium.be")))
+                .andExpect(content().string(containsString("Google Tag Manager")));
     }
 
 }

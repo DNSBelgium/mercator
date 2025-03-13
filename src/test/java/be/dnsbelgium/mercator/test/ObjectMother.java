@@ -137,6 +137,7 @@ public class ObjectMother {
             .startUrl("https://www.dnsbelgium.be/")
             .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
             .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
+            .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
             .build();
 
   }
@@ -151,6 +152,7 @@ public class ObjectMother {
             .startUrl("https://www.no-website.be/")
             .htmlFeatures(List.of())
             .pageVisits(List.of(pageVisit4()))
+            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
             .build();
   }
 
