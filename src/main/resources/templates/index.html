@@ -8,16 +8,19 @@
     <script>
         function updateFormAction() {
             const form = document.getElementById('searchForm');
-            const selectedOption = document.querySelector('input[name="option"]:checked').value;
             const fetchLatest = document.getElementById('fetchLatest');
+            const moduleType = document.getElementById('moduleType').value
 
             if (fetchLatest.checked) {
-                form.action = '/search/' + selectedOption + '/latest';
+                form.action = '/search/' + moduleType + '/latest';
             } else {
-                form.action = '/search/' + selectedOption + '/ids';
+                form.action = '/search/' + moduleType + '/ids';
             }
         }
-
+        function setVariable(value) {
+            document.getElementById("moduleType").value = value;
+            console.log(document.getElementById("moduleType"))
+        }
     </script>
 </head>
 
@@ -27,16 +30,6 @@
 <!--    <h2>Welcome to Mercator</h2>-->
 
     <h2>Search for crawl results</h2>
-
-    <a role="button" th:href="@{/search/tls}">TLS</a>
-    <a role="button" th:href="@{/search/dns}">DNS</a>
-    <a role="button" th:href="@{/search/smtp}">SMTP</a>
-    <a role="button" th:href="@{/search/web}">Web</a>
-
-    <p>
-        <small>PS: Only the TLS button works for now</small>
-    </p>
-
 
 <!--    <p>-->
 <!--        Search <a href="@{/search/dns}">DNS crawls</a>-->
@@ -80,23 +73,16 @@
     <p></p>
 
     <h2>Input domain name you would like to search.</h2>
+    <input type="hidden" id="moduleType" name="moduleType" value="defaultValue">
     <form id="searchForm" method="get" th:action="@{/search}" onsubmit="updateFormAction()">
         <div>
             <label for="textinput">Domain Name:</label>
             <input id="textinput" name="domainName" th:value="${domainName}" type="text">
         </div>
-        <label>
-            <input type="radio" name="option" value="web" th:checked="${option == 'web'}">
-            Web
-        </label>
-        <label>
-            <input type="radio" name="option" value="tls" th:checked="${option == 'tls'}">
-            Tls
-        </label>
-        <label>
-            <input type="radio" name="option" value="smtp" th:checked="${option == 'smtp'}">
-            Smtp
-        </label>
+        <button type="button" onclick="setVariable('tls')">TLS</button>
+        <button type="button" onclick="setVariable('smtp')">SMTP</button>
+        <button type="button" onclick="setVariable('web')">WEB</button>
+        <button type="button" onclick="setVariable('dns')">DNS</button>
         <label>
             <input type="checkbox" id="fetchLatest" th:checked="${fetch_latest}">
             Fetch Latest
@@ -105,8 +91,6 @@
     </form>
 
 </div>
-
-
 
 <th:block layout:fragment="page-scripts">
     <!-- Add additional scripts there that are only needed for this page (Application wide scripts should be added in layout/layout.html) -->

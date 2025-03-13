@@ -36,12 +36,14 @@ public class WebSearchController {
         logger.info("search for [{}]", domainName);
         List<String> visitIds = webRepository.searchVisitIds(domainName);
         logger.info("visitIds found: {}", visitIds);
+        model.addAttribute("domainName", domainName);
         model.addAttribute("visitIds", visitIds);
         return "search-results-web";
     }
 
     @GetMapping("/search/web/id")
     public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
+        model.addAttribute("visitId", visitId);
         logger.info("/visits/web/{}", visitId);
         Optional<WebCrawlResult> webCrawlResult = webRepository.findByVisitId(visitId);
         logger.info(webCrawlResult.toString());

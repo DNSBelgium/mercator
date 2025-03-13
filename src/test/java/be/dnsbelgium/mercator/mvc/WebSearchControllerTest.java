@@ -57,7 +57,7 @@ public class WebSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-web"))
                 .andExpect(model().attributeExists( "visitIds"))
-                .andExpect(content().string(containsString("No visitIds found for web of this domain")))
+                .andExpect(content().string(containsString("No visitIds found for web of")))
         ;
 
     }

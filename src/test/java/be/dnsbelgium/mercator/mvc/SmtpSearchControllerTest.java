@@ -55,7 +55,7 @@ public class SmtpSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-smtp"))
                 .andExpect(model().attributeExists("visitIds"))
-                .andExpect(content().string(containsString("No visitIds found for smtp of this domain")))
+                .andExpect(content().string(containsString("No visitIds found for smtp of")))
         ;
     }
 

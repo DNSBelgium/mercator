@@ -39,6 +39,7 @@ public class SmtpSearchController {
     logger.info("search for [{}]", domainName);
     List<String> visitIds = searchRepository.searchVisitIds(domainName);
     logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
+    model.addAttribute("domainName", domainName);
     model.addAttribute("visitIds", visitIds);
     return "search-results-smtp";
   }
@@ -46,6 +47,7 @@ public class SmtpSearchController {
   @GetMapping("/search/smtp/id")
   public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
     logger.info("/visits/smtp/{}", visitId);
+    model.addAttribute("visitId", visitId);
     Optional<SmtpConversation> smtpConversation = searchRepository.findByVisitId(visitId);
     if (smtpConversation.isPresent()) {
       model.addAttribute("smtpConversationResult", smtpConversation.get());
