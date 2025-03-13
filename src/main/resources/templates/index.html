@@ -21,6 +21,9 @@
             document.getElementById("moduleType").value = value;
             console.log(document.getElementById("moduleType"))
         }
+        function dsf() {
+            console.log("dse")
+        }
     </script>
 </head>
 
@@ -84,7 +87,7 @@
         <button type="button" onclick="setVariable('web')">WEB</button>
         <button type="button" onclick="setVariable('dns')">DNS</button>
         <label>
-            <input type="checkbox" id="fetchLatest" th:checked="${fetch_latest}">
+            <input type="checkbox" th:checked="true" id="fetchLatest">
             Fetch Latest
         </label>
         <button type="submit" onsubmit="updateFormAction()">submit</button>
