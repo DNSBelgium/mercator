@@ -88,7 +88,7 @@ class PageTest {
   private Page makePageFrom(String responseBody) {
     HttpUrl url = HttpUrl.get("http://www.example.com/");
     MediaType mediaType = MediaType.parse("text/html");
-    return new Page(url, TestUtils.now(), TestUtils.now().plusMillis(120), 200, responseBody, -1, mediaType);
+    return new Page(url, TestUtils.now(), TestUtils.now().plusMillis(120), 200, responseBody, -1, mediaType, null);
   }
 
   private String getHtml(String resourcePath) throws IOException {

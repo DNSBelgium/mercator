@@ -1,0 +1,14 @@
+{
+  "cats": [
+    41,
+    91
+  ],
+  "description": "PacePay offers a BNPL (Buy now pay later) solution for merchants.",
+  "icon": "Pace.svg",
+  "js": {
+    "pacePay": ""
+  },
+  "saas": true,
+  "scriptSrc": "pay\\.pacenow\\.co",
+  "website": "https://pacenow.co/"
+}

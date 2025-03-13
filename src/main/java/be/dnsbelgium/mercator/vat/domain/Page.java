@@ -26,11 +26,12 @@ public class Page {
   // the saved body text will be abbreviated to this length
   private final static int MAX_BODY_TEXT_LENGTH = 20_000;
 
-  public static Page PAGE_TIME_OUT  = new Page();
-  public static Page PAGE_TOO_BIG  = new Page();
+  public static Page PAGE_TIME_OUT = new Page();
+  public static Page PAGE_TOO_BIG = new Page();
   public static Page CONTENT_TYPE_NOT_SUPPORTED = new Page();
 
-  // the URL we retrieved, might be different from the URL we requested (because we follow redirects)
+  // the URL we retrieved, might be different from the URL we requested (because
+  // we follow redirects)
   private final HttpUrl url;
 
   private final Instant visitStarted;
@@ -48,12 +49,17 @@ public class Page {
 
   private static final Logger logger = getLogger(Page.class);
 
-  // TODO: use this constructor and remember the Link that got us here so that we can build the path that lead to VAT number
-  public Page(Link link, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody, long contentLength, MediaType mediaType) {
-    this(link.getUrl(), visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType);
+  private Map<String, String> headers;
+
+  // TODO: use this constructor and remember the Link that got us here so that we
+  // can build the path that lead to VAT number
+  public Page(Link link, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
+              long contentLength, MediaType mediaType, Map<String, String> headers) {
+    this(link.getUrl(), visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
   }
 
-  public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody, long contentLength, MediaType mediaType) {
+  public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
+              long contentLength, MediaType mediaType, Map<String, String> headers) {
     this.url = url;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
@@ -61,17 +67,25 @@ public class Page {
     this.responseBody = responseBody;
     this.contentLength = contentLength;
     this.mediaType = mediaType;
+    this.headers = headers;
     this.document = Jsoup.parse(responseBody, url.toString());
+
   }
 
   private Page() {
     this.url = null;
-    this.visitStarted  = Instant.now();
+    this.visitStarted = Instant.now();
     this.visitFinished = Instant.now();
   }
 
   private Page(HttpUrl url, Instant visitStarted, Instant visitFinished) {
     this.url = url;
+    this.visitStarted = visitStarted;
+    this.visitFinished = visitFinished;
+  }
+
+  public Page(HttpUrl url, Instant now, Instant instant, int i, String responseBody, int i1, MediaType mediaType, HttpUrl url1, Instant visitStarted, Instant visitFinished) {
+    this.url = url1;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
   }
@@ -120,23 +134,26 @@ public class Page {
 
     logger.debug("Before filtering: {} links", linksOnPage.size());
     Set<Link> filtered = linksOnPage.stream()
-        .filter(s -> Page.getSecondLevelDomainName(s.getUrl()).equals(domainName))
-        .filter(s -> !s.getUrl().scheme().startsWith("mailto:"))
-        .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".png"))
-        .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".jpg"))
-        .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".pdf"))
-        .collect(Collectors.toSet());
+            .filter(s -> Page.getSecondLevelDomainName(s.getUrl()).equals(domainName))
+            .filter(s -> !s.getUrl().scheme().startsWith("mailto:"))
+            .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".png"))
+            .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".jpg"))
+            .filter(s -> !s.getUrl().encodedPath().toLowerCase().endsWith(".pdf"))
+            .collect(Collectors.toSet());
     logger.debug("After filtering: {} links", filtered.size());
     return filtered;
   }
 
   /**
-   * return the second-level domain name based on the host of given URL (last two labels of the domain name)
+   * return the second-level domain name based on the host of given URL (last two
+   * labels of the domain name)
    * <p>
    * Will return last two bytes when host is an IPv4 address !
-   * (Does not really matter since we use this method to find inner links and always compare with a real domain name)
+   * (Does not really matter since we use this method to find inner links and
+   * always compare with a real domain name)
    * <p>
-   * Does not take into public suffix list. So getSecondLevelDomainName("bbc.co.uk") => "co.uk"
+   * Does not take into public suffix list. So
+   * getSecondLevelDomainName("bbc.co.uk") => "co.uk"
    *
    * @param url the url to start from
    * @return the second-level domain name based on the host of given URL
@@ -172,13 +189,13 @@ public class Page {
       return "Page.CONTENT_TYPE_NOT_SUPPORTED";
     }
     return new StringJoiner(", ", Page.class.getSimpleName() + "[", "]")
-        .add("url=" + url)
-        .add("visitFinished=" + visitFinished)
-        .add("statusCode=" + statusCode)
-        .add("contentLength=" + contentLength)
-        .add("mediaType=" + mediaType)
-        .add("vatValues=" + vatValues)
-        .toString();
+            .add("url=" + url)
+            .add("visitFinished=" + visitFinished)
+            .add("statusCode=" + statusCode)
+            .add("contentLength=" + contentLength)
+            .add("mediaType=" + mediaType)
+            .add("vatValues=" + vatValues)
+            .toString();
   }
 
   public PageVisit asPageVisit(VisitRequest visitRequest, boolean includeBodyText) {
@@ -197,22 +214,21 @@ public class Page {
     // TODO: add boolean parameter to control saving html
     String html = document != null ? document.html() : null;
     if (html != null) {
-        logger.info("length(html) = {}", html.length());
+      logger.info("length(html) = {}", html.length());
     } else {
       logger.info("html == null");
     }
     return new PageVisit(
-        visitRequest.getVisitId(),
-        visitRequest.getDomainName(),
-        StringUtils.abbreviate(url.toString(),255),
-        StringUtils.abbreviate(url.encodedPath(),255),
-        visitStarted,
-        visitFinished,
-        statusCode,
-        bodyText,
-        html,
-        vatValues
-        );
+            visitRequest.getVisitId(),
+            visitRequest.getDomainName(),
+            StringUtils.abbreviate(url.toString(), 255),
+            StringUtils.abbreviate(url.encodedPath(), 255),
+            visitStarted,
+            visitFinished,
+            statusCode,
+            bodyText,
+            html,
+            vatValues);
   }
 
 }

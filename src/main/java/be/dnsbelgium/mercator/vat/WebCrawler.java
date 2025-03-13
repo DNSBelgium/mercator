@@ -3,13 +3,10 @@ package be.dnsbelgium.mercator.vat;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
-import be.dnsbelgium.mercator.vat.domain.PageVisit;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import be.dnsbelgium.mercator.vat.domain.Link;
-import be.dnsbelgium.mercator.vat.domain.Page;
-import be.dnsbelgium.mercator.vat.domain.SiteVisit;
-import be.dnsbelgium.mercator.vat.domain.VatScraper;
 import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.vat.domain.*;
+import be.dnsbelgium.mercator.vat.wappalyzer.TechnologyAnalyzer;
+import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.PageResponse;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.Setter;
@@ -20,9 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.dnsbelgium.mercator.vat.metrics.MetricName.COUNTER_WEB_CRAWLS_DONE;
@@ -36,6 +31,7 @@ public class WebCrawler {
     private final VatScraper vatScraper;
     private final MeterRegistry meterRegistry;
     private final HtmlFeatureExtractor htmlFeatureExtractor;
+    private final TechnologyAnalyzer technologyAnalyzer;
 
     @Setter
     @Value("${vat.crawler.max.visits.per.domain:10}")
@@ -54,11 +50,12 @@ public class WebCrawler {
     private boolean persistBodyText = false;
 
     @Autowired
-    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor) {
+    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, TechnologyAnalyzer technologyAnalyzer) {
         this.vatScraper = vatScraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
         logger.info("maxVisitsPerDomain = {}", maxVisitsPerDomain);
+        this.technologyAnalyzer = technologyAnalyzer;
     }
 
     @PostConstruct
@@ -152,13 +149,30 @@ public class WebCrawler {
         List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
         webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
+        List<PageResponse> pageResponses = new ArrayList<>();
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
             Page page = linkPageEntry.getValue();
             boolean includeBodyText = false;
             PageVisit pageVisit = page.asPageVisit(visitRequest, includeBodyText);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
             pageVisits.add(pageVisit);
+
+            // integrated wappalyzer
+            String html = page.getDocument().html();
+            var headers = page.getHeaders();
+            var status = page.getStatusCode();
+            Map<String, List<String>> convertedHeaders = new HashMap<>();
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                convertedHeaders.put(entry.getKey(), List.of(entry.getValue()));
+            }
+            PageResponse resp = new PageResponse(status, convertedHeaders, html);
+            pageResponses.add(resp);
         }
+        Set<String> detectedTechnologies = technologyAnalyzer.analyze(pageResponses);
+        logger.debug("detectedTechnologies = {}", detectedTechnologies);
+
+        // integrated wappalyzer
+        webCrawlResult.setDetectedTechnologies(detectedTechnologies);
         webCrawlResult.setPageVisits(pageVisits);
         return webCrawlResult;
     }

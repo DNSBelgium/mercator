@@ -1,0 +1,35 @@
+{
+  "cats": [
+    6
+  ],
+  "cookies": {
+    "frontend": "\\;confidence:50"
+  },
+  "cpe": "cpe:/a:magento:magento",
+  "description": "Magento is an open-source ecommerce platform written in PHP.",
+  "dom": {
+    "script[data-requiremodule*='mage'], script[data-requiremodule*='Magento_'], html[data-image-optimizing-origin]": {
+      "exists": "\\;version:2"
+    },
+    "script[type='text/x-magento-init']": {
+      "exists": ""
+    }
+  },
+  "icon": "Magento.svg",
+  "implies": [
+    "PHP",
+    "MySQL"
+  ],
+  "js": {
+    "Mage": "",
+    "VarienForm": ""
+  },
+  "magento": "Magento/([0-9.]+)\\;version:\\1",
+  "oss": true,
+  "scriptSrc": [
+    "js/mage",
+    "skin/frontend/(?:default|(enterprise))\\;version:\\1?Enterprise:Community",
+    "static/_requirejs\\;confidence:50\\;version:2"
+  ],
+  "website": "https://magento.com"
+}

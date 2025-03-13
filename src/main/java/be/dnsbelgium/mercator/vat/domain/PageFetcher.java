@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -47,18 +49,18 @@ public class PageFetcher {
     Dns dns = new ConfigurableDns(SupportedIpVersion.V4_ONLY);
 
     this.client = new OkHttpClient.Builder()
-        .connectTimeout(config.getConnectTimeOut())
-        .writeTimeout(config.getWriteTimeOut())
-        .readTimeout(config.getReadTimeOut())
-        .callTimeout(config.getCallTimeOut())
-        .cache(cache)
-        .dns(dns)
-        .followRedirects(true)
-        .followSslRedirects(true)
-        .retryOnConnectionFailure(true)
-        .minWebSocketMessageToCompress(1024)
-        .connectionSpecs(List.of(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
-        .build();
+            .connectTimeout(config.getConnectTimeOut())
+            .writeTimeout(config.getWriteTimeOut())
+            .readTimeout(config.getReadTimeOut())
+            .callTimeout(config.getCallTimeOut())
+            .cache(cache)
+            .dns(dns)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .retryOnConnectionFailure(true)
+            .minWebSocketMessageToCompress(1024)
+            .connectionSpecs(List.of(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+            .build();
     setupMetrics();
   }
 
@@ -121,7 +123,6 @@ public class PageFetcher {
     }
   }
 
-
   public void clearCache() {
     try {
       @SuppressWarnings("resource")
@@ -157,13 +158,14 @@ public class PageFetcher {
   }
 
   public Page fetch(HttpUrl url) throws IOException {
+
     Instant started = Instant.now();
     String cacheControl = "max-stale=" + config.getCacheMaxStale().toSeconds();
     Request request = new Request.Builder()
-        .url(url)
-        .header("Cache-Control", cacheControl)
-        .header("User-Agent", config.getUserAgent())
-        .build();
+            .url(url)
+            .header("Cache-Control", cacheControl)
+            .header("User-Agent", config.getUserAgent())
+            .build();
 
     logger.debug("request = {}", request);
 
@@ -190,12 +192,13 @@ public class PageFetcher {
         if (!isSupported(contentType)) {
           logger.debug("Skipping content since type = {}", contentType);
           meterRegistry.counter(MetricName.COUNTER_PAGES_CONTENT_TYPE_NOT_SUPPORTED,
-              "content-type", contentType != null ? contentType.toString() : null).increment();
+                  "content-type", contentType != null ? contentType.toString() : null).increment();
           return Page.CONTENT_TYPE_NOT_SUPPORTED;
         }
         long contentLength = responseBody.contentLength();
         if (contentLength > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(), config.getMaxContentLength().toBytes());
+          logger.debug("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(),
+                  config.getMaxContentLength().toBytes());
           meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
           return Page.PAGE_TOO_BIG;
         }
@@ -208,14 +211,21 @@ public class PageFetcher {
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
         if (body.length() > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}", url, body.length(), config.getMaxContentLength().toBytes());
+          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}", url,
+                  body.length(), config.getMaxContentLength().toBytes());
           meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
           return Page.PAGE_TOO_BIG;
         }
+
+        Map<String, String> headers = new HashMap<>();
+        for (String name : response.headers().names()) {
+          headers.put(name, response.header(name));
+        }
+
         return new Page(
                 response.request().url(),
-                sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType);
-        }
+                sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType, headers);
+      }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
       meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
@@ -228,15 +238,15 @@ public class PageFetcher {
     if (contentType == null) {
       return true;
     }
-    logger.debug("contentType: type={} subtype={} charset={}", contentType.type(), contentType.subtype(), contentType.charset());
+    logger.debug("contentType: type={} subtype={} charset={}", contentType.type(), contentType.subtype(),
+            contentType.charset());
     if (contentType.equals(APPLICATION_JSON)) {
       return true;
     }
-    return
-        !contentType.type().equals("image") &&
-        !contentType.type().equals("audio") &&
-        !contentType.type().equals("video") &&
-        !contentType.type().equals("application");
+    return !contentType.type().equals("image") &&
+            !contentType.type().equals("audio") &&
+            !contentType.type().equals("video") &&
+            !contentType.type().equals("application");
   }
 
   public void debug(Response response) {
@@ -253,6 +263,5 @@ public class PageFetcher {
     logger.debug("response.receivedResponseAtMillis = {}", response.receivedResponseAtMillis());
     logger.debug("response.body.contentLength = {}", response.body() == null ? 0 : response.body().contentLength());
   }
-
 
 }

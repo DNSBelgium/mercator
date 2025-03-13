@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,6 +31,8 @@ public class WebCrawlResult {
 
   private List<PageVisit> pageVisits;
   private List<HtmlFeatures> htmlFeatures;
+
+  private Set<String> detectedTechnologies;
 
   public void abbreviateData() {
     domainName = StringUtils.abbreviate(domainName, 255);
