@@ -11,10 +11,6 @@ public class Jappalyzer {
 
     private List<Technology> technologies = new LinkedList<>();
 
-    public static Jappalyzer empty() {
-        return new Jappalyzer();
-    }
-
     public List<Technology> getTechnologies() {
         return this.technologies;
     }

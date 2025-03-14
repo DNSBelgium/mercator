@@ -1,10 +1,8 @@
 package be.dnsbelgium.mercator.test;
 
+import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -15,11 +13,10 @@ public class TestUtils {
   // a clock that ticks only once per microsecond
   private static final Clock microsecondClock = Clock.tick(Clock.systemUTC(), Duration.ofNanos(1000));
 
-  private final static ObjectMapper objectMapper = new ObjectMapper();
+  private final static ObjectMapper objectMapper;
   static {
-    objectMapper.registerModule(new Jdk8Module());
-    objectMapper.registerModule(new JavaTimeModule());
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+    JsonConfiguration configuration = new JsonConfiguration();
+    objectMapper =  configuration.objectMapper();
   }
 
   /**
@@ -37,15 +34,9 @@ public class TestUtils {
   }
 
   /**
-   * An ObjectWriter to be used in tests.
-   * Alternative would be to inject the one from the ApplicationContext but that would force many tests
-   * to be a @SpringBootTest which is usually slower.
-   * <p>
-   * One caveat is that we PropertyNamingStrategy should be the same as the one used by the production code.
-   * </p>
-   * <p>
-   *   If this comes to bite us too often, we should remove this method and inject an ObjectWriter in the tests.
-   * </p>
+   * The ObjectMapper used is created by the method that also produces the @Bean that is used in production code.
+   * This construct allows us to use an ObjectWriter and ObjectMapper in Tests that do not load a Spring context
+   *
    * @return an ObjectWriter to be used in tests
    */
   public static ObjectWriter jsonWriter() {
