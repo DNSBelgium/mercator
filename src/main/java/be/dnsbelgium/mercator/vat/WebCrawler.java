@@ -159,8 +159,8 @@ public class WebCrawler {
 
             // integrated wappalyzer
             String html = page.getDocument().html();
-            var headers = page.getHeaders();
-            var status = page.getStatusCode();
+            Map<String, String> headers = page.getHeaders();
+            int status = page.getStatusCode();
             Map<String, List<String>> convertedHeaders = new HashMap<>();
             for (Map.Entry<String, String> entry : headers.entrySet()) {
                 convertedHeaders.put(entry.getKey(), List.of(entry.getValue()));
