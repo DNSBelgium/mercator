@@ -228,7 +228,8 @@ public class Page {
             statusCode,
             bodyText,
             html,
-            vatValues);
+            vatValues,
+            "",0L,"",new HashMap<>());
   }
 
 }

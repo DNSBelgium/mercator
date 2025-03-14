@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.lang.instrument.Instrumentation;
 
 import java.time.Instant;
 import java.util.*;
@@ -142,6 +143,42 @@ public class WebCrawler {
         }
     }
 
+    public PageVisit findSecurityTxt(HttpUrl baseURL, VisitRequest visitRequest) {
+        List<String> securityTxtUrls = List.of(
+                "https://www." + baseURL.host() + "/.well-known/security.txt",
+                "https://" + baseURL.host() + "/.well-known/security.txt"
+        );
+
+        logger.info("Using following urls: {} ", securityTxtUrls);
+
+        for (String securityTxtUrl : securityTxtUrls) {
+            Page securityTxtPage = vatScraper.fetchAndParse(HttpUrl.parse(securityTxtUrl));
+
+            if (securityTxtPage == null || securityTxtPage.getStatusCode() == 404) {
+                continue;
+            }
+
+            byte[] responseBytes = securityTxtPage.getResponseBody().getBytes();
+            int responseSize = responseBytes.length;
+
+            if (responseSize > 32000) {
+                logger.info("Security.txt file too large: {} bytes", responseSize);
+                return null;
+            }
+
+            PageVisit securityTxtVisit = securityTxtPage.asPageVisit(visitRequest, false);
+            securityTxtVisit.setSecurity_txt_url(securityTxtPage.getUrl().toString());
+            securityTxtVisit.setSecurity_txt_response_headers(securityTxtPage.getHeaders());
+            securityTxtVisit.setSecurity_txt_bytes(responseSize);
+            securityTxtVisit.setSecurity_txt_content(securityTxtPage.getDocument().text()); // Store content
+
+            return securityTxtVisit;
+        }
+
+        return null;
+    }
+
+
     public WebCrawlResult crawl(VisitRequest visitRequest) {
         SiteVisit siteVisit = this.visit(visitRequest);
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
@@ -150,6 +187,7 @@ public class WebCrawler {
         webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
         List<PageResponse> pageResponses = new ArrayList<>();
+        logger.info(siteVisit.getBaseURL().toString());
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
             Page page = linkPageEntry.getValue();
             boolean includeBodyText = false;
@@ -167,6 +205,11 @@ public class WebCrawler {
             }
             PageResponse resp = new PageResponse(status, convertedHeaders, html);
             pageResponses.add(resp);
+        }
+        // create pagevisit for security.txt seperate from other pagevisits, so it is stored once
+        PageVisit securityTxtVisit = findSecurityTxt(siteVisit.getBaseURL(), visitRequest);
+        if (securityTxtVisit != null) {
+            pageVisits.add(securityTxtVisit);
         }
         Set<String> detectedTechnologies = technologyAnalyzer.analyze(pageResponses);
         logger.debug("detectedTechnologies = {}", detectedTechnologies);

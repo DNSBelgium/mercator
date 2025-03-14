@@ -5,7 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @AllArgsConstructor
@@ -32,6 +34,18 @@ public class PageVisit {
   private final String html;
   private final String bodyText;
 
+  @Setter
+  private String security_txt_content = "";
+
+  @Setter
+  private Map<String, String> security_txt_response_headers = new HashMap<>();
+
+  @Setter
+  private long security_txt_bytes = 0L;
+
+  @Setter
+  private String security_txt_url = "";
+
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();
 
@@ -45,7 +59,11 @@ public class PageVisit {
       int statusCode,
       String bodyText,
       String html,
-      List<String> vatValues) {
+      List<String> vatValues,
+      String security_txt_content,
+      long secuirity_txt_bytes,
+      String security_txt_url,
+      Map<String, String> security_txt_response_headers) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.url  = cleanUp(url, 500);
@@ -60,6 +78,10 @@ public class PageVisit {
     // Their combined html sums up to 50 GB (average of 872k) so we would 'save' 32 GB by truncating to 500k bytes
     // The 1.3 million other websites sum up to 89 GB
     this.html = cleanUp(html, 500_000);
+    this.security_txt_content = cleanUp(security_txt_content, 500_000);
+    this.security_txt_bytes = secuirity_txt_bytes;
+    this.security_txt_url = security_txt_url;
+    this.security_txt_response_headers = security_txt_response_headers;
   }
 
   private String cleanUp(String input, int maxLength) {

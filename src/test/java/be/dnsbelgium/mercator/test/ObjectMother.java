@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
@@ -80,6 +81,24 @@ public class ObjectMother {
             .domainName("no-website.org")
             .statusCode(400)
             .path("/")
+            .build();
+  }
+
+  public PageVisit pageVisitWithSecurityTxtFields() {
+    return PageVisit.builder()
+            .visitId("security-txt-test-id")
+            .url("https://www.example.org/.well-known/security.txt")
+            .domainName("example.org")
+            .path("/.well-known/security.txt")
+            .statusCode(200)
+            .bodyText("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
+            .security_txt_content("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
+            .security_txt_bytes(128L)
+            .security_txt_url("https://www.example.org/.well-known/security.txt")
+            .security_txt_response_headers(Map.of(
+                    "Content-Type", "text/plain",
+                    "Content-Length", "128"
+            ))
             .build();
   }
 
@@ -155,6 +174,21 @@ public class ObjectMother {
             .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
             .build();
   }
+
+  public WebCrawlResult webCrawlResultWithPageVisitWithSecurityTxt() {
+    return WebCrawlResult.builder()
+            .crawlStarted(started.plusMillis(10))
+            .crawlFinished(started.plusSeconds(115))
+            .visitId(VISIT_ID_2)
+            .domainName("no-website.org")
+            .visitedUrls(List.of())
+            .startUrl("https://www.no-website.be/")
+            .htmlFeatures(List.of())
+            .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
+            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+            .build();
+  }
+
 
   public TlsCrawlResult tlsCrawlResult1()  {
     VisitRequest visitRequest = new VisitRequest("aakjkjkj-ojj", "example.org");

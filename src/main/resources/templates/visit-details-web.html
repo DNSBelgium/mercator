@@ -69,6 +69,33 @@
             </tr>
             </tbody>
         </table>
+        <article th:each="pageVisit : ${webCrawlResult.getPageVisits()}">
+            <div th:if="${pageVisit.getSecurity_txt_bytes() > 0}">
+                <p>security.txt results:</p>
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>security txt content </th>
+                        <td th:text="${pageVisit.getSecurity_txt_content()}"></td>
+                    </tr>
+                    <tr>
+                        <th>security txt bytes </th>
+                        <td th:text="${pageVisit.getSecurity_txt_bytes()}"></td>
+                    </tr>
+                    <tr>
+                        <th>security txt url </th>
+                        <td th:text="${pageVisit.getSecurity_txt_url()}"></td>
+                    </tr>
+                    <tr>
+                        <th>security txt response headers </th>
+                        <td th:text="${pageVisit.getSecurity_txt_response_headers()}"></td>
+                    </tr>
+
+                    </tbody>
+                </table>
+
+            </div>
+        </article>
 
         <article th:each="pageVisit : ${webCrawlResult.getPageVisits()}">
             <header>

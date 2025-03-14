@@ -99,4 +99,26 @@ public class WebSearchControllerTest {
                 .andExpect(content().string(containsString("Google Tag Manager")));
     }
 
+    @Test
+    public void findLatestResultWithSecurityTxt_findsLatestVisitDetails() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithPageVisitWithSecurityTxt();
+
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists("webCrawlResult"))
+                .andExpect(content().string(containsString("https://www.example.org/.well-known/security.txt")))
+                .andExpect(content().string(containsString("128")))
+                .andExpect(content().string(containsString("Contact: mailto:security@example.org")))
+                .andExpect(content().string(containsString("Encryption: https://example.org/pgp-key.txt")))
+                .andExpect(content().string(containsString("Content-Type")))
+                .andExpect(content().string(containsString("text/plain")))
+                .andExpect(content().string(containsString("Content-Length")))
+                .andExpect(content().string(containsString("128")));
+    }
+
+
 }
