@@ -159,7 +159,7 @@ public class TlsScanner {
   }
 
   private SingleVersionScan scanForProtocol_(TlsProtocolVersion protocolVersion, InetSocketAddress socketAddress) {
-    logger.info("Checking {} for {} support", socketAddress, protocolVersion);
+    logger.debug("Checking {} for {} support", socketAddress, protocolVersion);
 
     if (protocolVersion == TlsProtocolVersion.SSL_2) {
       // JDK does not support SSL 2.0 => use our own code to exchange Client & Server Hello messages
@@ -205,8 +205,8 @@ public class TlsScanner {
     } catch (IOException e) {
       singleVersionScan.setConnectOK(false);
       singleVersionScan.setErrorMessage(e.getMessage());
-      logger.info("IOException while scanning {}", singleVersionScan.getServerName());
-      logger.info("IOException while scanning: {}", e.getMessage());
+      logger.debug("IOException while scanning {}", singleVersionScan.getServerName());
+      logger.debug("IOException while scanning: {}", e.getMessage());
       meterRegistry.counter(COUNTER_IO_EXCEPTIONS, "version", protocolVersion.getName()).increment();
     }
     return singleVersionScan;
@@ -233,14 +233,14 @@ public class TlsScanner {
       singleVersionScan.setHandshakeOK(false);
       singleVersionScan.setErrorMessage(e.getMessage());
       meterRegistry.counter(COUNTER_HANDSHAKE_FAILURES, "version", protocolVersion.getName()).increment();
-      logger.info("{} => {} : {}", protocolVersion, e.getClass().getSimpleName(), e.getMessage());
+      logger.debug("{} => {} : {}", protocolVersion, e.getClass().getSimpleName(), e.getMessage());
     }
   }
 
   private void processCertificate(SSLSocket socket, SingleVersionScan singleVersionScan) {
     SSLSession sslSession = socket.getSession();
     try {
-      logger.info("sslSession.peerPrincipal = {}", sslSession.getPeerPrincipal());
+      logger.debug("sslSession.peerPrincipal = {}", sslSession.getPeerPrincipal());
       singleVersionScan.setPeerVerified(true);
       singleVersionScan.setPeerPrincipal(sslSession.getPeerPrincipal().getName());
       // an ordered array of peer certificates, with the peer's own certificate first followed by any certificate authorities.
@@ -285,11 +285,11 @@ public class TlsScanner {
     } catch (SSLPeerUnverifiedException e) {
       singleVersionScan.setPeerVerified(false);
       singleVersionScan.setErrorMessage(e.getMessage());
-      logger.info("{} => SSLPeerUnverifiedException: {}", singleVersionScan.getServerName(), e.getMessage());
+      logger.debug("{} => SSLPeerUnverifiedException: {}", singleVersionScan.getServerName(), e.getMessage());
     } catch (CertificateParsingException e) {
       singleVersionScan.setPeerVerified(false);
       singleVersionScan.setErrorMessage(e.getMessage());
-      logger.info("{} => CertificateParsingException: {}", singleVersionScan.getServerName(), e.getMessage());
+      logger.debug("{} => CertificateParsingException: {}", singleVersionScan.getServerName(), e.getMessage());
       meterRegistry.counter(COUNTER_CERTIFICATE_PARSING_ERRORS).increment();
     }
   }

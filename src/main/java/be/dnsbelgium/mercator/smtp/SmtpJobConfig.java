@@ -48,13 +48,10 @@ public class SmtpJobConfig {
   @Bean
   @StepScope
   public JsonFileItemWriter<SmtpVisit> smtpJsonFileItemWriter(
-          @Value("#{jobParameters[outputFile]}") WritableResource resource,
-          JavaTimeModule javaTimeModule) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(javaTimeModule);
+          ObjectMapper objectMapper,
+          @Value("#{jobParameters[outputFile]}") WritableResource resource) {
     JacksonJsonObjectMarshaller<SmtpVisit> jsonObjectMarshaller
             = new JacksonJsonObjectMarshaller<>(objectMapper);
-
     return new JsonFileItemWriterBuilder<SmtpVisit>()
             .name("smtp-writer")
             .jsonObjectMarshaller(jsonObjectMarshaller)

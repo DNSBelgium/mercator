@@ -22,7 +22,7 @@ public class DuckDataSource extends AbstractDriverBasedDataSource implements Aut
     @SneakyThrows
     public void init() {
         String url = getUrl();
-        logger.info("Creating connection with url = {}", url);
+        logger.debug("Creating connection with url = {}", url);
         Objects.requireNonNull(url);
         this.connection = (DuckDBConnection) DriverManager.getConnection(url);
     }

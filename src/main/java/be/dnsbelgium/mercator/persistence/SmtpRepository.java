@@ -27,12 +27,10 @@ public class SmtpRepository {
     private final JdbcClient jdbcClient;
     private final ObjectMapper objectMapper;
 
-    public SmtpRepository(@Value("${mercator.data.location:mercator/data/}") String dataLocation) {
+    public SmtpRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String dataLocation) {
         this.dataLocation = dataLocation;
         this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule()); // Support for Instant
-        this.objectMapper.registerModule(new Jdk8Module()); // Support for Instant
+        this.objectMapper = objectMapper;
     }
 
     public List<String> searchVisitIds(String domainName) {
