@@ -6,23 +6,12 @@
 <head>
     <title>Mercator | Home </title>
     <script>
-        function updateFormAction() {
-            const form = document.getElementById('searchForm');
-            const fetchLatest = document.getElementById('fetchLatest');
-            const moduleType = document.getElementById('moduleType').value
+        function search(moduleType) {
+            const domainName = document.getElementById('textinput').value;
+            const fetchLatest = document.getElementById('fetchLatest').checked;
 
-            if (fetchLatest.checked) {
-                form.action = '/search/' + moduleType + '/latest';
-            } else {
-                form.action = '/search/' + moduleType + '/ids';
-            }
-        }
-        function setVariable(value) {
-            document.getElementById("moduleType").value = value;
-            console.log(document.getElementById("moduleType"))
-        }
-        function dsf() {
-            console.log("dse")
+            const url = `/search/${moduleType}/${fetchLatest ? 'latest' : 'ids'}?domainName=${domainName}`;
+            window.location.href = url;
         }
     </script>
 </head>
@@ -76,22 +65,20 @@
     <p></p>
 
     <h2>Input domain name you would like to search.</h2>
-    <input type="hidden" id="moduleType" name="moduleType" value="defaultValue">
-    <form id="searchForm" method="get" th:action="@{/search}" onsubmit="updateFormAction()">
-        <div>
-            <label for="textinput">Domain Name:</label>
-            <input id="textinput" name="domainName" th:value="${domainName}" type="text">
-        </div>
-        <button type="button" onclick="setVariable('tls')">TLS</button>
-        <button type="button" onclick="setVariable('smtp')">SMTP</button>
-        <button type="button" onclick="setVariable('web')">WEB</button>
-        <button type="button" onclick="setVariable('dns')">DNS</button>
-        <label>
-            <input type="checkbox" th:checked="true" id="fetchLatest">
-            Fetch Latest
-        </label>
-        <button type="submit" onsubmit="updateFormAction()">submit</button>
-    </form>
+    <div>
+        <label for="textinput">Domain Name:</label>
+        <input id="textinput" name="domainName" type="text">
+    </div>
+
+    <button type="button" onclick="search('tls')">TLS</button>
+    <button type="button" onclick="search('smtp')">SMTP</button>
+    <button type="button" onclick="search('web')">WEB</button>
+    <button type="button" onclick="search('dns')">DNS</button>
+
+    <label>
+        <input type="checkbox" id="fetchLatest" th:checked="true">
+        Fetch Latest
+    </label>
 
 </div>
 
