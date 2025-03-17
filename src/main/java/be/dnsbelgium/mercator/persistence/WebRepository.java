@@ -30,9 +30,9 @@ public class WebRepository {
 
   private final static String QUERY = """
       with
-          crawl_result as (select * exclude (year, month) from '%s/**/*.parquet'),
-          html_feature as (select * exclude (year, month) from '%s/**/*.parquet'),
-          page_visit   as (select * exclude (year, month) from '%s/**/*.parquet'),
+          crawl_result as (select * exclude (year, month) from read_parquet('%s/**/*.parquet', union_by_name=True)),
+          html_feature as (select * exclude (year, month) from read_parquet('%s/**/*.parquet', union_by_name=True)),
+          page_visit   as (select * exclude (year, month) from read_parquet('%s/**/*.parquet', union_by_name=True)),
           features_per_visit as (
              select visit_id,
                     list(html_feature order by crawl_timestamp) as html_features
@@ -57,7 +57,7 @@ public class WebRepository {
           )
       select row_to_json(combined)
       from combined
-      order by visit_id
+      %s
     """;
 
   public WebRepository(
@@ -79,9 +79,25 @@ public class WebRepository {
     return List.of();
   }
 
+  @SneakyThrows
   public Optional<WebCrawlResult> findLatestResult(String domainName) {
-    // TODO
     logger.info("Finding latest crawl result for domainName={}", domainName);
+    String query = QUERY.formatted(
+            webCrawlDestination,
+            featuresDestination,
+            pageVisitDestination,
+            "where crawl_result.domain_name = ?",
+            " order by crawl_started desc limit 1"
+    );
+    Optional<String> json = jdbcClient.sql(query)
+            .param(domainName)
+            .query(String.class)
+            .optional();
+    if (json.isPresent()) {
+      WebCrawlResult webCrawlResult = objectMapper.readValue(json.get(), WebCrawlResult.class);
+      logger.debug("Found: \n{}", webCrawlResult);
+      return Optional.of(webCrawlResult);
+    }
     return Optional.empty();
   }
 
@@ -152,7 +168,7 @@ public class WebRepository {
   public List<WebCrawlResult> findByDomainName(String domainName) {
     // TODO: add limit parameter and order by crawl_timestamp desc
     String query = QUERY.formatted(
-            webCrawlDestination, featuresDestination, pageVisitDestination, "where crawl_result.domain_name = ?");
+            webCrawlDestination, featuresDestination, pageVisitDestination, "where crawl_result.domain_name = ?", "");
     logger.info("query = {}", query);
     List<String> jsonList = jdbcClient.sql(query)
             .param(domainName)

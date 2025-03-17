@@ -30,6 +30,8 @@ public class PageVisit {
 
   private final String path;
 
+  /** The raw content found in the URL above. Can be TXT or HTML or XML or ... */
+  // TODO: consider renaming this field to reflect that it can be something else than html.
   private final String html;
   private final String bodyText;
 
