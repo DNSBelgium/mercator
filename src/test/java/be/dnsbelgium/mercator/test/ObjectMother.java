@@ -10,11 +10,14 @@ import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
+import be.dnsbelgium.mercator.vat.domain.Page;
 import be.dnsbelgium.mercator.vat.domain.PageVisit;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 
 import java.net.InetSocketAddress;
 import java.time.Instant;
@@ -84,6 +87,19 @@ public class ObjectMother {
             .build();
   }
 
+  public Page page1() {
+    HttpUrl url = HttpUrl.parse("https://www.invalidpage123456.be/invalid-page");
+    Instant visitStarted = Instant.now();
+    Instant visitFinished = visitStarted.plusSeconds(10);
+    String responseBody = "Bad Request: The page you are looking for could not be found.";
+    long contentLength = responseBody.length();
+    MediaType mediaType = MediaType.parse("text/html");
+    Map<String, String> headers = Map.of("Content-Type", "text/html");
+
+    return new Page(url, visitStarted, visitFinished, 400, responseBody, contentLength, mediaType, headers);
+  }
+
+
   public PageVisit pageVisitWithSecurityTxtFields() {
     return PageVisit.builder()
             .visitId("security-txt-test-id")
@@ -92,10 +108,8 @@ public class ObjectMother {
             .path("/.well-known/security.txt")
             .statusCode(200)
             .bodyText("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
-            .security_txt_content("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
-            .security_txt_bytes(128L)
-            .security_txt_url("https://www.example.org/.well-known/security.txt")
-            .security_txt_response_headers(Map.of(
+            .contentLength(128L)
+            .headers(Map.of(
                     "Content-Type", "text/plain",
                     "Content-Length", "128"
             ))

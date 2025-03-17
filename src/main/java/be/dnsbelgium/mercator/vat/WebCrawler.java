@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.lang.instrument.Instrumentation;
 
 import java.time.Instant;
 import java.util.*;
@@ -148,35 +147,32 @@ public class WebCrawler {
                 "https://www." + baseURL.host() + "/.well-known/security.txt",
                 "https://" + baseURL.host() + "/.well-known/security.txt"
         );
-
+        Page firstAttemptedPage = null;
+        boolean firstChecked = false;
         logger.info("Using following urls: {} ", securityTxtUrls);
-
         for (String securityTxtUrl : securityTxtUrls) {
             Page securityTxtPage = vatScraper.fetchAndParse(HttpUrl.parse(securityTxtUrl));
 
-            if (securityTxtPage == null || securityTxtPage.getStatusCode() == 404) {
+            if (!firstChecked) {
+                firstAttemptedPage = securityTxtPage;
+                firstChecked = true;
+            }
+
+            if (securityTxtPage == null || securityTxtPage.getStatusCode() != 200) {
                 continue;
             }
 
-            byte[] responseBytes = securityTxtPage.getResponseBody().getBytes();
-            int responseSize = responseBytes.length;
+            return securityTxtPage.asPageVisit(visitRequest, true);
+        }
 
-            if (responseSize > 32000) {
-                logger.info("Security.txt file too large: {} bytes", responseSize);
-                return null;
-            }
-
-            PageVisit securityTxtVisit = securityTxtPage.asPageVisit(visitRequest, false);
-            securityTxtVisit.setSecurity_txt_url(securityTxtPage.getUrl().toString());
-            securityTxtVisit.setSecurity_txt_response_headers(securityTxtPage.getHeaders());
-            securityTxtVisit.setSecurity_txt_bytes(responseSize);
-            securityTxtVisit.setSecurity_txt_content(securityTxtPage.getDocument().text()); // Store content
-
-            return securityTxtVisit;
+        if (firstAttemptedPage != null) {
+            return firstAttemptedPage.asPageVisit(visitRequest, true);
         }
 
         return null;
     }
+
+
 
 
     public WebCrawlResult crawl(VisitRequest visitRequest) {

@@ -111,12 +111,8 @@ public class WebSearchControllerTest {
                 .andExpect(view().name("visit-details-web"))
                 .andExpect(model().attributeExists("webCrawlResult"))
                 .andExpect(content().string(containsString("https://www.example.org/.well-known/security.txt")))
-                .andExpect(content().string(containsString("128")))
-                .andExpect(content().string(containsString("Contact: mailto:security@example.org")))
-                .andExpect(content().string(containsString("Encryption: https://example.org/pgp-key.txt")))
                 .andExpect(content().string(containsString("Content-Type")))
                 .andExpect(content().string(containsString("text/plain")))
-                .andExpect(content().string(containsString("Content-Length")))
                 .andExpect(content().string(containsString("128")));
     }
 

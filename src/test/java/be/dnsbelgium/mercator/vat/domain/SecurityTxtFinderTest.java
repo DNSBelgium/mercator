@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.vat.WebCrawler;
 import okhttp3.HttpUrl;
@@ -12,11 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.Instant;
-import java.util.Collections;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
@@ -33,58 +38,79 @@ public class SecurityTxtFinderTest {
     @Mock
     private VatScraper vatScraper;
 
-    @InjectMocks
+    @Autowired
     private WebCrawler webCrawler;
 
+    @InjectMocks
+    private WebCrawler mockedWebCrawler;
+
+
+    private final ObjectMapper objectMapper;
+
+    public SecurityTxtFinderTest() {
+        objectMapper = new ObjectMapper();
+    }
+
+    private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
     @Test
-    @Disabled // this test makes an internet connection, use method to test if the method works
+    @Disabled // this test makes an internet connection, it needs @Autowired for the webcrawler instead of @InjectMocks because we are not mocking the webcrawler for this test, use method to test if the findSecurityTxt works
     public void testFindSecurityTxt() {
         VisitRequest visitRequest = new VisitRequest("sdiofjosidjf-sdfoijsodijf1564d5", "dnsbelgium.be");
 
-        HttpUrl url = HttpUrl.parse("https://www.dnsbelgium.be");
-
+        HttpUrl url = HttpUrl.parse("https://dnsbelgium.be");
         PageVisit updatedVisit = webCrawler.findSecurityTxt(url, visitRequest);
-        logger.info(updatedVisit.getSecurity_txt_content());
-        logger.info(updatedVisit.getSecurity_txt_url());
-        logger.info(updatedVisit.getSecurity_txt_response_headers().toString());
-        logger.info(String.valueOf(updatedVisit.getSecurity_txt_bytes()));
+
+        assertThat(updatedVisit.getBodyText()).isNotEmpty();
+        assertThat(updatedVisit.getHeaders().toString()).isNotEmpty();
+        assertThat(updatedVisit.getContentLength()).isGreaterThan(0);
+        logger.info(updatedVisit.getBodyText());
+        logger.info(updatedVisit.getHtml());
+        assertThat(updatedVisit.getBodyText()).isNotEqualTo(updatedVisit.getHtml());
 
     }
 
     @Test
-    public void testFindSecurityTxtLargerThan32kb() {
-        VisitRequest visitRequest = new VisitRequest("test-id", "dnsbelgium.be");
-        HttpUrl url = HttpUrl.parse("https://www.dnsbelgium.be");
-        HttpUrl securityTxtUrl = HttpUrl.parse("https://www.dnsbelgium.be/.well-known/security.txt");
+    @Disabled // used for testing the domains in tranco_be.paerquet
+    public void testFindSecurityTxtOnPopularDomainNames() throws IOException {
+        VisitRequest visitRequest = new VisitRequest("sdiofjosidjf-sdfoijsodijf1564d5", "dnsbelgium.be");
 
-        String largeContent = "A".repeat(33000);
+        List<String> domainNames = jdbcClient.sql("select domain_name from 'tranco_be.parquet' LIMIT 100")
+                .query(String.class)
+                .list();
+        List<PageVisit> pageVisits =  new ArrayList<>();
 
-        Page mockPage = new Page(
-                securityTxtUrl, Instant.now(), Instant.now(), 200, largeContent,
-                33000, null, Collections.emptyMap()
-        );
+        for (String domainName : domainNames) {
+            HttpUrl url = HttpUrl.parse("https://" + domainName);
+            try {
+                PageVisit updatedVisit = webCrawler.findSecurityTxt(url, visitRequest);
+                pageVisits.add(updatedVisit);
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
 
-        when(vatScraper.fetchAndParse(securityTxtUrl)).thenReturn(mockPage);
+        }
+        try {
+            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File("security_txt_top100.json"), pageVisits);
+            logger.info("JSON data written to file ");
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
 
-        PageVisit result = webCrawler.findSecurityTxt(url, visitRequest);
-
-        assertNull(result, "Expect null when security.txt is larger than 32 KB");
-
-        verify(vatScraper, times(1)).fetchAndParse(securityTxtUrl);
     }
 
     @Test
     public void testFindSecurityTxt_notFound() {
         VisitRequest visitRequest = new VisitRequest("test-id", "dnsbelgium.be");
-        HttpUrl url = HttpUrl.parse("https://www.dnsbelgium.be");
-        HttpUrl securityTxtUrl = HttpUrl.parse("https://www.dnsbelgium.be/.well-known/security.txt");
+        HttpUrl url = HttpUrl.parse("https://invalidpage1234567896.be");
+        HttpUrl securityTxtUrl = HttpUrl.parse("https://www.invalidpage1234567896.be/.well-known/security.txt");
+        Page page1 = objectMother.page1();
+        when(vatScraper.fetchAndParse(securityTxtUrl)).thenReturn(page1);
 
-        when(vatScraper.fetchAndParse(securityTxtUrl)).thenReturn(null);
+        PageVisit result = mockedWebCrawler.findSecurityTxt(url, visitRequest);
 
-        PageVisit result = webCrawler.findSecurityTxt(url, visitRequest);
-
-        assertNull(result, "Expect null when security.txt is not found");
+        assertThat(result.getStatusCode()).isNotNull();
+        assertThat(result.getStatusCode()).isEqualTo(400);
         verify(vatScraper, times(1)).fetchAndParse(securityTxtUrl);
     }
 

@@ -229,7 +229,9 @@ public class Page {
             bodyText,
             html,
             vatValues,
-            "",0L,"",new HashMap<>());
+            contentLength,
+            headers
+            );
   }
 
 }
