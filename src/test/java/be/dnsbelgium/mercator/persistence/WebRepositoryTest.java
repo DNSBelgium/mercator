@@ -36,11 +36,12 @@ class WebRepositoryTest {
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
   private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), tempDir.toString());
 
-  private final WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
   public void toS3Parquet() throws IOException {
+    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+
     logger.info("tempDir = {}", tempDir);
     Files.createDirectories(tempDir);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
