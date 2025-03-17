@@ -65,7 +65,9 @@ public class WebJobConfig {
                     JdbcTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
-                    JsonFileItemWriter<WebCrawlResult> itemWriter) {
+                    JsonFileItemWriter<WebCrawlResult> itemWriter,
+                    WebParquetMaker webParquetMaker
+  ) {
     logger.info("creating webJob");
     Step step = new StepBuilder("web", jobRepository)
             .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
@@ -76,8 +78,8 @@ public class WebJobConfig {
 
     return new JobBuilder("web", jobRepository)
             .start(step)
+            .listener(webParquetMaker)
             .build();
   }
-
 
 }
