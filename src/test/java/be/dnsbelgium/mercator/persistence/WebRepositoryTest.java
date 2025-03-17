@@ -5,6 +5,7 @@ import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,36 @@ class WebRepositoryTest {
   private final ObjectMother objectMother = new ObjectMother();
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
   private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), tempDir.toString());
+
+  private final WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+
+  @Test
+  @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
+  public void toS3Parquet() throws IOException {
+    logger.info("tempDir = {}", tempDir);
+    Files.createDirectories(tempDir);
+    WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
+    WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
+
+    logger.info("webCrawlResult1 = {}", webCrawlResult1);
+    logger.info("webCrawlResult2 = {}", webCrawlResult2);
+
+    File jsonFile = tempDir.resolve("webCrawlResult1.json").toFile();
+    logger.info("jsonFile = {}", jsonFile);
+
+    ObjectWriter jsonWriter = TestUtils.jsonWriter();
+    jsonWriter.writeValue(jsonFile, List.of(webCrawlResult1, webCrawlResult2));
+
+    s3WebRepository.toParquet(jsonFile.toPath());
+
+    List<WebCrawlResult> webCrawlResults = s3WebRepository.findByDomainName("dnsbelgium.be");
+    logger.info("webCrawlResults found: {}", webCrawlResults.size());
+    logger.info("webCrawlResults = {}", webCrawlResults);
+    for (WebCrawlResult webCrawlResult : webCrawlResults) {
+      logger.info("webCrawlResult = {}", webCrawlResult);
+    }
+    assertThat(webCrawlResults.size()).isGreaterThan(0);
+  }
 
   @Test
   public void toParquet() throws IOException {

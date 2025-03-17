@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,9 +26,9 @@ public class WebRepository {
   private static final Logger logger = LoggerFactory.getLogger(WebRepository.class);
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
-  private final Path webCrawlDestination;
-  private final Path pageVisitDestination;
-  private final Path featuresDestination;
+  private final String webCrawlDestination;
+  private final String pageVisitDestination;
+  private final String featuresDestination;
   private final ObjectMapper objectMapper;
 
   private final static String QUERY = """
@@ -60,6 +63,7 @@ public class WebRepository {
       %s
     """;
 
+  @SneakyThrows
   public WebRepository(
           ObjectMapper objectMapper,
           @Value("${mercator.data.location:mercator/data/}") String dataLocation) {
@@ -68,9 +72,30 @@ public class WebRepository {
       throw new IllegalArgumentException("dataLocation must not be null or empty");
     }
     logger.info("dataLocation = [{}]", dataLocation);
-    webCrawlDestination = Path.of(dataLocation, "web", "crawl_result");
-    pageVisitDestination = Path.of(dataLocation, "web", "page_visit");
-    featuresDestination = Path.of(dataLocation, "web", "html_features");
+
+    String subPath = "web";
+    webCrawlDestination = createDestination(dataLocation, subPath, "crawl_result");
+    pageVisitDestination = createDestination(dataLocation, subPath, "page_visit");
+    featuresDestination = createDestination(dataLocation, subPath, "html_features");
+
+  }
+
+  public static boolean isURL(String dataLocation) {
+    try {
+      return new URI(dataLocation).getScheme() != null;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public static String createDestination(String... parts) throws IOException {
+    if (isURL(parts[0])) {
+      return String.join("/", parts);
+    } else {
+      Path destPath = Path.of(parts[0], Arrays.copyOfRange(parts, 1, parts.length));
+      Files.createDirectories(destPath);
+      return destPath.toAbsolutePath().toString();
+    }
   }
 
   public List<String> searchVisitIds(String domainName) {
@@ -113,10 +138,6 @@ public class WebRepository {
    */
   @SneakyThrows
   public void toParquet(Path jsonFile) {
-    Files.createDirectories(webCrawlDestination);
-    Files.createDirectories(pageVisitDestination);
-    Files.createDirectories(featuresDestination);
-
     // generate a unique tableName since to avoid collisions with other threads
     String tableName = "webCrawlResult_" + Ulid.fast();
     String createTable = """

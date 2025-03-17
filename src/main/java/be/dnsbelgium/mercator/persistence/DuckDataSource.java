@@ -10,6 +10,7 @@ import org.springframework.jdbc.datasource.AbstractDriverBasedDataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -24,7 +25,14 @@ public class DuckDataSource extends AbstractDriverBasedDataSource implements Aut
         String url = getUrl();
         logger.debug("Creating connection with url = {}", url);
         Objects.requireNonNull(url);
+        // TODO: should we only execute this when e.g. env var is set with init script?
         this.connection = (DuckDBConnection) DriverManager.getConnection(url);
+        // create s3 secret
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeQuery("CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)");
+        } catch (SQLException e) {
+            throw e;
+        }
     }
 
     public DuckDataSource(String url) {
