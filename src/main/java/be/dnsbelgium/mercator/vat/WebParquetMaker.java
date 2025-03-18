@@ -26,7 +26,6 @@ public class WebParquetMaker implements JobExecutionListener {
 
   public void afterJob(@NonNull JobExecution jobExecution) {
     logger.info("jobExecution = {}", jobExecution);
-    logger.error("jobExecution.getExecutionContext() = {}", jobExecution.getExecutionContext());
 
     if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
 
