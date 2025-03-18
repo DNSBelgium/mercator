@@ -92,7 +92,9 @@ class WebRepositoryTest {
       logger.info("webCrawlResult = {}", webCrawlResult);
     }
     assertThat(webCrawlResults.size()).isEqualTo(1);
-    assertThat(webCrawlResults.getFirst()).isEqualTo(webCrawlResult1);
+    assertThat(webCrawlResults.getFirst())
+            .usingRecursiveComparison()
+            .isEqualTo(webCrawlResult1);
   }
 
 }

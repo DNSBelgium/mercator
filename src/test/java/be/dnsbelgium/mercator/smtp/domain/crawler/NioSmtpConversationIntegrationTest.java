@@ -55,6 +55,7 @@ public class NioSmtpConversationIntegrationTest {
 
   @SneakyThrows
   @Test
+  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
   public void noTls() {
     var mailpit = getMailPitContainer(false);
     mailpit.start();
