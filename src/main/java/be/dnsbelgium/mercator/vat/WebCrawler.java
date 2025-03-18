@@ -142,38 +142,30 @@ public class WebCrawler {
         }
     }
 
-    public PageVisit findSecurityTxt(HttpUrl baseURL, VisitRequest visitRequest) {
-        List<String> securityTxtUrls = List.of(
-                "https://www." + baseURL.host() + "/.well-known/security.txt",
-                "https://" + baseURL.host() + "/.well-known/security.txt"
-        );
-        Page firstAttemptedPage = null;
-        boolean firstChecked = false;
-        logger.info("Using following urls: {} ", securityTxtUrls);
-        for (String securityTxtUrl : securityTxtUrls) {
-            Page securityTxtPage = vatScraper.fetchAndParse(HttpUrl.parse(securityTxtUrl));
-
-            if (!firstChecked) {
-                firstAttemptedPage = securityTxtPage;
-                firstChecked = true;
-            }
-
-            if (securityTxtPage == null || securityTxtPage.getStatusCode() != 200) {
-                continue;
-            }
-
-            return securityTxtPage.asPageVisit(visitRequest, true);
-        }
-
-        if (firstAttemptedPage != null) {
-            return firstAttemptedPage.asPageVisit(visitRequest, true);
-        }
-
-        return null;
+    public PageVisit findSecurityTxt(VisitRequest visitRequest) {
+        String domainName = visitRequest.getDomainName();
+        logger.debug("Finding security.txt for {}", domainName);
+        String url1 = "https://www.%s/.well-known/security.txt".formatted(domainName);
+        String url2 = "https://%s/.well-known/security.txt".formatted(domainName);
+        PageVisit pageVisit = find(url1, url2, visitRequest);
+        pageVisit.clearHtml();
+        return pageVisit;
     }
 
-
-
+    public PageVisit find(String url1, String url2, VisitRequest visitRequest) {
+        Page page1 = vatScraper.fetchAndParse(HttpUrl.parse(url1));
+        if (page1 != null && page1.getStatusCode() == 200) {
+            return page1.asPageVisit(visitRequest, true);
+        }
+        Page page2 = vatScraper.fetchAndParse(HttpUrl.parse(url2));
+        if (page2 != null && page2.getStatusCode() == 200) {
+            return page2.asPageVisit(visitRequest, true);
+        }
+        if (page1 != null) {
+            return page1.asPageVisit(visitRequest, true);
+        }
+        return null;
+    }
 
     public WebCrawlResult crawl(VisitRequest visitRequest) {
         SiteVisit siteVisit = this.visit(visitRequest);
@@ -202,8 +194,8 @@ public class WebCrawler {
             PageResponse resp = new PageResponse(status, convertedHeaders, html);
             pageResponses.add(resp);
         }
-        // create pagevisit for security.txt seperate from other pagevisits, so it is stored once
-        PageVisit securityTxtVisit = findSecurityTxt(siteVisit.getBaseURL(), visitRequest);
+
+        PageVisit securityTxtVisit = findSecurityTxt(visitRequest);
         if (securityTxtVisit != null) {
             pageVisits.add(securityTxtVisit);
         }

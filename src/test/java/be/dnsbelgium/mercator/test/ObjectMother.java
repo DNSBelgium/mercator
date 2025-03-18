@@ -88,14 +88,14 @@ public class ObjectMother {
   }
 
   public Page page1() {
-    HttpUrl url = HttpUrl.parse("https://www.invalidpage123456.be/invalid-page");
+    HttpUrl url = HttpUrl.parse("https://www.anything.be/invalid-page");
     Instant visitStarted = Instant.now();
     Instant visitFinished = visitStarted.plusSeconds(10);
     String responseBody = "Bad Request: The page you are looking for could not be found.";
     long contentLength = responseBody.length();
     MediaType mediaType = MediaType.parse("text/html");
     Map<String, String> headers = Map.of("Content-Type", "text/html");
-
+    assert url != null;
     return new Page(url, visitStarted, visitFinished, 400, responseBody, contentLength, mediaType, headers);
   }
 
@@ -259,7 +259,7 @@ public class ObjectMother {
             .millis_ssl_2_0(20)
             .millis_ssl_3_0(30)
             .build();
-    };
+    }
 
 
   public SmtpConversation smtpConversationHost1() {
@@ -278,7 +278,7 @@ public class ObjectMother {
             .software("software host1")
             .softwareVersion("1.0")
             .build();
-  };
+  }
   public SmtpConversation smtpConversationHost2() {
     return SmtpConversation.builder()
             .id("conv-host2")
@@ -295,7 +295,7 @@ public class ObjectMother {
             .software("software host2")
             .softwareVersion("2.0")
             .build();
-  };
+  }
 
 
   public SmtpHost smtpHost1() {
@@ -306,7 +306,7 @@ public class ObjectMother {
             .priority(10)
             .conversation(smtpConversationHost1())
             .build();
-  };
+  }
 
   public SmtpHost smtpHost2() {
     return SmtpHost.builder()
@@ -316,7 +316,7 @@ public class ObjectMother {
             .priority(20)
             .conversation(smtpConversationHost2())
             .build();
-  };
+  }
 
   public SmtpConversation smtpConversation1() {
         return SmtpConversation.builder()

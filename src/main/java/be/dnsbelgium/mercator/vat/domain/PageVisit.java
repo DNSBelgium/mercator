@@ -32,7 +32,7 @@ public class PageVisit {
 
   /** The raw content found in the URL above. Can be TXT or HTML or XML or ... */
   // TODO: consider renaming this field to reflect that it can be something else than html.
-  private final String html;
+  private String html;
   private final String bodyText;
 
   private final Map<String, String> headers;
@@ -86,6 +86,10 @@ public class PageVisit {
 
   public void setLinkText(String linkText) {
     this.linkText  = cleanUp(linkText, 500);
+  }
+
+  public void clearHtml() {
+    this.html = null;
   }
 
 }
