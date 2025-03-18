@@ -144,9 +144,19 @@ public class WebCrawler {
 
     public PageVisit findSecurityTxt(VisitRequest visitRequest) {
         String domainName = visitRequest.getDomainName();
-        logger.debug("Finding security.txt for {}", domainName);
+        logger.debug("Finding robots.txt for {}", domainName);
         String url1 = "https://www.%s/.well-known/security.txt".formatted(domainName);
         String url2 = "https://%s/.well-known/security.txt".formatted(domainName);
+        PageVisit pageVisit = find(url1, url2, visitRequest);
+        pageVisit.clearHtml();
+        return pageVisit;
+    }
+
+    public PageVisit findRobotsTxt(VisitRequest visitRequest) {
+        String domainName = visitRequest.getDomainName();
+        logger.debug("Finding security.txt for {}", domainName);
+        String url1 = "https://www.%s/robots.txt".formatted(domainName);
+        String url2 = "https://%s/robots.txt".formatted(domainName);
         PageVisit pageVisit = find(url1, url2, visitRequest);
         pageVisit.clearHtml();
         return pageVisit;
@@ -193,6 +203,12 @@ public class WebCrawler {
             }
             PageResponse resp = new PageResponse(status, convertedHeaders, html);
             pageResponses.add(resp);
+        }
+
+        PageVisit robotsTxtVisit = findRobotsTxt(visitRequest);
+
+        if (robotsTxtVisit != null) {
+            pageVisits.add(robotsTxtVisit);
         }
 
         PageVisit securityTxtVisit = findSecurityTxt(visitRequest);

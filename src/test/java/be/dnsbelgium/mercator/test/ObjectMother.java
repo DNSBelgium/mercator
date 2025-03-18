@@ -99,6 +99,19 @@ public class ObjectMother {
     return new Page(url, visitStarted, visitFinished, 400, responseBody, contentLength, mediaType, headers);
   }
 
+  public Page page2() {
+    HttpUrl url = HttpUrl.parse("https://www.anything.be/invalid-page");
+    Instant visitStarted = Instant.now();
+    Instant visitFinished = visitStarted.plusSeconds(10);
+    String responseBody = "Bad Request: The page you are looking for could not be found.";
+    long contentLength = responseBody.length();
+    MediaType mediaType = MediaType.parse("text/html");
+    Map<String, String> headers = Map.of("Content-Type", "text/html");
+    assert url != null;
+    return new Page(url, visitStarted, visitFinished, 200, responseBody, contentLength, mediaType, headers);
+  }
+
+
 
   public PageVisit pageVisitWithSecurityTxtFields() {
     return PageVisit.builder()
@@ -108,6 +121,22 @@ public class ObjectMother {
             .path("/.well-known/security.txt")
             .statusCode(200)
             .bodyText("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
+            .contentLength(128L)
+            .headers(Map.of(
+                    "Content-Type", "text/plain",
+                    "Content-Length", "128"
+            ))
+            .build();
+  }
+
+  public PageVisit pageVisitWithRobotsTxtFields() {
+    return PageVisit.builder()
+            .visitId("robots-txt-test-id")
+            .url("https://www.example.org/robots.txt")
+            .domainName("example.org")
+            .path("/robots.txt")
+            .statusCode(200)
+            .bodyText("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
             .contentLength(128L)
             .headers(Map.of(
                     "Content-Type", "text/plain",
@@ -202,6 +231,21 @@ public class ObjectMother {
             .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
             .build();
   }
+
+  public WebCrawlResult webCrawlResultWithPageVisitWithRobotsTxt() {
+    return WebCrawlResult.builder()
+            .crawlStarted(started.plusMillis(10))
+            .crawlFinished(started.plusSeconds(115))
+            .visitId(VISIT_ID_2)
+            .domainName("no-website.org")
+            .visitedUrls(List.of())
+            .startUrl("https://www.no-website.be/")
+            .htmlFeatures(List.of())
+            .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
+            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+            .build();
+  }
+
 
 
   public TlsCrawlResult tlsCrawlResult1()  {
