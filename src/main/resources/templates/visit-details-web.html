@@ -90,10 +90,6 @@
                     <td th:text="${pageVisit.getLinkText()}"></td>
                 </tr>
                 <tr>
-                    <td>link text</td>
-                    <td th:text="${pageVisit.getLinkText()}"></td>
-                </tr>
-                <tr>
                     <td>VAT values</td>
                     <td>
                         <div th:each="vat : ${pageVisit.getVatValues()}">
@@ -114,6 +110,11 @@
                     <td>headers</td>
                     <td th:text="${pageVisit.getHeaders()}"></td>
                 </tr>
+                <tr>
+                    <td>Content Length</td>
+                    <td th:text="${pageVisit.getContentLength()}"></td>
+                </tr>
+
 
                 </tbody>
             </table>
