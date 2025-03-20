@@ -86,8 +86,15 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Body Text</td>
-                    <td th:text="${pageVisit.getBodyText()}"></td>
+                    <td>
+                        bodyText
+                    </td>
+                    <td>
+                        <details>
+                            <summary>click to show body text</summary>
+                            <p th:text="${#strings.isEmpty(pageVisit.getBodyText()) ? 'No text' : pageVisit.getBodyText()}"></p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>link text</td>
@@ -111,8 +118,15 @@
                     <td th:text="${#temporals.format(pageVisit.getCrawlFinished(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
                 </tr>
                 <tr>
-                    <td>headers</td>
-                    <td th:text="${pageVisit.getHeaders()}"></td>
+                    <td>
+                        headers
+                    </td>
+                    <td>
+                        <details>
+                            <summary>Click to show headers</summary>
+                            <p th:text="${#strings.isEmpty(pageVisit.getHeaders()) ? 'No headers' : pageVisit.getHeaders()}"></p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>Content Length</td>
@@ -146,8 +160,14 @@
                     <td th:text="${features.meta_text}"></td>
                 </tr>
                 <tr>
-                    <td>Body text</td>
-                    <td th:text="${features.body_text}"></td>
+                    <td>features body text</td>
+                    <td>
+                        <details>
+                            <summary>click to show features body text</summary>
+                            <p th:text="${#strings.isEmpty(features.body_text) ? 'No text' : features.body_text}"></p>
+                        </details>
+                    </td>
+
                 </tr>
                 <tr>
                     <td>nb_images</td>

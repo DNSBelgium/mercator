@@ -18,6 +18,8 @@
     </span>
 
     <!--  TODO Bram: I don;t think we need this, but I am confused ;-)-->
+    <!--  when fetching with latest we only use a domain name we add a domainName attribute,
+    when searching like normal we search for a visitId and add the visitId as an attribute, so the error messagem akes sense  -->
     <span th:if="${domainName == null}">
       No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong>
     </span>
