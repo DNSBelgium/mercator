@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
@@ -35,7 +36,7 @@ public class WebSearchControllerTest {
 
     @Test
     public void getWebIds_findsIds() throws Exception {
-        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
+        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103").stream().map(v -> new BaseRepository.SearchVisitIdResultItem(v, null)).toList());
         // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/ids")
