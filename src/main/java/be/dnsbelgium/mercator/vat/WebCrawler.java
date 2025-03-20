@@ -148,7 +148,9 @@ public class WebCrawler {
         String url1 = "https://www.%s/.well-known/security.txt".formatted(domainName);
         String url2 = "https://%s/.well-known/security.txt".formatted(domainName);
         PageVisit pageVisit = find(url1, url2, visitRequest);
-        pageVisit.clearHtml();
+        if (pageVisit != null) {
+            pageVisit.clearHtml();
+        }
         return pageVisit;
     }
 
@@ -158,7 +160,9 @@ public class WebCrawler {
         String url1 = "https://www.%s/robots.txt".formatted(domainName);
         String url2 = "https://%s/robots.txt".formatted(domainName);
         PageVisit pageVisit = find(url1, url2, visitRequest);
-        pageVisit.clearHtml();
+        if (pageVisit != null) {
+            pageVisit.clearHtml();
+        }
         return pageVisit;
     }
 

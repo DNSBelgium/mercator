@@ -221,8 +221,8 @@ public class Page {
     return new PageVisit(
             visitRequest.getVisitId(),
             visitRequest.getDomainName(),
-            StringUtils.abbreviate(url.toString(), 255),
-            StringUtils.abbreviate(url.encodedPath(), 255),
+            url != null ? StringUtils.abbreviate(url.toString(), 255) : null,
+            url != null ? StringUtils.abbreviate(url.encodedPath(), 255) : null,
             visitStarted,
             visitFinished,
             statusCode,
