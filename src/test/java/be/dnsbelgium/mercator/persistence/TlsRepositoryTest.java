@@ -25,42 +25,38 @@ class TlsRepositoryTest {
   @TempDir
   static Path tempDir;
 
+  @TempDir
+  static Path baseLocation;
+
   private final ObjectMother objectMother = new ObjectMother();
   private TlsRepository repository;
   private static final Logger logger = LoggerFactory.getLogger(TlsRepositoryTest.class);
-  private JdbcClient jdbcClient;
 
 
   @Test
   @Disabled
-  public void saveToParquet() throws IOException {
-    // Uncomment to save results in sub-folder of home folder
-    // TODO
-    //Path tempDir = Path.of(System.getProperty("user.home"), "mercator");
-    repository = new TlsRepository(tempDir.toAbsolutePath().toString());
+  public void findByDomainName() throws IOException {
+    repository = new TlsRepository(TestUtils.jsonReader(), baseLocation.toString());
     // simulate what the tlsJob does:
     TlsCrawlResult result1 = objectMother.tlsCrawlResult1();
     TlsCrawlResult result2 = objectMother.tlsCrawlResult2();
     File jsonFile = tempDir.resolve("tls.json").toFile();
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(result1, result2));
-    // call class under test
-    // TODO
-    // repository.saveToParquet(jsonFile.toPath(), "tls_output.parquet");
-    // todo: add asserts
-    logger.info("Saved to parquet");
-    logger.info(jsonFile.toPath().toString());
-    String parquetFilePath  = tempDir.toAbsolutePath().toString() + File.separator + "tls_output.parquet";
-    assertThat(Path.of(parquetFilePath).toFile().exists()).isTrue();
-    logger.info(parquetFilePath);
+
+
+    repository.storeResults(jsonFile.toString());
+    List<TlsCrawlResult> byDomainName = repository.findByDomainName("example.org");
+
+    assertEquals(2, byDomainName.size());
+    assertEquals(List.of("example.org"), byDomainName.stream().map(r -> r.getVisitRequest().getDomainName()).toList());
+
   }
 
   @Test
   @Disabled
-  public void getTlsCrawlResultByVisitId() throws IOException {
-    JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-    Path tempDir = Path.of(System.getProperty("user.home"), "mercator");
-    repository = new TlsRepository(tempDir.toAbsolutePath().toString());
+  public void findLatestResult() throws IOException {
+    repository = new TlsRepository(TestUtils.jsonReader(), baseLocation.toString());
     logger.info(tempDir.toString());
     TlsCrawlResult tlsCrawlResult1 = objectMother.tlsCrawlResult1();
 
@@ -72,18 +68,13 @@ class TlsRepositoryTest {
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(result1, result2));
     // call class under test
-    repository.saveToParquet(jsonFile.toPath(), "tls_output.parquet");
+    repository.storeResults(jsonFile.toString());
 
-    Optional<TlsCrawlResult> found = repository.findByVisitId("aakjkjkj-ojj");
+    Optional<TlsCrawlResult> found = repository.findLatestResult("example.org");
 
-    logger.info("Found: {}", found );
+    logger.info("Found: {}", found);
     assertTrue(found.isPresent());
-    assertEquals(tlsCrawlResult1, found.get());
-
-
-
-
-
+    assertEquals("example.org", found.get().getVisitRequest().getDomainName());
 
   }
 

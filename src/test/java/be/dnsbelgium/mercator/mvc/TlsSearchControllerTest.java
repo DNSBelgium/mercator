@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
@@ -34,7 +35,7 @@ public class TlsSearchControllerTest {
 
     @Test
     public void searchVisitIds_found() throws Exception {
-        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103"));
+        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103").stream().map(id -> new BaseRepository.SearchVisitIdResultItem(id, null)).toList());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/ids")
                         .param("domainName", "dnsbelgium.be"))

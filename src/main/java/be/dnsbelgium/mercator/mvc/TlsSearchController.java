@@ -53,7 +53,7 @@ public class TlsSearchController {
       }
       return "visit-details-tls";
     }
-    List<String> visitIds = tlsRepository.searchVisitIds(domainName);
+    List<String> visitIds = tlsRepository.searchVisitIds(domainName).stream().map(i -> i.getVisitId()).toList();
     model.addAttribute("visitIds", visitIds);
     logger.debug("For {} we found {}", domainName, visitIds);
     return "search-results-tls";
@@ -63,7 +63,7 @@ public class TlsSearchController {
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("searchVisitIds: domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
-    List<String> visitIds = tlsRepository.searchVisitIds(domainName);
+    List<String> visitIds = tlsRepository.searchVisitIds(domainName).stream().map(i -> i.getVisitId()).toList();
     model.addAttribute("visitIds", visitIds);
     logger.debug("For {} we found {}", domainName, visitIds);
     return "search-results-tls";

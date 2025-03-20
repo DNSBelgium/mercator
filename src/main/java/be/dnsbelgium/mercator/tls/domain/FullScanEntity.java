@@ -1,10 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 
@@ -62,6 +59,7 @@ public class FullScanEntity {
   private long millis_ssl_3_0;
   private long millis_ssl_2_0;
 
+  @JsonIgnore
   public long getTotalDurationInMs() {
     return millis_tls_1_3 + millis_tls_1_2 + millis_tls_1_1 + millis_tls_1_0 + millis_ssl_3_0 + millis_ssl_2_0;
   }

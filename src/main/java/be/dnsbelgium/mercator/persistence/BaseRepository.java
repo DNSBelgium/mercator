@@ -97,6 +97,8 @@ public class BaseRepository<T> {
     return "crawl_timestamp";
   }
 
+  public String domainNameField() { return "domain_name"; }
+
   @SneakyThrows
   public List<SearchVisitIdResultItem> searchVisitIds(String domainName) {
     String query = StringSubstitutor.replace("""
@@ -104,12 +106,13 @@ public class BaseRepository<T> {
         foo as (
           select visit_id, ${timestamp_field} as timestamp
           from cte_all_items 
-          where domain_name=?
+          where ${domain_name_field}=?
         )
         select row_to_json(foo)
         from foo 
         """, Map.of("get_all_items_query", getAllItemsQuery(),
-                    "timestamp_field", timestampField()
+                    "timestamp_field", timestampField(),
+                    "domain_name_field", domainNameField()
         ));
 
     List<String> jsonList = jdbcClient.sql(query)
@@ -156,11 +159,12 @@ public class BaseRepository<T> {
         with cte_all_items as (${get_all_items_query}) 
         select row_to_json(cte_all_items)
         from cte_all_items 
-        where domain_name=?
+        where ${domain_name_field}=?
         order by ${timestamp_field} desc
         limit 1
         """, Map.of("get_all_items_query", getAllItemsQuery(),
-                    "timestamp_field", timestampField()));
+                    "timestamp_field", timestampField(),
+                    "domain_name_field", domainNameField()));
     Optional<String> json = jdbcClient.sql(query)
         .param(domainName)
         .query(String.class)
@@ -184,8 +188,8 @@ public class BaseRepository<T> {
         with cte_all_items as (${get_all_items_query}) 
         select row_to_json(cte_all_items)
         from cte_all_items 
-        where domain_name=?
-        """, Map.of("get_all_items_query", getAllItemsQuery()));
+        where ${domain_name_field}=?
+        """, Map.of("get_all_items_query", getAllItemsQuery(), "domain_name_field", domainNameField()));
     List<String> jsonList = jdbcClient.sql(query)
         .param(domainName)
         .query(String.class)
