@@ -32,7 +32,7 @@ public class WebParquetMaker implements JobExecutionListener {
       Path jsonFile = batchConfig.outputPathFor(jobExecution.getJobInstance().getJobName());
 
       if (jsonFile.toFile().exists()) {
-        webRepository.toParquet(jsonFile);
+        webRepository.storeResults(jsonFile.toString());
         logger.info("Saved the data in parquet format");
       } else {
         logger.error("jsonFile={} but does NOT exist", jsonFile);

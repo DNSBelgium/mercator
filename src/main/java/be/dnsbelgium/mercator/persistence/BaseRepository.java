@@ -23,6 +23,11 @@ public class BaseRepository<T> {
     private String visitId;
     private Instant timestamp;
 
+    public SearchVisitIdResultItem(String visitId, Instant timestamp) {
+      this.visitId = visitId;
+      this.timestamp = timestamp;
+    }
+
     public String getVisitId() {
       return visitId;
     }
@@ -51,9 +56,17 @@ public class BaseRepository<T> {
   @SneakyThrows
   public BaseRepository(ObjectMapper objectMapper, String baseLocation, JdbcClient jdbcClient, Class<T> type) {
     this.objectMapper = objectMapper;
+    if (baseLocation == null || baseLocation.isEmpty()) {
+      throw new IllegalArgumentException("baseLocation must not be null or empty");
+    }
+    logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
     this.jdbcClient = jdbcClient;
     this.type = type;
+  }
+
+  protected JdbcClient getJdbcClient() {
+    return jdbcClient;
   }
 
   public static boolean isURL(String dataLocation) {
@@ -200,6 +213,6 @@ public class BaseRepository<T> {
           year(to_timestamp("%s")) as year, 
           month(to_timestamp("%s")) as month 
         from read_json('%s')
-      ) to '%s' (format parquet, partition_by (year, month))""", timestampField(), timestampField(), jsonResultsLocation, baseLocation)).update();
+      ) to '%s' (format parquet, partition_by (year, month), filename_pattern 'data_{uuid}')""", timestampField(), timestampField(), jsonResultsLocation, baseLocation)).update();
   }
 }

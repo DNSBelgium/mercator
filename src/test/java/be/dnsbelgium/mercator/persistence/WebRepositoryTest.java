@@ -24,26 +24,32 @@ class WebRepositoryTest {
   private static final Logger logger = LoggerFactory.getLogger(WebRepositoryTest.class);
 
   @TempDir
+  static Path baseLocation;
+
+  @TempDir
   static Path tempDir;
+
   static {
     if (System.getProperty("mercator_temp_dir") != null) {
       // this allows to run the tests with a folder that does not disappear after the test completes.
-      tempDir = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
-      logger.info("Using temp dir {}", tempDir);
+      baseLocation = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
+      logger.info("Using base location {}", baseLocation);
     }
   }
   private final ObjectMother objectMother = new ObjectMother();
   private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), tempDir.toString());
+  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString(), JdbcClient.create(DuckDataSource.memory()));
+
 
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
   public void toS3Parquet() throws IOException {
-    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
 
-    logger.info("tempDir = {}", tempDir);
-    Files.createDirectories(tempDir);
+    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"), JdbcClient.create(DuckDataSource.memory()));
+
+    logger.info("tempDir = {}", baseLocation);
+    Files.createDirectories(baseLocation);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
     WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
 
@@ -56,7 +62,7 @@ class WebRepositoryTest {
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(webCrawlResult1, webCrawlResult2));
 
-    s3WebRepository.toParquet(jsonFile.toPath());
+    s3WebRepository.storeResults(jsonFile.toString());
 
     List<WebCrawlResult> webCrawlResults = s3WebRepository.findByDomainName("dnsbelgium.be");
     logger.info("webCrawlResults found: {}", webCrawlResults.size());
@@ -69,8 +75,8 @@ class WebRepositoryTest {
 
   @Test
   public void toParquet() throws IOException {
-    logger.info("tempDir = {}", tempDir);
-    Files.createDirectories(tempDir);
+    logger.info("tempDir = {}", baseLocation);
+    Files.createDirectories(baseLocation);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
     WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
 
@@ -83,7 +89,7 @@ class WebRepositoryTest {
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(webCrawlResult1, webCrawlResult2));
 
-    repository.toParquet(jsonFile.toPath());
+    repository.storeResults(jsonFile.toString());
 
     List<WebCrawlResult> webCrawlResults = repository.findByDomainName("dnsbelgium.be");
     logger.info("webCrawlResults found: {}", webCrawlResults.size());
