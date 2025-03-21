@@ -211,8 +211,8 @@ public class PageFetcher {
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
         if (body.length() > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}", url,
-                  body.length(), config.getMaxContentLength().toBytes());
+          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}",
+                  url, body.length(), config.getMaxContentLength().toBytes());
           meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
           return Page.PAGE_TOO_BIG;
         }

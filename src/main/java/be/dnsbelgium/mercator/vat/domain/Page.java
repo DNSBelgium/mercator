@@ -214,9 +214,9 @@ public class Page {
     // TODO: add boolean parameter to control saving html
     String html = document != null ? document.html() : null;
     if (html != null) {
-      logger.info("length(html) = {}", html.length());
+      logger.debug("{} => length(html) = {}", url, html.length());
     } else {
-      logger.info("html == null");
+      logger.debug("{} => html == null", url);
     }
     return new PageVisit(
             visitRequest.getVisitId(),

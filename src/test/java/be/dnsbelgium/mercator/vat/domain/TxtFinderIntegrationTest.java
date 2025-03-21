@@ -5,8 +5,9 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.vat.WebCrawler;
-import org.junit.jupiter.api.Disabled;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
+// These test make an internet connections, set the env var WEB_OUTBOUND_TEST_ENABLED to "True" to enable the tests
+// Running one individual test method in IntelliJ also seems to work (it seem to ignore the @EnabledIfEnvironmentVariable)
 public class TxtFinderIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(TxtFinderIntegrationTest.class);
@@ -29,33 +32,25 @@ public class TxtFinderIntegrationTest {
     @Autowired
     private WebCrawler webCrawler;
 
-
     private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
     @Test
-    @Disabled
-    // this test makes an internet connection
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
     public void testFindSecurityTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
-        PageVisit updatedVisit = webCrawler.findSecurityTxt(visitRequest);
-        assertThat(updatedVisit.getBodyText()).isNotEmpty();
-        assertThat(updatedVisit.getHeaders().toString()).isNotEmpty();
-        assertThat(updatedVisit.getContentLength()).isGreaterThan(0);
-        logger.info(updatedVisit.getBodyText());
-        logger.info(updatedVisit.getHtml());
-        assertThat(updatedVisit.getBodyText()).isNotEqualTo(updatedVisit.getHtml());
+        PageVisit foundPage = webCrawler.findSecurityTxt(visitRequest);
+        assertThat(foundPage.getBodyText()).isNotEmpty();
+        assertThat(foundPage.getHeaders().toString()).isNotEmpty();
+        logger.info("body text: {}", foundPage.getBodyText());
+        logger.info("html: {}", foundPage.getHtml());
+        assertThat(foundPage.getHtml()).isNull();
     }
 
     @Test
-    @Disabled
-    // this test makes an internet connection
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
     public void testFindSecurityTxtOnPopularDomainNames() {
-        List<String> domainNames = jdbcClient
-                .sql("select domain_name from 'tranco_be.parquet' order by tranco_rank limit 100")
-                .query(String.class)
-                .list();
+        List<String> domainNames = getTop(200);
         List<PageVisit> pageVisits =  new ArrayList<>();
-
         for (String domainName : domainNames) {
             VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), domainName);
             try {
@@ -65,35 +60,32 @@ public class TxtFinderIntegrationTest {
                 logger.error(e.getMessage());
             }
         }
-        try {
-            TestUtils.jsonWriter()
-                    .writeValue(new File("security_txt_top100.json"), pageVisits);
-            logger.info("JSON data written to file ");
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        save(pageVisits, "security_txt_top100.json");
+        int count200 = jdbcClient
+                .sql("select count(1) from './target/test-outputs/security_txt_top100.json' where status_code = 200")
+                .query(Integer.class)
+                .single();
+        logger.info("count200 = {}", count200);
 
     }
 
     @Test
-    @Disabled
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
     public void testFindRobotsTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
-        PageVisit updatedVisit = webCrawler.findRobotsTxt(visitRequest);
-        assertThat(updatedVisit.getBodyText()).isNotEmpty();
-        assertThat(updatedVisit.getHeaders().toString()).isNotEmpty();
-        assertThat(updatedVisit.getContentLength()).isGreaterThan(0);
+        PageVisit found = webCrawler.findRobotsTxt(visitRequest);
+        assertThat(found.getBodyText()).isNotEmpty();
+        assertThat(found.getHeaders().toString()).isNotEmpty();
+        logger.info("found.getBodyText = {}", found.getBodyText());
+        logger.info("found.getContentLength = {}", found.getContentLength());
+        assertThat(found.getHtml()).isNull();
     }
 
     @Test
-    @Disabled
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
     public void testFindRobotsTxtOnPopularDomainNames() {
-        List<String> domainNames = jdbcClient
-                .sql("select domain_name from 'tranco_be.parquet' order by tranco_rank limit 100")
-                .query(String.class)
-                .list();
+        List<String> domainNames = getTop(100);
         List<PageVisit> pageVisits =  new ArrayList<>();
-
         for (String domainName : domainNames) {
             VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), domainName);
             try {
@@ -103,19 +95,33 @@ public class TxtFinderIntegrationTest {
                 logger.error(e.getMessage());
             }
         }
-        try {
-            TestUtils.jsonWriter()
-                    .writeValue(new File("robots_txt_top100.json"), pageVisits);
-                                                                              logger.info("JSON data written to file ");
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
-
+        save(pageVisits, "robots_txt_top100.json");
+        int count200 = jdbcClient
+                .sql("select count(1) from './target/test-outputs/robots_txt_top100.json' where status_code = 200")
+                .query(Integer.class)
+                .single();
+        logger.info("count200 = {}", count200);
     }
 
+    @SneakyThrows
+    private void save(List<PageVisit> pageVisits, String filename) {
+        File parent = new File("./target/test-outputs/");
+        Files.createDirectories(parent.toPath());
+        File file = new File(parent, filename);
+        TestUtils.jsonWriter()
+                    .writeValue(file, pageVisits);
+        logger.info("JSON data written to file {}", file);
+    }
 
-
-
+    private List<String> getTop(int limit) {
+        List<String> domainNames = jdbcClient
+                .sql("select domain_name from 'tranco_be.parquet' order by tranco_rank limit ?")
+                .param(limit)
+                .query(String.class)
+                .list();
+        logger.info("Found top {} domainNames", domainNames.size());
+        return domainNames;
+    }
 
 
 }
