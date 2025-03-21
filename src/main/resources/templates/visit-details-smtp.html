@@ -37,112 +37,137 @@
         <th>crawlStatus</th>
         <td th:text="${smtpConversationResult.crawlStatus}"></td>
       </tr>
+      <tr>
+        <th>Hosts</th>
+        <td>
+          <details>
+            <summary>Click to show hosts</summary>
+            <div th:each="host, iterStat : ${smtpConversationResult.hosts}">
+              <h4>Host #[[${iterStat.count}]]</h4>
+              <table>
+                <tbody>
+                <tr>
+                  <th>Id</th>
+                  <td th:text="${host.id}"></td>
+                </tr>
+                <tr>
+                  <th>fromMx</th>
+                  <td th:text="${host.fromMx}"></td>
+                </tr>
+                <tr>
+                  <th>hostName</th>
+                  <td th:text="${host.hostName}"></td>
+                </tr>
+                <tr>
+                  <th>priority</th>
+                  <td th:text="${host.priority}"></td>
+                </tr>
+                </tbody>
+              </table>
+              <table>
+                <tbody>
+                <h4>conversation for Host #[[${iterStat.count}]]</h4>
+                <tr>
+                  <th>id</th>
+                  <td th:text="${host.conversation.id}"></td>
+                </tr>
+                <tr>
+                  <th>ip</th>
+                  <td th:text="${host.conversation.ip}"></td>
+                </tr>
+                <tr>
+                  <th>asn</th>
+                  <td th:text="${host.conversation.asn}"></td>
+                </tr>
+                <tr>
+                  <th>country</th>
+                  <td th:text="${host.conversation.country}"></td>
+                </tr>
+                <tr>
+                  <th>asnOrganisation</th>
+                  <td th:text="${host.conversation.asnOrganisation}"></td>
+                </tr>
+                <tr>
+                  <th>banner</th>
+                  <td th:text="${host.conversation.banner}"></td>
+                </tr>
+                <tr>
+                  <th>connectOK</th>
+                  <td th:text="${host.conversation.connectOK}"></td>
+                </tr>
+                <tr>
+                  <th>connectReplyCode</th>
+                  <td th:text="${host.conversation.connectReplyCode}"></td>
+                </tr>
+                <tr>
+                  <th>supportedExtensions</th>
+                  <td>
+                    <details>
+                      <summary>Click to show supported extensions</summary>
+                      <ul>
+                        <li th:each="ext : ${host.conversation.supportedExtensions}">
+                          <span th:text="${ext}"></span>
+                        </li>
+                      </ul>
+                    </details>
+                  </td>
+                </tr>
+                <tr>
+                  <th>ipVersion</th>
+                  <td th:text="${host.conversation.ipVersion}"></td>
+                </tr>
+                <tr>
+                  <th>startTlsOk</th>
+                  <td th:text="${host.conversation.startTlsOk}"></td>
+                </tr>
+                <tr>
+                  <th>startTlsReplyCode</th>
+                  <td th:text="${host.conversation.startTlsReplyCode}"></td>
+                </tr>
+                <tr>
+                  <th>errorMessage</th>
+                  <td>
+                    <details th:if="${not #strings.isEmpty(host.conversation.errorMessage)}">
+                      <summary>Click to show error message</summary>
+                      <p th:text="${host.conversation.errorMessage}"></p>
+                    </details>
+                    <span th:if="${#strings.isEmpty(host.conversation.errorMessage)}">No error message</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>error</th>
+                  <td>
+                    <details th:if="${not #strings.isEmpty(host.conversation.error)}">
+                      <summary>Click to show error</summary>
+                      <p th:text="${host.conversation.error}"></p>
+                    </details>
+                    <span th:if="${#strings.isEmpty(host.conversation.error)}">No error</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>connectionTimeMs</th>
+                  <td th:text="${host.conversation.connectionTimeMs}"></td>
+                </tr>
+                <tr>
+                  <th>software</th>
+                  <td th:text="${host.conversation.software}"></td>
+                </tr>
+                <tr>
+                  <th>softwareVersion</th>
+                  <td th:text="${host.conversation.softwareVersion}"></td>
+                </tr>
+                <tr>
+                  <th>timestamp</th>
+                  <td th:text="${host.conversation.timestamp}"></td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </td>
+      </tr>
       </tbody>
     </table>
-    <div th:each="host, iterStat : ${smtpConversationResult.hosts}">
-      <table>
-        <tbody>
-        <tr>
-          <th><h4>Host #[[${iterStat.count}]]</h4></th>
-          <td></td>
-        </tr>
-        <tr>
-          <th>Id</th>
-          <td th:text="${host.id}"></td>
-        </tr>
-        <tr>
-          <th>fromMx</th>
-          <td th:text="${host.fromMx}"></td>
-        </tr>
-        <tr>
-          <th>hostName</th>
-          <td th:text="${host.hostName}"></td>
-        </tr>
-        <tr>
-          <th>priority</th>
-          <td th:text="${host.priority}"></td>
-        </tr>
-        </tbody>
-      </table>
-      <table>
-        <tbody>
-        <h4>conversation for Host #[[${iterStat.count}]]</h4>
-        <tr>
-          <th>id</th>
-          <td th:text="${host.conversation.id}"></td>
-        </tr>
-        <tr>
-          <th>ip</th>
-          <td th:text="${host.conversation.ip}"></td>
-        </tr>
-        <tr>
-          <th>asn</th>
-          <td th:text="${host.conversation.asn}"></td>
-        </tr>
-        <tr>
-          <th>country</th>
-          <td th:text="${host.conversation.country}"></td>
-        </tr>
-        <tr>
-          <th>asnOrganisation</th>
-          <td th:text="${host.conversation.asnOrganisation}"></td>
-        </tr>
-        <tr>
-          <th>banner</th>
-          <td th:text="${host.conversation.banner}"></td>
-        </tr>
-        <tr>
-          <th>connectOK</th>
-          <td th:text="${host.conversation.connectOK}"></td>
-        </tr>
-        <tr>
-          <th>connectReplyCode</th>
-          <td th:text="${host.conversation.connectReplyCode}"></td>
-        </tr>
-        <tr>
-          <th>supportedExtensions</th>
-          <td>
-                <span th:each="ext : ${host.conversation.supportedExtensions}"
-                      th:text="${ext + (iterStat.last ? '' : ', ')}"></span>
-          </td>
-        </tr>
-        <tr>
-          <th>ipVersion</th>
-          <td th:text="${host.conversation.ipVersion}"></td>
-        </tr>
-        <tr>
-          <th>startTlsOk</th>
-          <td th:text="${host.conversation.startTlsOk}"></td>
-        </tr>
-        <tr>
-          <th>startTlsReplyCode</th>
-          <td th:text="${host.conversation.startTlsReplyCode}"></td>
-        </tr>
-        <tr>
-          <th>errorMessage</th>
-          <td th:text="${host.conversation.errorMessage}"></td>
-        </tr><tr>
-          <th>error</th>
-          <td th:text="${host.conversation.error}"></td>
-        </tr>
-        <tr>
-          <th>connectionTimeMs</th>
-          <td th:text="${host.conversation.connectionTimeMs}"></td>
-        </tr>
-        <tr>
-          <th>software</th>
-          <td th:text="${host.conversation.software}"></td>
-        </tr>
-        <tr>
-          <th>softwareVersion</th>
-          <td th:text="${host.conversation.softwareVersion}"></td>
-        </tr><tr>
-          <th>timestamp</th>
-          <td th:text="${host.conversation.timestamp}"></td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
 </main>
 

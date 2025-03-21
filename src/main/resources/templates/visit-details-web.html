@@ -43,11 +43,30 @@
             </tr>
             <tr>
                 <th>VAT values</th>
-                <td th:text="${webCrawlResult.vatValues}"></td>
+                <td>
+                    <details>
+                        <summary>Click to show VAT values</summary>
+                        <ul>
+                            <li th:each="vatValue : ${webCrawlResult.getVatValues()}">
+                                <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
+                                   th:text="${#strings.substring(vatValue, 2)}"></a>
+                            </li>
+                        </ul>
+                    </details>
+                </td>
             </tr>
             <tr>
-                <th>Detected Technologies used in the site</th>
-                <td th:text="${webCrawlResult.detectedTechnologies}"></td>
+                <th>Technologies used in the site</th>
+                <td>
+                    <details>
+                        <summary>Click to show detected technologies</summary>
+                        <ul>
+                            <li th:each="detectedTechnology : ${webCrawlResult.getDetectedTechnologies()}">
+                                <p th:text="${detectedTechnology}"></p>
+                            </li>
+                        </ul>
+                    </details>
+                </td>
             </tr>
             <tr>
                 <th>Number of visited URLs</th>
@@ -59,12 +78,15 @@
             </tr>
             <tr>
                 <th>Visited URLs</th>
-                <td >
-                    <div th:each="visitedUrl : ${webCrawlResult.visitedUrls}">
-                        <span th:text="${visitedUrl}"></span>
-                    </div>
-
-
+                <td>
+                    <details>
+                        <summary>Click to show visited URLs</summary>
+                        <ul>
+                            <li th:each="visitedUrl : ${webCrawlResult.visitedUrls}">
+                                <span th:text="${visitedUrl}"></span>
+                            </li>
+                        </ul>
+                    </details>
                 </td>
             </tr>
             </tbody>
@@ -103,9 +125,14 @@
                 <tr>
                     <td>VAT values</td>
                     <td>
-                        <div th:each="vat : ${pageVisit.getVatValues()}">
-                            <span th:text="${vat}"></span>
-                        </div>
+                        <details>
+                            <summary>Click to show VAT values</summary>
+                            <ul>
+                                <li th:each="vat : ${pageVisit.getVatValues()}">
+                                    <span th:text="${vat}"></span>
+                                </li>
+                            </ul>
+                        </details>
                     </td>
                 </tr>
                 <tr>
@@ -311,23 +338,73 @@
                 </tr>
                 <tr>
                     <td>External hosts</td>
-                    <td th:text="${features.external_hosts}"></td>
+                    <td>
+                        <details>
+                            <summary>Click to show external hosts</summary>
+                            <ul th:if="${not #strings.isEmpty(features.external_hosts)}">
+                                <li th:each="host : ${#strings.arraySplit(features.external_hosts, ',')}">
+                                    <span th:text="${host}"></span>
+                                </li>
+                            </ul>
+                            <p th:if="${#strings.isEmpty(features.external_hosts)}">No external hosts</p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>Facebook links</td>
-                    <td th:text="${features.facebook_links}"></td>
+                    <td>
+                        <details>
+                            <summary>Click to show Facebook links</summary>
+                            <ul th:if="${not #strings.isEmpty(features.facebook_links)}">
+                                <li th:each="link : ${#strings.arraySplit(features.facebook_links, ',')}">
+                                    <span th:text="${link}"></span>
+                                </li>
+                            </ul>
+                            <p th:if="${#strings.isEmpty(features.facebook_links)}">No Facebook links</p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>Twitter links</td>
-                    <td th:text="${features.twitter_links}"></td>
+                    <td>
+                        <details>
+                            <summary>Click to show Twitter links</summary>
+                            <ul th:if="${not #strings.isEmpty(features.twitter_links)}">
+                                <li th:each="link : ${#strings.arraySplit(features.twitter_links, ',')}">
+                                    <span th:text="${link}"></span>
+                                </li>
+                            </ul>
+                            <p th:if="${#strings.isEmpty(features.twitter_links)}">No Twitter links</p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>YouTube links</td>
-                    <td th:text="${features.youtube_links}"></td>
+                    <td>
+                        <details>
+                            <summary>Click to show YouTube links</summary>
+                            <ul th:if="${not #strings.isEmpty(features.youtube_links)}">
+                                <li th:each="link : ${#strings.arraySplit(features.youtube_links, ',')}">
+                                    <span th:text="${link}"></span>
+                                </li>
+                            </ul>
+                            <p th:if="${#strings.isEmpty(features.youtube_links)}">No YouTube links</p>
+                        </details>
+                    </td>
                 </tr>
                 <tr>
                     <td>Vimeo links</td>
-                    <td th:text="${features.vimeo_links}"></td>
+                    <td>
+                        <details>
+                            <summary>Click to show Vimeo links</summary>
+                            <ul th:if="${not #strings.isEmpty(features.vimeo_links)}">
+                                <li th:each="link : ${#strings.arraySplit(features.vimeo_links, ',')}">
+                                    <span th:text="${link}"></span>
+                                </li>
+                            </ul>
+                            <p th:if="${#strings.isEmpty(features.vimeo_links)}">No Vimeo links</p>
+                        </details>
+                    </td>
                 </tr>
 
                 </tbody>
