@@ -54,14 +54,14 @@ public class BaseRepository<T> {
   private final Class<T> type;
 
   @SneakyThrows
-  public BaseRepository(ObjectMapper objectMapper, String baseLocation, JdbcClient jdbcClient, Class<T> type) {
+  public BaseRepository(ObjectMapper objectMapper, String baseLocation, Class<T> type) {
     this.objectMapper = objectMapper;
     if (baseLocation == null || baseLocation.isEmpty()) {
       throw new IllegalArgumentException("baseLocation must not be null or empty");
     }
     logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
-    this.jdbcClient = jdbcClient;
+    this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
     this.type = type;
   }
 

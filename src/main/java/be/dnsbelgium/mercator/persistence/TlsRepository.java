@@ -14,7 +14,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
   private static final Logger logger = LoggerFactory.getLogger(TlsRepository.class);
 
   public TlsRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String dataLocation) {
-    super(objectMapper, dataLocation, JdbcClient.create(DuckDataSource.memory()), TlsCrawlResult.class);
+    super(objectMapper, dataLocation, TlsCrawlResult.class);
   }
 
   @Override

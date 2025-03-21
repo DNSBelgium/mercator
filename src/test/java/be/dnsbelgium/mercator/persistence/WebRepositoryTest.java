@@ -37,8 +37,7 @@ class WebRepositoryTest {
     }
   }
   private final ObjectMother objectMother = new ObjectMother();
-  private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
-  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString(), JdbcClient.create(DuckDataSource.memory()));
+  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString());
 
 
 
@@ -46,7 +45,7 @@ class WebRepositoryTest {
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
   public void toS3Parquet() throws IOException {
 
-    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"), JdbcClient.create(DuckDataSource.memory()));
+    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
 
     logger.info("tempDir = {}", baseLocation);
     Files.createDirectories(baseLocation);

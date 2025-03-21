@@ -44,7 +44,7 @@ class BaseRepositoryTest {
   @Test
   void testAll() throws IOException {
 
-    BaseRepository<BaseItem> repository = new BaseRepository<>(TestUtils.jsonReader(), baseLocation.toString(), JdbcClient.create(DuckDataSource.memory()), BaseItem.class);
+    BaseRepository<BaseItem> repository = new BaseRepository<>(TestUtils.jsonReader(), baseLocation.toString(), BaseItem.class);
 
     // prep data
     File jsonFile = tempDir.resolve("data.json").toFile();

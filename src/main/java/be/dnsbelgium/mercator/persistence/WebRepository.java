@@ -61,8 +61,8 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
   }
 
   @SneakyThrows
-  public WebRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String baseLocation, JdbcClient jdbcClient) {
-    super(objectMapper, baseLocation, jdbcClient, WebCrawlResult.class);
+  public WebRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String baseLocation) {
+    super(objectMapper, baseLocation, WebCrawlResult.class);
     String subPath = "web";
     webCrawlDestination = createDestination(baseLocation, subPath, "crawl_result");
     pageVisitDestination = createDestination(baseLocation, subPath, "page_visit");
