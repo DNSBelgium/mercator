@@ -44,8 +44,8 @@
             </tr>
             <tr>
                 <th>VAT values</th>
-                <td th:if="${webCrawlResult.getVatValues().size() > 0}">
-                    <details>
+                <td th:if="${not #lists.isEmpty(webCrawlResult.getVatValues())}">
+                <details>
                         <summary>Click to show VAT values</summary>
                         <ul>
                             <li th:each="vatValue : ${webCrawlResult.getVatValues()}">
@@ -150,8 +150,8 @@
                     <td>
                         headers
                     </td>
-                    <td th:if="${pageVisit.getHeaders().size() > 0}">
-                        <details>
+                    <td th:if="${not #lists.isEmpty(pageVisit.getHeaders())}">
+                    <details>
                             <summary>Click to show headers</summary>
                             <p th:text="${pageVisit.getHeaders()}"></p>
                         </details>
