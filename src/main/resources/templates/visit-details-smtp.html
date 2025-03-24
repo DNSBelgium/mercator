@@ -40,7 +40,7 @@
       <tr>
         <th>Hosts</th>
         <td>
-          <details>
+          <details th:if="${not smtpConversationResult.hosts.isEmpty()}">
             <summary>Click to show hosts</summary>
             <div th:each="host, iterStat : ${smtpConversationResult.hosts}">
               <h4>Host #[[${iterStat.count}]]</h4>
@@ -101,7 +101,7 @@
                 </tr>
                 <tr>
                   <th>supportedExtensions</th>
-                  <td>
+                  <td th:if="${not host.conversation.supportedExtensions.isEmpty()}">
                     <details>
                       <summary>Click to show supported extensions</summary>
                       <ul>
@@ -126,22 +126,20 @@
                 </tr>
                 <tr>
                   <th>errorMessage</th>
-                  <td>
-                    <details th:if="${not #strings.isEmpty(host.conversation.errorMessage)}">
+                  <td th:if="${not #strings.isEmpty(host.conversation.errorMessage)}">
+                    <details>
                       <summary>Click to show error message</summary>
                       <p th:text="${host.conversation.errorMessage}"></p>
                     </details>
-                    <span th:if="${#strings.isEmpty(host.conversation.errorMessage)}">No error message</span>
                   </td>
                 </tr>
                 <tr>
                   <th>error</th>
-                  <td>
-                    <details th:if="${not #strings.isEmpty(host.conversation.error)}">
+                  <td th:if="${not #strings.isEmpty(host.conversation.error)}">
+                    <details>
                       <summary>Click to show error</summary>
                       <p th:text="${host.conversation.error}"></p>
                     </details>
-                    <span th:if="${#strings.isEmpty(host.conversation.error)}">No error</span>
                   </td>
                 </tr>
                 <tr>
