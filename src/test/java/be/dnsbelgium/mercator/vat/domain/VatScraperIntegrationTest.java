@@ -85,7 +85,7 @@ public class VatScraperIntegrationTest {
       if (body.contains("\u0000")) {
         logger.info("body of {} contains 0x00", page.getUrl());
       }
-      PageVisit pageVisit = page.asPageVisit(request, false);
+      PageVisit pageVisit = page.asPageVisit(request);
       logger.info("pageVisit = {}", pageVisit);
     }
   }
@@ -104,7 +104,7 @@ public class VatScraperIntegrationTest {
     Set<Link> links = siteVisit.getVisitedPages().keySet();
     for (Link link : links) {
       Page page = siteVisit.getVisitedPages().get(link);
-      PageVisit pageVisit = page.asPageVisit(request, true);
+      PageVisit pageVisit = page.asPageVisit(request);
       logger.info("pageVisit url.length= {}", pageVisit.getUrl().length());
     }
     memoryStats();
