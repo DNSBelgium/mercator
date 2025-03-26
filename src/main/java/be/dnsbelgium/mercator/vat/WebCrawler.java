@@ -6,7 +6,6 @@ import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.vat.domain.*;
 import be.dnsbelgium.mercator.vat.wappalyzer.TechnologyAnalyzer;
-import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.PageResponse;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.Setter;
@@ -188,7 +187,6 @@ public class WebCrawler {
         List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
         webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
-        List<PageResponse> pageResponses = new ArrayList<>();
         logger.info(siteVisit.getBaseURL().toString());
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
             Page page = linkPageEntry.getValue();
@@ -196,17 +194,6 @@ public class WebCrawler {
             PageVisit pageVisit = page.asPageVisit(visitRequest, includeBodyText);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
             pageVisits.add(pageVisit);
-
-            // integrated wappalyzer
-            String html = page.getDocument().html();
-            Map<String, String> headers = page.getHeaders();
-            int status = page.getStatusCode();
-            Map<String, List<String>> convertedHeaders = new HashMap<>();
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                convertedHeaders.put(entry.getKey(), List.of(entry.getValue()));
-            }
-            PageResponse resp = new PageResponse(status, convertedHeaders, html);
-            pageResponses.add(resp);
         }
 
         PageVisit robotsTxtVisit = findRobotsTxt(visitRequest);
@@ -219,7 +206,10 @@ public class WebCrawler {
         if (securityTxtVisit != null) {
             pageVisits.add(securityTxtVisit);
         }
-        Set<String> detectedTechnologies = technologyAnalyzer.analyze(pageResponses);
+
+        Set<String> detectedTechnologies = siteVisit.getVisitedPages().entrySet().stream().map(Map.Entry::getValue)
+            .map(technologyAnalyzer::analyze).flatMap(Set::stream).collect(Collectors.toSet());
+
         logger.debug("detectedTechnologies = {}", detectedTechnologies);
 
         // integrated wappalyzer

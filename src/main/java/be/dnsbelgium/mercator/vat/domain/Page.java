@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import lombok.Builder;
 import lombok.Getter;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -11,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 
+import java.net.HttpCookie;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,27 +51,68 @@ public class Page {
 
   private static final Logger logger = getLogger(Page.class);
 
-  private Map<String, String> headers;
+  private Map<String, List<String>> headers = new HashMap<>();
+
+  private List<String> scriptSources = new LinkedList<>();
+  private Map<String, List<String>> cookies = new HashMap<>();
+  private Map<String, List<String>> metaMap = new HashMap<>();
+
 
   // TODO: use this constructor and remember the Link that got us here so that we
   // can build the path that lead to VAT number
   public Page(Link link, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
-              long contentLength, MediaType mediaType, Map<String, String> headers) {
+              long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
     this(link.getUrl(), visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
   }
 
+  @Builder
   public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
-              long contentLength, MediaType mediaType, Map<String, String> headers) {
+              long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
     this.url = url;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
     this.statusCode = statusCode;
-    this.responseBody = responseBody;
+    this.responseBody = responseBody == null ? "" : responseBody;
     this.contentLength = contentLength;
     this.mediaType = mediaType;
-    this.headers = headers;
-    this.document = Jsoup.parse(responseBody, url.toString());
+    this.headers = headers == null ? Map.of() : headers.entrySet().stream().collect(Collectors.toUnmodifiableMap(e -> e.getKey().toLowerCase(), e -> e.getValue()));
 
+    this.document = Jsoup.parse(this.responseBody, url == null? "" : url.toString());
+
+    Elements scripts = document.select("script");
+    for (Element script : scripts) {
+      String scriptSrc = script.attr("src");
+      if (!scriptSrc.equals("")) {
+        this.scriptSources.add(scriptSrc);
+      }
+    }
+
+    Elements metas = document.select("meta");
+    for (Element meta : metas) {
+      String metaName = meta.attr("name");
+      String metaContent = meta.attr("content");
+      metaMap.putIfAbsent(metaName, new LinkedList<>());
+      metaMap.get(metaName).add(metaContent);
+    }
+
+    processCookies(this.headers.get("set-cookie"));
+    processCookies(this.headers.get("cookie"));
+  }
+
+  private void processCookies(List<String> cookieValues) {
+    if (cookieValues == null)
+      return;
+    for (String cookieValue : cookieValues) {
+      List<HttpCookie> cookies = HttpCookie.parse(cookieValue);
+      for (HttpCookie cookie : cookies) {
+        this.addCookie(cookie.getName(), cookie.getValue());
+      }
+    }
+  }
+
+  private void addCookie(String name, String value) {
+    this.cookies.computeIfAbsent(name, k -> new LinkedList<>());
+    this.cookies.get(name).add(value);
   }
 
   private Page() {

@@ -35,7 +35,7 @@ public class PageVisit {
   private String html;
   private final String bodyText;
 
-  private final Map<String, String> headers;
+  private final Map<String, List<String>> headers;
 
   private final Long contentLength;
 
@@ -55,7 +55,7 @@ public class PageVisit {
       String html,
       List<String> vatValues,
       long contentLength,
-      Map<String, String> headers) {
+      Map<String, List<String>> headers) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.url  = cleanUp(url, 500);

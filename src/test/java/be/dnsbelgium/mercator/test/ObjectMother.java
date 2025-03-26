@@ -94,7 +94,7 @@ public class ObjectMother {
     String responseBody = "Bad Request: The page you are looking for could not be found.";
     long contentLength = responseBody.length();
     MediaType mediaType = MediaType.parse("text/html");
-    Map<String, String> headers = Map.of("Content-Type", "text/html");
+    Map<String, List<String>> headers = Map.of("Content-Type", List.of("text/html"));
     assert url != null;
     return new Page(url, visitStarted, visitFinished, 400, responseBody, contentLength, mediaType, headers);
   }
@@ -106,7 +106,7 @@ public class ObjectMother {
     String responseBody = "Bad Request: The page you are looking for could not be found.";
     long contentLength = responseBody.length();
     MediaType mediaType = MediaType.parse("text/html");
-    Map<String, String> headers = Map.of("Content-Type", "text/html");
+    Map<String, List<String>> headers = Map.of("Content-Type", List.of("text/html"));
     assert url != null;
     return new Page(url, visitStarted, visitFinished, 200, responseBody, contentLength, mediaType, headers);
   }
@@ -123,8 +123,8 @@ public class ObjectMother {
             .bodyText("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
             .contentLength(128L)
             .headers(Map.of(
-                    "Content-Type", "text/plain",
-                    "Content-Length", "128"
+                    "Content-Type", List.of("text/plain"),
+                    "Content-Length", List.of("128")
             ))
             .build();
   }
@@ -139,8 +139,8 @@ public class ObjectMother {
             .bodyText("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
             .contentLength(128L)
             .headers(Map.of(
-                    "Content-Type", "text/plain",
-                    "Content-Length", "128"
+                    "Content-Type", List.of("text/plain"),
+                    "Content-Length", List.of("128")
             ))
             .build();
   }
