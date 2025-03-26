@@ -26,9 +26,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Getter
 public class Page {
 
-  // the saved body text will be abbreviated to this length
-  private final static int MAX_BODY_TEXT_LENGTH = 20_000;
-
   public static Page PAGE_TIME_OUT = new Page();
   public static Page PAGE_TOO_BIG = new Page();
   public static Page CONTENT_TYPE_NOT_SUPPORTED = new Page();
@@ -251,26 +248,7 @@ public class Page {
             .toString();
   }
 
-  public PageVisit asPageVisit(VisitRequest visitRequest, boolean includeBodyText) {
-    String bodyText = null;
-    if (includeBodyText && document != null) {
-      bodyText = document.body().text();
-      if (bodyText.contains("\u0000")) {
-        logger.info("Body for {} seems to have binary data => do not save it", url);
-        bodyText = "[did not save binary data]";
-      }
-      if (bodyText.length() > MAX_BODY_TEXT_LENGTH) {
-        logger.debug("body_text has length of {} => abbreviating to {} chars", bodyText.length(), MAX_BODY_TEXT_LENGTH);
-        bodyText = StringUtils.abbreviate(bodyText, MAX_BODY_TEXT_LENGTH);
-      }
-    }
-    // TODO: add boolean parameter to control saving html
-    String html = document != null ? document.html() : null;
-    if (html != null) {
-      logger.debug("{} => length(html) = {}", url, html.length());
-    } else {
-      logger.debug("{} => html == null", url);
-    }
+  public PageVisit asPageVisit(VisitRequest visitRequest) {
     return new PageVisit(
             visitRequest.getVisitId(),
             visitRequest.getDomainName(),
@@ -279,8 +257,7 @@ public class Page {
             visitStarted,
             visitFinished,
             statusCode,
-            bodyText,
-            html,
+            responseBody,
             vatValues,
             contentLength,
             headers

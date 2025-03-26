@@ -143,39 +143,31 @@ public class WebCrawler {
 
     public PageVisit findSecurityTxt(VisitRequest visitRequest) {
         String domainName = visitRequest.getDomainName();
-        logger.debug("Finding robots.txt for {}", domainName);
+        logger.debug("Finding security.txt for {}", domainName);
         String url1 = "https://www.%s/.well-known/security.txt".formatted(domainName);
         String url2 = "https://%s/.well-known/security.txt".formatted(domainName);
-        PageVisit pageVisit = find(url1, url2, visitRequest);
-        if (pageVisit != null) {
-            pageVisit.clearHtml();
-        }
-        return pageVisit;
+        return find(url1, url2, visitRequest);
     }
 
     public PageVisit findRobotsTxt(VisitRequest visitRequest) {
         String domainName = visitRequest.getDomainName();
-        logger.debug("Finding security.txt for {}", domainName);
+        logger.debug("Finding robots.txt for {}", domainName);
         String url1 = "https://www.%s/robots.txt".formatted(domainName);
         String url2 = "https://%s/robots.txt".formatted(domainName);
-        PageVisit pageVisit = find(url1, url2, visitRequest);
-        if (pageVisit != null) {
-            pageVisit.clearHtml();
-        }
-        return pageVisit;
+        return find(url1, url2, visitRequest);
     }
 
     public PageVisit find(String url1, String url2, VisitRequest visitRequest) {
         Page page1 = vatScraper.fetchAndParse(HttpUrl.parse(url1));
         if (page1 != null && page1.getStatusCode() == 200) {
-            return page1.asPageVisit(visitRequest, true);
+            return page1.asPageVisit(visitRequest);
         }
         Page page2 = vatScraper.fetchAndParse(HttpUrl.parse(url2));
         if (page2 != null && page2.getStatusCode() == 200) {
-            return page2.asPageVisit(visitRequest, true);
+            return page2.asPageVisit(visitRequest);
         }
         if (page1 != null) {
-            return page1.asPageVisit(visitRequest, true);
+            return page1.asPageVisit(visitRequest);
         }
         return null;
     }
@@ -190,8 +182,7 @@ public class WebCrawler {
         logger.info(siteVisit.getBaseURL().toString());
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
             Page page = linkPageEntry.getValue();
-            boolean includeBodyText = false;
-            PageVisit pageVisit = page.asPageVisit(visitRequest, includeBodyText);
+            PageVisit pageVisit = page.asPageVisit(visitRequest);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
             pageVisits.add(pageVisit);
         }

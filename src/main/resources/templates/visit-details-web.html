@@ -112,10 +112,10 @@
                     <td>
                         bodyText
                     </td>
-                    <td th:if="${not #strings.isEmpty(pageVisit.getBodyText())}">
+                    <td th:if="${not #strings.isEmpty(pageVisit.getResponseBody())}">
                         <details>
-                            <summary>Click to show body text</summary>
-                            <p th:utext="${#strings.replace(pageVisit.getBodyText(), '\n', '<br/>')}"></p>
+                            <summary>Click to see HTTP response body</summary>
+                            <p th:utext="${#strings.replace(pageVisit.getResponseBody(), '\n', '<br/>')}"></p>
                         </details>
                     </td>
                 </tr>

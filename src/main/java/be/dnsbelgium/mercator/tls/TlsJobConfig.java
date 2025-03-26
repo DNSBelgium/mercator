@@ -19,6 +19,7 @@ import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
 import org.springframework.batch.item.json.JsonFileItemWriter;
 import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -63,6 +64,7 @@ public class TlsJobConfig {
   }
 
   @Bean(name = "tlsJob")
+  @ConditionalOnProperty(name = "job.tls.enabled", havingValue = "true")
   public Job tlsJob(JobRepository jobRepository,
                     JdbcTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
