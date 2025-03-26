@@ -199,7 +199,6 @@ public class Technology {
             PatternMatch match = getTechnologyStringListMatch(page.getResponseBody().lines().toList(), htmlTemplate);
             long duration = System.currentTimeMillis() - startTimestamp;
             if (match.isMatched()) {
-                System.out.println(this.getName());
                 return new TechnologyMatch(this, match.getVersion(), TechnologyMatch.HTML, true, duration);
             }
         }

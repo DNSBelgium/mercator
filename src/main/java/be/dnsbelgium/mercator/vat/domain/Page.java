@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -53,9 +54,9 @@ public class Page {
 
   private Map<String, List<String>> headers = new HashMap<>();
 
-  private List<String> scriptSources = new LinkedList<>();
-  private Map<String, List<String>> cookies = new HashMap<>();
-  private Map<String, List<String>> metaMap = new HashMap<>();
+  private final List<String> scriptSources = new LinkedList<>();
+  private final Map<String, List<String>> cookies = new HashMap<>();
+  private final Map<String, List<String>> metaMap = new HashMap<>();
 
 
   // TODO: use this constructor and remember the Link that got us here so that we
@@ -75,14 +76,14 @@ public class Page {
     this.responseBody = responseBody == null ? "" : responseBody;
     this.contentLength = contentLength;
     this.mediaType = mediaType;
-    this.headers = headers == null ? Map.of() : headers.entrySet().stream().collect(Collectors.toUnmodifiableMap(e -> e.getKey().toLowerCase(), e -> e.getValue()));
+    this.headers = mergeHeaders(headers);
 
     this.document = Jsoup.parse(this.responseBody, url == null? "" : url.toString());
 
     Elements scripts = document.select("script");
     for (Element script : scripts) {
       String scriptSrc = script.attr("src");
-      if (!scriptSrc.equals("")) {
+      if (!scriptSrc.isEmpty()) {
         this.scriptSources.add(scriptSrc);
       }
     }
@@ -97,6 +98,21 @@ public class Page {
 
     processCookies(this.headers.get("set-cookie"));
     processCookies(this.headers.get("cookie"));
+  }
+
+  private static Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers) {
+    if (headers == null) {
+      return Map.of();
+    }
+    return headers.entrySet().stream().collect(Collectors.toUnmodifiableMap(
+            e -> e.getKey().toLowerCase(),
+            Map.Entry::getValue,
+            Page::unionLists
+    ));
+  }
+
+  private static List<String> unionLists(List<String> l1, List<String> l2) {
+    return CollectionUtils.union(l1, l2).stream().toList();
   }
 
   private void processCookies(List<String> cookieValues) {
@@ -127,12 +143,6 @@ public class Page {
     this.visitFinished = visitFinished;
   }
 
-  public Page(HttpUrl url, Instant now, Instant instant, int i, String responseBody, int i1, MediaType mediaType, HttpUrl url1, Instant visitStarted, Instant visitFinished) {
-    this.url = url1;
-    this.visitStarted = visitStarted;
-    this.visitFinished = visitFinished;
-  }
-
   public static Page failed(HttpUrl url, Instant visitStarted, Instant visitFinished) {
     return new Page(url, visitStarted, visitFinished);
   }
@@ -142,7 +152,7 @@ public class Page {
   }
 
   public boolean isVatFound() {
-    return vatValues.size() > 0;
+    return !vatValues.isEmpty();
   }
 
   public Set<Link> getLinks() {
