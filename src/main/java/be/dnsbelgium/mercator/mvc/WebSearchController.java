@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class WebSearchController {
     @GetMapping("/search/web/ids")
     public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
         logger.info("search for [{}]", domainName);
-        List<String> visitIds = webRepository.searchVisitIds(domainName).stream().map(r -> r.getVisitId()).toList();
+        List<BaseRepository.SearchVisitIdResultItem> visitIds = webRepository.searchVisitIds(domainName);
         logger.info("visitIds found: {}", visitIds);
         model.addAttribute("domainName", domainName);
         model.addAttribute("visitIds", visitIds);

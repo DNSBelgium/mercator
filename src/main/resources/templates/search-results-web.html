@@ -23,14 +23,15 @@
                 <thead>
                 <tr>
                     <td>Visit Id</td>
+                    <td>Timestamp</td>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="visit : ${visitIds}">
                     <td>
-                        <a th:href="@{/search/web/id(visitId=${visit})}" th:text="${visit}"></a>
+                        <a th:href="@{/search/web/id(visitId=${visit.getVisitId()})}" th:text="${visit.getVisitId()}"></a>
                     </td>
-                    <td th:text="${domainName}"></td>
+                    <td th:text="${visit.getTimestamp()}"></td>
                 </tr>
                 </tbody>
             </table>

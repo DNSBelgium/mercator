@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import org.slf4j.Logger;
@@ -63,7 +64,7 @@ public class TlsSearchController {
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("searchVisitIds: domainName = {}", domainName);
     model.addAttribute("domainName", domainName);
-    List<String> visitIds = tlsRepository.searchVisitIds(domainName).stream().map(i -> i.getVisitId()).toList();
+    List<BaseRepository.SearchVisitIdResultItem> visitIds = tlsRepository.searchVisitIds(domainName);
     model.addAttribute("visitIds", visitIds);
     logger.debug("For {} we found {}", domainName, visitIds);
     return "search-results-tls";
