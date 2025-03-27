@@ -28,7 +28,7 @@
                 <tbody>
                 <tr th:each="visit : ${visitIds}">
                     <td>
-                        <a th:href="@{/search/web/id(visitId=${visit.getVisitId()})}" th:text="${visit.getVisitId()}"></a>
+                        <a th:href="@{/search/tls/id(visitId=${visit.getVisitId()})}" th:text="${visit.getVisitId()}"></a>
                     </td>
                     <td th:text="${visit.getTimestamp()}"></td>
                 </tr>
