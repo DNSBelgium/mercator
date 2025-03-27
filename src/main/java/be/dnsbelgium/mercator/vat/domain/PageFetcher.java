@@ -217,9 +217,9 @@ public class PageFetcher {
           return Page.PAGE_TOO_BIG;
         }
 
-        Map<String, String> headers = new HashMap<>();
+        Map<String, List<String>> headers = new HashMap<>();
         for (String name : response.headers().names()) {
-          headers.put(name, response.header(name));
+          headers.put(name, response.headers(name));
         }
 
         return new Page(

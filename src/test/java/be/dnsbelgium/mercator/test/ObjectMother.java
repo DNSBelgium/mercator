@@ -42,9 +42,8 @@ public class ObjectMother {
   public PageVisit pageVisit1() {
     return PageVisit.builder()
             .visitId(VISIT_ID_1)
-            .html("<h1>I am a page </h1>")
+            .responseBody("<h1>I am a page </h1>")
             .url("https://www.dnsbelgium.be/")
-            .bodyText("I am a page")
             .domainName("dnsbelgium.be")
             .statusCode(200)
             .path("/")
@@ -54,9 +53,8 @@ public class ObjectMother {
   public PageVisit pageVisit2() {
     return PageVisit.builder()
             .visitId(VISIT_ID_1)
-            .html("<h1>I am the EN page </h1>")
+            .responseBody("<h1>I am the EN page </h1>")
             .url("https://www.dnsbelgium.be/en")
-            .bodyText("I am the EN page")
             .domainName("dnsbelgium.be")
             .statusCode(200)
             .path("/en")
@@ -66,9 +64,8 @@ public class ObjectMother {
   public PageVisit pageVisit3() {
     return PageVisit.builder()
             .visitId(VISIT_ID_1)
-            .html("<h1>I am the contact page </h1>")
+            .responseBody("<h1>I am the contact page </h1>")
             .url("https://www.dnsbelgium.be/en/contact")
-            .bodyText("I am the contact page")
             .domainName("dnsbelgium.be")
             .vatValues(List.of("BE0466158640", "BE0841242495"))
             .statusCode(200)
@@ -79,9 +76,8 @@ public class ObjectMother {
   public PageVisit pageVisit4() {
     return PageVisit.builder()
             .visitId(VISIT_ID_2)
-            .html(null)
+            .responseBody(null)
             .url("https://www.no-website.org/")
-            .bodyText(null)
             .domainName("no-website.org")
             .statusCode(400)
             .path("/")
@@ -95,7 +91,7 @@ public class ObjectMother {
     String responseBody = "Bad Request: The page you are looking for could not be found.";
     long contentLength = responseBody.length();
     MediaType mediaType = MediaType.parse("text/html");
-    Map<String, String> headers = Map.of("Content-Type", "text/html");
+    Map<String, List<String>> headers = Map.of("Content-Type", List.of("text/html"));
     assert url != null;
     return new Page(url, visitStarted, visitFinished, 400, responseBody, contentLength, mediaType, headers);
   }
@@ -107,12 +103,10 @@ public class ObjectMother {
     String responseBody = "Bad Request: The page you are looking for could not be found.";
     long contentLength = responseBody.length();
     MediaType mediaType = MediaType.parse("text/html");
-    Map<String, String> headers = Map.of("Content-Type", "text/html");
+    Map<String, List<String>> headers = Map.of("Content-Type", List.of("text/html"));
     assert url != null;
     return new Page(url, visitStarted, visitFinished, 200, responseBody, contentLength, mediaType, headers);
   }
-
-
 
   public PageVisit pageVisitWithSecurityTxtFields() {
     return PageVisit.builder()
@@ -121,11 +115,11 @@ public class ObjectMother {
             .domainName("example.org")
             .path("/.well-known/security.txt")
             .statusCode(200)
-            .bodyText("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
+            .responseBody("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
             .contentLength(128L)
             .headers(Map.of(
-                    "Content-Type", "text/plain",
-                    "Content-Length", "128"
+                    "Content-Type", List.of("text/plain"),
+                    "Content-Length", List.of("128")
             ))
             .build();
   }
@@ -137,11 +131,11 @@ public class ObjectMother {
             .domainName("example.org")
             .path("/robots.txt")
             .statusCode(200)
-            .bodyText("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
+            .responseBody("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
             .contentLength(128L)
             .headers(Map.of(
-                    "Content-Type", "text/plain",
-                    "Content-Length", "128"
+                    "Content-Type", List.of("text/plain"),
+                    "Content-Length", List.of("128")
             ))
             .build();
   }

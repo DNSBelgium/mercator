@@ -64,12 +64,4 @@ public class ULIDTest {
         assertThat( data.getFirst().get("ulid")).isEqualTo("01JD6W2CAB5QAH7WVXE4YPTPSW");
     }
 
-    @Test
-    public void getConnection() throws SQLException {
-        String url = "jdbc:duckdb:";
-        logger.info("url = {}", url);
-        // the next statement takes over 2 seconds :-(
-        DuckDBConnection connection = (DuckDBConnection) DriverManager.getConnection(url);
-        logger.info("connection = {}", connection);
-    }
 }

@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
+import be.dnsbelgium.mercator.vat.domain.Page;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -28,17 +30,17 @@ public class Jappalyzer {
         this.technologies = new LinkedList<>(technologies);
     }
 
-    public Set<TechnologyMatch> fromPageResponse(PageResponse pageResponse) {
-        return getTechnologyMatches(pageResponse);
+    public Set<TechnologyMatch> fromPage(Page page) {
+        return getTechnologyMatches(page);
     }
 
     public void addTechnology(Technology technology) {
         this.technologies.add(technology);
     }
 
-    private Set<TechnologyMatch> getTechnologyMatches(PageResponse pageResponse) {
+    private Set<TechnologyMatch> getTechnologyMatches(Page page) {
         Set<TechnologyMatch> matchesSet = technologies.stream().parallel()
-                .map(technology -> technology.applicableTo(pageResponse))
+                .map(technology -> technology.applicableTo(page))
                 .filter(TechnologyMatch::isMatched).collect(Collectors.toSet());
         enrichMatchesWithImpliedTechnologies(matchesSet);
         return matchesSet;
@@ -79,5 +81,6 @@ public class Jappalyzer {
                 .filter(item -> item.getName().equals(name))
                 .findFirst();
     }
+
 
 }

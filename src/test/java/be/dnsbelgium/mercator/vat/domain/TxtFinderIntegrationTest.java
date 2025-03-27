@@ -39,11 +39,9 @@ public class TxtFinderIntegrationTest {
     public void testFindSecurityTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
         PageVisit foundPage = webCrawler.findSecurityTxt(visitRequest);
-        assertThat(foundPage.getBodyText()).isNotEmpty();
+        assertThat(foundPage.getResponseBody()).isNotEmpty();
         assertThat(foundPage.getHeaders().toString()).isNotEmpty();
-        logger.info("body text: {}", foundPage.getBodyText());
-        logger.info("html: {}", foundPage.getHtml());
-        assertThat(foundPage.getHtml()).isNull();
+        logger.info("body text: {}", foundPage.getResponseBody());
     }
 
     @Test
@@ -74,11 +72,10 @@ public class TxtFinderIntegrationTest {
     public void testFindRobotsTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
         PageVisit found = webCrawler.findRobotsTxt(visitRequest);
-        assertThat(found.getBodyText()).isNotEmpty();
+        assertThat(found.getResponseBody()).isNotEmpty();
         assertThat(found.getHeaders().toString()).isNotEmpty();
-        logger.info("found.getBodyText = {}", found.getBodyText());
+        logger.info("found.getBodyText = {}", found.getResponseBody());
         logger.info("found.getContentLength = {}", found.getContentLength());
-        assertThat(found.getHtml()).isNull();
     }
 
     @Test

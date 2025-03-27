@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.vat.wappalyzer;
 
+import be.dnsbelgium.mercator.vat.domain.Page;
 import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.Jappalyzer;
-import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.PageResponse;
 import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.Technology;
 import be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.TechnologyMatch;
 import org.slf4j.Logger;
@@ -28,19 +28,11 @@ public class TechnologyAnalyzer {
         this.jappalyzer = jappalyzer;
     }
 
-    public Set<String> analyze(List<PageResponse> pageResponses) {
-        Set<TechnologyMatch> allTechnologyMatches = new HashSet<>();
-
-        for (PageResponse pageResponse : pageResponses) {
-            Set<TechnologyMatch> technologyMatches = jappalyzer.fromPageResponse(pageResponse);
-            allTechnologyMatches.addAll(technologyMatches);
-        }
-
-        Set<String> detectedTechnologies = allTechnologyMatches.stream()
-                .map(TechnologyMatch::getTechnology)
-                .map(Technology::getName)
-                .collect(Collectors.toSet());
-
-        return detectedTechnologies;
+    public Set<String> analyze(Page page) {
+        return jappalyzer.fromPage(page).stream().map(TechnologyMatch::getTechnology).map(Technology::getName).collect(Collectors.toSet());
+    }
+    public Set<String> analyze(List<Page> pages) {
+        return pages.stream().map(this::analyze).flatMap(Set::stream)
+            .collect(Collectors.toSet());
     }
 }

@@ -7,12 +7,10 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@SuppressWarnings("SqlSourceToSinkFlow")
 @Component
 public class WebRepository extends BaseRepository<WebCrawlResult> {
 
@@ -82,7 +80,7 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
       select *,
              year(to_timestamp(${timestampField})) as year,
              month(to_timestamp(${timestampField})) as month
-      from read_json('${jsonFile}')
+      from read_json('${jsonFile}', field_appearance_threshold=1)
       """, Map.of(
         "timestampField", this.timestampField(),
         "jsonFile", jsonResultsLocation
@@ -117,8 +115,7 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
             url::VARCHAR                                       as url,
             link_text::VARCHAR                                 as link_text,
             path::VARCHAR                                      as path,
-            html::VARCHAR                                      as html,
-            body_text::VARCHAR                                 as body_text,
+            response_body::VARCHAR                             as response_body,
             vat_values::VARCHAR[]                              as vat_values,
             year,
             month

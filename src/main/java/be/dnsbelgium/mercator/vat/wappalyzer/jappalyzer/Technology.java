@@ -1,6 +1,8 @@
 
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
+import be.dnsbelgium.mercator.vat.domain.Page;
+
 import java.util.*;
 
 public class Technology {
@@ -154,11 +156,8 @@ public class Technology {
         this.scriptSrc.add(new PatternWithVersion(scriptSrc));
     }
 
-    public TechnologyMatch applicableTo(String content) {
-        return applicableTo(new PageResponse(content));
-    }
 
-    public TechnologyMatch applicableTo(PageResponse page) {
+    public TechnologyMatch applicableTo(Page page) {
         long startTimestamp = System.currentTimeMillis();
 
         if (!page.getHeaders().isEmpty()) {
@@ -197,10 +196,11 @@ public class Technology {
         }
 
         for (PatternWithVersion htmlTemplate : this.htmlTemplates) {
-            PatternMatch match = getTechnologyStringListMatch(page.getContentLines(), htmlTemplate);
+            PatternMatch match = getTechnologyStringListMatch(page.getResponseBody().lines().toList(), htmlTemplate);
             long duration = System.currentTimeMillis() - startTimestamp;
-            if (match.isMatched())
+            if (match.isMatched()) {
                 return new TechnologyMatch(this, match.getVersion(), TechnologyMatch.HTML, true, duration);
+            }
         }
 
         long duration = System.currentTimeMillis() - startTimestamp;

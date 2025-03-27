@@ -1,9 +1,11 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import lombok.Builder;
 import lombok.Getter;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,6 +13,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 
+import java.net.HttpCookie;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,9 +25,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 @Getter
 public class Page {
-
-  // the saved body text will be abbreviated to this length
-  private final static int MAX_BODY_TEXT_LENGTH = 20_000;
 
   public static Page PAGE_TIME_OUT = new Page();
   public static Page PAGE_TOO_BIG = new Page();
@@ -49,27 +49,83 @@ public class Page {
 
   private static final Logger logger = getLogger(Page.class);
 
-  private Map<String, String> headers;
+  private Map<String, List<String>> headers = new HashMap<>();
+
+  private final List<String> scriptSources = new LinkedList<>();
+  private final Map<String, List<String>> cookies = new HashMap<>();
+  private final Map<String, List<String>> metaMap = new HashMap<>();
+
 
   // TODO: use this constructor and remember the Link that got us here so that we
   // can build the path that lead to VAT number
   public Page(Link link, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
-              long contentLength, MediaType mediaType, Map<String, String> headers) {
+              long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
     this(link.getUrl(), visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
   }
 
+  @Builder
   public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
-              long contentLength, MediaType mediaType, Map<String, String> headers) {
+              long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
     this.url = url;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
     this.statusCode = statusCode;
-    this.responseBody = responseBody;
+    this.responseBody = responseBody == null ? "" : responseBody;
     this.contentLength = contentLength;
     this.mediaType = mediaType;
-    this.headers = headers;
-    this.document = Jsoup.parse(responseBody, url.toString());
+    this.headers = mergeHeaders(headers);
 
+    this.document = Jsoup.parse(this.responseBody, url == null? "" : url.toString());
+
+    Elements scripts = document.select("script");
+    for (Element script : scripts) {
+      String scriptSrc = script.attr("src");
+      if (!scriptSrc.isEmpty()) {
+        this.scriptSources.add(scriptSrc);
+      }
+    }
+
+    Elements metas = document.select("meta");
+    for (Element meta : metas) {
+      String metaName = meta.attr("name");
+      String metaContent = meta.attr("content");
+      metaMap.putIfAbsent(metaName, new LinkedList<>());
+      metaMap.get(metaName).add(metaContent);
+    }
+
+    processCookies(this.headers.get("set-cookie"));
+    processCookies(this.headers.get("cookie"));
+  }
+
+  private static Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers) {
+    if (headers == null) {
+      return Map.of();
+    }
+    return headers.entrySet().stream().collect(Collectors.toUnmodifiableMap(
+            e -> e.getKey().toLowerCase(),
+            Map.Entry::getValue,
+            Page::unionLists
+    ));
+  }
+
+  private static List<String> unionLists(List<String> l1, List<String> l2) {
+    return CollectionUtils.union(l1, l2).stream().toList();
+  }
+
+  private void processCookies(List<String> cookieValues) {
+    if (cookieValues == null)
+      return;
+    for (String cookieValue : cookieValues) {
+      List<HttpCookie> cookies = HttpCookie.parse(cookieValue);
+      for (HttpCookie cookie : cookies) {
+        this.addCookie(cookie.getName(), cookie.getValue());
+      }
+    }
+  }
+
+  private void addCookie(String name, String value) {
+    this.cookies.computeIfAbsent(name, k -> new LinkedList<>());
+    this.cookies.get(name).add(value);
   }
 
   private Page() {
@@ -84,12 +140,6 @@ public class Page {
     this.visitFinished = visitFinished;
   }
 
-  public Page(HttpUrl url, Instant now, Instant instant, int i, String responseBody, int i1, MediaType mediaType, HttpUrl url1, Instant visitStarted, Instant visitFinished) {
-    this.url = url1;
-    this.visitStarted = visitStarted;
-    this.visitFinished = visitFinished;
-  }
-
   public static Page failed(HttpUrl url, Instant visitStarted, Instant visitFinished) {
     return new Page(url, visitStarted, visitFinished);
   }
@@ -99,7 +149,7 @@ public class Page {
   }
 
   public boolean isVatFound() {
-    return vatValues.size() > 0;
+    return !vatValues.isEmpty();
   }
 
   public Set<Link> getLinks() {
@@ -198,26 +248,7 @@ public class Page {
             .toString();
   }
 
-  public PageVisit asPageVisit(VisitRequest visitRequest, boolean includeBodyText) {
-    String bodyText = null;
-    if (includeBodyText && document != null) {
-      bodyText = document.body().text();
-      if (bodyText.contains("\u0000")) {
-        logger.info("Body for {} seems to have binary data => do not save it", url);
-        bodyText = "[did not save binary data]";
-      }
-      if (bodyText.length() > MAX_BODY_TEXT_LENGTH) {
-        logger.debug("body_text has length of {} => abbreviating to {} chars", bodyText.length(), MAX_BODY_TEXT_LENGTH);
-        bodyText = StringUtils.abbreviate(bodyText, MAX_BODY_TEXT_LENGTH);
-      }
-    }
-    // TODO: add boolean parameter to control saving html
-    String html = document != null ? document.html() : null;
-    if (html != null) {
-      logger.debug("{} => length(html) = {}", url, html.length());
-    } else {
-      logger.debug("{} => html == null", url);
-    }
+  public PageVisit asPageVisit(VisitRequest visitRequest) {
     return new PageVisit(
             visitRequest.getVisitId(),
             visitRequest.getDomainName(),
@@ -226,8 +257,7 @@ public class Page {
             visitStarted,
             visitFinished,
             statusCode,
-            bodyText,
-            html,
+            responseBody,
             vatValues,
             contentLength,
             headers
