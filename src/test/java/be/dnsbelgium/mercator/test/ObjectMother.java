@@ -5,6 +5,7 @@ import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
 import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
@@ -303,90 +304,83 @@ public class ObjectMother {
             .millis_ssl_2_0(20)
             .millis_ssl_3_0(30)
             .build();
-    }
 
+  }
+  public SmtpVisit smtpVisit1() {
+    return SmtpVisit.builder()
+            .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
+            .hosts(List.of(smtpHost1(), smtpHost2()))
+            .domainName("example.com")
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .crawlStatus(CrawlStatus.OK)
+            .numConversations(1)
+            .build();
+  }
 
-  public SmtpConversation smtpConversationHost1() {
+  public SmtpConversation smtpConversation1() {
     return SmtpConversation.builder()
-            .id("conv-host1")
+            .id("conv-67890")
+            .asn(12345L)
             .ip("192.168.1.1")
-            .asn(123456L)
-            .asnOrganisation("ASN Org Host1")
-            .banner("banner host1")
-            .connectReplyCode(250)
-            .country("US")
+            .asnOrganisation("Example ISP")
+            .banner("220 mail.example.com ESMTP Postfix")
+            .connectionTimeMs(150)
+            .connectReplyCode(220)
+            .country("BE")
             .ipVersion(4)
             .startTlsOk(true)
             .connectOK(true)
-            .timestamp(Instant.now())
-            .software("software host1")
-            .softwareVersion("1.0")
-            .build();
-  }
-  public SmtpConversation smtpConversationHost2() {
-    return SmtpConversation.builder()
-            .id("conv-host2")
-            .ip("192.168.1.2")
-            .asn(789012L)
-            .asnOrganisation("ASN Org Host2")
-            .banner("banner host2")
-            .connectReplyCode(220)
-            .country("DE")
-            .ipVersion(4)
-            .startTlsOk(false)
-            .connectOK(true)
-            .timestamp(Instant.now())
-            .software("software host2")
-            .softwareVersion("2.0")
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .errorMessage(null)
+            .software("Postfix")
+            .softwareVersion("3.5.8")
+            .startTlsReplyCode(250)
+            .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
             .build();
   }
 
+  public SmtpConversation smtpConversation2() {
+    return SmtpConversation.builder()
+            .id("conv-88775")
+            .asn(12345L)
+            .ip("192.168.1.1")
+            .asnOrganisation("Example ISP")
+            .banner("220 mail.example.com ESMTP Postfix")
+            .connectionTimeMs(150)
+            .connectReplyCode(220)
+            .country("BE")
+            .ipVersion(4)
+            .startTlsOk(true)
+            .connectOK(true)
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .errorMessage(null)
+            .software("Postfix")
+            .softwareVersion("3.5.8")
+            .startTlsReplyCode(250)
+            .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
+            .build();
+  }
 
   public SmtpHost smtpHost1() {
     return SmtpHost.builder()
-            .id("host1")
+            .id("host-12345")
             .fromMx(true)
-            .hostName("host1.example.com")
+            .hostName("mail.example.com")
             .priority(10)
-            .conversation(smtpConversationHost1())
+            .conversation(smtpConversation1())
             .build();
   }
 
   public SmtpHost smtpHost2() {
     return SmtpHost.builder()
-            .id("host2")
-            .fromMx(false)
-            .hostName("host2.example.com")
-            .priority(20)
-            .conversation(smtpConversationHost2())
+            .id("host-144455")
+            .fromMx(true)
+            .hostName("mail.example.com")
+            .priority(10)
+            .conversation(smtpConversation2())
             .build();
   }
 
-  public SmtpConversation smtpConversation1() {
-        return SmtpConversation.builder()
-            .numConversations(8)
-            .id("ie-ze-fd-dfsdsf-d")
-            .asn(4555454L)
-            .ip("127.0.0.1")
-            .asnOrganisation("asn org 1")
-            .banner("banner 1")
-            .connectionTimeMs(500)
-            .connectReplyCode(555)
-            .country("BE")
-            .ipVersion(12)
-            .startTlsOk(true)
-            .connectOK(true)
-            .timestamp(Instant.now())
-            .errorMessage("error 1")
-            .software("software 1")
-            .softwareVersion("12")
-            .startTlsReplyCode(455)
-            .supportedExtensions(Set.of("test"))
-            .visitId("visit-1234")
-            .domainName("example.com")
-            .crawlStatus(CrawlStatus.OK)
-            .hosts(List.of(smtpHost1(), smtpHost2()))
-            .build();
-  }
+
 
 }

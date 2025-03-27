@@ -8,7 +8,6 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,16 +69,6 @@ public class SmtpConversation {
 
   private final static String NULL_BYTE = "\u0000";
   private final static String EMPTY_STRING = "";
-
-  private String visitId;
-
-  private String domainName;
-
-  private Integer numConversations;
-
-  private List<SmtpHost> hosts;
-
-  private CrawlStatus crawlStatus;
 
   public SmtpConversation() {
     this.timestamp = Instant.now();

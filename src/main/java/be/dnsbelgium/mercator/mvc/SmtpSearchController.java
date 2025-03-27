@@ -1,8 +1,9 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
-import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import org.slf4j.Logger;
@@ -18,18 +19,19 @@ import java.util.Optional;
 @Controller
 public class SmtpSearchController {
 
-  private static final Logger logger = LoggerFactory.getLogger(SmtpSearchController.class);
-  private final SmtpRepository searchRepository;
 
-  public SmtpSearchController(SmtpRepository searchRepository) {
-    this.searchRepository = searchRepository;
+  private static final Logger logger = LoggerFactory.getLogger(SmtpSearchController.class);
+  private final SmtpRepository smtpRepository;
+
+  public SmtpSearchController(SmtpRepository smtpRepository) {
+    this.smtpRepository = smtpRepository;
   }
 
   @GetMapping("/search/smtp/latest")
   public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
-    Optional<SmtpConversation> smtpConversationResult = searchRepository.findLatestResult(domainName);
-    if (smtpConversationResult.isPresent()) {
-      model.addAttribute("smtpConversationResult", smtpConversationResult.get());
+    Optional<SmtpVisit> smtpVisitResult = smtpRepository.findLatestResult(domainName);
+    if (smtpVisitResult.isPresent()) {
+      model.addAttribute("smtpVisitResult", smtpVisitResult.get());
     }
     return "visit-details-smtp";
   }
@@ -37,7 +39,7 @@ public class SmtpSearchController {
   @GetMapping("/search/smtp/ids")
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("search for [{}]", domainName);
-    List<String> visitIds = searchRepository.searchVisitIds(domainName);
+    List<BaseRepository.SearchVisitIdResultItem> visitIds = smtpRepository.searchVisitIds(domainName);
     logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
     model.addAttribute("domainName", domainName);
     model.addAttribute("visitIds", visitIds);
@@ -48,9 +50,9 @@ public class SmtpSearchController {
   public String findByVisitId(Model model, @RequestParam(name = "visitId") String visitId) {
     logger.info("/visits/smtp/{}", visitId);
     model.addAttribute("visitId", visitId);
-    Optional<SmtpConversation> smtpConversation = searchRepository.findByVisitId(visitId);
-    if (smtpConversation.isPresent()) {
-      model.addAttribute("smtpConversationResult", smtpConversation.get());
+    Optional<SmtpVisit> smtpVisitResult = smtpRepository.findByVisitId(visitId);
+    if (smtpVisitResult.isPresent()) {
+      model.addAttribute("smtpVisitResult", smtpVisitResult.get());
     }
     return "visit-details-smtp";
   }
