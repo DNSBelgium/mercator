@@ -42,6 +42,7 @@ public class JobRunner implements CommandLineRunner {
   @Override
   public void run(String... args) throws Exception {
     logger.info("JobRunner.run() started");
+    logger.info("we will run these jobs: {}", jobs.keySet());
 
     jobs.forEach((name, job) -> {
         try {
@@ -57,7 +58,7 @@ public class JobRunner implements CommandLineRunner {
               .toJobParameters();
 
           AbstractJob abstractJob = (AbstractJob) job;
-          JobListener listener = new JobListener();
+          JobListener listener = new JobListener(job.getName());
           abstractJob.registerJobExecutionListener(listener);
 
           logger.info("Starting job {} with these parameters: {}", name, params);

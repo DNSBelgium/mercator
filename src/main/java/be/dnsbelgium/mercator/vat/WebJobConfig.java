@@ -20,6 +20,7 @@ import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -32,6 +33,8 @@ public class WebJobConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(WebJobConfig.class);
 
+  private static final String JOB_NAME = "web";
+
   @Value("${web.corePoolSize:100}")
   private int corePoolSize;
 
@@ -42,14 +45,14 @@ public class WebJobConfig {
   private int chunkSize;
 
   @Bean
-  @Qualifier("web")
+  @Qualifier(JOB_NAME)
   public ThreadPoolTaskExecutor webTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
-    executor.setThreadNamePrefix("web-");
-    logger.info("web executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    executor.setThreadNamePrefix(JOB_NAME + "-");
+    logger.info("{} executor corePoolSize={} maxPoolSize={}", JOB_NAME, corePoolSize, maxPoolSize);
     return executor;
   }
 
@@ -70,20 +73,21 @@ public class WebJobConfig {
   @Bean
   public JsonItemWriter<WebCrawlResult> webItemWriter(
           BatchConfig batchConfig, WebRepository repository, ObjectMapper objectMapper) {
-    Path outputDirectory = batchConfig.outputDirectoryFor("web");
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory);
+    Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
+    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, WebCrawlResult.class);
   }
 
-  @Bean(name = "webJob")
+  @Bean(name = JOB_NAME + "Job")
+  @ConditionalOnProperty(name = "job.web.enabled", havingValue = "true")
   public Job webJob(ResourcelessJobRepository jobRepository,
                     ResourcelessTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
                     JsonItemWriter<WebCrawlResult> jsonItemWriter,
-                    @Qualifier("web") ThreadPoolTaskExecutor taskExecutor
+                    @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor
   ) {
     @SuppressWarnings("removal")
-    Step step = new StepBuilder("web", jobRepository)
+    Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, WebCrawlResult>chunk(chunkSize, transactionManager)
             .reader(itemReader)
             .processor(processor)
@@ -92,7 +96,7 @@ public class WebJobConfig {
             .throttleLimit(maxPoolSize - 10)
             .build();
 
-    return new JobBuilder("web", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
             .start(step)
             .build();
   }

@@ -7,9 +7,11 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class DnsRepository extends BaseRepository<DnsCrawlResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(DnsRepository.class);

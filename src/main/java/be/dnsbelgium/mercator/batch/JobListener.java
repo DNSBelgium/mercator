@@ -13,29 +13,34 @@ public class JobListener implements JobExecutionListener {
 
   private static final Logger logger = LoggerFactory.getLogger(JobListener.class);
   private final CountDownLatch latch = new CountDownLatch(1);
+  private final String jobName;
+
+  public JobListener(String jobName) {
+    this.jobName = jobName;
+  }
 
   @Override
   public void beforeJob(@NonNull JobExecution jobExecution) {
-    logger.info("beforeJob: {}", jobExecution.getJobInstance());
+    logger.info("beforeJob: jobName={}, instance={}", jobName, jobExecution.getJobInstance());
   }
 
   @Override
   public void afterJob(@NonNull JobExecution jobExecution) {
-    logger.info("afterJob: {}", jobExecution.getJobInstance());
+    logger.info("afterJob: jobName={}, instance={}", jobName, jobExecution.getJobInstance());
     latch.countDown();
   }
 
   public void await() {
-    logger.info("Awaiting job ...");
+    logger.info("Awaiting job {} ...", jobName);
     try {
       long start = System.currentTimeMillis();
       while (!latch.await(20, TimeUnit.SECONDS)) {
         long seconds = (System.currentTimeMillis() - start)/1000;
-        logger.info("Awaiting latch for {} seconds ...", seconds);
+        logger.info("Awaiting job {} for already {} seconds ...", jobName, seconds);
       }
       logger.info("Job completed");
     } catch (InterruptedException e) {
-      logger.warn("Interrupted while waiting for latch: {}", e.getMessage());
+      logger.warn("Interrupted while waiting for job {} latch: {}", jobName, e.getMessage());
       Thread.currentThread().interrupt();
     }
   }

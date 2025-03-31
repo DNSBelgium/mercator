@@ -199,7 +199,7 @@ public class BaseRepository<T> {
           year(to_timestamp("%s")) as year,
           month(to_timestamp("%s")) as month
         from read_json('%s')
-      ) to '%s' (format parquet, partition_by (year, month), filename_pattern 'data_{uuid}')""",
+      ) to '%s' (format parquet, partition_by (year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
             timestampField(), timestampField(), jsonResultsLocation, baseLocation)
     ).update();
   }

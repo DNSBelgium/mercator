@@ -1,11 +1,11 @@
-package be.dnsbelgium.mercator.tls;
+package be.dnsbelgium.mercator.dns;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.persistence.TlsRepository;
-import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
+import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
+import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
+import be.dnsbelgium.mercator.persistence.DnsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,21 +30,21 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.nio.file.Path;
 
 @Configuration
-public class TlsJobConfig {
+public class DnsJobConfig {
 
-  private static final Logger logger = LoggerFactory.getLogger(TlsJobConfig.class);
-  private static final String JOB_NAME = "TLS";
+  private static final Logger logger = LoggerFactory.getLogger(DnsJobConfig.class);
+  private static final String JOB_NAME = "dns";
 
-  @Value("${tls.chunkSize:1000}")
+  @Value("${dns.chunkSize:1000}")
   private int chunkSize;
 
-  @Value("${tls.throttleLimit:200}")
+  @Value("${dns.throttleLimit:200}")
   private int throttleLimit;
 
   @Bean
   @StepScope
   @SuppressWarnings({"SpringElInspection"})
-  public FlatFileItemReader<VisitRequest> tlsItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
+  public FlatFileItemReader<VisitRequest> dnsItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
     logger.info("creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
@@ -56,28 +56,28 @@ public class TlsJobConfig {
   }
 
   @Bean
-  public JsonItemWriter<TlsCrawlResult> tlsItemWriter(
-          BatchConfig batchConfig, TlsRepository repository, ObjectMapper objectMapper) {
+  public JsonItemWriter<DnsCrawlResult> dnsItemWriter(
+          BatchConfig batchConfig, DnsRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, TlsCrawlResult.class);
+    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, DnsCrawlResult.class);
   }
 
-  @Bean(name = "tlsJob")
-  @ConditionalOnProperty(name = "job.tls.enabled", havingValue = "true")
-  public Job tlsJob(JobRepository jobRepository,
+  @Bean(name = "dnsJob")
+  @ConditionalOnProperty(name = "job.dns.enabled", havingValue = "true")
+  public Job dnsJob(JobRepository jobRepository,
                     PlatformTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
-                    TlsCrawler tlsCrawler,
-                    ItemWriter<TlsCrawlResult> itemWriter) {
-    logger.info("creating tlsJob");
+                    DnsCrawlService dnsCrawler,
+                    ItemWriter<DnsCrawlResult> itemWriter) {
+    logger.info("creating dnsJob");
     // throttleLimit method is deprecated but alternative is not well documented
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
-            .<VisitRequest, TlsCrawlResult>chunk(chunkSize, transactionManager)
+            .<VisitRequest, DnsCrawlResult>chunk(chunkSize, transactionManager)
             .reader(itemReader)
             .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
             .throttleLimit(throttleLimit)
-            .processor(tlsCrawler)
+            .processor(dnsCrawler)
             .writer(itemWriter)
             .build();
 
@@ -85,5 +85,6 @@ public class TlsJobConfig {
             .start(step)
             .build();
   }
+
 
 }

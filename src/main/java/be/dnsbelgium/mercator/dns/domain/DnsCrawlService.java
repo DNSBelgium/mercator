@@ -14,6 +14,8 @@ import be.dnsbelgium.mercator.metrics.Threads;
 import com.github.f4b6a3.ulid.Ulid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Name;
@@ -27,7 +29,8 @@ import java.util.Set;
 import static be.dnsbelgium.mercator.dns.dto.RecordType.A;
 
 @Component
-public class DnsCrawlService {
+public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResult> {
+
   private static final Logger logger = LoggerFactory.getLogger(DnsCrawlService.class);
   private final DnsResolver resolver;
   private final Enricher enricher;
@@ -47,6 +50,12 @@ public class DnsCrawlService {
       Threads.DNS.decrementAndGet();
     }
   }
+
+  @Override
+  public DnsCrawlResult process(@NonNull VisitRequest request) throws Exception {
+    return visit(request);
+  }
+
 
   public DnsCrawlResult retrieveDnsRecords(VisitRequest visitRequest) {
     String a_label, u_label;

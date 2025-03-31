@@ -33,6 +33,7 @@ import java.nio.file.Path;
 public class SmtpJobConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpJobConfig.class);
+  private static final String JOB_NAME = "smtp";
 
   @Value("${smtp.corePoolSize:100}")
   private int corePoolSize;
@@ -55,23 +56,24 @@ public class SmtpJobConfig {
             .targetType(VisitRequest.class)
             .build();
   }
+
   @Bean
   public JsonItemWriter<SmtpVisit> smtpItemWriter(
           BatchConfig batchConfig, SmtpRepository repository, ObjectMapper objectMapper) {
-    Path outputDirectory = batchConfig.outputDirectoryFor("smtp");
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory);
+    Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
+    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, SmtpVisit.class);
   }
 
   @Bean
-  @Qualifier("smtp")
+  @Qualifier(JOB_NAME)
   public ThreadPoolTaskExecutor smtpTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
-    executor.setThreadNamePrefix("smtp-");
-    logger.info("web executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
-    logger.info("web executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    executor.setThreadNamePrefix(JOB_NAME);
+    logger.info("executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    logger.info("executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
     return executor;
   }
 
@@ -82,14 +84,14 @@ public class SmtpJobConfig {
                      ItemReader<VisitRequest> itemReader,
                      SmtpCrawler smtpCrawler,
                      JsonItemWriter<SmtpVisit> itemWriter,
-                     @Qualifier("smtp") ThreadPoolTaskExecutor taskExecutor) {
-    logger.info("creating smtpJob");
+                     @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor) {
+    logger.info("creating {}", JOB_NAME);
 
     // TODO: try a VirtualThreadExecutor since time outs for SMTP are very high
 
     // throttleLimit is deprecated but alternative not very clear ...
     @SuppressWarnings("removal")
-    Step step = new StepBuilder("smtp", jobRepository)
+    Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, SmtpVisit>chunk(chunkSize, transactionManager)
             .reader(itemReader)
             .processor(smtpCrawler)
@@ -98,7 +100,7 @@ public class SmtpJobConfig {
             .throttleLimit(maxPoolSize - 10)
             .build();
 
-    return new JobBuilder("smtp", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
             .start(step)
             .build();
   }
