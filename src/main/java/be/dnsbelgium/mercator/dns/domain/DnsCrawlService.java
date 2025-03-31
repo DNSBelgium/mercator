@@ -122,6 +122,7 @@ public class DnsCrawlService {
             .rcode(dnsRequest.rcode())
             .ok(dnsRequest.isOk())
             .problem(dnsRequest.humanReadableProblem())
+            .id(Ulid.fast().getMostSignificantBits())
             .build();
     for (RRecord record: dnsRequest.records()) {
       Response response = Response.builder()

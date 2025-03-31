@@ -15,7 +15,7 @@ import java.util.List;
 @Builder
 public class Request {
 
-    private String id;
+    private Long id;
 
     private String visitId;
 

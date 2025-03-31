@@ -138,7 +138,7 @@ class DnsCrawlServiceTest {
     ZonedDateTime after = ZonedDateTime.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
-    assertThat(request.getId()).isNull();
+    assertThat(request.getId()).isNotNull();
     assertThat(request.getResponses()).hasSize(2);
     assertThat(request.getPrefix()).isEqualTo("@");
     assertThat(request.getNumOfResponses()).isEqualTo(2);
@@ -169,7 +169,7 @@ class DnsCrawlServiceTest {
     ZonedDateTime after = ZonedDateTime.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
-    assertThat(request.getId()).isNull();
+    assertThat(request.getId()).isNotNull();
     assertThat(request.getResponses()).hasSize(0);
     assertThat(request.getPrefix()).isEqualTo("@");
     assertThat(request.getNumOfResponses()).isEqualTo(0);
@@ -204,7 +204,7 @@ class DnsCrawlServiceTest {
     assertThat(requestsSaved).hasSize(4);
     for (Request request : requestsSaved) {
       assertThat(request.getProblem()).isNull();
-      assertThat(request.getId()).isNull();
+      assertThat(request.getId()).isNotNull();
       assertThat(request.isOk()).isTrue();
       assertThat(request.getRcode()).isEqualTo(0);
       assertThat(request.getVisitId()).isEqualTo(visitRequest.getVisitId());
@@ -294,7 +294,7 @@ class DnsCrawlServiceTest {
     logger.info("requests.size = {}", requests.size());
     for (Request request : requests) {
       logRequest(request);
-      assertThat(request.getId()).isNull();
+      assertThat(request.getId()).isNotNull();
       assertThat(request.getVisitId()).isEqualTo(visitRequest.getVisitId());
       assertThat(request.getDomainName()).isEqualTo(visitRequest.getDomainName());
       if (request.getPrefix().equals("@") && request.getRecordType() == A) {

@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.dns.dto;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.Instant;
 import java.util.List;
 
 @ToString
@@ -11,22 +12,28 @@ public class DnsCrawlResult {
 
     private final CrawlStatus status;
     private final List<Request> requests;
+    private final String domainName;
+    private final Instant crawl_timestamp;
+    private final String visit_id;
 
-    private DnsCrawlResult(List<Request> requests, CrawlStatus status) {
+    private DnsCrawlResult(List<Request> requests, CrawlStatus status, String domainName, Instant crawl_timestamp, String visit_id) {
         this.requests = requests;
         this.status = status;
+        this.domainName = domainName;
+        this.crawl_timestamp = crawl_timestamp;
+        this.visit_id = visit_id;
     }
 
     public static DnsCrawlResult invalidDomainName() {
-        return new DnsCrawlResult(List.of(), CrawlStatus.INVALID_DOMAIN_NAME);
+        return new DnsCrawlResult(List.of(), CrawlStatus.INVALID_DOMAIN_NAME,null, null, null);
     }
 
     public static DnsCrawlResult nxdomain(List<Request> requests) {
-        return new DnsCrawlResult(requests, CrawlStatus.NXDOMAIN);
+        return new DnsCrawlResult(requests, CrawlStatus.NXDOMAIN, null,null, null);
     }
 
     public static DnsCrawlResult of(List<Request> requests) {
-        return new DnsCrawlResult(requests, CrawlStatus.OK);
+        return new DnsCrawlResult(requests, CrawlStatus.OK, null,null, null);
     }
 
 }

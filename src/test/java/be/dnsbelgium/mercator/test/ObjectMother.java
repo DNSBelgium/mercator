@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.test;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.dns.dto.*;
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
@@ -20,6 +21,7 @@ import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 
+import java.time.ZonedDateTime;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -27,7 +29,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import org.apache.commons.lang3.tuple.Pair;
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 
 public class ObjectMother {
@@ -374,6 +376,44 @@ public class ObjectMother {
             .conversation(smtpConversation2())
             .build();
   }
+
+  public DnsCrawlResult dnsCrawlResultWithMultipleResponses() {
+    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(12345L, "ISP Belgium"), "BE", 4, "192.168.1.1");
+    ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
+
+    Response response1 = Response.builder()
+            .id(10517255249230897L)
+            .recordData("192.168.1.1")
+            .ttl(3600L)
+            .responseGeoIps(List.of(geoIp1, geoIp2))
+            .build();
+
+    ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(54321L, "ISP Netherlands"), "NL", 4, "192.168.1.2");
+    ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
+
+    Response response2 = Response.builder()
+            .id(10517864259230897L)
+            .recordData("192.168.1.2")
+            .ttl(3600L)
+            .responseGeoIps(List.of(geoIp3, geoIp4))
+            .build();
+
+    Request request = Request.builder()
+            .id(9153627412115712L)
+            .visitId("visit-789")
+            .domainName("example.com")
+            .prefix("www")
+            .recordType(RecordType.A)
+            .rcode(0)
+            .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
+            .ok(true)
+            .responses(List.of(response1, response2))
+            .numOfResponses(2)
+            .build();
+
+    return DnsCrawlResult.of(List.of(request));
+  }
+
 
 
 
