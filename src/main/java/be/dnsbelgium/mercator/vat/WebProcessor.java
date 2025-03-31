@@ -22,10 +22,14 @@ public class WebProcessor implements ItemProcessor<VisitRequest, WebCrawlResult>
 
   @Override
   public WebCrawlResult process(@NonNull VisitRequest request) {
-    logger.info("request = {}", request);
-    WebCrawlResult result = webCrawler.crawl(request);
-    logger.info("result = {}", result);
-    return result;
+    try {
+      logger.info("request = {}", request);
+      WebCrawlResult result = webCrawler.crawl(request);
+      return result;
+    } catch (Exception e) {
+      logger.error("failed to crawl {}", request, e);
+      return null;
+    }
   }
 
 }

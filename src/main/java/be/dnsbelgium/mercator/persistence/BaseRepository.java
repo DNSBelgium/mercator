@@ -2,8 +2,11 @@ package be.dnsbelgium.mercator.persistence;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -15,10 +18,13 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 
+@SuppressWarnings("SqlSourceToSinkFlow")
 public class BaseRepository<T> {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseRepository.class);
 
+  @Setter
+  @Getter
   public static class SearchVisitIdResultItem {
     private String visitId;
     private Instant timestamp;
@@ -28,21 +34,6 @@ public class BaseRepository<T> {
       this.timestamp = timestamp;
     }
 
-    public String getVisitId() {
-      return visitId;
-    }
-
-    public void setVisitId(String visitId) {
-      this.visitId = visitId;
-    }
-
-    public Instant getTimestamp() {
-      return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-      this.timestamp = timestamp;
-    }
   }
 
   private final ObjectMapper objectMapper;
@@ -105,11 +96,11 @@ public class BaseRepository<T> {
         with cte_all_items as (${get_all_items_query}),
         foo as (
           select visit_id, ${timestamp_field} as timestamp
-          from cte_all_items 
+          from cte_all_items
           where ${domain_name_field}=?
         )
         select row_to_json(foo)
-        from foo 
+        from foo
         """, Map.of("get_all_items_query", getAllItemsQuery(),
                     "timestamp_field", timestampField(),
                     "domain_name_field", domainNameField()
@@ -130,12 +121,17 @@ public class BaseRepository<T> {
   @SneakyThrows
   public Optional<T> findByVisitId(String visitId) { /* findByDomainNameQuery , order by timestamp field desc */
     String query = StringSubstitutor.replace("""
-        with cte_all_items as (${get_all_items_query}) 
+        with cte_all_items as (${get_all_items_query})
         select row_to_json(cte_all_items)
-        from cte_all_items 
+        from cte_all_items
         where visit_id=?
         limit 1
         """, Map.of("get_all_items_query", getAllItemsQuery()));
+    return queryForObject(visitId, query);
+  }
+
+  @NotNull
+  private Optional<T> queryForObject(String visitId, String query) throws com.fasterxml.jackson.core.JsonProcessingException {
     Optional<String> json = jdbcClient.sql(query)
         .param(visitId)
         .query(String.class)
@@ -156,38 +152,24 @@ public class BaseRepository<T> {
   @SneakyThrows
   public Optional<T> findLatestResult(String domainName) { /* findByDomainNameQuery, order by timestamp field desc, limit 1 */
     String query = StringSubstitutor.replace("""
-        with cte_all_items as (${get_all_items_query}) 
+        with cte_all_items as (${get_all_items_query})
         select row_to_json(cte_all_items)
-        from cte_all_items 
+        from cte_all_items
         where ${domain_name_field}=?
         order by ${timestamp_field} desc
         limit 1
         """, Map.of("get_all_items_query", getAllItemsQuery(),
                     "timestamp_field", timestampField(),
                     "domain_name_field", domainNameField()));
-    Optional<String> json = jdbcClient.sql(query)
-        .param(domainName)
-        .query(String.class)
-        .optional();
-    if (json.isPresent()) {
-      try {
-        T result = objectMapper.readValue(json.get(), this.type);
-        logger.debug("Found: \n{}", result);
-        return Optional.of(result);
-      } catch (JsonMappingException e) {
-        logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
-        throw e;
-      }
-    }
-    return Optional.empty();
+    return queryForObject(domainName, query);
   }
 
   @SneakyThrows
   public List<T> findByDomainName(String domainName) { /* getAllItemsQuery, add filter CTE to filter for visit id, limit 1 */
     String query = StringSubstitutor.replace("""
-        with cte_all_items as (${get_all_items_query}) 
+        with cte_all_items as (${get_all_items_query})
         select row_to_json(cte_all_items)
-        from cte_all_items 
+        from cte_all_items
         where ${domain_name_field}=?
         """, Map.of("get_all_items_query", getAllItemsQuery(), "domain_name_field", domainNameField()));
     List<String> jsonList = jdbcClient.sql(query)
@@ -206,17 +188,19 @@ public class BaseRepository<T> {
   /**
    * Stores jsonResultsLocation in the repository, i.e. exports from json to parquet (the format that the repo understands)
    *
-   * @param jsonResultsLocation
+   * @param jsonResultsLocation : location of JSON file(s)
    */
   public void storeResults(String jsonResultsLocation) {
 
     jdbcClient.sql(String.format("""
       copy (
-        select 
-          *, 
-          year(to_timestamp("%s")) as year, 
-          month(to_timestamp("%s")) as month 
+        select
+          *,
+          year(to_timestamp("%s")) as year,
+          month(to_timestamp("%s")) as month
         from read_json('%s')
-      ) to '%s' (format parquet, partition_by (year, month), filename_pattern 'data_{uuid}')""", timestampField(), timestampField(), jsonResultsLocation, baseLocation)).update();
+      ) to '%s' (format parquet, partition_by (year, month), filename_pattern 'data_{uuid}')""",
+            timestampField(), timestampField(), jsonResultsLocation, baseLocation)
+    ).update();
   }
 }

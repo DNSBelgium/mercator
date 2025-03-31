@@ -22,4 +22,7 @@ public class BatchConfig {
     return Path.of(outputDirectory, jobName + ".json");
   }
 
+  public Path outputDirectoryFor(String jobName) {
+    return Path.of(outputDirectory, jobName);
+  }
 }

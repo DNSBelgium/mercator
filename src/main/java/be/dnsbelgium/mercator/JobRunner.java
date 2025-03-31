@@ -1,12 +1,14 @@
 package be.dnsbelgium.mercator;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.job.AbstractJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -27,7 +29,7 @@ public class JobRunner implements CommandLineRunner {
   private final Map<String, Job> jobs;
   private static final Logger logger = LoggerFactory.getLogger(JobRunner.class);
 
-  // for some reason IntelliJ does not find this bean
+  // for some reason IntelliJ does not find the JobLauncher bean
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   public JobRunner(JobLauncher jobLauncher, Map<String, Job> jobs, ApplicationContext context, BatchConfig batchConfig) {
     logger.info("Batch application initialized with {}", batchConfig);
@@ -36,7 +38,6 @@ public class JobRunner implements CommandLineRunner {
     this.batchConfig = batchConfig;
     this.jobs = jobs;
   }
-
 
   @Override
   public void run(String... args) throws Exception {
@@ -55,10 +56,17 @@ public class JobRunner implements CommandLineRunner {
               .addString("job_uuid", UUID.randomUUID().toString())
               .toJobParameters();
 
+          AbstractJob abstractJob = (AbstractJob) job;
+          JobListener listener = new JobListener();
+          abstractJob.registerJobExecutionListener(listener);
+
           logger.info("Starting job {} with these parameters: {}", name, params);
           JobExecution jobExecution = jobLauncher.run(job, params);
+
+          listener.await();
           logger.info("job {} finished with status={} and exitStatus={}",
                   name, jobExecution.getStatus(), jobExecution.getExitStatus().getExitCode());
+
           logger.info("job {} exit description: {}", name, jobExecution.getExitStatus().getExitDescription());
         } catch (Exception e) {
           logger.atError()
@@ -70,6 +78,8 @@ public class JobRunner implements CommandLineRunner {
     });
     logger.info("All batch jobs executed => exiting");
     SpringApplication.exit(context);
+    logger.info("SpringApplication has exited");
+
   }
 
 

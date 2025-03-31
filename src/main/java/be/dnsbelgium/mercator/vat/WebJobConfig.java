@@ -1,6 +1,9 @@
 package be.dnsbelgium.mercator.vat;
 
+import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -9,27 +12,43 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.support.ResourcelessJobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.*;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.json.JacksonJsonObjectMarshaller;
-import org.springframework.batch.item.json.JsonFileItemWriter;
-import org.springframework.batch.item.json.builder.JsonFileItemWriterBuilder;
+import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.WritableResource;
-import org.springframework.jdbc.support.JdbcTransactionManager;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-@SuppressWarnings({"SpringElInspection", "SpringJavaInjectionPointsAutowiringInspection"})
+import java.nio.file.Path;
+
 @Configuration
 public class WebJobConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(WebJobConfig.class);
 
+  @Value("${web.corePoolSize:100}")
+  private int corePoolSize;
+  @Value("${web.maxPoolSize:100}")
+  private int maxPoolSize;
+
+  @Bean
+  @Qualifier("web")
+  public ThreadPoolTaskExecutor taskExecutor() {
+    var executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(corePoolSize);
+    executor.setMaxPoolSize(maxPoolSize);
+    executor.setQueueCapacity(-1);
+    logger.info("web executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    return executor;
+  }
+
+  @SuppressWarnings("SpringElInspection")
   @Bean
   @StepScope
   public FlatFileItemReader<VisitRequest> itemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
@@ -44,41 +63,37 @@ public class WebJobConfig {
   }
 
   @Bean
-  public JacksonJsonObjectMarshaller<WebCrawlResult> webCrawlResultReaderMarshaller(ObjectMapper objectMapper) {
-    return new JacksonJsonObjectMarshaller<>(objectMapper);
-  }
-
-  @Bean
-  @StepScope
-  public JsonFileItemWriter<WebCrawlResult> webCrawlResultJsonFileItemWriter(
-          @Value("#{jobParameters[outputFile]}") WritableResource resource,
-          JacksonJsonObjectMarshaller<WebCrawlResult> jsonObjectMarshaller) {
-    return new JsonFileItemWriterBuilder<WebCrawlResult>()
-            .name("web-writer")
-            .jsonObjectMarshaller(jsonObjectMarshaller)
-            .resource(resource)
-            .build();
+  public JsonItemWriter<WebCrawlResult> jsonItemWriter(
+          BatchConfig batchConfig, WebRepository repository, ObjectMapper objectMapper) {
+    Path outputDirectory = batchConfig.outputDirectoryFor("web");
+    return new JsonItemWriter<>(repository, objectMapper, outputDirectory);
   }
 
   @Bean(name = "webJob")
-  public Job webJob(JobRepository jobRepository,
-                    JdbcTransactionManager transactionManager,
+  public Job webJob(ResourcelessJobRepository jobRepository,
+                    ResourcelessTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
-                    JsonFileItemWriter<WebCrawlResult> itemWriter,
-                    WebParquetMaker webParquetMaker
+                    JsonItemWriter<WebCrawlResult> jsonItemWriter,
+                    @Qualifier("web") ThreadPoolTaskExecutor taskExecutor
   ) {
-    logger.info("creating webJob");
+    logger.info("jobRepository.getClass() = {}", jobRepository.getClass());
+    logger.info("taskExecutor.getCorePoolSize() = {}", taskExecutor.getCorePoolSize());
+    logger.info("taskExecutor.getMaxPoolSize() = {}", taskExecutor.getMaxPoolSize());
+
+    @SuppressWarnings("removal")
     Step step = new StepBuilder("web", jobRepository)
-            .<VisitRequest, WebCrawlResult>chunk(10, transactionManager)
+            .<VisitRequest, WebCrawlResult>chunk(30, transactionManager)
             .reader(itemReader)
             .processor(processor)
-            .writer(itemWriter)
+            //.processor(new Dummy())
+            .writer(jsonItemWriter)
+            .taskExecutor(taskExecutor)
+            .throttleLimit(90)
             .build();
 
     return new JobBuilder("web", jobRepository)
             .start(step)
-            .listener(webParquetMaker)
             .build();
   }
 

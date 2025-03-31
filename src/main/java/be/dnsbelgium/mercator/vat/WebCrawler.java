@@ -53,7 +53,6 @@ public class WebCrawler {
         this.vatScraper = vatScraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
-        logger.info("maxVisitsPerDomain = {}", maxVisitsPerDomain);
         this.technologyAnalyzer = technologyAnalyzer;
     }
 

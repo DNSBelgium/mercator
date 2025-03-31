@@ -74,8 +74,6 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
 
   @Override
   public void storeResults(String jsonResultsLocation) {
-
-    // generate a unique tableName since to avoid collisions with other threads
     String allResultsQuery = StringSubstitutor.replace("""
       select *,
              year(to_timestamp(${timestampField})) as year,
