@@ -34,16 +34,21 @@ public class WebJobConfig {
 
   @Value("${web.corePoolSize:100}")
   private int corePoolSize;
+
   @Value("${web.maxPoolSize:100}")
   private int maxPoolSize;
 
+  @Value("${web.chunkSize:1000}")
+  private int chunkSize;
+
   @Bean
   @Qualifier("web")
-  public ThreadPoolTaskExecutor taskExecutor() {
+  public ThreadPoolTaskExecutor webTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
+    executor.setThreadNamePrefix("web-");
     logger.info("web executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
     return executor;
   }
@@ -63,7 +68,7 @@ public class WebJobConfig {
   }
 
   @Bean
-  public JsonItemWriter<WebCrawlResult> jsonItemWriter(
+  public JsonItemWriter<WebCrawlResult> webItemWriter(
           BatchConfig batchConfig, WebRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor("web");
     return new JsonItemWriter<>(repository, objectMapper, outputDirectory);
@@ -77,19 +82,14 @@ public class WebJobConfig {
                     JsonItemWriter<WebCrawlResult> jsonItemWriter,
                     @Qualifier("web") ThreadPoolTaskExecutor taskExecutor
   ) {
-    logger.info("jobRepository.getClass() = {}", jobRepository.getClass());
-    logger.info("taskExecutor.getCorePoolSize() = {}", taskExecutor.getCorePoolSize());
-    logger.info("taskExecutor.getMaxPoolSize() = {}", taskExecutor.getMaxPoolSize());
-
     @SuppressWarnings("removal")
     Step step = new StepBuilder("web", jobRepository)
-            .<VisitRequest, WebCrawlResult>chunk(30, transactionManager)
+            .<VisitRequest, WebCrawlResult>chunk(chunkSize, transactionManager)
             .reader(itemReader)
             .processor(processor)
-            //.processor(new Dummy())
             .writer(jsonItemWriter)
             .taskExecutor(taskExecutor)
-            .throttleLimit(90)
+            .throttleLimit(maxPoolSize - 10)
             .build();
 
     return new JobBuilder("web", jobRepository)
