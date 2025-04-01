@@ -13,15 +13,15 @@ public class DnsCrawlResult {
     private final CrawlStatus status;
     private final List<Request> requests;
     private final String domainName;
-    private final Instant crawl_timestamp;
-    private final String visit_id;
+    private final Instant crawlTimestamp;
+    private final String visitId;
 
-    private DnsCrawlResult(List<Request> requests, CrawlStatus status, String domainName, Instant crawl_timestamp, String visit_id) {
+    public DnsCrawlResult(List<Request> requests, CrawlStatus status, String domainName, Instant crawlTimestamp, String visitId) {
         this.requests = requests;
         this.status = status;
         this.domainName = domainName;
-        this.crawl_timestamp = crawl_timestamp;
-        this.visit_id = visit_id;
+        this.crawlTimestamp = crawlTimestamp;
+        this.visitId = visitId;
     }
 
     public static DnsCrawlResult invalidDomainName() {
@@ -33,7 +33,8 @@ public class DnsCrawlResult {
     }
 
     public static DnsCrawlResult of(List<Request> requests) {
-        return new DnsCrawlResult(requests, CrawlStatus.OK, null,null, null);
+        return new DnsCrawlResult(requests, CrawlStatus.OK, null, null, null);
     }
+
 
 }

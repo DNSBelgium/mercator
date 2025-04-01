@@ -411,7 +411,7 @@ public class ObjectMother {
             .numOfResponses(2)
             .build();
 
-    return DnsCrawlResult.of(List.of(request));
+    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, "example.com", Instant.parse("2025-03-28T12:00:00Z"), "visit=789");
   }
 
 
