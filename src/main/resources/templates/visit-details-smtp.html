@@ -40,7 +40,7 @@
       <tr>
         <th>Hosts</th>
         <td>
-          <details th:if="${not smtpVisitResult.hosts.isEmpty()}">
+          <details th:if="${! smtpVisitResult.hosts.isEmpty()}">
             <summary>Click to show hosts</summary>
             <div th:each="host, iterStat : ${smtpVisitResult.getHosts()}">
               <h4>Host #[[${iterStat.count}]]</h4>
@@ -101,7 +101,7 @@
                 </tr>
                 <tr>
                   <th>supportedExtensions</th>
-                  <td th:if="${not host.conversation.supportedExtensions.isEmpty()}">
+                  <td th:if="${host.conversation.supportedExtensions != null && !host.conversation.supportedExtensions.isEmpty()}">
                     <details>
                       <summary>Click to show supported extensions</summary>
                       <ul>
@@ -126,7 +126,7 @@
                 </tr>
                 <tr>
                   <th>errorMessage</th>
-                  <td th:if="${not #strings.isEmpty(host.conversation.errorMessage)}">
+                  <td th:if="${! #strings.isEmpty(host.conversation.errorMessage)}">
                     <details>
                       <summary>Click to show error message</summary>
                       <p th:text="${host.conversation.errorMessage}"></p>
@@ -135,7 +135,7 @@
                 </tr>
                 <tr>
                   <th>error</th>
-                  <td th:if="${not #strings.isEmpty(host.conversation.error)}">
+                  <td th:if="${! #strings.isEmpty(host.conversation.error)}">
                     <details>
                       <summary>Click to show error</summary>
                       <p th:text="${host.conversation.error}"></p>
