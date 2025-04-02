@@ -33,7 +33,7 @@ import java.nio.file.Path;
 public class TlsJobConfig {
 
   private static final Logger logger = LoggerFactory.getLogger(TlsJobConfig.class);
-  private static final String JOB_NAME = "TLS";
+  private static final String JOB_NAME = "tls";
 
   @Value("${tls.chunkSize:1000}")
   private int chunkSize;
