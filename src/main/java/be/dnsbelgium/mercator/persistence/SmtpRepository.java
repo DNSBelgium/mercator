@@ -151,12 +151,12 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
                       ),
                       extract_hosts_and_conversation_from_smtp AS (
                           SELECT
-                                visit_id::VARCHAR as visit_id,
-                                id::VARCHAR as id,
-                                from_mx::BOOLEAN as from_mx,
-                                host_name::VARCHAR as host_name,
-                                priority::INTEGER as priority,
-                                id_1::VARCHAR as conversation_id,
+                                visit_id        ::VARCHAR               as visit_id,
+                                id              ::VARCHAR               as id,
+                                from_mx         ::BOOLEAN               as from_mx,
+                                host_name       ::VARCHAR               as host_name,
+                                priority        ::INTEGER               as priority,
+                                id_1            ::VARCHAR               as conversation_id,
                                 ip::VARCHAR AS conversation_ip,
                                 asn::BIGINT AS conversation_asn,
                                 country::VARCHAR AS conversation_country,
