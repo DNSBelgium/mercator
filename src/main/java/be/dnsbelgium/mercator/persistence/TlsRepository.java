@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class TlsRepository extends BaseRepository<TlsCrawlResult> {
@@ -152,8 +153,8 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
                       serial_number_hex varchar,
                       public_key_schema varchar,
                       public_key_length int,
-                      not_before int,
-                      not_after int,
+                      not_before bigint,
+                      not_after bigint,
                       issuer varchar,
                       subject varchar,
                       signature_hash_algorithm varchar,
@@ -185,7 +186,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
                 year(${timestamp_field}) as year,
                 month(${timestamp_field}) as month
               from export_visits
-            ) to '${visits_location}' (format parquet, partition_by (year, month), filename_pattern 'data_{uuid}')
+            ) to '${visits_location}' (format parquet, partition_by (year, month), append)
             """, Map.of("base_query", baseQuery, "visits_location", visitsLocation, "timestamp_field", timestampField()))
     ).update();
     this.getJdbcClient().sql(
@@ -194,7 +195,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
               %s
               select * from export_certificates
             ) to '%s/%s.parquet'
-            """, baseQuery, certificatesLocation, Ulid.fast().toString())
+            """, baseQuery, certificatesLocation, UUID.randomUUID())
     ).update();
   }
 }
