@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain.certificates;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -51,6 +52,7 @@ public class Certificate {
   // common values are sha256, sha384, sha1, md5, sha512
   private final String signatureHashAlgorithm;
 
+  @JsonIgnore
   private Certificate signedBy;
 
   private final String sha256Fingerprint;
