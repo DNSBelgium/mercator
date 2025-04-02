@@ -61,9 +61,8 @@ public class JsonItemWriter<T> implements ItemWriter<T> , ItemStream {
     lock.lock();
     try {
       if (closed) {
-        // I noticed that Spring Batch sometimes calls the close method more than once (from different threads).
-        // This happened when the job was hanging because the throttle limit was not lower
-        // than the max core count of the ThreadPoolTaskExecutor and I interrupted the application.
+        // Spring Batch will call close when a Step has completed, but since this is a Spring Bean with a close() method,
+        // Spring will also call the close() method when the application is stopping.
         logger.info("name={}. Already closed => not closing again. thread=[{}]", name, Thread.currentThread().getName());
         return;
       }
