@@ -58,7 +58,7 @@
                 </td>
             </tr>
             <tr>
-                <th>Technologies used in the site</th>
+                <td>Detected Technologies</td>
                 <td>
                     <span th:if="${webCrawlResult.getDetectedTechnologies().isEmpty()}">No Technologies detected</span>
                     <details th:if="${!webCrawlResult.getDetectedTechnologies().isEmpty()}">
@@ -93,90 +93,115 @@
                     </details>
                 </td>
             </tr>
+            <tr>
+                <th>Page visits</th>
+                <td th:if="${webCrawlResult.pageVisits.isEmpty()}">No Page visits</td>
+                <td>
+                    <details th:if="${not webCrawlResult.pageVisits.isEmpty()}">
+                        <summary>Click to show page visits</summary>
+                        <div th:each="pageVisit, iterStat : ${webCrawlResult.getPageVisits()}">
+                            <h4>Pagevisit #[[${iterStat.count}]]</h4>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>URL</th>
+                                    <td th:text="${pageVisit.url}"></td>
+                                </tr>
+                                <tr>
+                                    <th>path</th>
+                                    <td th:text="${pageVisit.path}"></td>
+                                </tr>
+                                <tr>
+                                    <th>crawlStarted</th>
+                                    <td th:text="${pageVisit.crawlStarted}"></td>
+                                </tr>
+                                <tr>
+                                    <th>crawlFinished</th>
+                                    <td th:text="${pageVisit.crawlFinished}"></td>
+                                </tr>
+                                <tr>
+                                    <th>statusCode</th>
+                                    <td th:text="${pageVisit.statusCode}"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        HTTP response body
+                                    </td>
+                                    <!--  TODO: ask which method to use for raw html, on same page or new page?
+                                    <td th:if="${not #strings.isEmpty(pageVisit.getResponseBody())}">
+                                        <details>
+                                            <summary>Click to see HTTP response body</summary>
+                                            <pre th:utext="${#strings.replace(pageVisit.getResponseBody(), '\n', '<br/>')}"></pre>
+                                        </details>
+                                    </td>
+                                    -->
+                                    <td>
+                                        <script>
+                                            function renderRawHtml(html) {
+                                                const newWindow = window.open();
+                                                newWindow.document.title = 'raw html'
+                                                const pre = newWindow.document.createElement("pre");
+                                                pre.textContent = html;
+                                                newWindow.document.body.appendChild(pre);
+                                            }
+
+                                            function openHtmlInNewTab(htmlContent) {
+                                                const newWindow = window.open();
+                                                newWindow.document.write(htmlContent);
+                                                newWindow.document.close();
+                                            }
+                                        </script>
+                                        <button th:data-html="${pageVisit.getResponseBody()}" onclick="renderRawHtml(this.getAttribute('data-html'))">Go to raw html</button>
+                                        <button th:data-html="${pageVisit.getResponseBody()}" onclick="openHtmlInNewTab(this.getAttribute('data-html'))">View in browser</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>URL</th>
+                                    <td th:text="${pageVisit.linkText}"></td>
+                                </tr>
+                                <tr>
+                                    <td>VAT values</td>
+                                    <td>
+                                        <span th:if="${pageVisit.getVatValues().isEmpty()}">No VAT values found</span>
+                                        <details th:if="${!pageVisit.getVatValues().isEmpty()}">
+                                            <summary>Click to show VAT values</summary>
+                                            <ul>
+                                                <li th:each="vatValue : ${pageVisit.getVatValues()}">
+                                                    <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
+                                                       th:text="'BE' + ${#strings.substring(vatValue, 2)}"></a>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        headers
+                                    </td>
+                                    <td>
+                                        <span th:if="${pageVisit.getHeaders() == null}">No headers found</span>
+                                        <details th:if="${pageVisit.getHeaders() != null}">
+                                            <summary>Click to show headers</summary>
+                                            <ul>
+                                                <li th:each="header : ${pageVisit.getHeaders()}">
+                                                    <p th:text="${header}"></p>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Content Length</td>
+                                    <td th:text="${pageVisit.getContentLength()}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </td>
+            </tr>
             </tbody>
         </table>
-        <article th:each="pageVisit : ${webCrawlResult.getPageVisits()}">
-            <header>
-                <h5 th:text="${pageVisit.getUrl()}"></h5>
-            </header>
-
-            <table>
-                <thead></thead>
-                <tbody>
-                <tr>
-                    <td style="width: 30em">
-                        URL
-                    </td>
-                    <td>
-                        <span th:text="${pageVisit.getUrl()}"></span>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        HTTP response body
-                    </td>
-                    <td th:if="${not #strings.isEmpty(pageVisit.getResponseBody())}">
-                        <details>
-                            <summary>Click to see HTTP response body</summary>
-                            <pre th:utext="${#strings.replace(pageVisit.getResponseBody(), '\n', '<br/>')}"></pre>
-                        </details>
-                    </td>
-                </tr>
-                <tr>
-                    <td>link text</td>
-                    <td th:text="${pageVisit.getLinkText()}"></td>
-                </tr>
-                <tr>
-                    <td>VAT values</td>
-                    <td>
-                        <span th:if="${pageVisit.getVatValues().isEmpty()}">No VAT values found</span>
-                        <details th:if="${!pageVisit.getVatValues().isEmpty()}">
-                            <summary>Click to show VAT values</summary>
-                            <ul>
-                                <li th:each="vatValue : ${pageVisit.getVatValues()}">
-                                    <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
-                                       th:text="'BE' + ${#strings.substring(vatValue, 2)}"></a>
-                                </li>
-                            </ul>
-                        </details>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Crawl started</td>
-                    <td th:text="${#temporals.format(pageVisit.getCrawlStarted(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
-                    </td>
-                </tr>
-                <tr>
-                    <td>Crawl finished</td>
-                    <td th:text="${#temporals.format(pageVisit.getCrawlFinished(), 'dd-MM-yyyy HH:mm:ss z', 'Europe/Brussels')}">
-                </tr>
-                <tr>
-                    <td>
-                        headers
-                    </td>
-                    <td>
-                        <span th:if="${pageVisit.getHeaders() == null}">No headers found</span>
-                        <details th:if="${pageVisit.getHeaders() != null}">
-                            <summary>Click to show headers</summary>
-                            <ul>
-                                <li th:each="header : ${pageVisit.getHeaders()}">
-                                    <p th:text="${header}"></p>
-                                </li>
-                            </ul>
-                        </details>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Content Length</td>
-                    <td th:text="${pageVisit.getContentLength()}"></td>
-                </tr>
-
-
-                </tbody>
-            </table>
-
-        </article>
-
         <div th:each="features : ${webCrawlResult.getHtmlFeatures()}">
             <header>
                 <h5 th:text="${features.domainName}"></h5>
