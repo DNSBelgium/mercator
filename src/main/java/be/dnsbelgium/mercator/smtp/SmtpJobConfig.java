@@ -73,7 +73,6 @@ public class SmtpJobConfig {
     executor.setQueueCapacity(-1);
     executor.setThreadNamePrefix(JOB_NAME);
     logger.info("executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
-    logger.info("executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
     return executor;
   }
 
