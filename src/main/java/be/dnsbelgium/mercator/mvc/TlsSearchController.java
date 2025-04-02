@@ -32,32 +32,25 @@ public class TlsSearchController {
 
   /**
    * show the most recent TLS crawl result for give domain name
+   *
    * @param domainName the domainName to search for
    * @return the view
    */
   @GetMapping("/search/tls/latest")
-  // TODO: discuss with Pieter and Bram: get or post ?
-  //@PostMapping("/search/tls/latest")
   public String findLatestResult(Model model,
-                                 @RequestParam(name = "domainName") String domainName,
-                                 @RequestParam(name = "fetchLatest", defaultValue = "false") boolean fetchLatest) {
-    logger.debug("findLatestResult: domainName={}, fetchLatest={}", domainName, fetchLatest);
+                                 @RequestParam(name = "domainName") String domainName) {
+    logger.debug("findLatestResult: domainName={}", domainName);
     model.addAttribute("domainName", domainName);
 
-    if (fetchLatest) {
-      Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
-      if (crawlResult.isPresent()) {
-        model.addAttribute("tlsCrawlResults", List.of(crawlResult.get()));
-        logger.debug("We found {} for {}", crawlResult, domainName);
-      } else {
-        logger.debug("No TLS crawl result found for domainName = {}", domainName);
-      }
-      return "visit-details-tls";
+    Optional<TlsCrawlResult> crawlResult = tlsRepository.findLatestResult(domainName);
+    if (crawlResult.isPresent()) {
+      model.addAttribute("tlsCrawlResults", crawlResult.get());
+      logger.debug("We found {} for {}", crawlResult, domainName);
+    } else {
+      logger.debug("No TLS crawl result found for domainName = {}", domainName);
     }
-    List<String> visitIds = tlsRepository.searchVisitIds(domainName).stream().map(i -> i.getVisitId()).toList();
-    model.addAttribute("visitIds", visitIds);
-    logger.debug("For {} we found {}", domainName, visitIds);
-    return "search-results-tls";
+    return "visit-details-tls";
+
   }
 
   @GetMapping("/search/tls/ids")
@@ -77,7 +70,7 @@ public class TlsSearchController {
     Optional<TlsCrawlResult> tlsCrawlResult = tlsRepository.findByVisitId(visitId);
     logger.info(tlsCrawlResult.toString());
     if (tlsCrawlResult.isPresent()) {
-      model.addAttribute("tlsCrawlResults", List.of(tlsCrawlResult.get()));
+      model.addAttribute("tlsCrawlResults", tlsCrawlResult.get());
     }
     return "visit-details-tls";
   }

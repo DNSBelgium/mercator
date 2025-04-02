@@ -68,7 +68,8 @@ public class TlsJobConfig {
                     PlatformTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     TlsCrawler tlsCrawler,
-                    ItemWriter<TlsCrawlResult> itemWriter) {
+                    ItemWriter<TlsCrawlResult> itemWriter,
+                    TlsParquetMaker tlsParquetMaker) {
     logger.info("creating tlsJob");
     // throttleLimit method is deprecated but alternative is not well documented
     @SuppressWarnings("removal")
@@ -83,7 +84,9 @@ public class TlsJobConfig {
 
     return new JobBuilder(JOB_NAME, jobRepository)
             .start(step)
+            .listener(tlsParquetMaker)
             .build();
   }
+
 
 }

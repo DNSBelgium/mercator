@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.tls;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsVisit;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import com.github.f4b6a3.ulid.Ulid;
 import org.junit.jupiter.api.Disabled;
@@ -96,10 +96,10 @@ public class QuickTest {
 
     for (String domainName : domainNames) {
       VisitRequest visitRequest = new VisitRequest(Ulid.fast().toString(), domainName);
-      TlsCrawlResult tlsCrawlResult = tlsCrawler.visit(domainName, visitRequest);
+      TlsVisit tlsVisit = tlsCrawler.visit(visitRequest, "");
 
-      boolean supportsSsl2 = tlsCrawlResult.getFullScanEntity().isSupportSsl_2_0();
-      boolean supportsSsl3 = tlsCrawlResult.getFullScanEntity().isSupportSsl_3_0();
+      boolean supportsSsl2 = tlsVisit.getFullScanEntity().isSupportSsl_2_0();
+      boolean supportsSsl3 = tlsVisit.getFullScanEntity().isSupportSsl_3_0();
 
       logger.info("Domain: " + domainName + " | SSL2: " + supportsSsl2 + " | SSL3: " + supportsSsl3);
 

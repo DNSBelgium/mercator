@@ -11,6 +11,7 @@ import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
 import be.dnsbelgium.mercator.tls.domain.SingleVersionScan;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.domain.TlsProtocolVersion;
+import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import be.dnsbelgium.mercator.vat.domain.Page;
 import be.dnsbelgium.mercator.vat.domain.PageVisit;
@@ -20,6 +21,7 @@ import lombok.SneakyThrows;
 import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
 import java.net.InetSocketAddress;
@@ -243,16 +245,24 @@ public class ObjectMother {
             .build();
   }
 
-
-
   public TlsCrawlResult tlsCrawlResult1()  {
-    VisitRequest visitRequest = new VisitRequest("aakjkjkj-ojj", "example.org");
-    return TlsCrawlResult.fromCache("www.tls.org", visitRequest, fullScanEntity("example.org"), singleVersionScan1());
+    return getTlsCrawlResult("visit01", "tls.org", singleVersionScan1());
+  }
+
+  @NotNull
+  private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
+    return new TlsCrawlResult(visitId, domainName, List.of(
+        TlsVisit.fromCache(visitId, domainName, domainName, fullScanEntity(domainName), scan),
+        TlsVisit.fromCache(visitId, domainName, "www." + domainName, fullScanEntity(domainName), scan)
+    ));
   }
 
   public TlsCrawlResult tlsCrawlResult2()  {
-    VisitRequest visitRequest = new VisitRequest("454545-54545", "example.be");
-    return TlsCrawlResult.fromCache("www.example.org", visitRequest, fullScanEntity("example.org"), singleVersionScan2());
+    return getTlsCrawlResult("visit02", "example.be", singleVersionScan2());
+  }
+
+  public TlsCrawlResult tlsCrawlResult3()  {
+    return getTlsCrawlResult("visit03", "example.be", singleVersionScan2());
   }
 
   @SneakyThrows
@@ -277,7 +287,7 @@ public class ObjectMother {
 
   public FullScanEntity fullScanEntity(String serverName) {
     return FullScanEntity.builder()
-            .fullScanCrawlTimestamp(started)
+            .crawlTimestamp(started)
             .ip("10.20.30.40")
             .serverName(serverName)
             .connectOk(true)

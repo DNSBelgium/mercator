@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsVisit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -60,14 +61,15 @@ public class TlsSearchControllerTest {
 
     @Test
     public void findByVisitId_found() throws Exception {
-        TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
-        when(tlsRepository.findByVisitId("aakjkjkj-ojj")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
+        TlsCrawlResult tlsCrawlResult = objectMother.tlsCrawlResult1();
+
+        when(tlsRepository.findByVisitId(tlsCrawlResult.getVisitId())).thenReturn(Optional.ofNullable(tlsCrawlResult));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/id")
-                        .param("visitId", "aakjkjkj-ojj"))
+                        .param("visitId", tlsCrawlResult.getVisitId()))
                 .andExpect(view().name("visit-details-tls"))
                 .andExpect(model().attributeExists( "visitId"))
-                .andExpect(content().string(containsString("aakjkjkj-ojj")));
+                .andExpect(content().string(containsString(tlsCrawlResult.getVisitId())));
 
     }
 
@@ -83,15 +85,16 @@ public class TlsSearchControllerTest {
 
     @Test
     public void findLatestResult_found() throws Exception {
-        TlsCrawlResult tlsCrawlResult1  = objectMother.tlsCrawlResult1();
-        when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsCrawlResult1));
+        TlsCrawlResult tlsVisit1 = objectMother.tlsCrawlResult1();
+        String domainName = tlsVisit1.getDomainName();
+        when(tlsRepository.findLatestResult(domainName)).thenReturn(Optional.ofNullable(tlsVisit1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/latest")
-                        .param("domainName", "dnsbelgium.be")
+                        .param("domainName", domainName)
                         .param("fetchLatest", "true"))
                 .andExpect(view().name("visit-details-tls"))
                 .andExpect(model().attributeExists( "domainName"))
-                .andExpect(content().string(containsString("aakjkjkj-ojj")));
+                .andExpect(content().string(containsString(domainName)));
 
     }
 }

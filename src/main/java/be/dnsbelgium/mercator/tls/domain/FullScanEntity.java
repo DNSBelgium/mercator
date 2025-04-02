@@ -13,7 +13,7 @@ import java.time.Instant;
 @ToString
 public class FullScanEntity {
 
-  private Instant fullScanCrawlTimestamp;
+  private Instant crawlTimestamp;
 
   private String ip;
 

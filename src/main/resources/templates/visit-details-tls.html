@@ -11,7 +11,7 @@
 <body>
 
 <main class="container" layout:fragment="content">
-  <p th:if="${tlsCrawlResults == null or tlsCrawlResults.isEmpty()}">
+  <p th:if="${tlsCrawlResults?.visits?.isEmpty() ?: true}">
 
     <span th:if="${domainName != null}">
       No TLS crawl results found for <strong th:text="${domainName}"></strong>
@@ -25,13 +25,9 @@
     </span>
 
   </p>
-  <div class="container-fluid" th:if="${tlsCrawlResults != null and not tlsCrawlResults.isEmpty()}">
-    <div th:each="result : ${tlsCrawlResults}">
-      <h3>Fresh</h3>
-      <!--
-      <p th:text="${result.getFresh()}"></p>
-      -->
-      <h2>TLS result for domain: <span th:text="${result.visitRequest.domainName}">domain name</span></h2>
+    <div class="container-fluid" th:each="result : ${tlsCrawlResults?.visits}">
+      <h2>TLS result for host: <span th:text="${result.hostName}">hostname</span></h2>
+
       <table>
         <tbody>
         <tr>
@@ -56,7 +52,11 @@
         </tr>
         <tr>
           <th>leafCertificate</th>
-          <td th:text="${result.leafCertificate}"></td>
+          <td th:text="${result?.certificateChainFingerprints != null and result.certificateChainFingerprints.size() > 0 ? result.certificateChainFingerprints[0] : 'No Fingerprint'}"></td>
+        </tr>
+        <tr>
+          <th>Certificate chain</th>
+          <td th:text="${result.certificateChainFingerprints}"></td>
         </tr>
         <tr>
           <th>crawlTimestamp</th>
@@ -69,11 +69,11 @@
         <tbody>
         <tr>
           <th>visitId</th>
-          <td th:text="${result.visitRequest.visitId}"></td>
+          <td th:text="${result.visitId}"></td>
         </tr>
         <tr>
           <th>domainName</th>
-          <td th:text="${result.visitRequest.domainName}"></td>
+          <td th:text="${result.domainName}"></td>
         </tr>
         </tbody>
       </table>
@@ -83,7 +83,7 @@
 
         <tr>
           <th>Crawl Timestamp: </th>
-          <td th:text="${result.fullScanEntity.fullScanCrawlTimestamp}"></td>
+          <td th:text="${result.fullScanEntity.crawlTimestamp}"></td>
         </tr>
         <tr>
           <th>IP: </th>
@@ -127,7 +127,6 @@
         </tr>
         </tbody>
       </table>
-      <pre th:text="${tlsCrawlResults}"></pre>
     </div>
   </div>
 </main>

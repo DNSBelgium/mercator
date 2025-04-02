@@ -1,9 +1,8 @@
 package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.tls.domain.FullScanEntity;
-import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.tls.domain.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.springframework.batch.item.ItemProcessor;
@@ -13,12 +12,11 @@ import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
-
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static be.dnsbelgium.mercator.tls.metrics.MetricName.COUNTER_VISITS_COMPLETED;
@@ -34,40 +32,25 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
-  @Value("${tls.scanner.destination.port:443}") private int destinationPort;
-  @Value("${tls.crawler.visit.apex:true}")      private boolean visitApex;
-  @Value("${tls.crawler.visit.www:true}")       private boolean visitWww;
-  @Value("${tls.crawler.allow.noop:false}")     private boolean allowNoop;
+  @Value("${tls.scanner.destination.port:443}")
+  private int destinationPort;
+  @Value("${tls.crawler.prefixes:,www.}")
+  private Set<String> prefixes;
 
   @Autowired
   public TlsCrawler(
-          TlsScanner tlsScanner,
-          FullScanCache fullScanCache,
-          BlackList blackList, MeterRegistry meterRegistry) {
-      this.fullScanCache = fullScanCache;
-      this.tlsScanner = tlsScanner;
-      this.blackList = blackList;
-      this.meterRegistry = meterRegistry;
-  }
-
-  @PostConstruct
-  public void checkConfig() {
-    logger.info("visitApex = tls.crawler.visit.apex = {}", visitApex);
-    logger.info("visitWww  = tls.crawler.visit.www  = {}", visitWww);
-    if (!visitApex && !visitWww) {
-      logger.error("visitApex == visitWww == false => The TLS crawler will basically do nothing !!");
-      if (!allowNoop) {
-        logger.error("The TLS crawler will basically do nothing !!");
-        logger.error("Set tls.crawler.allow.noop=false if this is really what you want.");
-        throw new RuntimeException("visitApex == visitWww == allowNoop = false. \n" +
-            "Set tls.crawler.allow.noop=false if this is really what you want");
-      }
-    }
+      TlsScanner tlsScanner,
+      FullScanCache fullScanCache,
+      BlackList blackList, MeterRegistry meterRegistry) {
+    this.fullScanCache = fullScanCache;
+    this.tlsScanner = tlsScanner;
+    this.blackList = blackList;
+    this.meterRegistry = meterRegistry;
   }
 
   @SuppressWarnings("unused") // TODO
-  public void addToCache(TlsCrawlResult tlsCrawlResult) {
-    fullScanCache.add(Instant.now(), tlsCrawlResult.getFullScanEntity());
+  public void addToCache(TlsVisit tlsVisit) {
+    fullScanCache.add(Instant.now(), tlsVisit.getFullScanEntity());
   }
 
   @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -80,11 +63,13 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
   /**
    * Either visit the domain name or get the result from the cache.
    * Does NOT save anything in the database
+   *
    * @param visitRequest the domain name to visit
    * @return the results of scanning the domain name
    */
-  public TlsCrawlResult visit(String hostName, VisitRequest visitRequest) {
+  public TlsVisit visit(VisitRequest visitRequest, String prefix) {
     logger.info("Crawling {}", visitRequest);
+    String hostName = prefix + visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
 
     if (!address.isUnresolved()) {
@@ -97,11 +82,11 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
         if (version != null) {
           singleVersionScan = tlsScanner.scan(version, hostName);
         }
-        return TlsCrawlResult.fromCache(hostName, visitRequest, resultFromCache.get(), singleVersionScan);
+        return TlsVisit.fromCache(visitRequest.getVisitId(), visitRequest.getDomainName(), hostName, resultFromCache.get(), singleVersionScan);
       }
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
-    return TlsCrawlResult.fromScan(hostName, visitRequest, fullScan);
+    return TlsVisit.fromScan(visitRequest.getVisitId(), visitRequest.getDomainName(), hostName, fullScan);
   }
 
   private FullScan scanIfNotBlacklisted(InetSocketAddress address) {
@@ -116,15 +101,10 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
   public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
     try {
       Threads.TLS.incrementAndGet();
-      if (visitWww) {
-        String hostName = "www." + visitRequest.getDomainName();
-        return visit(hostName, visitRequest);
-      }
-      // TODO: create a job for www and one for apex ?
-      // or find out how to 'fork' a job
-      String hostName = visitRequest.getDomainName();
-      return visit(hostName, visitRequest);
-
+      return new TlsCrawlResult(
+          visitRequest.getVisitId(),
+          visitRequest.getDomainName(),
+          prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList());
     } finally {
       meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
       Threads.TLS.decrementAndGet();
