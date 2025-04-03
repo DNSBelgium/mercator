@@ -98,4 +98,41 @@ public class SmtpSearchControllerTest {
                 .andExpect(content().string(containsString("STARTTLS")));
     }
 
+    @Test
+    public void findLatestResult_whenSmtpVisitObjectHasNullValues() throws Exception {
+        SmtpVisit smtpVisitResult = objectMother.smtpVisitWithNullValues();
+        when(smtpRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(smtpVisitResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-smtp"))
+                .andExpect(model().attributeExists( "smtpVisitResult"))
+                .andExpect(content().string(containsString("No hosts")));
+    }
+
+    @Test
+    public void findLatestResult_whenSmtpHostObjectHasNullValues() throws Exception {
+        SmtpVisit smtpVisitResult = objectMother.smtpVisitWithNullValues2();
+        when(smtpRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(smtpVisitResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-smtp"))
+                .andExpect(model().attributeExists( "smtpVisitResult"))
+                .andExpect(content().string(containsString("No conversation")));
+    }
+
+    @Test
+    public void findLatestResult_whenSmtpConversationObjectHasNullValues() throws Exception {
+        SmtpVisit smtpVisitResult = objectMother.smtpVisitWithNullValues3();
+        when(smtpRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(smtpVisitResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/smtp/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-smtp"))
+                .andExpect(model().attributeExists( "smtpVisitResult"));
+    }
+
+
+
 }

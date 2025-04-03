@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.test;
 
-import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.dns.dto.*;
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
@@ -386,6 +385,92 @@ public class ObjectMother {
             .conversation(smtpConversation2())
             .build();
   }
+
+
+  public SmtpVisit smtpVisitWithNullValues() {
+    return SmtpVisit.builder()
+            .visitId(null)
+            .hosts(null)
+            .domainName(null)
+            .timestamp(null)
+            .crawlStatus(null)
+            .numConversations(1)
+            .build();
+  }
+  public SmtpVisit smtpVisitWithNullValues2() {
+    return SmtpVisit.builder()
+            .visitId(null)
+            .hosts(List.of(smtpHostWithNullValues1()))
+            .domainName(null)
+            .timestamp(null)
+            .crawlStatus(null)
+            .numConversations(1)
+            .build();
+  }
+
+  public SmtpVisit smtpVisitWithNullValues3() {
+    return SmtpVisit.builder()
+            .visitId(null)
+            .hosts(List.of(smtpHostWithNullValues2()))
+            .domainName(null)
+            .timestamp(null)
+            .crawlStatus(null)
+            .numConversations(1)
+            .build();
+  }
+
+  public SmtpHost smtpHostWithNullValues1() {
+    return SmtpHost.builder()
+            .id(null)
+            .fromMx(false)
+            .hostName(null)
+            .priority(0)
+            .conversation(null)
+            .build();
+  }
+
+  public SmtpHost smtpHostWithNullValues2() {
+    return SmtpHost.builder()
+            .id(null)
+            .fromMx(false)
+            .hostName(null)
+            .priority(0)
+            .conversation(smtpConversationWithNullValues())
+            .build();
+  }
+
+
+  public SmtpConversation smtpConversationWithNullValues() {
+    return SmtpConversation.builder()
+            .id(null)
+            .asn(null)
+            .ip(null)
+            .asnOrganisation(null)
+            .banner(null)
+            .connectReplyCode(0)
+            .country(null)
+            .ipVersion(0)
+            .startTlsOk(false)
+            .connectOK(false)
+            .timestamp(null)
+            .errorMessage(null)
+            .error(null)
+            .software(null)
+            .softwareVersion(null)
+            .startTlsReplyCode(0)
+            .supportedExtensions(null)
+            .connectionTimeMs(0)
+            .build();
+  }
+
+
+
+
+
+
+
+
+
 
   public DnsCrawlResult dnsCrawlResultWithMultipleResponses() {
     ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(12345L, "ISP Belgium"), "BE", 4, "192.168.1.1");

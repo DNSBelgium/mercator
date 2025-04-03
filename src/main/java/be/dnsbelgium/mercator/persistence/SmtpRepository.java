@@ -44,7 +44,7 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
                         FROM visits_result
                                  LEFT JOIN hosts_per_visit ON visits_result.visit_id = hosts_per_visit.visit_id
                     ),
-                    unnested AS (
+                    unnested AS ( -- max_depth := 3 because conversation is also un-nested in this step
                         SELECT *, UNNEST(hosts, max_depth := 3)
                         FROM combined
                     ),
@@ -183,7 +183,7 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
                       TO '${smtpHostDestination}' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'hosts_{uuid}' )
                 """, Map.of(
                         "allResultsQuery", allResultsQuery,
-                "smtpHostDestination", this.smtpHostDestination
+                        "smtpHostDestination", this.smtpHostDestination
         ));
         logger.debug("copySmtpHosts = {}", copySmtpHosts);
         getJdbcClient().sql(copySmtpHosts).update();
