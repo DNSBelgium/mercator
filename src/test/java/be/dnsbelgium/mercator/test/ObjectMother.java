@@ -49,6 +49,8 @@ public class ObjectMother {
             .url("https://www.dnsbelgium.be/")
             .domainName("dnsbelgium.be")
             .statusCode(200)
+            .crawlStarted(started)
+            .crawlStarted(started.plusMillis(312))
             .path("/")
             .build();
   }
@@ -60,6 +62,8 @@ public class ObjectMother {
             .url("https://www.dnsbelgium.be/en")
             .domainName("dnsbelgium.be")
             .statusCode(200)
+            .crawlStarted(started)
+            .crawlStarted(started.plusMillis(312))
             .path("/en")
             .build();
   }
@@ -72,6 +76,8 @@ public class ObjectMother {
             .domainName("dnsbelgium.be")
             .vatValues(List.of("BE0466158640", "BE0841242495"))
             .statusCode(200)
+            .crawlStarted(started)
+            .crawlStarted(started.plusMillis(312))
             .path("/en/contact")
             .build();
   }
@@ -83,6 +89,8 @@ public class ObjectMother {
             .url("https://www.no-website.org/")
             .domainName("no-website.org")
             .statusCode(400)
+            .crawlStarted(started)
+            .crawlStarted(started.plusMillis(312))
             .path("/")
             .build();
   }

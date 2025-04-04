@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,23 +24,16 @@ class WebRepositoryTest {
 
   private static final Logger logger = LoggerFactory.getLogger(WebRepositoryTest.class);
 
-  @TempDir
+  // you can temporarily change this to NEVER if you want to inspect the files
+  @TempDir(cleanup = CleanupMode.ALWAYS)
   static Path baseLocation;
 
-  @TempDir
+  @TempDir(cleanup = CleanupMode.ALWAYS)
   static Path tempDir;
 
-  static {
-    if (System.getProperty("mercator_temp_dir") != null) {
-      // this allows to run the tests with a folder that does not disappear after the test completes.
-      baseLocation = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
-      logger.info("Using base location {}", baseLocation);
-    }
-  }
   private final ObjectMother objectMother = new ObjectMother();
+
   private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString());
-
-
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
