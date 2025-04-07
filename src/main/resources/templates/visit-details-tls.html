@@ -10,7 +10,7 @@
 
 <body>
 
-<main class="container" layout:fragment="content">
+<main class="container-fluid" layout:fragment="content">
   <p th:if="${tlsCrawlResults?.visits?.isEmpty() ?: true}">
 
     <span th:if="${domainName != null}">
