@@ -16,7 +16,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(DnsRepository.class);
 
-    private final String dnsCrawlDestination;
+    private final String dnsRequestDestination;
     private final String dnsResponseDestination;
     private final String dnsGeoIpResponseDestination;
 
@@ -25,71 +25,99 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
     public DnsRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String baseLocation) {
         super(objectMapper, baseLocation, DnsCrawlResult.class);
         String subPath = "dns";
-        dnsCrawlDestination = createDestination(baseLocation, subPath, "dns_crawl_result");
-        dnsResponseDestination = createDestination(baseLocation, subPath, "dns_response");
-        dnsGeoIpResponseDestination = createDestination(baseLocation, subPath, "dns_geoip_response");
+        dnsRequestDestination = createDestination(baseLocation, subPath, "requests");
+        dnsResponseDestination = createDestination(baseLocation, subPath, "responses");
+        dnsGeoIpResponseDestination = createDestination(baseLocation, subPath, "response_geoips");
     }
 
-    @Override
+    @Override // the application will throw an error if it tries to execute this without a geoip parquet file present
     public String getAllItemsQuery() {
         return StringSubstitutor.replace("""
-                with dns_geoip_response_result as (
-                    select *  from read_parquet('${dnsGeoIpResponseDestination}/**/*.parquet')
-                ),
-                dns_response_result as (
-                    select * from read_parquet('${dnsResponseDestination}/**/*.parquet')
-                ),
-                dns_crawl_result as (
-                    select *  from read_parquet('${dnsCrawlDestination}/**/*.parquet')
-                ),
-                response_has_geoips as (
-                    select resps.*, COALESCE(LIST(
-                                        struct_pack(
-                                            asn := geoipResps.asn,
-                                            country := geoipResps.country,
-                                            ip := geoipResps.ip,
-                                            asn_organisation := geoipResps.asn_organisation,
-                                            ip_version := geoipResps.ip_version
-                                        )
-                                    ), []) as response_geo_ips
-                    from dns_geoip_response_result geoipResps left join dns_response_result resps on geoipResps.response_id = resps.id
-                    group by all
-                 ),
-                rename as (
-                    select request_id as id, record_data, ttl, response_geo_ips from response_has_geoips
-                ),
-                unnest_requests as (
-                     select unnest(requests) from dns_crawl_result
-                 ),
-                request_has_responses as (
-                    select reqs.*, COALESCE(list(resps), []) as responses
-                    from unnest_requests reqs inner join rename resps
-                        on resps.id = reqs.id
-                    group by all
-            
-                ),
-                 dns_crawl_result_has_requests as (
-                     select dcr.status, dcr.visit_id, dcr.domain_name, dcr.crawl_timestamp, COALESCE(list(reqs), []) as requests
-                     from dns_crawl_result dcr inner join request_has_responses reqs
-                              on dcr.visit_id = reqs.visit_id
-                    group by all
-                 )
-               
+                with
+                    dns_geoip_response as (
+                        select *  from read_parquet('${dnsGeoIpResponseDestination}/**/*.parquet')
+                    ),
+                    dns_response as (
+                        select * from read_parquet('${dnsResponseDestination}/**/*.parquet')
+                    ),
+                    dns_requests as (
+                        select *  from read_parquet('${dnsRequestDestination}/**/*.parquet')
+                    ),
+                    geoips_list as (
+                        select dns_response.visit_id,
+                               dns_response.record_data,
+                               dns_response.request_id,
+                               dns_response.ttl,
+                               list(
+                                    struct_pack(
+                                        asn := dns_geoip_response.asn,
+                                        country := dns_geoip_response.country,
+                                        ip := dns_geoip_response.ip,
+                                        asn_organisation := dns_geoip_response.asn_organisation,
+                                        ip_version := dns_geoip_response.ip_version
+                                    )
                 
-                select * from dns_crawl_result_has_requests
+                               ) as response_geo_ips
+                        from  dns_response
+                        LEFT join dns_geoip_response on dns_geoip_response.response_id = dns_response.id
+                        group by dns_response.visit_id, dns_response.record_data, dns_response.request_id, dns_response.ttl
+                    ),
+                    rename as (
+                        select
+                            request_id as id,
+                            record_data,
+                            ttl,
+                            response_geo_ips
+                        from  geoips_list
+                    ),
+                    responses_list as (
+                        select dns_requests.* EXCLUDE (year, month), list(rename) as responses
+                        from dns_requests
+                            LEFT join rename
+                                on rename.id = dns_requests.id
+                        group by all
                 
-                
+                    ),
+                    dnsCrawlResult as (
+                        select
+                            status,
+                            visit_id,
+                            domain_name,
+                            min(crawl_timestamp) as crawl_timestamp,
+                            -- this part is done by using a subquery to ensure the order of the requests array on dnsCrawlResult
+                            (
+                                select list(
+                                            struct_pack(
+                                                 id := responses_list.id,
+                                                 visit_id := responses_list.visit_id,
+                                                 domain_name := responses_list.domain_name,
+                                                 prefix := responses_list.prefix,
+                                                 record_type := responses_list.record_type,
+                                                 rcode := responses_list.rcode,
+                                                 crawl_timestamp := responses_list.crawl_timestamp,
+                                                 ok := responses_list.ok,
+                                                 problem := responses_list.problem,
+                                                 num_of_responses := responses_list.num_of_responses,
+                                                 responses := responses_list.responses
+                                         )
+                                        order by responses_list.crawl_timestamp, responses_list.id
+                                    )
+                                from responses_list
+                            ) as requests
+                        from responses_list
+                        group by status, visit_id, domain_name
+                    )
+                select * from dnsCrawlResult
                 """, Map.of(
                         "dnsGeoIpResponseDestination", this.dnsGeoIpResponseDestination,
                         "dnsResponseDestination", this.dnsResponseDestination,
-                        "dnsCrawlDestination", this.dnsCrawlDestination
+                        "dnsRequestDestination", this.dnsRequestDestination
         ));
     }
 
 
     @Override
     public void storeResults(String jsonResultsLocation) {
-
         String allResultsQuery = StringSubstitutor.replace("""
           with unnested as (
             select status, unnest(requests, max_depth:=2)
@@ -109,7 +137,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
 
         logger.info("allResultsQuery: {}", allResultsQuery);
 
-        String copyDnsCrawlResult = StringSubstitutor.replace("""
+        String copyDnsRequests = StringSubstitutor.replace("""
                 COPY(
                         ${allResultsQuery}
                          cast_datatypes as (
@@ -129,32 +157,16 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                                      month
                              from
                                  all_results
-                         ),
-                         dns_crawl_result as (
-                             select status, domain_name, visit_id, crawl_timestamp, struct_pack(
-                                     id := id,
-                                     visit_id := visit_id,
-                                     domain_name := domain_name,
-                                     prefix := prefix,
-                                     record_type := record_type,
-                                     rcode := rcode,
-                                     crawl_timestamp := crawl_timestamp,
-                                     ok := ok,
-                                     problem := problem,
-                                     num_of_responses := num_of_responses) as requests,
-                                     year,
-                                     month
-                             from cast_datatypes
                          )
-                    select * from dns_crawl_result
-                ) TO '${dnsCrawlDestination}' (FORMAt parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'dns_{uuid}')
+                    select * from cast_datatypes
+                ) TO '${dnsRequestDestination}' (FORMAt parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
                 """, Map.of(
                         "allResultsQuery", allResultsQuery,
-                        "dnsCrawlDestination", this.dnsCrawlDestination
+                        "dnsRequestDestination", this.dnsRequestDestination
         ));
-        logger.info("copyDnsCrawlResult: {}", copyDnsCrawlResult);
+        logger.info("copyDnsCrawlResult: {}", copyDnsRequests);
 
-        getJdbcClient().sql(copyDnsCrawlResult).update();
+        getJdbcClient().sql(copyDnsRequests).update();
 
         String copyDnsResponses = StringSubstitutor.replace("""
                 COPY (
@@ -177,7 +189,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                         from responses
                     )
                 select * from cast_datatypes
-                ) TO '${dnsResponseDestination}' (FORMAt parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'dns_responses_{uuid}')
+                ) TO '${dnsResponseDestination}' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
                 """, Map.of(
                         "allResultsQuery", allResultsQuery,
                 "dnsResponseDestination", this.dnsResponseDestination
@@ -212,15 +224,13 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                     )
                 select * from cast_datatypes
                 
-                ) TO '${dnsGeoIpResponseDestination}' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN 'dns_geoip_responses_{uuid}')
+                ) TO '${dnsGeoIpResponseDestination}' (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
                 """, Map.of(
                         "allResultsQuery", allResultsQuery,
                 "dnsGeoIpResponseDestination", this.dnsGeoIpResponseDestination
         ));
         logger.info("copyDnsGeoipResponse: {}", copyDnsGeoipResponses);
         getJdbcClient().sql(copyDnsGeoipResponses).update();
-
-
     }
 
 
