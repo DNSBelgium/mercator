@@ -40,74 +40,66 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                     dns_response as (
                         select * from read_parquet('${dnsResponseDestination}/**/*.parquet')
                     ),
-                    dns_requests as (
+                    dns_request as (
                         select *  from read_parquet('${dnsRequestDestination}/**/*.parquet')
                     ),
-                    geoips_list as (
-                        select dns_response.visit_id,
-                               dns_response.record_data,
-                               dns_response.request_id,
-                               dns_response.ttl,
-                               list(
-                                    struct_pack(
-                                        asn := dns_geoip_response.asn,
-                                        country := dns_geoip_response.country,
-                                        ip := dns_geoip_response.ip,
-                                        asn_organisation := dns_geoip_response.asn_organisation,
-                                        ip_version := dns_geoip_response.ip_version
-                                    )
-                
+                        geo_ip as (
+                            select
+                                visit_id,
+                                response_id,
+                                list(
+                                   struct_pack(
+                                           asn := dns_geoip_response.asn,
+                                           country := dns_geoip_response.country,
+                                           ip := dns_geoip_response.ip,
+                                           asn_organisation := dns_geoip_response.asn_organisation,
+                                           ip_version := dns_geoip_response.ip_version
+                                   )
                                ) as response_geo_ips
-                        from  dns_response
-                        LEFT join dns_geoip_response on dns_geoip_response.response_id = dns_response.id
-                        group by dns_response.visit_id, dns_response.record_data, dns_response.request_id, dns_response.ttl
-                    ),
-                    rename as (
-                        select
-                            request_id as id,
-                            record_data,
-                            ttl,
-                            response_geo_ips
-                        from  geoips_list
-                    ),
-                    responses_list as (
-                        select dns_requests.* EXCLUDE (year, month), list(rename) as responses
-                        from dns_requests
-                            LEFT join rename
-                                on rename.id = dns_requests.id
-                        group by all
-                
-                    ),
-                    dnsCrawlResult as (
-                        select
-                            status,
-                            visit_id,
-                            domain_name,
-                            min(crawl_timestamp) as crawl_timestamp,
-                            -- this part is done by using a subquery to ensure the order of the requests array on dnsCrawlResult
-                            (
-                                select list(
-                                            struct_pack(
-                                                 id := responses_list.id,
-                                                 visit_id := responses_list.visit_id,
-                                                 domain_name := responses_list.domain_name,
-                                                 prefix := responses_list.prefix,
-                                                 record_type := responses_list.record_type,
-                                                 rcode := responses_list.rcode,
-                                                 crawl_timestamp := responses_list.crawl_timestamp,
-                                                 ok := responses_list.ok,
-                                                 problem := responses_list.problem,
-                                                 num_of_responses := responses_list.num_of_responses,
-                                                 responses := responses_list.responses
-                                         )
-                                        order by responses_list.crawl_timestamp, responses_list.id
-                                    )
-                                from responses_list
-                            ) as requests
-                        from responses_list
-                        group by status, visit_id, domain_name
-                    )
-                select * from dnsCrawlResult
+                            from dns_geoip_response
+                            group by visit_id, response_id
+                        ),
+                        responses_with_geoip as (
+                            select
+                                dns_response.visit_id,
+                                dns_response.request_id,
+                                struct_pack(
+                                           dns_response.id,
+                                           dns_response.record_data,
+                                           dns_response.ttl,
+                                           geo_ip.response_geo_ips
+                                ) as response
+                            from dns_response
+                            left join geo_ip
+                                on dns_response.visit_id = geo_ip.visit_id
+                                and dns_response.id = geo_ip.response_id
+                        ),
+                        response_list as (
+                            select
+                                visit_id,
+                                request_id,
+                                list(response order by crawl_timestamp, request_id) as responses
+                            from responses_with_geoip
+                            group by visit_id, request_id
+                        ),
+                        requests as (
+                            select dns_request.* exclude(year, month, status), responses
+                            from dns_request
+                            join response_list
+                                on  response_list.visit_id = dns_request.visit_id
+                                and response_list.request_id = dns_request.id
+                        ),
+                        dnsCrawlResult as (
+                            select
+                                'OK' as status,
+                                visit_id,
+                                domain_name,
+                                min(crawl_timestamp) as crawl_timestamp,
+                                list(requests order by id) as requests
+                            from requests
+                            group by visit_id, domain_name
+                        )
+                    select * from dnsCrawlResult
                 """, Map.of(
                         "dnsGeoIpResponseDestination", this.dnsGeoIpResponseDestination,
                         "dnsResponseDestination", this.dnsResponseDestination,

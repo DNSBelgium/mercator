@@ -23,7 +23,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
   private final String certificatesLocation;
 
   @SneakyThrows
-  public TlsRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/tls") String dataLocation) {
+  public TlsRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}tls") String dataLocation) {
     super(objectMapper, dataLocation, TlsCrawlResult.class);
     this.visitsLocation = createDestination(dataLocation, "visits");
     this.certificatesLocation = createDestination(dataLocation, "certificates");
