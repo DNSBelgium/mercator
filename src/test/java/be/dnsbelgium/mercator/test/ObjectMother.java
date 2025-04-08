@@ -252,6 +252,85 @@ public class ObjectMother {
             .build();
   }
 
+  public WebCrawlResult webCrawlResultWithNullValues() {
+    return WebCrawlResult.builder()
+            .visitId(null)
+            .crawlStarted(null)
+            .crawlFinished(null)
+            .domainName(null)
+            .matchingUrl(null)
+            .vatValues(null)
+            .visitedUrls(null)
+            .startUrl(null)
+            .htmlFeatures(null)
+            .pageVisits(null)
+            .detectedTechnologies(null)
+            .build();
+
+  }
+  public WebCrawlResult webCrawlResultWithHtmlFeaturesNullValues() {
+    return WebCrawlResult.builder()
+            .visitId(null)
+            .crawlStarted(null)
+            .crawlFinished(null)
+            .domainName(null)
+            .matchingUrl(null)
+            .vatValues(null)
+            .visitedUrls(null)
+            .startUrl(null)
+            .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
+            .pageVisits(null)
+            .detectedTechnologies(null)
+            .build();
+
+  }
+  public WebCrawlResult webCrawlResultWithPageVisitNullValues() {
+    return WebCrawlResult.builder()
+            .visitId(null)
+            .crawlStarted(null)
+            .crawlFinished(null)
+            .domainName(null)
+            .matchingUrl(null)
+            .vatValues(null)
+            .visitedUrls(null)
+            .startUrl(null)
+            .htmlFeatures(null)
+            .pageVisits(List.of(pageVisitWithNullValues()))
+            .detectedTechnologies(null)
+            .build();
+
+  }
+
+
+  public HtmlFeatures htmlFeaturesWithNullValues() {
+    HtmlFeatures features = htmlFeatureExtractor
+            .extractFromHtml(
+                    "",
+                    "https://www.no-website.be/",
+                    null);
+    features.visitId = null;
+    features.crawlTimestamp = null;
+    features.domainName = null;
+    features.body_text_language = null;
+    features.body_text_language_2 = null;
+    return features;
+  }
+
+  public PageVisit pageVisitWithNullValues() {
+    return PageVisit.builder()
+            .visitId(null)
+            .responseBody(null)
+            .url(null)
+            .domainName(null)
+            .statusCode(null)
+            .crawlStarted(null)
+            .crawlStarted(null)
+            .path(null)
+            .build();
+  }
+
+
+
   public TlsCrawlResult tlsCrawlResult1()  {
     return getTlsCrawlResult("visit01", "tls.org", singleVersionScan1());
   }
@@ -259,8 +338,8 @@ public class ObjectMother {
   @NotNull
   private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
     return new TlsCrawlResult(visitId, domainName, List.of(
-        TlsVisit.fromCache(visitId, domainName, domainName, fullScanEntity(domainName), scan),
-        TlsVisit.fromCache(visitId, domainName, "www." + domainName, fullScanEntity(domainName), scan)
+            TlsVisit.fromCache(visitId, domainName, domainName, fullScanEntity(domainName), scan),
+            TlsVisit.fromCache(visitId, domainName, "www." + domainName, fullScanEntity(domainName), scan)
     ));
   }
 
@@ -319,6 +398,66 @@ public class ObjectMother {
             .build();
 
   }
+
+  public FullScanEntity fullScanEntityWithNullValues() {
+    return FullScanEntity.builder()
+            .crawlTimestamp(null)
+            .ip(null)
+            .serverName(null)
+            .connectOk(false)
+            .supportTls_1_3(false)
+            .supportTls_1_2(false)
+            .supportTls_1_1(false)
+            .supportTls_1_0(false)
+            .supportSsl_3_0(false)
+            .supportSsl_2_0(false)
+            .errorTls_1_0(null)
+            .selectedCipherTls_1_2(null)
+            .selectedCipherTls_1_1(null)
+            .selectedCipherTls_1_0(null)
+            .lowestVersionSupported(null)
+            .lowestVersionSupported(null)
+            .millis_tls_1_0(0)
+            .millis_tls_1_1(0)
+            .millis_tls_1_2(0)
+            .millis_tls_1_3(0)
+            .millis_ssl_2_0(0)
+            .millis_ssl_3_0(0)
+            .build();
+
+  }
+
+  private TlsCrawlResult getTlsCrawlResultWithNullValues() {
+    return new TlsCrawlResult(null, null, List.of(
+            TlsVisit.fromCache(null, null, null, fullScanEntity(""), singleVersionScanWithNullValues()),
+            TlsVisit.fromCache(null, null,  null, fullScanEntity(""), singleVersionScanWithNullValues())
+    ));
+  }
+
+  private TlsCrawlResult getTlsCrawlResultWithFullScanEntityNull(SingleVersionScan scan) {
+    return new TlsCrawlResult("visit02", "example.be", List.of(
+            TlsVisit.fromCache("visit02", "example.be", "example.be", fullScanEntityWithNullValues(), scan),
+            TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", fullScanEntityWithNullValues(), scan)
+    ));
+  }
+
+  public TlsCrawlResult tlsCrawlResultWithNullFullVersionEntityScan()  {
+    return getTlsCrawlResultWithFullScanEntityNull(singleVersionScan2());
+  }
+
+  public TlsCrawlResult tlsCrawlResultWithNullValues()  {
+    return getTlsCrawlResultWithNullValues();
+  }
+  SingleVersionScan singleVersionScanWithNullValues()  {
+    SingleVersionScan singleVersionScan = SingleVersionScan.of(null, new InetSocketAddress("", 0));
+    singleVersionScan.setConnectOK(false);
+    singleVersionScan.setPeerCertificate(null);
+    return singleVersionScan;
+  }
+
+
+
+
   public SmtpVisit smtpVisit1() {
     return SmtpVisit.builder()
             .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
@@ -471,16 +610,7 @@ public class ObjectMother {
             .build();
   }
 
-
-
-
-
-
-
-
-
-
-  public DnsCrawlResult dnsCrawlResultWithMultipleResponses() {
+  public DnsCrawlResult dnsCrawlResultWithMultipleResponses1(String domain, String visitId) {
     ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(12345L, "ISP Belgium"), "BE", 4, "192.168.1.1");
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
@@ -503,8 +633,8 @@ public class ObjectMother {
 
     Request request = Request.builder()
             .requestId(9153627412115712L)
-            .visitId("visit-789")
-            .domainName("example.com")
+            .visitId(visitId)
+            .domainName(domain)
             .prefix("www")
             .recordType(RecordType.A)
             .rcode(0)
@@ -514,7 +644,118 @@ public class ObjectMother {
             .numOfResponses(2)
             .build();
 
-    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, "example.com", Instant.parse("2025-03-28T12:00:00Z"), "visit=789");
+    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
+  }
+
+  public DnsCrawlResult dnsCrawlResultWithMultipleResponses2(String domain, String visitId) {
+    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(1245L, "ISP Netherlands"), "BE", 4, "192.1681.1");
+    ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(6780L, "ISP Belgium"), "FR", 4, "192.168.11");
+
+    Response response1 = Response.builder()
+            .responseId(10517255249230897L)
+            .recordData("192.1681.1")
+            .ttl(3600L)
+            .responseGeoIps(List.of(geoIp1, geoIp2))
+            .build();
+
+    ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(5321L, "ISP Germany"), "NL", 4, "192.1681.2");
+    ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(9865L, "ISP Belgium"), "DE", 4, "192.1681.2");
+
+    Response response2 = Response.builder()
+            .responseId(10517864259230897L)
+            .recordData("192.1681.2")
+            .ttl(3600L)
+            .responseGeoIps(List.of(geoIp3, geoIp4))
+            .build();
+
+    Request request = Request.builder()
+            .requestId(9153627412115712L)
+            .visitId(visitId)
+            .domainName(domain)
+            .prefix("www")
+            .recordType(RecordType.A)
+            .rcode(0)
+            .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
+            .ok(true)
+            .responses(List.of(response1, response2))
+            .numOfResponses(2)
+            .build();
+
+    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
+  }
+
+
+
+  public DnsCrawlResult dnsCrawlResultWithNullValues() {
+    return new DnsCrawlResult(null, null, null,null, null);
+  }
+
+  public DnsCrawlResult dnsCrawlResultWithNullRequest() {
+    Request request = Request.builder()
+            .requestId(null)
+            .visitId(null)
+            .domainName(null)
+            .prefix(null)
+            .recordType(null)
+            .rcode(null)
+            .crawlTimestamp(null)
+            .ok(false)
+            .responses(List.of())
+            .numOfResponses(0)
+            .build();
+
+    return new DnsCrawlResult(List.of(request), null, null, null, null);
+  }
+
+  public DnsCrawlResult dnsCrawlResultWithNullResponse() {
+    Response response1 = Response.builder()
+            .responseId(null)
+            .recordData(null)
+            .ttl(null)
+            .responseGeoIps(null)
+            .build();
+
+    Request request = Request.builder()
+            .requestId(null)
+            .visitId(null)
+            .domainName(null)
+            .prefix(null)
+            .recordType(null)
+            .rcode(null)
+            .crawlTimestamp(null)
+            .ok(false)
+            .responses(List.of(response1))
+            .numOfResponses(1)
+            .build();
+
+    return new DnsCrawlResult(List.of(request), null, null,null, null);
+  }
+
+  public DnsCrawlResult dnsCrawlResultWithNullGeoIp() {
+    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(null, null), null, 0, null);
+
+    Response response1 = Response.builder()
+            .responseId(null)
+            .recordData(null)
+            .ttl(null)
+            .responseGeoIps(List.of(geoIp1))
+            .build();
+
+
+    Request request = Request.builder()
+            .requestId(null)
+            .visitId(null)
+            .domainName(null)
+            .prefix(null)
+            .recordType(null)
+            .rcode(null)
+            .crawlTimestamp(null)
+            .ok(false)
+            .responses(List.of(response1))
+            .numOfResponses(1)
+            .build();
+
+    return new DnsCrawlResult(List.of(request), null, null, null, null);
   }
 
 

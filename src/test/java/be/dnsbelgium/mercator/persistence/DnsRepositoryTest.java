@@ -48,7 +48,7 @@ class DnsRepositoryTest {
 
         logger.info("tempDir = {}", baseLocation);
         Files.createDirectories(baseLocation);
-        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses();
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
 
         logger.info("DnsCrawlResultResult = {}", dnsCrawlResultResult1);
 
@@ -74,7 +74,7 @@ class DnsRepositoryTest {
 
         logger.info("tempDir = {}", baseLocation);
         Files.createDirectories(baseLocation);
-        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses();
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("example.com", "1");
 
         logger.info("DnsCrawlResultResult = {}", dnsCrawlResultResult1);
 
@@ -90,7 +90,7 @@ class DnsRepositoryTest {
         List<DnsCrawlResult> dnsCrawlResultResults = repository.findByDomainName("example.com");
         List<BaseRepository.SearchVisitIdResultItem> dnsIdAndTimestamp = repository.searchVisitIds("example.com");
         Optional<DnsCrawlResult> dnsCrawlResultLatest = repository.findLatestResult("example.com");
-        Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("visit-789");
+        Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("1");
 
         logger.info("dnsCrawlResultResults found: {}", dnsCrawlResultResults.size());
         logger.info("dnsCrawlResultResults = {}", dnsCrawlResultResults);
@@ -106,9 +106,39 @@ class DnsRepositoryTest {
         }
         assertThat(dnsCrawlResultResults.size()).isEqualTo(1);
         assertThat(dnsIdAndTimestamp.size()).isEqualTo(1);
-        assertThat(dnsIdAndTimestamp.getFirst().getVisitId()).isEqualTo("visit-789");
+        assertThat(dnsIdAndTimestamp.getFirst().getVisitId()).isEqualTo("1");
         assertThat(dnsCrawlResultLatest.isPresent()).isTrue();
         assertThat(dnsCrwlResultById.isPresent()).isTrue();
+    }
+
+    @Test
+    public void find_whenMultipleDnsCrawlResultsArePresent() throws IOException {
+
+        logger.info("tempDir = {}", baseLocation);
+        Files.createDirectories(baseLocation);
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
+        DnsCrawlResult dnsCrawlResultResult2 = objectMother.dnsCrawlResultWithMultipleResponses1("example.be", "2");
+        DnsCrawlResult dnsCrawlResultResult3 = objectMother.dnsCrawlResultWithMultipleResponses2("testing.be", "3");
+
+        logger.info("DnsCrawlResultResult = {}", dnsCrawlResultResult1);
+
+        File jsonFile = tempDir.resolve("dnsCrawlResultResult1.json").toFile();
+        logger.info("jsonFile = {}", jsonFile);
+
+        ObjectWriter jsonWriter = TestUtils.jsonWriter();
+        jsonWriter.writeValue(jsonFile, List.of(dnsCrawlResultResult1, dnsCrawlResultResult2, dnsCrawlResultResult3));
+        repository.storeResults(jsonFile.toString());
+
+        Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("1");
+        logger.info("dnsCrwlResultById = {}", dnsCrwlResultById);
+
+        assertThat(dnsCrwlResultById.isPresent()).isTrue();
+        assertThat(dnsCrwlResultById.get().getVisitId()).isEqualTo("1");
+        assertThat(dnsCrwlResultById.get().getRequests().size()).isEqualTo(1);
+        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().size()).isEqualTo(2);
+        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
+        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().getFirst().getResponseGeoIps().getFirst().getIp().equals("192.168.1.1"));
+
     }
 
 }

@@ -4,7 +4,6 @@ import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import be.dnsbelgium.mercator.tls.domain.TlsVisit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -96,5 +95,30 @@ public class TlsSearchControllerTest {
                 .andExpect(model().attributeExists( "domainName"))
                 .andExpect(content().string(containsString(domainName)));
 
+    }
+
+    @Test
+    public void findLatest_whenTlsCrawlResultWithNullValues() throws Exception {
+        TlsCrawlResult tlsVisit1 = objectMother.tlsCrawlResultWithNullValues();
+        when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsVisit1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/latest")
+                        .param("domainName",  "dnsbelgium.be")
+                        .param("fetchLatest", "true"))
+                .andExpect(view().name("visit-details-tls"))
+                .andExpect(model().attributeExists( "domainName"));
+
+    }
+
+    @Test
+    public void findLatest_whenTlsCrawlResultWithNullFullScanEntity() throws Exception {
+        TlsCrawlResult tlsVisit1 = objectMother.tlsCrawlResultWithNullFullVersionEntityScan();
+        when(tlsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(tlsVisit1));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/tls/latest")
+                        .param("domainName",  "dnsbelgium.be")
+                        .param("fetchLatest", "true"))
+                .andExpect(view().name("visit-details-tls"))
+                .andExpect(model().attributeExists( "domainName"));
     }
 }

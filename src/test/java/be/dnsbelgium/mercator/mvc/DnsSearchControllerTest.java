@@ -66,8 +66,8 @@ public class DnsSearchControllerTest {
 
     @Test
     public void findByVisitId_findsVisitDetails() throws Exception {
-        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithMultipleResponses();
-        when(dnsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.of(dnsCrawlResult));
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
+        when(dnsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.of(dnsCrawlResultResult1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/id")
                         .param("visitId", "idjsfijoze-er-ze"))
@@ -92,8 +92,8 @@ public class DnsSearchControllerTest {
 
     @Test
     public void findLatestResult_findsLatestVisitDetails() throws Exception {
-        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithMultipleResponses();
-        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResult));
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
+        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResultResult1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/latest")
                         .param("domainName", "dnsbelgium.be"))
@@ -104,6 +104,54 @@ public class DnsSearchControllerTest {
                 .andExpect(content().string(containsString("2025-03-28T12:00:00Z")))
                 .andExpect(content().string(containsString("2")))
                 .andExpect(content().string(containsString("A")));
+    }
+
+    @Test
+    public void findLatest_whenDnsCrawlResultWithNullValues() throws Exception {
+        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithNullValues();
+
+        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/dns/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-dns"))
+                .andExpect(model().attributeExists("dnsCrawlResult"));
+    }
+
+    @Test
+    public void findLatest_whenDnsCrawlResultWithRequestNullValues() throws Exception {
+        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithNullRequest();
+
+        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/dns/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-dns"))
+                .andExpect(model().attributeExists("dnsCrawlResult"));
+    }
+
+    @Test
+    public void findLatest_whenDnsCrawlResultWithResponseNullValues() throws Exception {
+        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithNullResponse();
+
+        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/dns/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-dns"))
+                .andExpect(model().attributeExists("dnsCrawlResult"));
+    }
+
+    @Test
+    public void findLatest_whenDnsCrawlResultWithGeoIpNullValues() throws Exception {
+        DnsCrawlResult dnsCrawlResult = objectMother.dnsCrawlResultWithNullGeoIp();
+
+        when(dnsRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.ofNullable(dnsCrawlResult));
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/dns/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-dns"))
+                .andExpect(model().attributeExists("dnsCrawlResult"));
     }
 
 }

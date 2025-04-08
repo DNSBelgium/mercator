@@ -60,9 +60,9 @@
             <tr>
                 <td>Detected Technologies</td>
                 <td>
-                    <span th:if="${webCrawlResult.getDetectedTechnologies().isEmpty()}">No Technologies detected</span>
-                    <details th:if="${!webCrawlResult.getDetectedTechnologies().isEmpty()}">
-                        <summary>Click to show detected technologies</summary>
+                    <span th:if="${webCrawlResult.getDetectedTechnologies() == null or webCrawlResult.getDetectedTechnologies().isEmpty()}">No Technologies detected</span>
+                    <details th:if="${webCrawlResult.getDetectedTechnologies() != null and !webCrawlResult.getDetectedTechnologies().isEmpty()}">
+                    <summary>Click to show detected technologies</summary>
                         <ul>
                             <li th:each="detectedTechnology : ${webCrawlResult.getDetectedTechnologies()}">
                                 <p th:text="${detectedTechnology}"></p>
@@ -73,18 +73,18 @@
             </tr>
             <tr>
                 <th>Number of visited URLs</th>
-                <td th:text="${webCrawlResult.visitedUrls.size()}"></td>
+                <td th:text="${webCrawlResult.visitedUrls != null ? webCrawlResult.visitedUrls.size() : 0}"></td>
             </tr>
             <tr>
                 <th>Number of pages with html features</th>
-                <td th:text="${webCrawlResult.htmlFeatures.size()}"></td>
+                <td th:text="${webCrawlResult.htmlFeatures != null ? webCrawlResult.htmlFeatures.size() : 0}"></td>
             </tr>
             <tr>
                 <th>Visited URLs</th>
                 <td>
-                    <span th:if="${webCrawlResult.getVisitedUrls().isEmpty()}">No visited URLs</span>
-                    <details th:if="${!webCrawlResult.getVisitedUrls().isEmpty()}">
-                        <summary>Click to show visited URLs</summary>
+                    <span th:if="${webCrawlResult.getVisitedUrls() == null or webCrawlResult.getVisitedUrls().isEmpty()}">No visited URLs</span>
+                    <details th:if="${webCrawlResult.getVisitedUrls() != null and !webCrawlResult.getVisitedUrls().isEmpty()}">
+                    <summary>Click to show visited URLs</summary>
                         <ul>
                             <li th:each="visitedUrl : ${webCrawlResult.visitedUrls}">
                                 <span th:text="${visitedUrl}"></span>
@@ -95,9 +95,9 @@
             </tr>
             <tr>
                 <th>Page visits</th>
-                <td th:if="${webCrawlResult.pageVisits.isEmpty()}">No Page visits</td>
+                <td th:if="${webCrawlResult.pageVisits == null or webCrawlResult.pageVisits.isEmpty()}">No Page visits</td>
                 <td>
-                    <details th:if="${not webCrawlResult.pageVisits.isEmpty()}">
+                    <details th:if="${webCrawlResult.pageVisits != null and !webCrawlResult.pageVisits.isEmpty()}">
                         <summary>Click to show page visits</summary>
                         <div th:each="pageVisit, iterStat : ${webCrawlResult.getPageVisits()}">
                             <h4>Pagevisit #[[${iterStat.count}]]</h4>
@@ -162,9 +162,9 @@
                                 <tr>
                                     <td>VAT values</td>
                                     <td>
-                                        <span th:if="${pageVisit.getVatValues().isEmpty()}">No VAT values found</span>
-                                        <details th:if="${!pageVisit.getVatValues().isEmpty()}">
-                                            <summary>Click to show VAT values</summary>
+                                        <span th:if="${pageVisit.getVatValues() == null or pageVisit.getVatValues().isEmpty()}">No VAT values found</span>
+                                        <details th:if="${pageVisit.getVatValues() != null and !pageVisit.getVatValues().isEmpty()}">
+                                        <summary>Click to show VAT values</summary>
                                             <ul>
                                                 <li th:each="vatValue : ${pageVisit.getVatValues()}">
                                                     <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
@@ -181,7 +181,7 @@
                                     <td>
                                         <span th:if="${pageVisit.getHeaders() == null}">No headers found</span>
                                         <details th:if="${pageVisit.getHeaders() != null}">
-                                            <summary>Click to show headers</summary>
+                                        <summary>Click to show headers</summary>
                                             <ul>
                                                 <li th:each="header : ${pageVisit.getHeaders()}">
                                                     <p th:text="${header}"></p>
@@ -376,9 +376,9 @@
                 <tr>
                     <td>External hosts</td>
                     <td>
-                        <span th:if="${#lists.isEmpty(features.external_hosts)}">No external hosts found</span>
-                        <details th:if="${!#lists.isEmpty(features.external_hosts)}">
-                            <summary>Click to show external hosts</summary>
+                        <span th:if="${features.external_hosts == null or #lists.isEmpty(features.external_hosts)}">No external hosts found</span>
+                        <details th:if="${features.external_hosts != null and !#lists.isEmpty(features.external_hosts)}">
+                        <summary>Click to show external hosts</summary>
                             <ul>
                                 <li th:each="host : ${features.external_hosts}">
                                     <span th:text="${host}"></span>
@@ -390,11 +390,9 @@
                 <tr>
                     <td>Facebook links</td>
                     <td>
-                        <span th:if="${features.facebook_links.isEmpty()}">
-                          No Facebook links found
-                        </span>
-                        <details th:if="${!features.facebook_links.isEmpty()}">
-                            <summary>Click to show Facebook links</summary>
+                        <span th:if="${features.facebook_links == null or features.facebook_links.isEmpty()}">No Facebook links found</span>
+                        <details th:if="${features.facebook_links != null and !features.facebook_links.isEmpty()}">
+                        <summary>Click to show Facebook links</summary>
                             <ul>
                                 <li th:each="link: ${features.facebook_links}">
                                     <span th:text="${link}"></span>

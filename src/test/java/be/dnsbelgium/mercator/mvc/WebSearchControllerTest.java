@@ -134,5 +134,44 @@ public class WebSearchControllerTest {
                 .andExpect(content().string(containsString("128")));
     }
 
+    @Test
+    public void findLatest_whenWebCrawlResultHasNullValues() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithNullValues();
+
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists("webCrawlResult"));
+    }
+
+    @Test
+    public void findLatest_whenWebCrawlResultHtmlFeaturesHasNullValues() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithHtmlFeaturesNullValues();
+
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists("webCrawlResult"));
+    }
+
+    @Test
+    public void findLatest_whenWebCrawlResultPageVisitHasNullValues() throws Exception {
+        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithPageVisitNullValues();
+
+        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/search/web/latest")
+                        .param("domainName", "dnsbelgium.be"))
+                .andExpect(view().name("visit-details-web"))
+                .andExpect(model().attributeExists("webCrawlResult"));
+    }
+
 
 }

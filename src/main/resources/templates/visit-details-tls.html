@@ -11,20 +11,9 @@
 <body>
 
 <main class="container-fluid" layout:fragment="content">
-  <p th:if="${tlsCrawlResults?.visits?.isEmpty() ?: true}">
-
-    <span th:if="${domainName != null}">
-      No TLS crawl results found for <strong th:text="${domainName}"></strong>
-    </span>
-
-    <!--  TODO Bram: I don;t think we need this, but I am confused ;-)-->
-    <!--  when fetching with latest we only use a domain name we add a domainName attribute,
-    when searching like normal we search for a visitId and add the visitId as an attribute, so the error messagem akes sense  -->
-    <span th:if="${domainName == null}">
-      No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong>
-    </span>
-
-  </p>
+  <h2 th:if="${tlsCrawlResults == null or tlsCrawlResults.visits.isEmpty()}">
+    No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong>
+  </h2>
     <div class="container-fluid" th:each="result : ${tlsCrawlResults?.visits}">
       <h2>TLS result for host: <span th:text="${result.hostName}">hostname</span></h2>
 
@@ -128,7 +117,6 @@
         </tbody>
       </table>
     </div>
-  </div>
 </main>
 
 </body>
