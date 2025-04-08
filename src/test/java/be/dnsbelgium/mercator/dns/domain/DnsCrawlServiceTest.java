@@ -18,6 +18,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegi
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 //import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.xbill.DNS.Name;
 import org.xbill.DNS.Rcode;
@@ -40,16 +41,13 @@ import static org.mockito.Mockito.*;
 })
 class DnsCrawlServiceTest {
 
-  //@MockitoBean
-  @MockBean
+  @MockitoBean
   DnsResolver dnsResolver;
 
-  //@MockitoBean
-  @MockBean
+  @MockitoBean
   Enricher enricher;
 
-  //  @MockitoBean
-  @MockBean
+  @MockitoBean
   DnsCrawlerConfigurationProperties dnsCrawlerConfig;
 
   @Autowired
@@ -138,7 +136,7 @@ class DnsCrawlServiceTest {
     ZonedDateTime after = ZonedDateTime.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
-    assertThat(request.getId()).isNotNull();
+    assertThat(request.getRequestId()).isNotNull();
     assertThat(request.getResponses()).hasSize(2);
     assertThat(request.getPrefix()).isEqualTo("@");
     assertThat(request.getNumOfResponses()).isEqualTo(2);
@@ -169,7 +167,7 @@ class DnsCrawlServiceTest {
     ZonedDateTime after = ZonedDateTime.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
-    assertThat(request.getId()).isNotNull();
+    assertThat(request.getRequestId()).isNotNull();
     assertThat(request.getResponses()).hasSize(0);
     assertThat(request.getPrefix()).isEqualTo("@");
     assertThat(request.getNumOfResponses()).isEqualTo(0);
@@ -204,7 +202,7 @@ class DnsCrawlServiceTest {
     assertThat(requestsSaved).hasSize(4);
     for (Request request : requestsSaved) {
       assertThat(request.getProblem()).isNull();
-      assertThat(request.getId()).isNotNull();
+      assertThat(request.getRequestId()).isNotNull();
       assertThat(request.isOk()).isTrue();
       assertThat(request.getRcode()).isEqualTo(0);
       assertThat(request.getVisitId()).isEqualTo(visitRequest.getVisitId());
@@ -294,7 +292,7 @@ class DnsCrawlServiceTest {
     logger.info("requests.size = {}", requests.size());
     for (Request request : requests) {
       logRequest(request);
-      assertThat(request.getId()).isNotNull();
+      assertThat(request.getRequestId()).isNotNull();
       assertThat(request.getVisitId()).isEqualTo(visitRequest.getVisitId());
       assertThat(request.getDomainName()).isEqualTo(visitRequest.getDomainName());
       if (request.getPrefix().equals("@") && request.getRecordType() == A) {

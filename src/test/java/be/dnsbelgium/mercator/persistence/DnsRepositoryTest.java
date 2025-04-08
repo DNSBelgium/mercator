@@ -9,9 +9,12 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -109,6 +112,12 @@ class DnsRepositoryTest {
         assertThat(dnsIdAndTimestamp.getFirst().getVisitId()).isEqualTo("visit-789");
         assertThat(dnsCrawlResultLatest.isPresent()).isTrue();
         assertThat(dnsCrwlResultById.isPresent()).isTrue();
+    }
+
+    @Test
+    public void read() throws IOException {
+        Resource resource = new ClassPathResource("sql/dns_crawl_results.sql");
+        logger.info("classPathResource = {}", resource.getContentAsString(StandardCharsets.UTF_8));
     }
 
 }

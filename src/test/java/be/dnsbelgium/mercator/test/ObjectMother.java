@@ -485,7 +485,7 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
     Response response1 = Response.builder()
-            .id(10517255249230897L)
+            .responseId(10517255249230897L)
             .recordData("192.168.1.1")
             .ttl(3600L)
             .responseGeoIps(List.of(geoIp1, geoIp2))
@@ -495,14 +495,14 @@ public class ObjectMother {
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
 
     Response response2 = Response.builder()
-            .id(10517864259230897L)
+            .responseId(10517864259230897L)
             .recordData("192.168.1.2")
             .ttl(3600L)
             .responseGeoIps(List.of(geoIp3, geoIp4))
             .build();
 
     Request request = Request.builder()
-            .id(9153627412115712L)
+            .requestId(9153627412115712L)
             .visitId("visit-789")
             .domainName("example.com")
             .prefix("www")

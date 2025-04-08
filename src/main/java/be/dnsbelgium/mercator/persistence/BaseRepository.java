@@ -9,10 +9,13 @@ import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -202,5 +205,12 @@ public class BaseRepository<T> {
       ) to '%s' (format parquet, partition_by (year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
             timestampField(), timestampField(), jsonResultsLocation, baseLocation)
     ).update();
+  }
+
+  @SneakyThrows
+  private String readFromClasspath(String path) {
+    Resource resource = new ClassPathResource(path);
+    return resource.getContentAsString(StandardCharsets.UTF_8);
+
   }
 }
