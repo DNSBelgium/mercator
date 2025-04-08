@@ -53,7 +53,7 @@ jobs:
         run: |
           COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
           if [ "${{ github.ref_name }}" = "main" ]; then
-            TAGS="latest,$COMMIT_SHORT_SHA"
+            TAGS="$COMMIT_SHORT_SHA"
           else
             TAGS="${{ github.ref_name }},$COMMIT_SHORT_SHA"
           fi
