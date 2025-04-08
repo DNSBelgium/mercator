@@ -48,27 +48,19 @@ jobs:
           name: Package
           path: staging
 
-#      - name: Publish Test Report
-#        if: success() || failure()
-#        uses: ScaCap/action-surefire-report@v1.8.0
-
-#      - uses: dorny/test-reporter@v1.9.1
-#        if: success() || failure()
-#        with:
-#          name: Junit Test Report
-#          path: 'target/surefire-reports/*.xml'
-#          reporter: java-junit
-#          fail-on-error: true
-
       - name: Set short git commit SHA
         id: vars
         run: |
-          calculatedSha=$(git rev-parse --short ${{ github.sha }})
-          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+          COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            TAGS="latest,$COMMIT_SHORT_SHA"
+          else
+            TAGS="${{ github.ref_name }},$COMMIT_SHORT_SHA"
+          fi
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -80,21 +72,20 @@ jobs:
           REGISTRY: ${{ env.REGISTRY }}
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            TAGS="latest,${{ env.COMMIT_SHORT_SHA }}"
-          else
-            TAGS="${GITHUB_REF##*/},${{ env.COMMIT_SHORT_SHA }}"  # Use branch name as tag
-          fi
-          mvn --batch-mode clean compile jib:build -D jib.to.tags=$TAGS
+        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
 
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+
+        with:
+          registry: ${{ secrets.DOCKERHUB_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
 
       - name: Publish container image to Docker Hub
-        id: publish_docker
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            TAGS="latest,${{ env.COMMIT_SHORT_SHA }}"
-          else
-            TAGS="${GITHUB_REF##*/},${{ env.COMMIT_SHORT_SHA }}"  # Use branch name as tag
-          fi
-          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build -D jib.to.tags=$TAGS
+        id: publish_dockerhub
+        env:
+          REGISTRY: ${{ secrets.DOCKERHUB_REGISTRY }}
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
+        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
