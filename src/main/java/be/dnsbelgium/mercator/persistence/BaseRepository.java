@@ -208,7 +208,7 @@ public class BaseRepository<T> {
   }
 
   @SneakyThrows
-  private String readFromClasspath(String path) {
+  protected String readFromClasspath(String path) {
     Resource resource = new ClassPathResource(path);
     return resource.getContentAsString(StandardCharsets.UTF_8);
 
