@@ -75,9 +75,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish container image to GitHub Container registry
-        on:
-          branch:
-            - main
+        if: github.ref == 'refs/heads/batch2'
         id: publish
         env:
           REGISTRY: ${{ env.REGISTRY }}
@@ -86,9 +84,7 @@ jobs:
         run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
 
       - name: Publish container image to GitHub Container registry
-        on:
-          branch:
-           - batch2
+        if: github.ref == 'refs/heads/batch2'
         id: publish
         env:
           REGISTRY: ${{ env.REGISTRY }}
