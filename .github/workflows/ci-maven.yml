@@ -75,23 +75,26 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish container image to GitHub Container registry
-        if: github.ref == 'refs/heads/batch2'
         id: publish
         env:
           REGISTRY: ${{ env.REGISTRY }}
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAGS="latest,${{ env.COMMIT_SHORT_SHA }}"
+          else
+            TAGS="${GITHUB_REF##*/},${{ env.COMMIT_SHORT_SHA }}"  # Use branch name as tag
+          fi
+          mvn --batch-mode clean compile jib:build -D jib.to.tags=$TAGS
 
-      - name: Publish container image to GitHub Container registry
-        if: github.ref == 'refs/heads/batch2'
-        id: publish
-        env:
-          REGISTRY: ${{ env.REGISTRY }}
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=batch2,${{ env.COMMIT_SHORT_SHA }}
 
       - name: Publish container image to Docker Hub
         id: publish
-        run: DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build -D jib.to.tags=batch2,${{ env.COMMIT_SHORT_SHA }}
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAGS="latest,${{ env.COMMIT_SHORT_SHA }}"
+          else
+            TAGS="${GITHUB_REF##*/},${{ env.COMMIT_SHORT_SHA }}"  # Use branch name as tag
+          fi
+          DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }} DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }} mvn --batch-mode clean compile jib:build -D jib.to.tags=$TAGS
