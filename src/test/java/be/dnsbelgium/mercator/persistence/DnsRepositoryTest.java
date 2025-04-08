@@ -114,10 +114,4 @@ class DnsRepositoryTest {
         assertThat(dnsCrwlResultById.isPresent()).isTrue();
     }
 
-    @Test
-    public void read() throws IOException {
-        Resource resource = new ClassPathResource("sql/dns_crawl_results.sql");
-        logger.info("classPathResource = {}", resource.getContentAsString(StandardCharsets.UTF_8));
-    }
-
 }
