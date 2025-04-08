@@ -131,12 +131,12 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
             .rcode(dnsRequest.rcode())
             .ok(dnsRequest.isOk())
             .problem(dnsRequest.humanReadableProblem())
-            .id(Ulid.fast().getMostSignificantBits())
+            .requestId(Ulid.fast().getMostSignificantBits())
             .build();
     for (RRecord record: dnsRequest.records()) {
       Response response = Response.builder()
               .recordData(record.getData())
-              .id(Ulid.fast().getMostSignificantBits())
+              .responseId(Ulid.fast().getMostSignificantBits())
               .ttl(record.getTtl())
               .build();
       request.getResponses().add(response);

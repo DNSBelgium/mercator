@@ -64,7 +64,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                                 dns_response.visit_id,
                                 dns_response.request_id,
                                 struct_pack(
-                                           dns_response.id,
+                                           dns_response.response_id,
                                            dns_response.record_data,
                                            dns_response.ttl,
                                            geo_ip.response_geo_ips
@@ -72,7 +72,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                             from dns_response
                             left join geo_ip
                                 on dns_response.visit_id = geo_ip.visit_id
-                                and dns_response.id = geo_ip.response_id
+                                and dns_response.response_id = geo_ip.response_id
                         ),
                         response_list as (
                             select
@@ -87,7 +87,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                             from dns_request
                             join response_list
                                 on  response_list.visit_id = dns_request.visit_id
-                                and response_list.request_id = dns_request.id
+                                and response_list.request_id = dns_request.request_id
                         ),
                         dnsCrawlResult as (
                             select
@@ -95,7 +95,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                                 visit_id,
                                 domain_name,
                                 min(crawl_timestamp) as crawl_timestamp,
-                                list(requests order by id) as requests
+                                list(requests order by request_id) as requests
                             from requests
                             group by visit_id, domain_name
                         )
@@ -135,7 +135,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                          cast_datatypes as (
                              select
                                  status as status,
-                                 id::VARCHAR as id,
+                                 request_id::VARCHAR as request_id,
                                      visit_id::VARCHAR as visit_id,
                                      domain_name::VARCHAR as domain_name,
                                      prefix::VARCHAR as prefix,
@@ -164,7 +164,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                 COPY (
                     ${allResultsQuery}
                     responses_unnested as (
-                        select id as request_id, visit_id, unnest(responses, max_depth := 2), year, month from all_results
+                        select request_id, visit_id, unnest(responses, max_depth := 2), year, month from all_results
                     ),
                     responses as (
                         select * exclude (response_geo_ips) from responses_unnested
@@ -173,7 +173,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                         select
                             request_id::VARCHAR as request_id,
                             visit_id::VARCHAR as visit_id,
-                            id::VARCHAR as id,
+                            response_id::VARCHAR as response_id,
                             record_data as record_data,
                             ttl as ttl,
                             year,
@@ -194,10 +194,10 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
                 COPY (
                     ${allResultsQuery}
                     responses as (
-                        select visit_id, id as request_id, unnest(responses, max_depth := 2) as responses, year, month  from all_results
+                        select visit_id, request_id, unnest(responses, max_depth := 2) as responses, year, month  from all_results
                     ),
                     geoIps as (
-                        select visit_id, request_id, id as response_id, unnest(response_geo_ips, max_depth := 2 ), year, month from responses
+                        select visit_id, request_id, response_id, unnest(response_geo_ips, max_depth := 2 ), year, month from responses
                     ),
                     cast_datatypes as (
                         select
