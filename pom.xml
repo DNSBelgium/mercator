@@ -502,7 +502,7 @@
                 <configuration>
                     <to>
                         <!--suppress MavenModelInspection -->
-                        <image>${env.REGISTRY}/dnsbelgium/mercator</image>
+                        <image>${env.REGISTRY}/dnsbelgium/mercator:${env.DEFAULT_TAG}</image>
                         <auth>
                             <!--suppress MavenModelInspection -->
                             <username>${env.DOCKER_USERNAME}</username>

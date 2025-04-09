@@ -52,8 +52,13 @@ jobs:
         id: vars
         run: |
           COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          TAGS="${{ github.ref_name }},$COMMIT_SHORT_SHA"
+          TAGS="$COMMIT_SHORT_SHA"
           echo "TAGS=$TAGS" >> $GITHUB_ENV
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "DEFAULT_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "DEFAULT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
