@@ -4,10 +4,7 @@ import be.dnsbelgium.mercator.batch.BatchConfig;
 import be.dnsbelgium.mercator.batch.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.job.AbstractJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.CommandLineRunner;
@@ -49,7 +46,7 @@ public class JobRunner implements CommandLineRunner {
           // TODO: do we really need these strings as JobParameters ?
           // why not simply inject them into the Spring components that need them?
           String inputFileParam = "file://" + batchConfig.getInputFile();
-          String outputFileParam = "file://" +  batchConfig.outputPathFor(job.getName()).toAbsolutePath();
+          String outputFileParam = "file://" + batchConfig.outputPathFor(job.getName()).toAbsolutePath();
 
           JobParameters params = new JobParametersBuilder()
               .addString("inputFile", inputFileParam)
@@ -69,12 +66,20 @@ public class JobRunner implements CommandLineRunner {
                   name, jobExecution.getStatus(), jobExecution.getExitStatus().getExitCode());
 
           logger.info("job {} exit description: {}", name, jobExecution.getExitStatus().getExitDescription());
+
+          if (jobExecution.getStatus() != BatchStatus.COMPLETED) {
+            SpringApplication.exit(context, () -> 1);
+            System.exit(1);
+          }
+
         } catch (Exception e) {
           logger.atError()
                   .setMessage( "Failed to run job: {}")
                   .addArgument(name)
                   .setCause(e)
                   .log();
+          SpringApplication.exit(context, () -> 1);
+          System.exit(1);
         }
     });
     logger.info("All batch jobs executed => exiting");
