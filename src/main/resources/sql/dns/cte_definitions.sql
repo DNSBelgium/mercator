@@ -19,7 +19,7 @@ with
             prefix             ::VARCHAR       as prefix,
             record_type        ::VARCHAR       as record_type,
             rcode              ::INTEGER       as rcode,
-            crawl_timestamp    ::DOUBLE        as crawl_timestamp,
+            to_timestamp(crawl_timestamp)      as crawl_timestamp,
             ok                 ::BOOLEAN       as ok,
             problem            ::VARCHAR       as problem,
             num_of_responses   ::INTEGER       as num_of_responses,

@@ -13,6 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -212,5 +213,30 @@ public class BaseRepository<T> {
     Resource resource = new ClassPathResource(path);
     return resource.getContentAsString(StandardCharsets.UTF_8);
 
+  }
+
+  /*
+   * This method will use the passed in CTE definitions and the name of a specific CTE to copy the data to the given destination
+  */
+  void copyToParquet(String jsonLocation, DataSource dataSource, String cteDefinitions, String cte, String destination) {
+    String copyStatement = StringSubstitutor.replace("""
+                COPY (
+                    ${cteDefinitions}
+                    select * from ${cte}
+                ) TO '${destination}'
+                  (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
+                """, Map.of(
+                    "cteDefinitions", cteDefinitions,
+                    "cte", cte,
+                    "destination", destination
+            )
+    );
+    logger.debug("cte={}, copyStatement=\n{}", cte, copyStatement);
+    JdbcClient jdbcClient = JdbcClient.create(dataSource);
+    jdbcClient.sql("set variable jsonLocation = ?")
+            .param(jsonLocation)
+            .update();
+    jdbcClient.sql(copyStatement).update();
+    logger.info("copying {} as parquet to {} done", cte, destination);
   }
 }
