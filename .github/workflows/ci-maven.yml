@@ -52,11 +52,7 @@ jobs:
         id: vars
         run: |
           COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            TAGS="$COMMIT_SHORT_SHA"
-          else
-            TAGS="${{ github.ref_name }},$COMMIT_SHORT_SHA"
-          fi
+          TAGS="${{ github.ref_name }},$COMMIT_SHORT_SHA"
           echo "TAGS=$TAGS" >> $GITHUB_ENV
 
       - name: Log in to the Container registry
