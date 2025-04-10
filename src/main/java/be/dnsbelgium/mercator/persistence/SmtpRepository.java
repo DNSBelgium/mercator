@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import lombok.SneakyThrows;
-import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Repository;
 
@@ -32,15 +30,20 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
         smtpHostDestination = createDestination(baseLocation, subPath, "hosts");
     }
 
+    public void setVariables(JdbcClient jdbcClient) {
+        jdbcClient.sql("set variable smtpVisitDestination = ?")
+                .param(smtpVisitDestination)
+                .update();
+        jdbcClient.sql("set variable smtpHostDestination = ?")
+                .param(smtpHostDestination)
+                .update();
+    }
+
     @Override
     public String getAllItemsQuery() {
         String allItemsQuery = readFromClasspath("sql/smtp/get_all_items.sql");
-        String query = StringSubstitutor.replace(allItemsQuery, Map.of(
-                "smtpVisitDestination", this.smtpVisitDestination,
-                "smtpHostDestination", this.smtpHostDestination
-        ));
-        logger.info("query: {}", query);
-        return query;
+        logger.info("allItemsQuery: {}", allItemsQuery);
+        return allItemsQuery;
     }
 
     @Override

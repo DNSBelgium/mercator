@@ -1,7 +1,7 @@
 WITH
     visits_result1 AS (
         SELECT * EXCLUDE (year, month)
-        FROM read_parquet('${smtpVisitDestination}/**/*/*.parquet', union_by_name=True)
+        FROM read_parquet(coalesce(getvariable('smtpVisitDestination'), '~/mercator/data/smtp/visits') || '/**/*/*.parquet', union_by_name=True)
     ),
     visits_result AS (
         SELECT * replace(epoch(timestamp) as timestamp)
@@ -9,7 +9,7 @@ WITH
     ),
     hosts_result AS (
         SELECT * EXCLUDE (year, month, visit_id)
-        FROM read_parquet('${smtpHostDestination}/**/*/*.parquet', union_by_name=True)
+        FROM read_parquet(coalesce(getvariable('smtpHostDestination'), '~/mercator/data/smtp/hosts') || '/**/*/*.parquet', union_by_name=True)
     ),
     hosts_per_visit AS (
         SELECT visit_id, LIST(hosts_result ORDER BY conversation_timestamp) AS hosts

@@ -1,12 +1,15 @@
 with
     dns_geoip_response as (
-        select *  from read_parquet('${geoIpResponseDestination}/**/*.parquet')
+        select *
+        from read_parquet(coalesce(getvariable('geoIpDestination'), '~/mercator/data/dns/geoips') || '/**/*.parquet')
     ),
     dns_response as (
-        select * from read_parquet('${responseDestination}/**/*.parquet')
+        select *
+        from read_parquet(coalesce(getvariable('responseDestination'), '~/mercator/data/dns/responses') || '/**/*.parquet')
     ),
     dns_request as (
-        select * replace(epoch(crawl_timestamp) as crawl_timestamp)  from read_parquet('${requestDestination}/**/*.parquet')
+        select * replace(epoch(crawl_timestamp) as crawl_timestamp)
+        from read_parquet(coalesce(getvariable('requestDestination'), '~/mercator/data/dns/requests') || '/**/*.parquet')
     ),
     geo_ip as (
         select

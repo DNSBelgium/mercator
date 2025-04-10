@@ -3,14 +3,12 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 public class DnsRepository extends BaseRepository<DnsCrawlResult> {
@@ -30,16 +28,23 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
         geoIpDestination = createDestination(baseLocation, subPath, "geoips");
     }
 
+    public void setVariables(JdbcClient jdbcClient) {
+        jdbcClient.sql("set variable geoIpDestination = ?")
+                .param(geoIpDestination)
+                .update();
+        jdbcClient.sql("set variable responseDestination = ?")
+                .param(responseDestination)
+                .update();
+        jdbcClient.sql("set variable requestDestination = ?")
+                .param(requestDestination)
+                .update();
+    }
+
     @Override
     public String getAllItemsQuery() {
         String allItemsQuery = readFromClasspath("sql/dns/get_all_items.sql");
-        String query = StringSubstitutor.replace(allItemsQuery, Map.of(
-                "geoIpResponseDestination", this.geoIpDestination,
-                "responseDestination", this.responseDestination,
-                "requestDestination", this.requestDestination
-        ));
-        logger.info("query: {}", query);
-        return query;
+        logger.info("allItemsQuery: {}", allItemsQuery);
+        return allItemsQuery;
     }
 
     @Override

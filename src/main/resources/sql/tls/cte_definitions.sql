@@ -54,7 +54,7 @@ with tls as (
      ),
      certificates_unnested as (
          select unnest(cast(certificate_chain as struct(
-             version int,
+                      version int,
                       serial_number_hex varchar,
                       public_key_schema varchar,
                       public_key_length int,
@@ -69,7 +69,7 @@ with tls as (
      ),
      certificates_typed as (
          select * exclude(not_before, not_after),
-                 to_timestamp(not_before) as not_before,
+                to_timestamp(not_before) as not_before,
                 to_timestamp(not_after) as not_after
          from certificates_unnested
      ),
