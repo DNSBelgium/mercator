@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.persistence.BaseRepository;
+import be.dnsbelgium.mercator.common.VisitIdGenerator;
+import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
@@ -35,7 +37,7 @@ public class TlsSearchControllerTest {
 
     @Test
     public void searchVisitIds_found() throws Exception {
-        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103").stream().map(id -> new BaseRepository.SearchVisitIdResultItem(id, null)).toList());
+        when(tlsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(Stream.of("v101", "v102", "v103").map(id -> new SearchVisitIdResultItem(id, null)).toList());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/ids")
                         .param("domainName", "dnsbelgium.be"))
@@ -62,7 +64,9 @@ public class TlsSearchControllerTest {
     public void findByVisitId_found() throws Exception {
         TlsCrawlResult tlsCrawlResult = objectMother.tlsCrawlResult1();
 
-        when(tlsRepository.findByVisitId(tlsCrawlResult.getVisitId())).thenReturn(Optional.ofNullable(tlsCrawlResult));
+        when(tlsRepository
+                .findByVisitId(tlsCrawlResult.getVisitId()))
+                .thenReturn(Optional.of(tlsCrawlResult));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/id")
                         .param("visitId", tlsCrawlResult.getVisitId()))
@@ -74,19 +78,22 @@ public class TlsSearchControllerTest {
 
     @Test
     public void findByVisitId_notFound() throws Exception {
-        when(tlsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        String visitId = VisitIdGenerator.generate();
+        when(tlsRepository.findByVisitId(visitId)).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders
                         .get("/search/tls/id")
-                        .param("visitId", "idjsfijoze-er-ze")
-                ).andExpect(content().string(containsString("No TLS crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
+                        .param("visitId", visitId)
+                ).andExpect(content().string(containsString("No TLS crawl results found for visit-id <strong>" + visitId + "</strong>")));
     }
 
     @Test
     public void findLatestResult_found() throws Exception {
         TlsCrawlResult tlsVisit1 = objectMother.tlsCrawlResult1();
         String domainName = tlsVisit1.getDomainName();
-        when(tlsRepository.findLatestResult(domainName)).thenReturn(Optional.ofNullable(tlsVisit1));
+        when(tlsRepository
+                .findLatestResult(domainName))
+                .thenReturn(Optional.of(tlsVisit1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/tls/latest")
                         .param("domainName", domainName)

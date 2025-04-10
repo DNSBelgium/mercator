@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.persistence.BaseRepository;
+import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
@@ -36,7 +37,7 @@ public class WebSearchControllerTest {
 
     @Test
     public void getWebIds_findsIds() throws Exception {
-        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of("v101", "v102", "v103").stream().map(v -> new BaseRepository.SearchVisitIdResultItem(v, null)).toList());
+        when(webRepository.searchVisitIds("dnsbelgium.be")).thenReturn(Stream.of("v101", "v102", "v103").map(v -> new SearchVisitIdResultItem(v, null)).toList());
         // Might need to be modified in the future to contain more data than just Id's
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/ids")

@@ -358,15 +358,18 @@ public class ObjectMother {
     singleVersionScan.setConnectOK(false);
     singleVersionScan.setErrorMessage("go away");
     singleVersionScan.setPeerCertificate(certificate);
+    singleVersionScan.setCertificateChain(List.of(certificate));
     return singleVersionScan;
   }
 
   @SneakyThrows
   SingleVersionScan singleVersionScan2()  {
     Certificate certificate = Certificate.from(readTestCertificate("cll.be.pem"));
+    Certificate certificate2 = Certificate.from(readTestCertificate("digicert-ca.pem"));
     SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_3, new InetSocketAddress("cll.be", 443));
     singleVersionScan.setConnectOK(true);
     singleVersionScan.setPeerCertificate(certificate);
+    singleVersionScan.setCertificateChain(List.of(certificate, certificate2));
     return singleVersionScan;
   }
 

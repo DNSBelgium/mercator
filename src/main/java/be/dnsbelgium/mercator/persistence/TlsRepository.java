@@ -46,63 +46,38 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
     try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
       String cteDefinitions = readFromClasspath("sql/tls/cte_definitions.sql");
       logger.debug("cteDefinitions: {}", cteDefinitions);
+      logger.debug("visitsLocation = {}", visitsLocation);
+      logger.debug("certificatesLocation = {}", certificatesLocation);
       copyToParquet(jsonLocation, dataSource, cteDefinitions, "export_visits", visitsLocation);
-      copyToParquet(jsonLocation, dataSource, cteDefinitions, "export_certificates", certificatesLocation);
+      exportCertificates(jsonLocation, dataSource);
     }
   }
 
-  @Override
-  public void copyToParquet(String jsonLocation, DataSource dataSource, String cteDefinitions, String cte, String destination) {
-    String copyStatement;
-
-    if (cte.contains("export_visits")) {
-      logger.info("destination: {}", destination);
-      copyStatement = StringSubstitutor.replace("""
-            COPY (
-                ${cteDefinitions}
-                SELECT
-                    *,
-                    year(${timestamp_field}) AS year,
-                    month(${timestamp_field}) AS month
-                FROM ${cte}
-            ) TO '${destination}'
-            (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
-            """,
-              Map.of(
-                      "cteDefinitions", cteDefinitions,
-                      "cte", cte,
-                      "destination", destination,
-                      "timestamp_field", timestampField()
-              )
-      );
-    } else if (cte.contains("export_certificates")) {
-      logger.info("destination: {}", destination);
-      if (!destination.endsWith(".parquet")) {
-        destination = destination + UUID.randomUUID() + ".parquet";
-      }
-      copyStatement = StringSubstitutor.replace("""
-            COPY (
-                ${cteDefinitions}
-                SELECT * FROM ${cte}
-            ) TO '${destination}'
-            (FORMAT parquet)
-            """,
-              Map.of(
-                      "cteDefinitions", cteDefinitions,
-                      "cte", cte,
-                      "destination", destination
-              )
-      );
-    } else {
-      throw new IllegalArgumentException("Unsupported export type in CTE: " + cte);
+  private void exportCertificates(String jsonLocation, DataSource dataSource) {
+    logger.info("certificatesLocation: {}", certificatesLocation);
+    String destination = certificatesLocation;
+    if (!destination.endsWith(".parquet")) {
+      destination = destination + "/" + UUID.randomUUID() + ".parquet";
     }
-    logger.debug("cte={}, copyStatement=\n{}", cte, copyStatement);
+    String cteDefinitions = readFromClasspath("sql/tls/cte_definitions.sql");
+    String copyStatement = StringSubstitutor.replace("""
+            COPY (
+                ${cteDefinitions}
+                SELECT * FROM export_certificates
+            ) TO '${destination}' (FORMAT parquet)
+            """,
+            Map.of(
+                    "cteDefinitions", cteDefinitions,
+                    "destination", destination
+            )
+    );
+    logger.debug("copyStatement=\n{}", copyStatement);
     JdbcClient jdbcClient = JdbcClient.create(dataSource);
     jdbcClient.sql("SET VARIABLE jsonLocation = ?")
             .param(jsonLocation)
             .update();
     jdbcClient.sql(copyStatement).update();
-    logger.info("Copying {} as Parquet to {} done", cte, destination);
+    logger.info("Copying certificates to {} in Parquet format done", certificatesLocation);
   }
 
 }

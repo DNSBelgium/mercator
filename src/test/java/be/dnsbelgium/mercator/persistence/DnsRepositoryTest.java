@@ -1,11 +1,13 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
+import be.dnsbelgium.mercator.dns.dto.Request;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,23 +24,14 @@ class DnsRepositoryTest {
 
     private static final Logger logger = LoggerFactory.getLogger(DnsRepositoryTest.class);
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     static Path baseLocation;
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     static Path tempDir;
 
-    static {
-        if (System.getProperty("mercator_temp_dir") != null) {
-            // this allows to run the tests with a folder that does not disappear after the test completes.
-            baseLocation = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
-            logger.info("Using base location {}", baseLocation);
-        }
-    }
     private final ObjectMother objectMother = new ObjectMother();
     private final DnsRepository repository = new DnsRepository(TestUtils.jsonReader(), baseLocation.toString());
-
-
 
     @Test
     @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
@@ -86,9 +79,8 @@ class DnsRepositoryTest {
 
         repository.storeResults(jsonFile.toString());
 
-        // TODO: implement reading back from parquet
         List<DnsCrawlResult> dnsCrawlResultResults = repository.findByDomainName("example.com");
-        List<BaseRepository.SearchVisitIdResultItem> dnsIdAndTimestamp = repository.searchVisitIds("example.com");
+        List<SearchVisitIdResultItem> dnsIdAndTimestamp = repository.searchVisitIds("example.com");
         Optional<DnsCrawlResult> dnsCrawlResultLatest = repository.findLatestResult("example.com");
         Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("1");
 
@@ -98,8 +90,6 @@ class DnsRepositoryTest {
         logger.info("ids and timestamps: {}", dnsIdAndTimestamp);
         logger.info("latest dns crawl result: {}", dnsCrawlResultLatest);
         logger.info("dns crawl result by id: {}", dnsCrwlResultById);
-
-
 
         for (DnsCrawlResult dnsCrawlResultResult : dnsCrawlResultResults) {
             logger.info("dnsCrawlResultResult = {}", dnsCrawlResultResult);
@@ -113,7 +103,6 @@ class DnsRepositoryTest {
 
     @Test
     public void find_whenMultipleDnsCrawlResultsArePresent() throws IOException {
-
         logger.info("tempDir = {}", baseLocation);
         Files.createDirectories(baseLocation);
         DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
@@ -132,13 +121,14 @@ class DnsRepositoryTest {
         Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("1");
         logger.info("dnsCrwlResultById = {}", dnsCrwlResultById);
 
-        assertThat(dnsCrwlResultById.isPresent()).isTrue();
-        assertThat(dnsCrwlResultById.get().getVisitId()).isEqualTo("1");
+        assertThat(dnsCrwlResultById).isPresent();
+        assertThat(dnsCrwlResultById.orElseThrow().getVisitId()).isEqualTo("1");
         assertThat(dnsCrwlResultById.get().getRequests().size()).isEqualTo(1);
-        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().size()).isEqualTo(2);
-        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
-        assertThat(dnsCrwlResultById.get().getRequests().getFirst().getResponses().getFirst().getResponseGeoIps().getFirst().getIp().equals("192.168.1.1"));
-
+        Request firstRequest = dnsCrwlResultById.get().getRequests().getFirst();
+        assertThat(firstRequest.getResponses().size()).isEqualTo(2);
+        assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
+        // TODO: bram, it seems to be unpredictable which ResponseGeoIp will be first in the list ?
+        assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().getFirst().getIp()).isEqualTo("192.168.1.2");
     }
 
 }

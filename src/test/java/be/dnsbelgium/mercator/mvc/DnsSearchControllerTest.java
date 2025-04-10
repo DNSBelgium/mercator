@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
-import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.DnsRepository;
+import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,9 +36,9 @@ public class DnsSearchControllerTest {
 
     @Test
     public void searchVisitIds_found() throws Exception {
-        BaseRepository.SearchVisitIdResultItem searchVisitIdResultItem1 = new BaseRepository.SearchVisitIdResultItem("v101", Instant.now());
-        BaseRepository.SearchVisitIdResultItem searchVisitIdResultItem2 = new BaseRepository.SearchVisitIdResultItem("v102", Instant.now());
-        BaseRepository.SearchVisitIdResultItem searchVisitIdResultItem3 = new BaseRepository.SearchVisitIdResultItem("v103", Instant.now());
+        SearchVisitIdResultItem searchVisitIdResultItem1 = new SearchVisitIdResultItem("v101", Instant.now());
+        SearchVisitIdResultItem searchVisitIdResultItem2 = new SearchVisitIdResultItem("v102", Instant.now());
+        SearchVisitIdResultItem searchVisitIdResultItem3 = new SearchVisitIdResultItem("v103", Instant.now());
         when(dnsRepository.searchVisitIds("dnsbelgium.be")).thenReturn(List.of(searchVisitIdResultItem1,searchVisitIdResultItem2,searchVisitIdResultItem3));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/ids")
@@ -77,7 +77,7 @@ public class DnsSearchControllerTest {
                 .andExpect(content().string(containsString("ISP Belgium")))
                 .andExpect(content().string(containsString("2025-03-28T12:00:00Z")))
                 .andExpect(content().string(containsString("2")))
-                .andExpect(content().string(containsString("A")));;
+                .andExpect(content().string(containsString("A")));
     }
 
     @Test
