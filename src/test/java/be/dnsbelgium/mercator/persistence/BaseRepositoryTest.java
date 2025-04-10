@@ -2,9 +2,9 @@ package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.springframework.jdbc.core.simple.JdbcClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class BaseRepositoryTest {
 
@@ -58,22 +57,22 @@ class BaseRepositoryTest {
 
     // test findByVisitId
     Optional<BaseItem> byVisitId = repository.findByVisitId("visit-2");
-    assertTrue(byVisitId.isPresent());
-    assertEquals("visit-2", byVisitId.get().visitId);
-    assertEquals("domain-name-1", byVisitId.get().domainName);
+    Assertions.assertTrue(byVisitId.isPresent());
+    Assertions.assertEquals("visit-2", byVisitId.get().visitId);
+    Assertions.assertEquals("domain-name-1", byVisitId.get().domainName);
 
     // test findByDomainName
     List<BaseItem> byDomainName = repository.findByDomainName("domain-name-1");
-    assertEquals(2, byDomainName.size());
+    Assertions.assertEquals(2, byDomainName.size());
 
     // test findLatestResults
     Optional<BaseItem> latestResult = repository.findLatestResult("domain-name-1");
-    assertTrue(latestResult.isPresent());
-    assertEquals("visit-2", latestResult.get().visitId);
-    assertEquals(Instant.ofEpochSecond(2), latestResult.get().crawlTimestamp);
+    Assertions.assertTrue(latestResult.isPresent());
+    Assertions.assertEquals("visit-2", latestResult.get().visitId);
+    Assertions.assertEquals(Instant.ofEpochSecond(2), latestResult.get().crawlTimestamp);
 
     // test searchVisitIds
-    List<BaseRepository.SearchVisitIdResultItem> visitIds = repository.searchVisitIds("domain-name-1");
-    assertEquals(2, visitIds.size());
+    List<SearchVisitIdResultItem> visitIds = repository.searchVisitIds("domain-name-1");
+    assertThat(visitIds.size()).isEqualTo(2);
   }
 }
