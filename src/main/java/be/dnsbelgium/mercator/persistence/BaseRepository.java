@@ -2,8 +2,6 @@ package be.dnsbelgium.mercator.persistence;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -20,26 +18,12 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.*;
 
 @SuppressWarnings("SqlSourceToSinkFlow")
 public class BaseRepository<T> {
 
   private static final Logger logger = LoggerFactory.getLogger(BaseRepository.class);
-
-  @Setter
-  @Getter
-  public static class SearchVisitIdResultItem {
-    private String visitId;
-    private Instant timestamp;
-
-    public SearchVisitIdResultItem(String visitId, Instant timestamp) {
-      this.visitId = visitId;
-      this.timestamp = timestamp;
-    }
-
-  }
 
   private final ObjectMapper objectMapper;
 

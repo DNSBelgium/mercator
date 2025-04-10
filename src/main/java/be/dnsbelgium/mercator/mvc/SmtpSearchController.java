@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.persistence.BaseRepository;
+import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
@@ -39,7 +39,7 @@ public class SmtpSearchController {
   @GetMapping("/search/smtp/ids")
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
     logger.info("search for [{}]", domainName);
-    List<BaseRepository.SearchVisitIdResultItem> visitIds = smtpRepository.searchVisitIds(domainName);
+    List<SearchVisitIdResultItem> visitIds = smtpRepository.searchVisitIds(domainName);
     logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
     model.addAttribute("domainName", domainName);
     model.addAttribute("visitIds", visitIds);

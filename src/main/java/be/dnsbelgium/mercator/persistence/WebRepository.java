@@ -3,14 +3,12 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
-import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 public class WebRepository extends BaseRepository<WebCrawlResult> {
@@ -30,16 +28,23 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
         featuresDestination = createDestination(baseLocation, subPath, "html_features");
     }
 
+    public void setVariables(JdbcClient jdbcClient) {
+        jdbcClient.sql("set variable webCrawlDestination = ?")
+                .param(webCrawlDestination)
+                .update();
+        jdbcClient.sql("set variable pageVisitDestination = ?")
+                .param(pageVisitDestination)
+                .update();
+        jdbcClient.sql("set variable featuresDestination = ?")
+                .param(featuresDestination)
+                .update();
+    }
+
     @Override
     public String getAllItemsQuery() {
         String allItemsQuery = readFromClasspath("sql/web/get_all_items.sql");
-        String query = StringSubstitutor.replace(allItemsQuery, Map.of(
-                "webCrawlDestination", this.webCrawlDestination,
-                "featuresDestination", this.featuresDestination,
-                "pageVisitDestination", this.pageVisitDestination
-        ));
-        logger.info("query: {}", query);
-        return query;
+        logger.debug("allItemsQuery: {}", allItemsQuery);
+        return allItemsQuery;
     }
 
     @Override

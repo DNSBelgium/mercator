@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.dns.dto.*;
-import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.persistence.DnsRepository;
+import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -37,7 +37,7 @@ public class DnsSearchController {
     @GetMapping("/search/dns/ids")
     public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
         logger.info("search for [{}]", domainName);
-        List<BaseRepository.SearchVisitIdResultItem> visitIds = dnsRepository.searchVisitIds(domainName);
+        List<SearchVisitIdResultItem> visitIds = dnsRepository.searchVisitIds(domainName);
         logger.info("visitIds found: {}", visitIds);
         model.addAttribute("domainName", domainName);
         model.addAttribute("visitIds", visitIds);
