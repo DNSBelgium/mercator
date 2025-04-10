@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,23 +23,14 @@ class SmtpRepositoryTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.NEVER)
     static Path baseLocation;
 
-    @TempDir
+    @TempDir(cleanup = CleanupMode.NEVER)
     static Path tempDir;
 
-    static {
-        if (System.getProperty("mercator_temp_dir") != null) {
-            // this allows to run the tests with a folder that does not disappear after the test completes.
-            baseLocation = Path.of(System.getProperty("mercator_temp_dir"), UUID.randomUUID().toString());
-            logger.info("Using base location {}", baseLocation);
-        }
-    }
     private final ObjectMother objectMother = new ObjectMother();
     private final SmtpRepository repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
-
-
 
     @Test
     @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
@@ -87,7 +79,7 @@ class SmtpRepositoryTest {
         repository.storeResults(jsonFile.toString());
 
         List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example.com");
-        List<BaseRepository.SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example.com");
+        List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example.com");
         Optional<SmtpVisit> smtpVisitResultByLatest = repository.findLatestResult("example.com");
         Optional<SmtpVisit> smtpVisitResultById = repository.findByVisitId("01HJR2Z6DZHS4G4P9X1BZSD4YV");
 
@@ -96,9 +88,10 @@ class SmtpRepositoryTest {
         logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(0).getConversation());
         logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(1).getConversation());
 
-        logger.info("ids and timestamp for smtp visit results: {}", smtpIdAndTimestamp.getFirst().getVisitId() + ":" + smtpIdAndTimestamp.get(0).getTimestamp());
+        SearchVisitIdResultItem first = smtpIdAndTimestamp.getFirst();
+        logger.info("ids and timestamp for smtp visit results: {}", first.getVisitId() + ":" + first.getTimestamp());
         logger.info("latest smtp visit results: {}", smtpVisitResultByLatest);
-        logger.info("smtp visit by id: {}", smtpVisitResultById.get().getVisitId());
+        logger.info("smtp visit by id: {}", smtpVisitResultById.orElseThrow().getVisitId());
 
         for (SmtpVisit smtpVisitResult : smtpVisitResults) {
             logger.info("smtpVisitResult = {}", smtpVisitResult);
