@@ -86,7 +86,7 @@ public class DnsSearchControllerTest {
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/id")
                         .param("visitId", "idjsfijoze-er-ze"))
-                .andExpect(content().string(containsString("No dns crawl result found for visitId")));
+                .andExpect(content().string(containsString("No DNS crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
     }
 
 

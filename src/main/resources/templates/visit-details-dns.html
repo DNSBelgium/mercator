@@ -7,11 +7,11 @@
 <head>
     <title>Mercator | Details</title>
     <style>
-        td.record-data {
+        td.data {
             max-width: 300px;
         }
 
-        td.record-data >  div > div > span.record-data-copy-btn:hover {
+        td.data > div > div > span.data-copy-btn:hover {
             cursor: pointer;
             color: #e3f5ff;
         }
@@ -22,19 +22,19 @@
 <main class="container-fluid" layout:fragment="content">
     <script>
         function copyToClipboard(element) {
-            const recordData = element.closest('.record-data').getAttribute('data-record');
+            const recordData = element.closest('.data').getAttribute('data');
             navigator.clipboard.writeText(recordData)
                 .catch(err => {
                     console.error('Failed to copy: ', err);
                 });
         }
     </script>
-    <h2 th:if="${dnsCrawlResult == null} or ${dnsCrawlResult.requests == null}">
-        No dns crawl result found for visitId
+    <h2 th:if="${dnsCrawlResult == null or dnsCrawlResult.requests == null}">
+        No DNS crawl results found for visit-id <strong th:text="${visitId}"></strong>
     </h2>
     <div class="container-fluid" th:if="${dnsCrawlResult != null}">
         <header>
-            <h4 th:text="${dnsCrawlResult.domainName}"></h4>
+            <h4>DNS crawl results for: <strong th:text="${dnsCrawlResult.domainName}"></strong></h4>
         </header>
         <p>Crawled at: <span th:text="${dnsCrawlResult.getCrawlTimestamp()}"></span></p>
         <table>
@@ -62,14 +62,15 @@
                     <td th:text="${request.recordType}"></td>
                     <td th:if="${not #lists.isEmpty(request.responses)}" th:text="${request.responses[0].ttl}"></td>
                     <td th:if="${not #lists.isEmpty(request.responses)}"
-                        class="record-data" th:attr="data-record=${request.responses[0].recordData}">
-                        <div class="record-data-container">
-                            <div class="record-data-content">
-                                <span class="record-data-copy-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485" class="copy-btn"
+                        class="data" th:attr="data=${request.responses[0].recordData}">
+                        <div class="data-container">
+                            <div class="data-content">
+                                <span class="data-copy-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                                         class="copy-btn"
                                          viewBox="0 0 16 16" onclick="copyToClipboard(this)">
                                         <path fill-rule="evenodd"
-                                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z" />
+                                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
                                     </svg>
                                 </span>
                                 <span th:text="${request.responses[0].recordData ?: ''}"></span>
@@ -85,16 +86,32 @@
                     <td th:if="${not #lists.isEmpty(request.responses) and not #lists.isEmpty(request.responses[0].responseGeoIps)}"
                         th:text="${request.responses[0].responseGeoIps[0].asnOrganisation}"></td>
                     <td th:if="${not #lists.isEmpty(request.responses) and not #lists.isEmpty(request.responses[0].responseGeoIps)}"
-                        th:text="${request.responses[0].responseGeoIps[0].ip}"></td>
+                        class="data" th:attr="data=${request.responses[0].responseGeoIps[0].ip}">
+                        <div class="data-container">
+                            <div class="data-content">
+                                <span class="data-copy-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                                         class="copy-btn"
+                                         viewBox="0 0 16 16" onclick="copyToClipboard(this)">
+                                        <path fill-rule="evenodd"
+                                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
+                                    </svg>
+                                </span>
+                                <span th:text="${request.responses[0].responseGeoIps[0].ip ?: ''}"></span>
+                            </div>
+                        </div>
+                    </td>
                     <td th:if="${not #lists.isEmpty(request.responses) and not #lists.isEmpty(request.responses[0].responseGeoIps)}"
                         th:text="${request.responses[0].responseGeoIps[0].ipVersion}"></td>
 
                     <td th:if="${#lists.isEmpty(request.responses)}" colspan="7"></td>
-                    <td th:if="${not #lists.isEmpty(request.responses) and #lists.isEmpty(request.responses[0].responseGeoIps)}" colspan="5"></td>
+                    <td th:if="${not #lists.isEmpty(request.responses) and #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        colspan="5"></td>
                 </tr>
 
                 <!-- remaining geoips -->
-                <th:block th:if="${not #lists.isEmpty(request.responses) and not #lists.isEmpty(request.responses[0].responseGeoIps) and #lists.size(request.responses[0].responseGeoIps) > 1}">
+                <th:block
+                        th:if="${not #lists.isEmpty(request.responses) and not #lists.isEmpty(request.responses[0].responseGeoIps) and #lists.size(request.responses[0].responseGeoIps) > 1}">
                     <tr th:each="geoip, geoipStat : ${request.responses[0].responseGeoIps}" th:if="${!geoipStat.first}">
                         <td></td>
                         <td></td>
@@ -104,7 +121,21 @@
                         <td th:text="${geoip.country}"></td>
                         <td th:text="${geoip.asn}"></td>
                         <td th:text="${geoip.asnOrganisation}"></td>
-                        <td th:text="${geoip.ip}"></td>
+                        <td class="data" th:attr="data=${geoip.ip}">
+                            <div class="data-container">
+                                <div class="data-content">
+                                <span class="data-copy-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                                         class="copy-btn"
+                                         viewBox="0 0 16 16" onclick="copyToClipboard(this)">
+                                        <path fill-rule="evenodd"
+                                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
+                                    </svg>
+                                </span>
+                                    <span th:text="${geoip.ip ?: ''}"></span>
+                                </div>
+                            </div>
+                        </td>
                         <td th:text="${geoip.ipVersion}"></td>
                     </tr>
                 </th:block>
@@ -117,14 +148,15 @@
                         <td></td>
                         <td th:text="${response.ttl}"></td>
                         <td th:if="${not #lists.isEmpty(request.responses)}"
-                            class="record-data" th:attr="data-record=${response.recordData}">
-                            <div class="record-data-container">
-                                <div class="record-data-content">
-                                    <span class="record-data-copy-btn">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485" class="copy-btn"
+                            class="data" th:attr="data=${response.recordData}">
+                            <div class="data-container">
+                                <div class="data-content">
+                                    <span class="data-copy-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                                             class="copy-btn"
                                              viewBox="0 0 16 16" onclick="copyToClipboard(this)">
                                             <path fill-rule="evenodd"
-                                                  d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z" />
+                                                  d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
                                         </svg>
                                     </span>
                                     <span th:text="${response.recordData ?: ''}"></span>
@@ -139,8 +171,21 @@
                             th:text="${response.responseGeoIps[0].asn}"></td>
                         <td th:if="${not #lists.isEmpty(response.responseGeoIps)}"
                             th:text="${response.responseGeoIps[0].asnOrganisation}"></td>
-                        <td th:if="${not #lists.isEmpty(response.responseGeoIps)}"
-                            th:text="${response.responseGeoIps[0].ip}"></td>
+                        <td th:if="${not #lists.isEmpty(response.responseGeoIps)}">
+                            <div>
+                                <div class="data-content">
+                                <span class="data-copy-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                                         class="copy-btn"
+                                         viewBox="0 0 16 16" onclick="copyToClipboard(this)">
+                                        <path fill-rule="evenodd"
+                                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
+                                    </svg>
+                                </span>
+                                    <span th:text="${response.responseGeoIps[0].ip ?: ''}"></span>
+                                </div>
+                            </div>
+                        </td>
                         <td th:if="${not #lists.isEmpty(response.responseGeoIps)}"
                             th:text="${response.responseGeoIps[0].ipVersion}"></td>
 

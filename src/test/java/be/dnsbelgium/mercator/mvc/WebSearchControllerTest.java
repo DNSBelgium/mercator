@@ -84,7 +84,7 @@ public class WebSearchControllerTest {
                 .perform(MockMvcRequestBuilders.get("/search/web/id")
                         .param("visitId", "idjsfijoze-er-ze"))
                 .andExpect(view().name("visit-details-web"))
-                .andExpect(content().string(containsString("No web crawl result found for visitId")));
+                .andExpect(content().string(containsString("No WEB crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
     }
 
 

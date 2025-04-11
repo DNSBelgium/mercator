@@ -82,7 +82,7 @@ public class SmtpSearchControllerTest {
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/smtp/id")
                         .param("visitId", "idjsfijoze-er-ze"))
-                .andExpect(content().string(containsString("No SMTP conversation result found for visitId")));
+                .andExpect(content().string(containsString("No SMTP crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
     }
 
 

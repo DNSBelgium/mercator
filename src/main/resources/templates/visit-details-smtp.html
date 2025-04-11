@@ -8,16 +8,15 @@
   <title>Mercator | Details</title>
 </head>
 
-<body >
+<body>
 
 <main class="container-fluid" layout:fragment="content">
   <h2 th:if="${smtpVisitResult == null}">
-    No SMTP conversation result found for visitId
+    No SMTP crawl results found for visit-id <strong th:text="${visitId}"></strong>
   </h2>
   <div class="container-fluid" th:if="${smtpVisitResult != null}">
     <header>
-      <h4>SMTP for:</h4>
-      <h4 th:text="${smtpVisitResult.domainName}"></h4>
+      <h4>SMTP crawl results for: <strong th:text="${smtpVisitResult.domainName}"></strong></h4>
     </header>
     <table>
       <tbody>
@@ -37,14 +36,18 @@
         <th>crawlStatus</th>
         <td th:text="${smtpVisitResult.crawlStatus}"></td>
       </tr>
+      </tbody>
+    </table>
+    <p>Hosts</p>
+    <table>
+      <tbody>
       <tr>
-        <th>Hosts</th>
         <td th:if="${smtpVisitResult == null or #lists.isEmpty(smtpVisitResult.hosts)}">No hosts</td>
         <td>
           <details th:if="${smtpVisitResult != null && ! #lists.isEmpty(smtpVisitResult.hosts)}">
             <summary>Click to show hosts</summary>
             <div th:each="host, iterStat : ${smtpVisitResult.getHosts()}">
-              <h4>Host #[[${iterStat.count}]] <span th:text="${host.hostName}"></span></h4>
+              <h4>Host: <strong th:text="${host.hostName}"></strong></h4>
               <table>
                 <tbody>
                 <tr>
@@ -66,7 +69,8 @@
                 </tbody>
               </table>
               <p th:if="${host.conversation == null}">No conversation</p>
-              <h4 th:if="${host.conversation != null}">Conversation for Host #[[${iterStat.count}]]</h4>
+              <h5 th:if="${host.conversation != null}">Conversation with <strong
+                      th:text="${host.conversation.ip}"></strong></h5>
               <table th:if="${host.conversation != null}">
                 <tbody>
                 <tr>
@@ -99,7 +103,9 @@
                 </tr>
                 <tr>
                   <th>supportedExtensions</th>
-                  <td th:if="${host.conversation.supportedExtensions == null && #lists.isEmpty(host.conversation.supportedExtensions)}">No supported extensions</td>
+                  <td th:if="${host.conversation.supportedExtensions == null && #lists.isEmpty(host.conversation.supportedExtensions)}">
+                    No supported extensions
+                  </td>
                   <td th:if="${host.conversation.supportedExtensions != null && ! #lists.isEmpty(host.conversation.supportedExtensions)}">
                     <details>
                       <summary>Click to show supported extensions</summary>
@@ -125,7 +131,8 @@
                 </tr>
                 <tr>
                   <th>errorMessage</th>
-                  <td th:if="${#strings.isEmpty(host.conversation.errorMessage)}">No error message</td>
+                  <td th:if="${#strings.isEmpty(host.conversation.errorMessage)}">No error message
+                  </td>
                   <td th:if="${! #strings.isEmpty(host.conversation.errorMessage)}">
                     <details>
                       <summary>Click to show error message</summary>
@@ -144,8 +151,8 @@
                   </td>
                 </tr>
                 <tr>
-                  <th>connectionTimeMs</th>
-                  <td th:text="${host.conversation.connectionTimeMs}"></td>
+                  <th>Connection time</th>
+                  <td th:text="${host.conversation.connectionTimeMs} + ' ms'"></td>
                 </tr>
                 <tr>
                   <th>software</th>
