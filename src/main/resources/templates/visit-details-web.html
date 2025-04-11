@@ -26,11 +26,11 @@
             </tr>
             <tr>
                 <th style="width: 30em">Started</th>
-                <td th:text="${webCrawlResult.crawlStarted}"></td>
+                <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlStarted)}"></td>
             </tr>
             <tr>
                 <th>Finished</th>
-                <td th:text="${webCrawlResult.crawlFinished}"></td>
+                <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlFinished)}"></td>
             </tr>
             <tr>
                 <th>Start URL</th>
@@ -116,11 +116,11 @@
                                 </tr>
                                 <tr>
                                     <th>crawlStarted</th>
-                                    <td th:text="${pageVisit.crawlStarted}"></td>
+                                    <td th:text="${@dateTimeUtil.format(pageVisit.crawlStarted)}"></td>
                                 </tr>
                                 <tr>
                                     <th>crawlFinished</th>
-                                    <td th:text="${pageVisit.crawlFinished}"></td>
+                                    <td th:text="${@dateTimeUtil.format(pageVisit.crawlFinished)}"></td>
                                 </tr>
                                 <tr>
                                     <th>statusCode</th>

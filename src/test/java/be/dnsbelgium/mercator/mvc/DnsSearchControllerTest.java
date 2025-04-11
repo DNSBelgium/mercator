@@ -75,7 +75,7 @@ public class DnsSearchControllerTest {
                 .andExpect(model().attributeExists( "dnsCrawlResult"))
                 .andExpect(content().string(containsString("192.168.1.1")))
                 .andExpect(content().string(containsString("ISP Belgium")))
-                .andExpect(content().string(containsString("2025-03-28T12:00:00Z")))
+                .andExpect(content().string(containsString("2025-03-28 13:00:00 CET")))
                 .andExpect(content().string(containsString("2")))
                 .andExpect(content().string(containsString("A")));
     }
@@ -101,7 +101,7 @@ public class DnsSearchControllerTest {
                 .andExpect(model().attributeExists( "dnsCrawlResult"))
                 .andExpect(content().string(containsString("192.168.1.1")))
                 .andExpect(content().string(containsString("ISP Belgium")))
-                .andExpect(content().string(containsString("2025-03-28T12:00:00Z")))
+                .andExpect(content().string(containsString("2025-03-28 13:00:00 CET")))
                 .andExpect(content().string(containsString("2")))
                 .andExpect(content().string(containsString("A")));
     }

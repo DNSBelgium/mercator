@@ -26,7 +26,7 @@
       </tr>
       <tr>
         <th>timestamp</th>
-        <td th:text="${smtpVisitResult.timestamp}"></td>
+        <td th:text="${@dateTimeUtil.format(smtpVisitResult.timestamp)}"></td>
       </tr>
       <tr>
         <th>numConversations</th>
@@ -164,7 +164,7 @@
                 </tr>
                 <tr>
                   <th>timestamp</th>
-                  <td th:text="${host.conversation.timestamp}"></td>
+                  <td th:text="${@dateTimeUtil.format(host.conversation.timestamp)}"></td>
                 </tr>
                 </tbody>
               </table>
