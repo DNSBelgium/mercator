@@ -24,10 +24,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TlsRepositoryTest {
 
-  @TempDir(cleanup = CleanupMode.NEVER)
+  @TempDir(cleanup = CleanupMode.ON_SUCCESS)
   static Path tempDir;
 
-  @TempDir(cleanup = CleanupMode.NEVER)
+  @TempDir(cleanup = CleanupMode.ON_SUCCESS)
   static Path baseLocation;
 
   private final ObjectMother objectMother = new ObjectMother();

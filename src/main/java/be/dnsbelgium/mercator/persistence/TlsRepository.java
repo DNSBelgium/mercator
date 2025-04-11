@@ -43,7 +43,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
 
   @Override
   public void storeResults(String jsonLocation) {
-    try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
       String cteDefinitions = readFromClasspath("sql/tls/cte_definitions.sql");
       logger.debug("cteDefinitions: {}", cteDefinitions);
       logger.debug("visitsLocation = {}", visitsLocation);

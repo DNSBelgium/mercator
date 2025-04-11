@@ -29,8 +29,6 @@ public class BaseRepository<T> {
 
   private final String baseLocation;
 
-  private final JdbcClient jdbcClient;
-
   private final Class<T> type;
 
   @SneakyThrows
@@ -41,8 +39,14 @@ public class BaseRepository<T> {
     }
     logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
-    this.jdbcClient = JdbcClient.create(DuckDataSource.memory());
     this.type = type;
+  }
+
+  /**
+   * @return an autocloseable datasource that should only be used by a single thread.
+   */
+  public SingleConnectionDataSource singleThreadedDataSource() {
+    return new SingleConnectionDataSource("jdbc:duckdb:", false);
   }
 
   public static boolean isURL(String dataLocation) {
@@ -184,8 +188,9 @@ public class BaseRepository<T> {
    * @param jsonResultsLocation : location of JSON file(s)
    */
   public void storeResults(String jsonResultsLocation) {
-
-    jdbcClient.sql(String.format("""
+    try (SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+      JdbcClient jdbcClient = JdbcClient.create(dataSource);
+      jdbcClient.sql(String.format("""
       copy (
         select
           *,
@@ -193,8 +198,9 @@ public class BaseRepository<T> {
           month(to_timestamp("%s")) as month
         from read_json('%s')
       ) to '%s' (format parquet, partition_by (year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
-            timestampField(), timestampField(), jsonResultsLocation, baseLocation)
-    ).update();
+              timestampField(), timestampField(), jsonResultsLocation, baseLocation)
+      ).update();
+    }
   }
 
   @SneakyThrows

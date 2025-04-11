@@ -53,7 +53,7 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
 
     @Override
     public void storeResults(String jsonLocation) {
-        try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+        try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
             String cteDefinitions = readFromClasspath("sql/smtp/cte_definitions.sql");
             logger.debug("cteDefinitions: {}", cteDefinitions);
             copyToParquet(jsonLocation, dataSource, cteDefinitions, "smtp_visit_results", smtpVisitDestination);
