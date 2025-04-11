@@ -23,6 +23,7 @@ with
                             asn_organisation := dns_geoip_response.asn_organisation,
                             ip_version := dns_geoip_response.ip_version
                     )
+                    order by ip, asn
             ) as response_geo_ips
         from dns_geoip_response
         group by visit_id, response_id
@@ -39,8 +40,8 @@ with
             ) as response
         from dns_response
                  left join geo_ip
-                           on dns_response.visit_id = geo_ip.visit_id
-                               and dns_response.response_id = geo_ip.response_id
+                 on  dns_response.visit_id = geo_ip.visit_id
+                 and dns_response.response_id = geo_ip.response_id
     ),
     response_list as (
         select

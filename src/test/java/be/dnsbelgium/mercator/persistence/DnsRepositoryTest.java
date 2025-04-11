@@ -121,14 +121,22 @@ class DnsRepositoryTest {
         Optional<DnsCrawlResult> dnsCrwlResultById = repository.findByVisitId("1");
         logger.info("dnsCrwlResultById = {}", dnsCrwlResultById);
 
+        String json = jsonWriter.writeValueAsString(dnsCrwlResultById);
+        logger.info("dnsCrwlResultById =\n\n {}", json);
+
         assertThat(dnsCrwlResultById).isPresent();
         assertThat(dnsCrwlResultById.orElseThrow().getVisitId()).isEqualTo("1");
         assertThat(dnsCrwlResultById.get().getRequests().size()).isEqualTo(1);
         Request firstRequest = dnsCrwlResultById.get().getRequests().getFirst();
         assertThat(firstRequest.getResponses().size()).isEqualTo(2);
         assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
-        // TODO: bram, it seems to be unpredictable which ResponseGeoIp will be first in the list ?
-        assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().getFirst().getIp()).isEqualTo("192.168.1.2");
+        assertThat(firstRequest.getResponses().get(0).getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.2");
+        assertThat(firstRequest.getResponses().get(0).getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.2");
+        assertThat(firstRequest.getResponses().get(1).getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.1");
+        assertThat(firstRequest.getResponses().get(1).getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.1");
+
+
+
     }
 
 }
