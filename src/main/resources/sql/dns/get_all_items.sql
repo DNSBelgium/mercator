@@ -47,7 +47,7 @@ with
         select
             visit_id,
             request_id,
-            list(response order by crawl_timestamp, request_id) as responses
+            list(response) as responses
         from responses_with_geoip
         group by visit_id, request_id
     ),
@@ -55,8 +55,8 @@ with
         select dns_request.* exclude(year, month, status), responses
         from dns_request
                  join response_list
-                      on  response_list.visit_id = dns_request.visit_id
-                          and response_list.request_id = dns_request.request_id
+                 on  response_list.visit_id = dns_request.visit_id
+                 and response_list.request_id = dns_request.request_id
     ),
     dnsCrawlResult as (
         select

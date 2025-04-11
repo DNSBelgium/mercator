@@ -57,8 +57,8 @@ public class SmtpTestUtils {
     }
 
     public static SmtpVisit visit() {
-        SmtpHost host1 = host(RandomStringUtils.randomAscii(8), null);
-        SmtpHost host2 = host(RandomStringUtils.randomAscii(8), null);
+        SmtpHost host1 = host(RandomStringUtils.secure().nextAscii(8));
+        SmtpHost host2 = host(RandomStringUtils.secure().nextAscii(8));
         SmtpVisit visit = SmtpVisit.builder()
           .visitId(VisitIdGenerator.generate())
           //.hosts(List.of(host1, host2))
@@ -72,19 +72,18 @@ public class SmtpTestUtils {
         return visit;
     }
 
-    public static SmtpHost host(String id, String conversationId) {
+    public static SmtpHost host(String id) {
         return SmtpHost.builder()
             .id(id)
             .hostName("smtp1.example.org")
-            .conversation(conversation(conversationId))
+            .conversation(conversation())
             .fromMx(true)
             .priority(10)
             .build();
     }
 
-    public static SmtpConversation conversation(String id) {
+    public static SmtpConversation conversation() {
         return SmtpConversation.builder()
-            .id(id)
             .ip("127.0.0.1")
             .asn(14506L)
             .asnOrganisation("Acme Corp.")
@@ -108,7 +107,6 @@ public class SmtpTestUtils {
     public static SmtpVisit smtpVisitWithBinaryData() {
         var visitId = SmtpVisit.generateVisitId();
         var conversation = SmtpConversation.builder()
-            .id(null)
             .ip("1.2.3.4")
             .connectReplyCode(220)
             .ipVersion(4)
@@ -121,7 +119,7 @@ public class SmtpTestUtils {
             .timestamp(TestUtils.now())
             .build();
         SmtpHost host = SmtpHost.builder()
-            .id(RandomStringUtils.randomAlphanumeric(10))
+            .id(RandomStringUtils.secure().nextAlphanumeric(10))
             .hostName("smtp1.example.com")
             .conversation(conversation)
             .build();

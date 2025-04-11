@@ -474,7 +474,6 @@ public class ObjectMother {
 
   public SmtpConversation smtpConversation1() {
     return SmtpConversation.builder()
-            .id("conv-67890")
             .asn(12345L)
             .ip("192.168.1.1")
             .asnOrganisation("Example ISP")
@@ -496,7 +495,6 @@ public class ObjectMother {
 
   public SmtpConversation smtpConversation2() {
     return SmtpConversation.builder()
-            .id("conv-88775")
             .asn(12345L)
             .ip("192.168.1.1")
             .asnOrganisation("Example ISP")
@@ -592,7 +590,6 @@ public class ObjectMother {
 
   public SmtpConversation smtpConversationWithNullValues() {
     return SmtpConversation.builder()
-            .id(null)
             .asn(null)
             .ip(null)
             .asnOrganisation(null)
@@ -618,7 +615,7 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
     Response response1 = Response.builder()
-            .responseId(10517255249230897L)
+            .responseId(100L)
             .recordData("192.168.1.1")
             .ttl(3600L)
             .responseGeoIps(List.of(geoIp1, geoIp2))
@@ -628,7 +625,7 @@ public class ObjectMother {
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
 
     Response response2 = Response.builder()
-            .responseId(10517864259230897L)
+            .responseId(101L)
             .recordData("192.168.1.2")
             .ttl(3600L)
             .responseGeoIps(List.of(geoIp3, geoIp4))

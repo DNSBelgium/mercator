@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 @Builder
 public class SmtpConversation {
 
-  private String id;
-
   private String ip;
 
   private Long asn;

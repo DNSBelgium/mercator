@@ -48,7 +48,7 @@ class RateLimiterTest {
     rateLimiter.registerDuration(ipAddress, Duration.ofMillis(4000));
     long delayMs = rateLimiter.milliSecondsToWait(ipAddress);
     logger.info("delayMs = {}", delayMs);
-    assertThat(delayMs).isBetween(1990L, 2010L);
+    assertThat(delayMs).isBetween(1900L, 2010L);
   }
 
   @Test

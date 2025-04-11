@@ -31,7 +31,6 @@ with
             from_mx                 ::BOOLEAN       as from_mx,
             host_name               ::VARCHAR       as host_name,
             priority                ::INTEGER       as priority,
-            id_1                    ::VARCHAR       as conversation_id,
             ip                      ::VARCHAR       AS conversation_ip,
             asn                     ::BIGINT        AS conversation_asn,
             country                 ::VARCHAR       AS conversation_country,

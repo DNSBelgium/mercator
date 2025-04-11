@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
 
-
   private final SmtpAnalyzer smtpAnalyzer;
   private final SmtpConversationCache cache;
 
@@ -38,22 +37,17 @@ public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
   public SmtpVisit process(VisitRequest visitRequest) {
     SmtpVisit smtpVisit = smtpAnalyzer.visit(visitRequest.getDomainName());
     smtpVisit.setVisitId(visitRequest.getVisitId());
+    addToCache(smtpVisit);
     return smtpVisit;
   }
 
-
   @SuppressWarnings("unused")
   private void addToCache(SmtpVisit visit) {
-    // TODO
     for (SmtpHost host : visit.getHosts()) {
       var conversation = host.getConversation();
-      if (conversation.getId() == null) {
-        logger.error("conversation with {} has no Id => will not save it in the cache", conversation.getIp());
-      } else {
-        logger.info("Saving conversation with {} in the cache, id={}", conversation.getIp(), conversation.getId());
+        logger.info("Saving conversation with {} in the cache", conversation.getIp());
         cache.add(conversation.getIp(), conversation);
       }
     }
-  }
-
 }
+

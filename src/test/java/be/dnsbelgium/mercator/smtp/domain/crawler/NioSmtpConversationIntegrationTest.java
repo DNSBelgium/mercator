@@ -50,7 +50,6 @@ public class NioSmtpConversationIntegrationTest {
     assertThat(smtpConversation.getConnectionTimeMs()).isBetween(1L, 500L);
     assertThat(smtpConversation.getErrorMessage()).isNull();
     assertThat(smtpConversation.getError()).isNull();
-    assertThat(smtpConversation.getId()).isNull();
   }
 
   @SneakyThrows
@@ -82,7 +81,6 @@ public class NioSmtpConversationIntegrationTest {
     assertThat(smtpConversation.getConnectionTimeMs()).isBetween(1L, 500L);
     assertThat(smtpConversation.getErrorMessage()).isNull();
     assertThat(smtpConversation.getError()).isNull();
-    assertThat(smtpConversation.getId()).isNull();
   }
 
   @Test

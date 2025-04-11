@@ -27,7 +27,6 @@ WITH
     ),
     conversation_struct as (
         select *, struct_pack(
-                id := conversation_id,
                 ip := conversation_ip,
                 asn := conversation_asn,
                 country := conversation_country,

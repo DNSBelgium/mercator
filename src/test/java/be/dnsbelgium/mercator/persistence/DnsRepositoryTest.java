@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.dns.dto.Request;
+import be.dnsbelgium.mercator.dns.dto.Response;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
@@ -130,10 +131,18 @@ class DnsRepositoryTest {
         Request firstRequest = dnsCrwlResultById.get().getRequests().getFirst();
         assertThat(firstRequest.getResponses().size()).isEqualTo(2);
         assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
-        assertThat(firstRequest.getResponses().get(0).getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.2");
-        assertThat(firstRequest.getResponses().get(0).getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.2");
-        assertThat(firstRequest.getResponses().get(1).getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.1");
-        assertThat(firstRequest.getResponses().get(1).getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.1");
+
+
+        Response response100 = firstRequest.getResponses().stream()
+                .filter(response -> response.getResponseId().equals(100L)).findFirst().orElseThrow();
+
+        Response response101 = firstRequest.getResponses().stream()
+                .filter(response -> response.getResponseId().equals(101L)).findFirst().orElseThrow();
+
+        assertThat(response100.getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.1");
+        assertThat(response100.getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.1");
+        assertThat(response101.getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.2");
+        assertThat(response101.getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.2");
 
 
 
