@@ -6,6 +6,7 @@
 
 <head>
     <title>Mercator | Details</title>
+    <!-- css for fragment -->
     <style>
         td.data {
             max-width: 300px;
@@ -64,7 +65,7 @@
                          and ! #lists.isEmpty(request.responses)
                          and request.responses[0] != null
                          and request.responses[0].recordData != null}">
-                        <td th:replace="~{fragments/general :: data(${request.responses[0].recordData})}"></td>
+                        <td th:replace="~{fragments/general :: td-with-copy-data-button(${request.responses[0].recordData})}"></td>
                     </th:block>
                     <td th:if="${#lists.isEmpty(request.responses)}"></td>
                     <!-- combine response data with first geoip data -->
@@ -79,7 +80,7 @@
                         and request.responses[0].responseGeoIps != null
                         and ! #lists.isEmpty(request.responses[0].responseGeoIps)
                         and request.responses[0].responseGeoIps[0].ip != null}">
-                        <th:block th:replace="~{fragments/general :: data(${request.responses[0].responseGeoIps[0].ip})}"></th:block>
+                        <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${request.responses[0].responseGeoIps[0].ip})}"></th:block>
                     </th:block>
                     <td th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps)}"
                         th:text="${request.responses[0].responseGeoIps[0].ipVersion}"></td>
@@ -102,7 +103,7 @@
                         <td th:text="${geoip.asn}"></td>
                         <td th:text="${geoip.asnOrganisation}"></td>
                         <td th:if="${! #lists.isEmpty(request.responses)}"
-                            th:replace="~{fragments/general :: data(${geoip.ip})}">
+                            th:replace="~{fragments/general :: td-with-copy-data-button(${geoip.ip})}">
                         </td>
                         <td th:text="${geoip.ipVersion}"></td>
                     </tr>
@@ -117,7 +118,7 @@
                         <td th:text="${response.ttl}"></td>
                         <th:block th:if="${request.responses != null
                         and response.recordData != null}">
-                            <th:block th:replace="~{fragments/general :: data(${response.recordData})}"></th:block>
+                            <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${response.recordData})}"></th:block>
                         </th:block>
                         <td th:if="${#lists.isEmpty(request.responses)}"></td>
                         <!-- combine response data with first geoip data -->
@@ -130,7 +131,7 @@
                         <th:block th:if="${response.responseGeoIps != null
                             and ! #lists.isEmpty(response.responseGeoIps)
                             and response.responseGeoIps[0].ip != null}">
-                            <th:block th:replace="~{fragments/general :: data(${response.responseGeoIps[0].ip})}"></th:block>
+                            <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${response.responseGeoIps[0].ip})}"></th:block>
                         </th:block>
                         <td th:if="${! #lists.isEmpty(response.responseGeoIps)}"
                             th:text="${response.responseGeoIps[0].ipVersion}"></td>
@@ -148,7 +149,7 @@
                         <td th:text="${geoip.country}"></td>
                         <td th:text="${geoip.asn}"></td>
                         <td th:text="${geoip.asnOrganisation}"></td>
-                        <td th:replace="~{fragments/general :: data(${geoip.ip})}"></td>
+                        <td th:replace="~{fragments/general :: td-with-copy-data-button(${geoip.ip})}"></td>
                         <td th:text="${geoip.ipVersion}"></td>
                     </tr>
                 </th:block>
