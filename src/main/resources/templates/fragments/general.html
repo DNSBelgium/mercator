@@ -15,3 +15,46 @@
         </div>
     </td>
 </th:block>
+
+<th:block th:fragment="listDisplay(label, items, maxElements)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${items == null or #lists.isEmpty(items)}">None</span>
+
+            <ul th:if="${items != null and !#lists.isEmpty(items) and #lists.size(items) <= maxElements}">
+                <li th:each="item : ${items}">
+                    <p th:text="${item}"></p>
+                </li>
+            </ul>
+
+            <details th:if="${items != null and #lists.size(items) > maxElements}">
+                <summary>Click to show more</summary>
+                <ul>
+                    <li th:each="item : ${items}">
+                        <p th:text="${item}"></p>
+                    </li>
+                </ul>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
+<th:block th:fragment="textDisplay(label, text, maxChars)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${text == null or #strings.isEmpty(text)}">None</span>
+
+            <span th:if="${text != null and #strings.length(text) <= maxChars}"
+                  th:utext="${#strings.replace(text, '\n', '<br/>')}"></span>
+
+            <details th:if="${text != null and #strings.length(text) > maxChars}">
+                <summary>Click to show</summary>
+                <p th:utext="${#strings.replace(text, '\n', '<br/>')}"></p>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
+

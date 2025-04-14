@@ -38,145 +38,100 @@
       </tr>
       </tbody>
     </table>
+    <p th:if="${smtpVisitResult.getHosts() == null or #lists.isEmpty(smtpVisitResult.getHosts())}">No hosts</p>
     <p>Hosts</p>
-    <table>
-      <tbody>
-      <tr>
-        <td th:if="${smtpVisitResult == null or #lists.isEmpty(smtpVisitResult.hosts)}">No hosts</td>
-        <td>
-          <details th:if="${smtpVisitResult != null && ! #lists.isEmpty(smtpVisitResult.hosts)}">
-            <summary>Click to show hosts</summary>
-            <div th:each="host, iterStat : ${smtpVisitResult.getHosts()}">
-              <h4>Host: <strong th:text="${host.hostName}"></strong></h4>
-              <table>
-                <tbody>
-                <tr>
-                  <th>Id</th>
-                  <td th:text="${host.id}"></td>
-                </tr>
-                <tr>
-                  <th>fromMx</th>
-                  <td th:text="${host.fromMx}"></td>
-                </tr>
-                <tr>
-                  <th>hostName</th>
-                  <td th:text="${host.hostName}"></td>
-                </tr>
-                <tr>
-                  <th>priority</th>
-                  <td th:text="${host.priority}"></td>
-                </tr>
-                </tbody>
-              </table>
-              <p th:if="${host.conversation == null}">No conversation</p>
-              <h5 th:if="${host.conversation != null}">Conversation with <strong
-                      th:text="${host.conversation.ip}"></strong></h5>
-              <table th:if="${host.conversation != null}">
-                <tbody>
-                <tr>
-                  <th>ip</th>
-                  <td th:text="${host.conversation.ip}"></td>
-                </tr>
-                <tr>
-                  <th>asn</th>
-                  <td th:text="${host.conversation.asn}"></td>
-                </tr>
-                <tr>
-                  <th>country</th>
-                  <td th:text="${host.conversation.country}"></td>
-                </tr>
-                <tr>
-                  <th>asnOrganisation</th>
-                  <td th:text="${host.conversation.asnOrganisation}"></td>
-                </tr>
-                <tr>
-                  <th>banner</th>
-                  <td th:text="${host.conversation.banner}"></td>
-                </tr>
-                <tr>
-                  <th>connectOK</th>
-                  <td th:text="${host.conversation.connectOK}"></td>
-                </tr>
-                <tr>
-                  <th>connectReplyCode</th>
-                  <td th:text="${host.conversation.connectReplyCode}"></td>
-                </tr>
-                <tr>
-                  <th>supportedExtensions</th>
-                  <td th:if="${host.conversation.supportedExtensions == null && #lists.isEmpty(host.conversation.supportedExtensions)}">
-                    No supported extensions
-                  </td>
-                  <td th:if="${host.conversation.supportedExtensions != null && ! #lists.isEmpty(host.conversation.supportedExtensions)}">
-                    <details>
-                      <summary>Click to show supported extensions</summary>
-                      <ul>
-                        <li th:each="ext : ${host.conversation.supportedExtensions}">
-                          <span th:text="${ext}"></span>
-                        </li>
-                      </ul>
-                    </details>
-                  </td>
-                </tr>
-                <tr>
-                  <th>ipVersion</th>
-                  <td th:text="${host.conversation.ipVersion}"></td>
-                </tr>
-                <tr>
-                  <th>startTlsOk</th>
-                  <td th:text="${host.conversation.startTlsOk}"></td>
-                </tr>
-                <tr>
-                  <th>startTlsReplyCode</th>
-                  <td th:text="${host.conversation.startTlsReplyCode}"></td>
-                </tr>
-                <tr>
-                  <th>errorMessage</th>
-                  <td th:if="${#strings.isEmpty(host.conversation.errorMessage)}">No error message
-                  </td>
-                  <td th:if="${! #strings.isEmpty(host.conversation.errorMessage)}">
-                    <details>
-                      <summary>Click to show error message</summary>
-                      <p th:text="${host.conversation.errorMessage}"></p>
-                    </details>
-                  </td>
-                </tr>
-                <tr>
-                  <th>error</th>
-                  <td th:if="${#strings.isEmpty(host.conversation.error)}">No error</td>
-                  <td th:if="${! #strings.isEmpty(host.conversation.error)}">
-                    <details>
-                      <summary>Click to show error</summary>
-                      <p th:text="${host.conversation.error}"></p>
-                    </details>
-                  </td>
-                </tr>
-                <tr>
-                  <th>Connection time</th>
-                  <td th:text="${host.conversation.connectionTimeMs} + ' ms'"></td>
-                </tr>
-                <tr>
-                  <th>software</th>
-                  <td th:text="${host.conversation.software}"></td>
-                </tr>
-                <tr>
-                  <th>softwareVersion</th>
-                  <td th:text="${host.conversation.softwareVersion}"></td>
-                </tr>
-                <tr>
-                  <th>timestamp</th>
-                  <td th:text="${@dateTimeUtil.format(host.conversation.timestamp)}"></td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </details>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div th:each="host : ${smtpVisitResult.getHosts()}">
+      <table>
+        <tbody>
+        <tr>
+          <th>Id</th>
+          <td th:text="${host.id}"></td>
+        </tr>
+        <tr>
+          <th>from mx</th>
+          <td th:text="${host.fromMx}"></td>
+        </tr>
+        <tr>
+          <th>host name</th>
+          <td th:text="${host.hostName}"></td>
+        </tr>
+        <tr>
+          <th>priority</th>
+          <td th:text="${host.priority}"></td>
+        </tr>
+        </tbody>
+      </table>
+      <div th:if="${host.conversation != null}">
+        <details>
+          <summary>Click to show conversation with <span th:text="${host.conversation.ip}"></span></summary>
+          <table th:if="${host.conversation != null}">
+            <tbody>
+            <tr>
+              <th>ip</th>
+              <td th:text="${host.conversation.ip}"></td>
+            </tr>
+            <tr>
+              <th>asn</th>
+              <td th:text="${host.conversation.asn}"></td>
+            </tr>
+            <tr>
+              <th>country</th>
+              <td th:text="${host.conversation.country}"></td>
+            </tr>
+            <tr>
+              <th>asnOrganisation</th>
+              <td th:text="${host.conversation.asnOrganisation}"></td>
+            </tr>
+            <tr>
+              <th>banner</th>
+              <td th:text="${host.conversation.banner}"></td>
+            </tr>
+            <tr>
+              <th>connectOK</th>
+              <td th:text="${host.conversation.connectOK}"></td>
+            </tr>
+            <tr>
+              <th>connectReplyCode</th>
+              <td th:text="${host.conversation.connectReplyCode}"></td>
+            </tr>
+            <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${host.conversation.getSupportedExtensions()}, 4)}"></tr>
+            <tr>
+              <th>ipVersion</th>
+              <td th:text="${host.conversation.ipVersion}"></td>
+            </tr>
+            <tr>
+              <th>startTlsOk</th>
+              <td th:text="${host.conversation.startTlsOk}"></td>
+            </tr>
+            <tr>
+              <th>startTlsReplyCode</th>
+              <td th:text="${host.conversation.startTlsReplyCode}"></td>
+            </tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error message', ${host.conversation.getErrorMessage()}, 200)}"></tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error', ${host.conversation.getError()}, 200)}"></tr>
+            <tr>
+              <th>Connection time</th>
+              <td th:text="${host.conversation.connectionTimeMs} + ' ms'"></td>
+            </tr>
+            <tr>
+              <th>software</th>
+              <td th:text="${host.conversation.software}"></td>
+            </tr>
+            <tr>
+              <th>softwareVersion</th>
+              <td th:text="${host.conversation.softwareVersion}"></td>
+            </tr>
+            <tr>
+              <th>timestamp</th>
+              <td th:text="${@dateTimeUtil.format(host.conversation.timestamp)}"></td>
+            </tr>
+            </tbody>
+          </table>
+        </details>
+      </div>
+      <p th:if="${host.conversation == null}">No conversation</p>
+    </div>
   </div>
 </main>
-
-
 </body>
 </html>
