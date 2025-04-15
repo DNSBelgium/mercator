@@ -45,7 +45,7 @@ public class TlsJobConfig {
   @StepScope
   @SuppressWarnings({"SpringElInspection"})
   public FlatFileItemReader<VisitRequest> tlsItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
-    logger.info("creating FlatFileItemReader for resource {}", resource);
+    logger.info("tlsItemReader: creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
             .resource(resource)
@@ -66,16 +66,15 @@ public class TlsJobConfig {
   @ConditionalOnProperty(name = "job.tls.enabled", havingValue = "true")
   public Job tlsJob(JobRepository jobRepository,
                     PlatformTransactionManager transactionManager,
-                    ItemReader<VisitRequest> itemReader,
+                    ItemReader<VisitRequest> tlsItemReader,
                     TlsCrawler tlsCrawler,
-                    ItemWriter<TlsCrawlResult> itemWriter,
-                    TlsParquetMaker tlsParquetMaker) {
+                    ItemWriter<TlsCrawlResult> itemWriter) {
     logger.info("creating tlsJob");
     // throttleLimit method is deprecated but alternative is not well documented
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, TlsCrawlResult>chunk(chunkSize, transactionManager)
-            .reader(itemReader)
+            .reader(tlsItemReader)
             .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
             .throttleLimit(throttleLimit)
             .processor(tlsCrawler)
@@ -84,7 +83,6 @@ public class TlsJobConfig {
 
     return new JobBuilder(JOB_NAME, jobRepository)
             .start(step)
-            .listener(tlsParquetMaker)
             .build();
   }
 
