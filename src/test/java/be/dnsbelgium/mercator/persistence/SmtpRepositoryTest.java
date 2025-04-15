@@ -6,7 +6,6 @@ import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.CleanupMode;
@@ -139,15 +138,15 @@ class SmtpRepositoryTest {
         assertThat(smtpVisitResults1.size()).isEqualTo(1);
         assertThat(smtpVisitResults2.size()).isEqualTo(1);
 
-        List<String> hostIdsVisitResultts1 = new ArrayList<>();
+        List<String> hostNames = new ArrayList<>();
 
         for (SmtpHost smtpHost : smtpVisitResults1.getFirst().getHosts()) {
-            hostIdsVisitResultts1.add(smtpHost.getId());
+            hostNames.add(smtpHost.getHostName());
 
         }
 
-        logger.info("ids found (there should be 2): {}",hostIdsVisitResultts1);
-        assertThat(hostIdsVisitResultts1.size()).isEqualTo(2);
+        logger.info("hostnames found (there should be 2): {}",hostNames);
+        assertThat(hostNames.size()).isEqualTo(2);
         assertThat(smtpVisitResults1.getFirst().getHosts().size()).isEqualTo(2);
         assertThat(smtpVisitResults2.getFirst().getHosts().size()).isEqualTo(2);
 

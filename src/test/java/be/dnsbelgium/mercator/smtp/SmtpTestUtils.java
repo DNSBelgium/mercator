@@ -57,8 +57,8 @@ public class SmtpTestUtils {
     }
 
     public static SmtpVisit visit() {
-        SmtpHost host1 = host(RandomStringUtils.secure().nextAscii(8));
-        SmtpHost host2 = host(RandomStringUtils.secure().nextAscii(8));
+        SmtpHost host1 = host();
+        SmtpHost host2 = host();
         SmtpVisit visit = SmtpVisit.builder()
           .visitId(VisitIdGenerator.generate())
           //.hosts(List.of(host1, host2))
@@ -72,9 +72,8 @@ public class SmtpTestUtils {
         return visit;
     }
 
-    public static SmtpHost host(String id) {
+    public static SmtpHost host() {
         return SmtpHost.builder()
-            .id(id)
             .hostName("smtp1.example.org")
             .conversation(conversation())
             .fromMx(true)
@@ -119,7 +118,6 @@ public class SmtpTestUtils {
             .timestamp(TestUtils.now())
             .build();
         SmtpHost host = SmtpHost.builder()
-            .id(RandomStringUtils.secure().nextAlphanumeric(10))
             .hostName("smtp1.example.com")
             .conversation(conversation)
             .build();

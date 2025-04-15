@@ -17,8 +17,6 @@
 
         <div th:if="${visitIds != null and not visitIds.isEmpty()}">
             <h1>Search results</h1>
-            <p>Found:</p>
-            <p>Select a visit ID</p>
             <table class="overflow-auto">
                 <thead>
                 <tr>
@@ -31,7 +29,7 @@
                     <td>
                         <a th:href="@{/search/web/id(visitId=${visit.getVisitId()})}" th:text="${visit.getVisitId()}"></a>
                     </td>
-                    <td th:text="${visit.getTimestamp()}"></td>
+                    <td th:text="${@dateTimeUtil.format(visit.getTimestamp())}"></td>
                 </tr>
                 </tbody>
             </table>

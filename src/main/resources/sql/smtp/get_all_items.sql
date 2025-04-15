@@ -13,7 +13,6 @@ WITH
     ),
     conversation_struct as (
         select visit_id,
-               id,
                from_mx,
                host_name,
                priority,
@@ -42,7 +41,6 @@ WITH
         select
             visit_id,
             struct_pack(
-                    id := id,
                     from_mx := from_mx,
                     host_name := host_name,
                     priority := priority,

@@ -27,7 +27,6 @@ with
     extract_hosts_and_conversation_from_smtp AS (
         SELECT
             visit_id                ::VARCHAR       as visit_id,
-            id                      ::VARCHAR       as id,
             from_mx                 ::BOOLEAN       as from_mx,
             host_name               ::VARCHAR       as host_name,
             priority                ::INTEGER       as priority,

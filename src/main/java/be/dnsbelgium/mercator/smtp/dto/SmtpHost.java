@@ -8,8 +8,6 @@ import lombok.*;
 @Builder
 public class SmtpHost {
 
-  private String id;
-
   private boolean fromMx;
 
   private String hostName;

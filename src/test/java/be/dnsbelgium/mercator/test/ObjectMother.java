@@ -571,7 +571,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHost1() {
     return SmtpHost.builder()
-            .id("host-12345")
             .fromMx(true)
             .hostName("mail.example.com")
             .priority(10)
@@ -581,7 +580,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHost2() {
     return SmtpHost.builder()
-            .id("host-144455")
             .fromMx(true)
             .hostName("mail.example.com")
             .priority(10)
@@ -591,7 +589,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHost3() {
     return SmtpHost.builder()
-            .id("host-345")
             .fromMx(true)
             .hostName("mail4.example.com")
             .priority(110)
@@ -601,7 +598,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHost4() {
     return SmtpHost.builder()
-            .id("host-455")
             .fromMx(true)
             .hostName("mail4.example.com")
             .priority(110)
@@ -646,7 +642,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHostWithNullValues1() {
     return SmtpHost.builder()
-            .id(null)
             .fromMx(false)
             .hostName(null)
             .priority(0)
@@ -656,7 +651,6 @@ public class ObjectMother {
 
   public SmtpHost smtpHostWithNullValues2() {
     return SmtpHost.builder()
-            .id(null)
             .fromMx(false)
             .hostName(null)
             .priority(0)

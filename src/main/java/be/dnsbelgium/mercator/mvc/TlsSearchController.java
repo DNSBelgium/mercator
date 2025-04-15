@@ -25,10 +25,6 @@ public class TlsSearchController {
     this.tlsRepository = tlsRepository;
   }
 
-  @GetMapping("/search/tls")
-  public String searchForm() {
-    return "search-tls";
-  }
 
   /**
    * show the most recent TLS crawl result for give domain name
