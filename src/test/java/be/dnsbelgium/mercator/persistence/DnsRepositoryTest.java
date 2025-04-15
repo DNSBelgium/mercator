@@ -5,7 +5,12 @@ import be.dnsbelgium.mercator.dns.dto.Request;
 import be.dnsbelgium.mercator.dns.dto.Response;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.*;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.CleanupMode;
@@ -26,13 +31,18 @@ class DnsRepositoryTest {
     private static final Logger logger = LoggerFactory.getLogger(DnsRepositoryTest.class);
 
     @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    static Path baseLocation;
+    Path baseLocation;
 
     @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    static Path tempDir;
+    Path tempDir;
 
     private final ObjectMother objectMother = new ObjectMother();
-    private final DnsRepository repository = new DnsRepository(TestUtils.jsonReader(), baseLocation.toString());
+    private DnsRepository repository;
+
+    @BeforeEach
+    public void init() {
+        repository = new DnsRepository(TestUtils.jsonReader(), baseLocation.toString());
+    }
 
     @Test
     @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
@@ -143,9 +153,25 @@ class DnsRepositoryTest {
         assertThat(response100.getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.1");
         assertThat(response101.getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.2");
         assertThat(response101.getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.2");
+    }
 
-
-
+    @Test
+    public void noFilesMatchingPattern() {
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(BaseRepository.class);
+        logger.addAppender(listAppender);
+        List<SearchVisitIdResultItem> found = repository.searchVisitIds("example.com");
+        // we should have found no SearchVisitIdResultItem's
+        assertThat(found.size()).isEqualTo(0);
+        // but we should have a WARN event in the logs
+        Assertions.assertThat(listAppender.list).hasSizeGreaterThan(0);
+        List<ILoggingEvent> logMessages = listAppender.list
+                .stream()
+                .filter(e -> e.getLevel().equals(Level.WARN))
+                .filter(e -> e.getFormattedMessage().contains("IO Error: No files found that match the pattern"))
+                .toList();
+        assertThat(logMessages.size()).isEqualTo(1);
     }
 
 }

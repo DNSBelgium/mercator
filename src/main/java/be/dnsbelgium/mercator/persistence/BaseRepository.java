@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.lang.NonNull;
@@ -118,21 +119,31 @@ public class BaseRepository<T> {
     try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
       JdbcClient jdbcClient = JdbcClient.create(dataSource);
       setVariables(jdbcClient);
-      Optional<String> json = jdbcClient.sql(query)
-              .params(params)
-              .query(String.class)
-              .optional();
-      if (json.isPresent()) {
-        try {
-          T result = objectMapper.readValue(json.get(), this.type);
-          logger.debug("Found: \n{}", result);
-          return Optional.of(result);
-        } catch (JsonMappingException e) {
-          logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
-          throw e;
+      try {
+        Optional<String> json = jdbcClient.sql(query)
+                .params(params)
+                .query(String.class)
+                .optional();
+        if (json.isPresent()) {
+          try {
+            T result = objectMapper.readValue(json.get(), this.type);
+            logger.debug("Found: \n{}", result);
+            return Optional.of(result);
+          } catch (JsonMappingException e) {
+            logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
+            throw e;
+          }
         }
+        return Optional.empty();
+
+      } catch (UncategorizedSQLException e) {
+        if (e.getMessage().contains("No files found that match the pattern")) {
+          // Probably no domains have been crawled yet.
+          logger.warn("queryForObject params={} => {}", params, e.getMessage());
+          return Optional.empty();
+        }
+        throw e;
       }
-      return Optional.empty();
     }
   }
 
@@ -141,16 +152,25 @@ public class BaseRepository<T> {
     try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
       JdbcClient jdbcClient = JdbcClient.create(dataSource);
       setVariables(jdbcClient);
-      List<String> jsonList = jdbcClient.sql(query)
-              .param("domainName", domainName)
-              .query(String.class)
-              .list();
-      List<S> found = new ArrayList<>();
-      for (String json : jsonList) {
-        S result = objectMapper.readValue(json, clazz);
-        found.add(result);
+      try {
+        List<String> jsonList = jdbcClient.sql(query)
+                .param("domainName", domainName)
+                .query(String.class)
+                .list();
+        List<S> found = new ArrayList<>();
+        for (String json : jsonList) {
+          S result = objectMapper.readValue(json, clazz);
+          found.add(result);
+        }
+        return found;
+      } catch (UncategorizedSQLException e) {
+        if (e.getMessage().contains("No files found that match the pattern")) {
+          // Probably no domains have been crawled yet.
+          logger.warn("query for {} => {}", clazz, e.getMessage());
+          return Collections.emptyList();
+        }
+        throw e;
       }
-      return found;
     }
   }
 

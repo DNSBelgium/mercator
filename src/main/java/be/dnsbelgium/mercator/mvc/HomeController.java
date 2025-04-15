@@ -21,6 +21,11 @@ public class HomeController {
         return "index";
     }
 
+    @GetMapping("/error")
+    public String error() {
+        return "error";
+    }
+
     @GetMapping("/test-htmx")
     public String test_htmx() {
         return "test-htmx";
