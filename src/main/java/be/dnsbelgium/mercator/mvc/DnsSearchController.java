@@ -26,6 +26,7 @@ public class DnsSearchController {
     @GetMapping("/search/dns/latest")
     public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
         logger.info("Finding latest result");
+        model.addAttribute("domainName", domainName);
         Optional<DnsCrawlResult> dnsCrawlResult = dnsRepository.findLatestResult(domainName);
         logger.info(dnsCrawlResult.toString());
         if (dnsCrawlResult.isPresent()) {

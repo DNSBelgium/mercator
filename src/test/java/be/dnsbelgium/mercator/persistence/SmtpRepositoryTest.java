@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,13 +25,11 @@ class SmtpRepositoryTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
-    @TempDir
-    Path baseLocation;
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
+    static Path baseLocation;
 
-    @TempDir
-    Path tempDir;
-
-
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
+    static Path tempDir;
 
     private final ObjectMother objectMother = new ObjectMother();
     private SmtpRepository repository;

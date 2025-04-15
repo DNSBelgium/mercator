@@ -29,6 +29,8 @@
         <!-- We compile with JDK 21 because of Lombok incompatibility with JDK 23 -->
         <!-- But we run with JDK 23 because of better virtual threads support -->
         <java.version>21</java.version>
+        <argLine/>
+        <baseImage>eclipse-temurin:23.0.1_11-jre-ubi9-minimal@sha256:f2521f4f7cf25f1259e5db99cda2a6a676f44c68cc452cd1cc0bbeb3f72c06f8</baseImage>
     </properties>
 
     <dependencies>
@@ -443,12 +445,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-dbcp2</artifactId>
-            <version>2.13.0</version>  <!-- Controleer of dit de juiste versie is -->
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers -->
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -483,6 +479,18 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>properties</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- maven surefire -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -490,8 +498,9 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <!-- To hide ugly warning about a dynamically loaded java agent -->
-                    <!-- (byte-buddy-agent needed by mockito) -->
-                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
+                    <!-- See https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html -->
+                    <!--suppress MavenModelInspection -->
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
                 </configuration>
             </plugin>
 

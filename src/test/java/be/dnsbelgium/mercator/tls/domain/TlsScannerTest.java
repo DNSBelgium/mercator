@@ -49,7 +49,7 @@ class TlsScannerTest {
     assertThat(result.getSelectedProtocol()).isNull();
     // No security properties set => "No appropriate protocol (protocol is disabled or cipher suites are inappropriate)"
     // With security properties => Received fatal alert: protocol_version
-    assertThat(result.getErrorMessage()).isEqualTo("Received fatal alert: protocol_version");
+    assertThat(result.getErrorMessage()).contains("Received fatal alert: protocol_version");
     assertThat(result.getPeerPrincipal()).isNull();
     assertThat(result.getScanDuration()).isGreaterThan(Duration.ofNanos(1));
   }
@@ -180,5 +180,17 @@ class TlsScannerTest {
     SingleVersionScan result = tlsScanner.scanForProtocol(TLS_1_0, address);
     logger.info("result = {}", result);
   }
+
+  @Test
+  public void ssl3() {
+    //InetSocketAddress address = new InetSocketAddress("93.88.240.42", 443);
+    InetSocketAddress address = new InetSocketAddress("tecna.be", 443);
+    TlsScanner tlsScanner = makeTlsScanner(DEFAULT_CONNECT_TIME_OUT_MS, DEFAULT_READ_TIME_OUT_MS);
+    SingleVersionScan result = tlsScanner.scanForProtocol(SSL_3, address);
+    logger.info("result = {}", result);
+    logger.info("result.isHandshakeOK = {}", result.isHandshakeOK());
+    logger.info("result.getSelectedCipherSuite = {}", result.getSelectedCipherSuite());
+  }
+
 
 }

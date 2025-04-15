@@ -21,11 +21,6 @@ public class HomeController {
         return "index";
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "hello";
-    }
-
     @GetMapping("/test-htmx")
     public String test_htmx() {
         return "test-htmx";

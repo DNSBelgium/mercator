@@ -12,7 +12,7 @@
 <main>
     <div layout:fragment="content">
         <h2 th:if="${visitIds == null or visitIds.isEmpty()}">
-            No visitIds found for web of <span th:text="${domainName}"></span>
+            No web crawls found for <span th:text="${domainName}"></span>
         </h2>
 
         <div th:if="${visitIds != null and not visitIds.isEmpty()}">

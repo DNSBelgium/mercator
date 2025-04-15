@@ -25,6 +25,7 @@ public class WebSearchController {
 
     @GetMapping("/search/web/latest")
     public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
+        model.addAttribute("domainName", domainName);
         Optional<WebCrawlResult> webCrawlResult = webRepository.findLatestResult(domainName);
         if (webCrawlResult.isPresent()) {
             model.addAttribute("webCrawlResult", webCrawlResult.get());
