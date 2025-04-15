@@ -27,17 +27,16 @@ class SmtpRepositoryTest {
     private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
     @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    static Path baseLocation;
+    Path baseLocation;
 
     @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    static Path tempDir;
+    Path tempDir;
 
     private final ObjectMother objectMother = new ObjectMother();
     private SmtpRepository repository;
 
     @BeforeEach
-    void setUp() throws IOException {
-        Files.createDirectories(baseLocation);
+    void setUp() {
         repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
     }
 
@@ -70,7 +69,6 @@ class SmtpRepositoryTest {
         assertThat(smtpVisitResults.size()).isGreaterThan(0);
     }
 
-    @Disabled
     @Test
     public void toParquet() throws IOException {
 
