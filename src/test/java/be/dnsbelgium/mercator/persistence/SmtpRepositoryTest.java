@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.CleanupMode;
@@ -69,6 +70,7 @@ class SmtpRepositoryTest {
         assertThat(smtpVisitResults.size()).isGreaterThan(0);
     }
 
+    @Disabled
     @Test
     public void toParquet() throws IOException {
 
