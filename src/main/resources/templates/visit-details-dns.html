@@ -188,7 +188,7 @@
                                 </tr>
                                 <tr>
                                     <th>crawlTimestamp</th>
-                                    <td th:text="${request.crawlTimestamp}"></td>
+                                    <td th:text="${@dateTimeUtil.format(request.crawlTimestamp)}"></td>
                                 </tr>
                                 <tr>
                                     <th>ok</th>
