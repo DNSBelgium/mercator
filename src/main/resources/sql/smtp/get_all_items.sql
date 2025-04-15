@@ -50,7 +50,15 @@ WITH
         from conversation_struct
     ),
     smtp_visit as (
-        select host_struct.visit_id, visits_result.domain_name, timestamp, num_conversations, list(host) as hosts, crawl_status
-from host_struct INNER JOIN visits_result on host_struct.visit_id = visits_result.visit_id  group by all
+        select  host_struct.visit_id,
+                visits_result.domain_name,
+                timestamp, num_conversations,
+                list(host) as hosts,
+                crawl_status
+
+        from host_struct INNER JOIN visits_result
+        on host_struct.visit_id = visits_result.visit_id
+            group by all
+
     )
 select * from smtp_visit

@@ -5,9 +5,9 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.databind.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +24,22 @@ class SmtpRepositoryTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
-    @TempDir(cleanup = CleanupMode.NEVER)
-    static Path baseLocation;
+    @TempDir
+    Path baseLocation;
 
-    @TempDir(cleanup = CleanupMode.NEVER)
-    static Path tempDir;
+    @TempDir
+    Path tempDir;
+
+
 
     private final ObjectMother objectMother = new ObjectMother();
-    private final SmtpRepository repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
+    private SmtpRepository repository;
+
+    @BeforeEach
+    void setUp() throws IOException {
+        Files.createDirectories(baseLocation);
+        repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
+    }
 
     @Test
     @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
@@ -71,13 +79,16 @@ class SmtpRepositoryTest {
 
         logger.info("SmtpVisitResult = {}", smtpVisitResult1);
 
-        File jsonFile = tempDir.resolve("smtpVisitResult1.json").toFile();
+        File jsonFile = tempDir.resolve("smtpVisitResult2.json").toFile();
         logger.info("jsonFile = {}", jsonFile);
 
         ObjectWriter jsonWriter = TestUtils.jsonWriter();
         jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
 
         repository.storeResults(jsonFile.toString());
+
+        logger.info("TempDir = {}", tempDir.toAbsolutePath());
+
 
         List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example1.com");
         List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example1.com");
@@ -113,7 +124,7 @@ class SmtpRepositoryTest {
         SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
         SmtpVisit smtpVisitResult2 = objectMother.smtpVisit2();
 
-        File jsonFile = tempDir.resolve("smtpVisitResult1.json").toFile();
+        File jsonFile = tempDir.resolve("smtpVisitResult3.json").toFile();
         logger.info("jsonFile = {}", jsonFile);
 
         ObjectWriter jsonWriter = TestUtils.jsonWriter();
