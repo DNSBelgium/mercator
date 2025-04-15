@@ -12,7 +12,11 @@
 
 <main class="container-fluid" layout:fragment="content">
   <h2 th:if="${tlsCrawlResults == null or tlsCrawlResults.visits.isEmpty()}">
-    No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong>
+
+    <span th:if="${domainName != null}">                   No TLS crawl results found for <strong th:text="${domainName}"></strong></span>
+    <span th:if="${domainName == null && visitId != null}">No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+    <span th:if="${domainName == null && visitId == null}">No TLS crawl results found.</span>
+
   </h2>
   <div th:if="${!#lists.isEmpty(tlsCrawlResults?.visits)}">
     <header>
@@ -103,7 +107,7 @@
         <td th:text="${result.fullScanEntity.supportTls_1_2} ? 'Yes' : 'No'"></td>
         <td th:text="${result.fullScanEntity.selectedCipherTls_1_2}"></td>
         <td th:text="${result.fullScanEntity.errorTls_1_2}"></td>
-        <td style="text-align: right;"th:text="${result.fullScanEntity.millis_tls_1_2}"></td>
+        <td style="text-align: right;" th:text="${result.fullScanEntity.millis_tls_1_2}"></td>
       </tr>
       <tr>
         <td>TLS 1.3</td>

@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.persistence.DnsRepository;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
@@ -60,17 +61,18 @@ public class DnsSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-dns"))
                 .andExpect(model().attributeExists("visitIds"))
-                .andExpect(content().string(containsString("No visitIds found for dns of")))
+                .andExpect(content().string(containsString("No DNS crawls found for <span>dnsbelgium.be</span>")))
         ;
     }
 
     @Test
     public void findByVisitId_findsVisitDetails() throws Exception {
-        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", "1");
-        when(dnsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.of(dnsCrawlResultResult1));
+        String visitId = VisitIdGenerator.generate();
+        DnsCrawlResult dnsCrawlResultResult1 = objectMother.dnsCrawlResultWithMultipleResponses1("dnsbelgium.be", visitId);
+        when(dnsRepository.findByVisitId(visitId)).thenReturn(Optional.of(dnsCrawlResultResult1));
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/id")
-                        .param("visitId", "idjsfijoze-er-ze"))
+                        .param("visitId", visitId))
                 .andExpect(view().name("visit-details-dns"))
                 .andExpect(model().attributeExists( "dnsCrawlResult"))
                 .andExpect(content().string(containsString("192.168.1.1")))
@@ -81,12 +83,13 @@ public class DnsSearchControllerTest {
     }
 
     @Test
-    public void findByVisitId_doesNotfindVisitDetails() throws Exception {
-        when(dnsRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+    public void findByVisitId_doesNotFindVisitDetails() throws Exception {
+        String visitId = VisitIdGenerator.generate();
+        when(dnsRepository.findByVisitId(visitId)).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/dns/id")
-                        .param("visitId", "idjsfijoze-er-ze"))
-                .andExpect(content().string(containsString("No DNS crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
+                        .param("visitId", visitId))
+                .andExpect(content().string(containsString("No DNS crawl results found for visit-id <strong>" + visitId + "</strong>")));
     }
 
 

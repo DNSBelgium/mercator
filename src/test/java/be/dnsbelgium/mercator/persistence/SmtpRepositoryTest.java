@@ -23,10 +23,10 @@ class SmtpRepositoryTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
-    @TempDir(cleanup = CleanupMode.NEVER)
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     static Path baseLocation;
 
-    @TempDir(cleanup = CleanupMode.NEVER)
+    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
     static Path tempDir;
 
     private final ObjectMother objectMother = new ObjectMother();

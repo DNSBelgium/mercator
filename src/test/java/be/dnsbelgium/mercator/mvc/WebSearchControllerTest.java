@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
@@ -59,7 +60,7 @@ public class WebSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-web"))
                 .andExpect(model().attributeExists( "visitIds"))
-                .andExpect(content().string(containsString("No visitIds found for web of")))
+                .andExpect(content().string(containsString("No web crawls found for <span>dnsbelgium.be</span>")))
         ;
 
     }
@@ -79,12 +80,13 @@ public class WebSearchControllerTest {
 
     @Test
     public void findByVisitId_doesNotfindVisitDetails() throws Exception {
-        when(webRepository.findByVisitId("idjsfijoze-er-ze")).thenReturn(Optional.empty());
+        String visitId = VisitIdGenerator.generate();
+        when(webRepository.findByVisitId(visitId)).thenReturn(Optional.empty());
         this.mockMvc
                 .perform(MockMvcRequestBuilders.get("/search/web/id")
-                        .param("visitId", "idjsfijoze-er-ze"))
+                        .param("visitId", visitId))
                 .andExpect(view().name("visit-details-web"))
-                .andExpect(content().string(containsString("No WEB crawl results found for visit-id <strong>idjsfijoze-er-ze</strong>")));
+                .andExpect(content().string(containsString("No web crawl results found for visit-id <strong>" + visitId + "</strong>")));
     }
 
 

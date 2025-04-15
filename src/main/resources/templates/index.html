@@ -9,9 +9,7 @@
         function search(moduleType) {
             const domainName = document.getElementById('textinput').value;
             const fetchLatest = document.getElementById('fetchLatest').checked;
-
-            const url = `/search/${moduleType}/${fetchLatest ? 'latest' : 'ids'}?domainName=${domainName}`;
-            window.location.href = url;
+            window.location.href = `/search/${moduleType}/${fetchLatest ? 'latest' : 'ids'}?domainName=${domainName}`;
         }
     </script>
 </head>

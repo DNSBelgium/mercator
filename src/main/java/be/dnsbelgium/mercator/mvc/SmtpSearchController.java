@@ -29,6 +29,7 @@ public class SmtpSearchController {
 
   @GetMapping("/search/smtp/latest")
   public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
+    model.addAttribute("domainName", domainName);
     Optional<SmtpVisit> smtpVisitResult = smtpRepository.findLatestResult(domainName);
     if (smtpVisitResult.isPresent()) {
       model.addAttribute("smtpVisitResult", smtpVisitResult.get());

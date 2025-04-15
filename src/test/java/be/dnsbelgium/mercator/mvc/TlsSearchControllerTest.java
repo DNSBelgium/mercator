@@ -56,7 +56,7 @@ public class TlsSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("search-results-tls"))
                 .andExpect(model().attributeExists( "visitIds"))
-                .andExpect(content().string(containsString("No TLS visits found for")))
+                .andExpect(content().string(containsString("No TLS crawls found for <span>dnsbelgium.be</span>")))
         ;
     }
 

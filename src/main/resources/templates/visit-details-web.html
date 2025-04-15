@@ -12,7 +12,9 @@
 
 <main class="container-fluid" layout:fragment="content">
     <h2 th:if="${webCrawlResult == null}">
-        No WEB crawl results found for visit-id <strong th:text="${visitId}"></strong>
+        <span th:if="${visitId != null}">No web crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+        <span th:if="${visitId == null && domainName != null}">No web crawl results found for <strong th:text="${domainName}"></strong></span>
+        <span th:if="${visitId == null && domainName == null}">No web crawl results found matching your input</span>
     </h2>
     <div class="container-fluid" th:if="${webCrawlResult != null}">
         <header>
@@ -102,14 +104,6 @@
                                     <td>
                                         HTTP response body
                                     </td>
-                                    <!--  TODO: ask which method to use for raw html, on same page or new page?
-                                    <td th:if="${not #strings.isEmpty(pageVisit.getResponseBody())}">
-                                        <details>
-                                            <summary>Click to see HTTP response body</summary>
-                                            <pre th:utext="${#strings.replace(pageVisit.getResponseBody(), '\n', '<br/>')}"></pre>
-                                        </details>
-                                    </td>
-                                    -->
                                     <td>
                                         <script>
                                             function renderRawHtml(html) {

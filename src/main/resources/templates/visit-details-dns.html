@@ -31,7 +31,11 @@
         }
     </script>
     <h2 th:if="${dnsCrawlResult == null or dnsCrawlResult.requests == null}">
-        No DNS crawl results found for visit-id <strong th:text="${visitId}"></strong>
+
+        <span th:if="${domainName != null}">                   No DNS crawl results found for <strong th:text="${domainName}"></strong></span>
+        <span th:if="${domainName == null && visitId != null}">No DNS crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+        <span th:if="${domainName == null && visitId == null}">No DNS crawl results found.</span>
+
     </h2>
     <div class="container-fluid" th:if="${dnsCrawlResult != null}">
         <header>
