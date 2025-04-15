@@ -465,19 +465,31 @@ public class ObjectMother {
     return SmtpVisit.builder()
             .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
             .hosts(List.of(smtpHost1(), smtpHost2()))
-            .domainName("example.com")
+            .domainName("example1.com")
             .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
             .crawlStatus(CrawlStatus.OK)
-            .numConversations(1)
+            .numConversations(2)
             .build();
   }
+
+  public SmtpVisit smtpVisit2() {
+    return SmtpVisit.builder()
+            .visitId("02HJR2Z6DZHS4G4P9X1BZSD4YV")
+            .hosts(List.of(smtpHost3(), smtpHost4()))
+            .domainName("example2.com")
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .crawlStatus(CrawlStatus.OK)
+            .numConversations(2)
+            .build();
+  }
+
 
   public SmtpConversation smtpConversation1() {
     return SmtpConversation.builder()
             .asn(12345L)
             .ip("192.168.1.1")
             .asnOrganisation("Example ISP")
-            .banner("220 mail.example.com ESMTP Postfix")
+            .banner("110 mail.example.com ESMTP Postfix")
             .connectionTimeMs(150)
             .connectReplyCode(220)
             .country("BE")
@@ -496,7 +508,7 @@ public class ObjectMother {
   public SmtpConversation smtpConversation2() {
     return SmtpConversation.builder()
             .asn(12345L)
-            .ip("192.168.1.1")
+            .ip("192.168.1.2")
             .asnOrganisation("Example ISP")
             .banner("220 mail.example.com ESMTP Postfix")
             .connectionTimeMs(150)
@@ -513,6 +525,49 @@ public class ObjectMother {
             .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
             .build();
   }
+
+  public SmtpConversation smtpConversation3() {
+    return SmtpConversation.builder()
+            .asn(12345L)
+            .ip("192.168.1.3")
+            .asnOrganisation("Example ISP")
+            .banner("330 mail.example.com ESMTP Postfix")
+            .connectionTimeMs(150)
+            .connectReplyCode(220)
+            .country("BE")
+            .ipVersion(4)
+            .startTlsOk(true)
+            .connectOK(true)
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .errorMessage(null)
+            .software("Postfix")
+            .softwareVersion("3.5.8")
+            .startTlsReplyCode(250)
+            .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
+            .build();
+  }
+
+  public SmtpConversation smtpConversation4() {
+    return SmtpConversation.builder()
+            .asn(12345L)
+            .ip("192.168.1.4")
+            .asnOrganisation("Example ISP")
+            .banner("440 mail.example.com ESMTP Postfix")
+            .connectionTimeMs(150)
+            .connectReplyCode(220)
+            .country("BE")
+            .ipVersion(4)
+            .startTlsOk(true)
+            .connectOK(true)
+            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+            .errorMessage(null)
+            .software("Postfix")
+            .softwareVersion("3.5.8")
+            .startTlsReplyCode(400)
+            .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
+            .build();
+  }
+
 
   public SmtpHost smtpHost1() {
     return SmtpHost.builder()
@@ -533,6 +588,28 @@ public class ObjectMother {
             .conversation(smtpConversation2())
             .build();
   }
+
+  public SmtpHost smtpHost3() {
+    return SmtpHost.builder()
+            .id("host-345")
+            .fromMx(true)
+            .hostName("mail4.example.com")
+            .priority(110)
+            .conversation(smtpConversation3())
+            .build();
+  }
+
+  public SmtpHost smtpHost4() {
+    return SmtpHost.builder()
+            .id("host-455")
+            .fromMx(true)
+            .hostName("mail4.example.com")
+            .priority(110)
+            .conversation(smtpConversation4())
+            .build();
+  }
+
+
 
 
   public SmtpVisit smtpVisitWithNullValues() {

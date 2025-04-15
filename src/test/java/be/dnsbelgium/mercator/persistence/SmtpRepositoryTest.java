@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.persistence;
 
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
@@ -78,9 +79,9 @@ class SmtpRepositoryTest {
 
         repository.storeResults(jsonFile.toString());
 
-        List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example.com");
-        List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example.com");
-        Optional<SmtpVisit> smtpVisitResultByLatest = repository.findLatestResult("example.com");
+        List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example1.com");
+        List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example1.com");
+        Optional<SmtpVisit> smtpVisitResultByLatest = repository.findLatestResult("example1.com");
         Optional<SmtpVisit> smtpVisitResultById = repository.findByVisitId("01HJR2Z6DZHS4G4P9X1BZSD4YV");
 
         logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
@@ -105,6 +106,49 @@ class SmtpRepositoryTest {
         assertThat(smtpVisitResults.getFirst().getHosts().get(1).getConversation().toString()).isNotEmpty();
         logger.info(smtpVisitResults.getFirst().getHosts().get(0).getConversation().getTimestamp().toString());
         logger.info(smtpVisitResults.getFirst().getTimestamp().toString());
+    }
+
+    @Test
+    public void findShouldReturnCorrectSmtpVisitResultsWhenMultipleWithMultipleHostsArePresent() throws IOException {
+        SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
+        SmtpVisit smtpVisitResult2 = objectMother.smtpVisit2();
+
+        File jsonFile = tempDir.resolve("smtpVisitResult1.json").toFile();
+        logger.info("jsonFile = {}", jsonFile);
+
+        ObjectWriter jsonWriter = TestUtils.jsonWriter();
+        jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1, smtpVisitResult2));
+
+        repository.storeResults(jsonFile.toString());
+
+        // when
+        List<SmtpVisit> smtpVisitResults1 = repository.findByDomainName("example1.com");
+        List<SmtpVisit> smtpVisitResults2 = repository.findByDomainName("example2.com");
+
+        // then
+        assertThat(smtpVisitResults1.size()).isEqualTo(1);
+        assertThat(smtpVisitResults2.size()).isEqualTo(1);
+
+        List<String> hostIdsVisitResultts1 = new ArrayList<>();
+
+        for (SmtpHost smtpHost : smtpVisitResults1.getFirst().getHosts()) {
+            hostIdsVisitResultts1.add(smtpHost.getId());
+
+        }
+
+        logger.info("ids found (there should be 2): {}",hostIdsVisitResultts1);
+        assertThat(hostIdsVisitResultts1.size()).isEqualTo(2);
+        assertThat(smtpVisitResults1.getFirst().getHosts().size()).isEqualTo(2);
+        assertThat(smtpVisitResults2.getFirst().getHosts().size()).isEqualTo(2);
+
+        assertThat(smtpVisitResults1.getFirst().getHosts().getFirst().getConversation().toString()).isNotEmpty();
+        assertThat(smtpVisitResults2.getFirst().getHosts().getFirst().getConversation().toString()).isNotEmpty();
+
+
+
+
+
+
     }
 
 }
