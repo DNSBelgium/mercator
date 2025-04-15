@@ -60,7 +60,7 @@ public class WebJobConfig {
   @Bean
   @StepScope
   public FlatFileItemReader<VisitRequest> itemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
-    logger.info("creating FlatFileItemReader for resource {}", resource);
+    logger.info("WebJobConfig: creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
             .resource(resource)

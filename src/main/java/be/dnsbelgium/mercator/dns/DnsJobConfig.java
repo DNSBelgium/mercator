@@ -45,7 +45,7 @@ public class DnsJobConfig {
   @StepScope
   @SuppressWarnings({"SpringElInspection"})
   public FlatFileItemReader<VisitRequest> dnsItemReader(@Value("#{jobParameters[inputFile]}") Resource resource) {
-    logger.info("creating FlatFileItemReader for resource {}", resource);
+    logger.info("dnsItemReader: creating FlatFileItemReader for resource {}", resource);
     return new FlatFileItemReaderBuilder<VisitRequest>()
             .name("itemReader")
             .resource(resource)
@@ -66,7 +66,7 @@ public class DnsJobConfig {
   @ConditionalOnProperty(name = "job.dns.enabled", havingValue = "true")
   public Job dnsJob(JobRepository jobRepository,
                     PlatformTransactionManager transactionManager,
-                    ItemReader<VisitRequest> itemReader,
+                    ItemReader<VisitRequest> dnsItemReader,
                     DnsCrawlService dnsCrawler,
                     ItemWriter<DnsCrawlResult> itemWriter) {
     logger.info("creating dnsJob");
@@ -74,7 +74,7 @@ public class DnsJobConfig {
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, DnsCrawlResult>chunk(chunkSize, transactionManager)
-            .reader(itemReader)
+            .reader(dnsItemReader)
             .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
             .throttleLimit(throttleLimit)
             .processor(dnsCrawler)
