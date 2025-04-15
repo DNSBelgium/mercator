@@ -47,7 +47,7 @@ public class TlsVisit {
     if (fullScan != null) {
       this.hostNameMatchesCertificate = fullScan.isHostNameMatchesCertificate();
       this.chainTrustedByJavaPlatform = fullScan.isChainTrustedByJavaPlatform();
-      this.certificateChain = fullScan.getCertificateChain().get();
+      this.certificateChain = fullScan.getCertificateChain().orElse(List.of());
       if (fullScan.getPeerCertificate().isPresent()) {
         certificate = fullScan.getPeerCertificate().get();
       }
