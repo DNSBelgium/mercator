@@ -79,6 +79,29 @@ java -Dspring.profiles.active=batch -jar target/mercator-*-SNAPSHOT.jar --in=./i
 
 >[!NOTE]
 > You need to run `mvn package` first.
+> 
+
+## Running duckdb commands
+
+Sometimes you want to set up some duckdb stuff before you run Mercator batch or frontend.
+E.g. create a persistent secret or install extensions.
+
+You can do this by running the application with `duckdb` as first argument
+
+```shell
+# build the application
+mvn clean package -DskipTests -Dsnyk.skip=true\n
+
+# run sql script from file
+#java -jar $(find target -name '*.jar') duckdb < install.sql
+
+# run ad hoc queries
+echo "select 'bar' as foo" | java -jar $(find target -name '*.jar') duckdb
+# install extensions
+echo "install aws; install httpfs;" | java -jar $(find target -name '*.jar') duckdb
+# create s3 secret
+echo "create or replace persistent secret (type s3, provider credential_chain)" | java -jar $(find target -name '*.jar') duckdb
+```
 
 ## Java 23 & Lombok
 

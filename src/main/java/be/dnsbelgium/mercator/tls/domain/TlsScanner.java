@@ -65,7 +65,7 @@ public class TlsScanner {
    * (-Djava.security.properties=/path/to/custom/security.properties)
    */
   public static void allowOldAlgorithms() {
-    logger.info("setting security property \"jdk.tls.disabledAlgorithms\" to \"NULL\"");
+    logger.debug("setting security property \"jdk.tls.disabledAlgorithms\" to \"NULL\"");
     Security.setProperty("jdk.tls.disabledAlgorithms", "NULL");
   }
 
