@@ -54,8 +54,12 @@ public class MercatorApplication {
 
   public static void main(String[] args) throws IOException {
     if (args.length > 0 && "duckdb".equals(args[0])) {
-      String query = new String(System.in.readAllBytes());
-      runDuck(query);
+      if (args.length > 1) {
+        runDuck(args[1]);
+      } else {
+        String query = new String(System.in.readAllBytes());
+        runDuck(query);
+      }
       System.exit(0);
     }
 
