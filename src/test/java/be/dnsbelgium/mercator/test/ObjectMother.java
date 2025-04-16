@@ -338,8 +338,8 @@ public class ObjectMother {
   @NotNull
   private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
     return new TlsCrawlResult(visitId, domainName, List.of(
-            TlsVisit.fromCache(visitId, domainName, domainName, fullScanEntity(domainName), scan),
-            TlsVisit.fromCache(visitId, domainName, "www." + domainName, fullScanEntity(domainName), scan)
+            TlsVisit.fromCache(visitId, domainName, domainName, started, fullScanEntity(domainName), scan),
+            TlsVisit.fromCache(visitId, domainName, "www." + domainName, started, fullScanEntity(domainName), scan)
     ));
   }
 
@@ -368,6 +368,7 @@ public class ObjectMother {
     Certificate certificate2 = Certificate.from(readTestCertificate("digicert-ca.pem"));
     SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_3, new InetSocketAddress("cll.be", 443));
     singleVersionScan.setConnectOK(true);
+    singleVersionScan.setHandshakeOK(true);
     singleVersionScan.setPeerCertificate(certificate);
     singleVersionScan.setCertificateChain(List.of(certificate, certificate2));
     return singleVersionScan;
@@ -380,7 +381,7 @@ public class ObjectMother {
             .ip("10.20.30.40")
             .serverName(serverName)
             .connectOk(true)
-            .supportTls_1_3(false)
+            .supportTls_1_3(true)
             .supportTls_1_2(true)
             .supportTls_1_1(true)
             .supportTls_1_0(true)
@@ -430,17 +431,10 @@ public class ObjectMother {
 
   }
 
-  private TlsCrawlResult getTlsCrawlResultWithNullValues() {
-    return new TlsCrawlResult(null, null, List.of(
-            TlsVisit.fromCache(null, null, null, fullScanEntity(""), singleVersionScanWithNullValues()),
-            TlsVisit.fromCache(null, null,  null, fullScanEntity(""), singleVersionScanWithNullValues())
-    ));
-  }
-
   private TlsCrawlResult getTlsCrawlResultWithFullScanEntityNull(SingleVersionScan scan) {
     return new TlsCrawlResult("visit02", "example.be", List.of(
-            TlsVisit.fromCache("visit02", "example.be", "example.be", fullScanEntityWithNullValues(), scan),
-            TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", fullScanEntityWithNullValues(), scan)
+            TlsVisit.fromCache("visit02", "example.be", "example.be", started, fullScanEntityWithNullValues(), scan),
+            TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", started, fullScanEntityWithNullValues(), scan)
     ));
   }
 
@@ -449,17 +443,18 @@ public class ObjectMother {
   }
 
   public TlsCrawlResult tlsCrawlResultWithNullValues()  {
-    return getTlsCrawlResultWithNullValues();
+    return new TlsCrawlResult(null, null, List.of(
+            TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
+            TlsVisit.fromCache(null, null,  null, started, fullScanEntity(""), singleVersionScanWithNullValues())
+    ));
   }
+
   SingleVersionScan singleVersionScanWithNullValues()  {
     SingleVersionScan singleVersionScan = SingleVersionScan.of(null, new InetSocketAddress("", 0));
     singleVersionScan.setConnectOK(false);
     singleVersionScan.setPeerCertificate(null);
     return singleVersionScan;
   }
-
-
-
 
   public SmtpVisit smtpVisit1() {
     return SmtpVisit.builder()

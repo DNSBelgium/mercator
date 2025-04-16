@@ -1,8 +1,6 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 
 import java.time.Instant;
@@ -13,7 +11,6 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor(force = true)
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class TlsVisit {
 
   private final String visitId;
@@ -33,13 +30,14 @@ public class TlsVisit {
           String visitId,
           String domainName,
           String hostName,
+          Instant crawlTimestamp,
           FullScanEntity fullScanEntity,
           FullScan fullScan,
           SingleVersionScan singleVersionScan
   ) {
     this.visitId = visitId;
     this.domainName = domainName;
-    this.crawlTimestamp = Instant.now();
+    this.crawlTimestamp = crawlTimestamp;
     this.fullScanEntity = fullScanEntity;
     this.hostName = hostName;
     Certificate certificate = null;
@@ -52,14 +50,18 @@ public class TlsVisit {
         certificate = fullScan.getPeerCertificate().get();
       }
     } else {
-      this.hostNameMatchesCertificate = (singleVersionScan != null) && singleVersionScan.isHostNameMatchesCertificate();
-      this.chainTrustedByJavaPlatform = (singleVersionScan != null) && singleVersionScan.isChainTrustedByJavaPlatform();
+      if (singleVersionScan == null) {
+        throw new IllegalArgumentException("Either fullScan or singleVersionScan must not be null");
+      }
+      this.hostNameMatchesCertificate = singleVersionScan.isHostNameMatchesCertificate();
+      this.chainTrustedByJavaPlatform = singleVersionScan.isChainTrustedByJavaPlatform();
       this.certificateChain = Optional.ofNullable(singleVersionScan.getCertificateChain()).orElse(List.of());
 
-      if (singleVersionScan != null && singleVersionScan.getPeerCertificate() != null) {
+      if (singleVersionScan.getPeerCertificate() != null) {
         certificate = singleVersionScan.getPeerCertificate();
       }
     }
+
     if (certificate != null) {
       this.certificateTooSoon = Instant.now().isBefore(certificate.getNotBefore());
       this.certificateExpired = Instant.now().isAfter(certificate.getNotAfter());
@@ -67,25 +69,27 @@ public class TlsVisit {
       this.certificateTooSoon = false;
       this.certificateExpired = false;
     }
-    if (this.certificateChain != null) {
-      this.certificateChainFingerprints = this.certificateChain.stream().map(Certificate::getSha256Fingerprint).toList();
-    } else {
-      this.certificateChainFingerprints = List.of();
-    }
+    this.certificateChainFingerprints = this.certificateChain.stream().map(Certificate::getSha256Fingerprint).toList();
   }
 
   public static TlsVisit fromCache(
           String visitId,
           String domainName,
           String hostName,
+          Instant crawlTimestamp,
           FullScanEntity fullScanEntity,
           SingleVersionScan singleVersionScan) {
-    return new TlsVisit(visitId, domainName, hostName, fullScanEntity, null, singleVersionScan);
+    return new TlsVisit(visitId, domainName, hostName, crawlTimestamp, fullScanEntity, null, singleVersionScan);
   }
 
-  public static TlsVisit fromScan(String visitId, String domainName, String hostName, FullScan fullScan) {
+  public static TlsVisit fromScan(
+          String visitId,
+          String domainName,
+          String hostName,
+          Instant crawlTimestamp,
+          FullScan fullScan) {
     FullScanEntity fullScanEntity = convert(fullScan);
-    return new TlsVisit(visitId, domainName, hostName, fullScanEntity, fullScan, null);
+    return new TlsVisit(visitId, domainName, hostName, crawlTimestamp, fullScanEntity, fullScan, null);
   }
 
   public static FullScanEntity convert(FullScan fullScan) {

@@ -26,6 +26,7 @@ with tls as (
                 ip                          ::varchar       as ip,
                 server_name                 ::varchar       as server_name,
                 connect_ok                  ::bool          as connect_ok,
+                support_tls_1_3             ::bool          as support_tls_1_3,
                 support_tls_1_2             ::bool          as support_tls_1_2,
                 support_tls_1_1             ::bool          as support_tls_1_1,
                 support_tls_1_0             ::bool          as support_tls_1_0,

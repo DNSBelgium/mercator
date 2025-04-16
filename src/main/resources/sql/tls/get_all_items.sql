@@ -16,6 +16,7 @@ with visits as (
              ip: ip,
              server_name: server_name,
              connect_ok: connect_ok,
+             support_tls_1_3: support_tls_1_3,
              support_tls_1_2: support_tls_1_2,
              support_tls_1_1: support_tls_1_1,
              support_tls_1_0: support_tls_1_0,

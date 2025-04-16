@@ -82,11 +82,22 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
         if (version != null) {
           singleVersionScan = tlsScanner.scan(version, hostName);
         }
-        return TlsVisit.fromCache(visitRequest.getVisitId(), visitRequest.getDomainName(), hostName, resultFromCache.get(), singleVersionScan);
+        return TlsVisit.fromCache(
+                visitRequest.getVisitId(),
+                visitRequest.getDomainName(),
+                hostName,
+                Instant.now(),
+                resultFromCache.get(),
+                singleVersionScan);
       }
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
-    return TlsVisit.fromScan(visitRequest.getVisitId(), visitRequest.getDomainName(), hostName, fullScan);
+    return TlsVisit.fromScan(
+            visitRequest.getVisitId(),
+            visitRequest.getDomainName(),
+            hostName,
+            Instant.now(),
+            fullScan);
   }
 
   private FullScan scanIfNotBlacklisted(InetSocketAddress address) {

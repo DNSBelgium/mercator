@@ -3,7 +3,6 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,39 +19,45 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TlsRepositoryTest {
 
   @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-  static Path tempDir;
+  Path tempDir;
 
   @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-  static Path baseLocation;
+  Path baseLocation;
 
   private final ObjectMother objectMother = new ObjectMother();
   private static final Logger logger = LoggerFactory.getLogger(TlsRepositoryTest.class);
 
   @Test
+  public void pojo_to_parquet_and_back() throws IOException {
+    TlsRepository repository = makeRepository();
+    TlsCrawlResult input = objectMother.tlsCrawlResult2();
+    String path = saveToJson(List.of(input), "tls.json");
+    repository.storeResults(path);
+    TlsCrawlResult output = repository.findByVisitId(input.getVisitId()).orElseThrow();
+    assertThat(output)
+            .usingRecursiveComparison()
+            .ignoringFields("visits.certificateChain")
+            .isEqualTo(input);
+  }
+
+  @Test
   public void testAll() throws IOException {
-    TlsRepository repository = new TlsRepository(TestUtils.jsonReader(), baseLocation.toString());
+    TlsRepository repository = makeRepository();
     // simulate what the tlsJob does:
     TlsCrawlResult result1 = objectMother.tlsCrawlResult1();
     TlsCrawlResult result2 = objectMother.tlsCrawlResult2();
     TlsCrawlResult result3 = objectMother.tlsCrawlResult3();
-    File jsonFile = tempDir.resolve("tls.json").toFile();
-    ObjectWriter jsonWriter = TestUtils.jsonWriter();
-    jsonWriter.writeValue(jsonFile, List.of(result1, result2, result3));
-    String jsonLocation = jsonFile.getAbsolutePath();
-    logger.info("jsonLocation = {}", jsonLocation);
-    repository.storeResults(jsonLocation);
-    String json = FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
-    logger.info("json = \n\n {}", json);
 
-    logger.info("jsonWriter = {}", jsonWriter);
+    String jsonLocation = saveToJson(List.of(result1, result2, result3), "tls-data.json");
+    repository.storeResults(jsonLocation);
 
     List<TlsCrawlResult> byDomainName = repository.findByDomainName("example.be");
-
     assertEquals(2, byDomainName.size());
     assertEquals(Set.of("example.be"), byDomainName.stream().map(TlsCrawlResult::getDomainName).collect(Collectors.toSet()));
 
@@ -65,6 +70,20 @@ class TlsRepositoryTest {
 
     Optional<TlsCrawlResult> latestResult = repository.findLatestResult("example.be");
     assertTrue(latestResult.isPresent());
+  }
+
+  private TlsRepository makeRepository() {
+    return new TlsRepository(TestUtils.jsonReader(), baseLocation.toString());
+  }
+
+  private String saveToJson(List<TlsCrawlResult> crawlResults, String fileName) throws IOException {
+    File jsonFile = tempDir.resolve(fileName).toFile();
+    TestUtils.jsonWriter().writeValue(jsonFile, crawlResults);
+    String json = FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+    logger.info("json = \n {}", json);
+    String jsonLocation = jsonFile.getAbsolutePath();
+    logger.info("jsonLocation = {}", jsonLocation);
+    return jsonLocation;
   }
 
 }
