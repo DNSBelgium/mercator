@@ -23,15 +23,15 @@
         <table>
             <tbody>
             <tr>
-                <th>visitId</th>
+                <th>Visit id</th>
                 <td th:text="${webCrawlResult.visitId}"></td>
             </tr>
             <tr>
-                <th style="width: 30em">Started</th>
+                <th style="width: 30em">Crawl started</th>
                 <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlStarted)}"></td>
             </tr>
             <tr>
-                <th>Finished</th>
+                <th>Crawl finished</th>
                 <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlFinished)}"></td>
             </tr>
             <tr>
@@ -61,14 +61,14 @@
             </tr>
             <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${webCrawlResult.getDetectedTechnologies()}, 4)}"></tr>
             <tr>
-                <th>Number of visited URLs</th>
+                <th>Number of visited URL's</th>
                 <td th:text="${webCrawlResult.visitedUrls != null ? webCrawlResult.visitedUrls.size() : 0}"></td>
             </tr>
             <tr>
                 <th>Number of pages with html features</th>
                 <td th:text="${webCrawlResult.htmlFeatures != null ? webCrawlResult.htmlFeatures.size() : 0}"></td>
             </tr>
-            <tr th:replace="~{fragments/general :: listDisplay('Visited Urls', ${webCrawlResult.getVisitedUrls()}, 4)}"></tr>
+            <tr th:replace="~{fragments/general :: listDisplay('Visited URL\'s', ${webCrawlResult.getVisitedUrls()}, 4)}"></tr>
             <tr>
                 <th>Page visits</th>
                 <td th:if="${webCrawlResult.pageVisits == null or webCrawlResult.pageVisits.isEmpty()}">None
@@ -77,27 +77,23 @@
                     <details th:if="${webCrawlResult.pageVisits != null and !webCrawlResult.pageVisits.isEmpty()}">
                         <summary>Click to show page visits</summary>
                         <div th:each="pageVisit, iterStat : ${webCrawlResult.getPageVisits()}">
-                            <h4>Pagevisit #[[${iterStat.count}]]</h4>
+                            <h4>Page visit for url <span th:text="${pageVisit.url}"></span></h4>
                             <table>
                                 <tbody>
                                 <tr>
-                                    <th>URL</th>
-                                    <td th:text="${pageVisit.url}"></td>
-                                </tr>
-                                <tr>
-                                    <th>path</th>
+                                    <th>Path</th>
                                     <td th:text="${pageVisit.path}"></td>
                                 </tr>
                                 <tr>
-                                    <th>crawl started</th>
+                                    <th>Crawl started</th>
                                     <td th:text="${@dateTimeUtil.format(pageVisit.crawlStarted)}"></td>
                                 </tr>
                                 <tr>
-                                    <th>crawl finished</th>
+                                    <th>Crawl finished</th>
                                     <td th:text="${@dateTimeUtil.format(pageVisit.crawlFinished)}"></td>
                                 </tr>
                                 <tr>
-                                    <th>status code</th>
+                                    <th>Status code</th>
                                     <td th:text="${pageVisit.statusCode}"></td>
                                 </tr>
                                 <tr>
@@ -152,7 +148,7 @@
                                 </tr>
                                 <tr th:replace="~{fragments/general :: listDisplay('headers', ${pageVisit.getHeaders()}, 4)}"></tr>
                                 <tr>
-                                    <td>Content Length</td>
+                                    <td>Content length</td>
                                     <td th:text="${pageVisit.getContentLength()}"></td>
                                 </tr>
                                 </tbody>
@@ -172,7 +168,7 @@
                 <thead></thead>
                 <tbody>
                 <tr>
-                    <td>title</td>
+                    <td>Title</td>
                     <td th:text="${features.title}"></td>
                 </tr>
                 <tr>
@@ -181,55 +177,55 @@
                 </tr>
                 <tr th:replace="~{fragments/general :: textDisplay('Features body text', ${features.body_text}, 200)}"></tr>
                 <tr>
-                    <td>nb_images</td>
+                    <td># images</td>
                     <td th:text="${features.nb_imgs}"></td>
                 </tr>
                 <tr>
-                    <td>Internal links</td>
+                    <td># internal links</td>
                     <td th:text="${features.nb_links_int}"></td>
                 </tr>
                 <tr>
-                    <td>External links</td>
+                    <td># ixternal links</td>
                     <td th:text="${features.nb_links_ext}"></td>
                 </tr>
                 <tr>
-                    <td>Email links</td>
+                    <td># email links</td>
                     <td th:text="${features.nb_links_email}"></td>
                 </tr>
                 <tr>
-                    <td>Telephone links</td>
+                    <td># telephone links</td>
                     <td th:text="${features.nb_links_tel}"></td>
                 </tr>
                 <tr>
-                    <td>Inputs of type txt</td>
+                    <td># inputs of type txt</td>
                     <td th:text="${features.nb_input_txt}"></td>
                 </tr>
                 <tr>
-                    <td>Buttons</td>
+                    <td># buttons</td>
                     <td th:text="${features.nb_button}"></td>
                 </tr>
                 <tr>
-                    <td>Meta descriptions</td>
+                    <td># meta descriptions</td>
                     <td th:text="${features.nb_meta_desc}"></td>
                 </tr>
                 <tr>
-                    <td>Meta keywords</td>
+                    <td># meta keywords</td>
                     <td th:text="${features.nb_meta_keyw}"></td>
                 </tr>
                 <tr>
-                    <td>Numerical strings</td>
+                    <td># numerical strings</td>
                     <td th:text="${features.nb_numerical_strings}"></td>
                 </tr>
                 <tr>
-                    <td>Tags</td>
+                    <td># tags</td>
                     <td th:text="${features.nb_tags}"></td>
                 </tr>
                 <tr>
-                    <td>Words</td>
+                    <td># words</td>
                     <td th:text="${features.nb_words}"></td>
                 </tr>
                 <tr>
-                    <td>Letters</td>
+                    <td># letters</td>
                     <td th:text="${features.nb_letters}"></td>
                 </tr>
                 <tr>
@@ -263,11 +259,11 @@
                 </tr>
                 <tr th:replace="~{fragments/general :: listDisplay('Vimeo links', ${features.vimeo_links}, 4)}"></tr>
                 <tr>
-                    <td>Number of currency names</td>
+                    <td># number of currency names</td>
                     <td th:text="${features.nb_currency_names}"></td>
                 </tr>
                 <tr>
-                    <td>Distinct currencies</td>
+                    <td># distinct currencies</td>
                     <td th:text="${features.nb_distinct_currencies}"></td>
                 </tr>
                 <tr>
@@ -299,7 +295,7 @@
                     <td th:text="${features.nb_distinct_words_in_title}"></td>
                 </tr>
                 <tr>
-                    <td>Distinct hosts in url's</td>
+                    <td># distinct hosts in url's</td>
                     <td th:text="${features.nb_distinct_hosts_in_urls}"></td>
                 </tr>
                 <tr>
@@ -307,7 +303,7 @@
                     <td th:text="${features.body_text_language}"></td>
                 </tr>
                 <tr>
-                    <td>Language</td>
+                    <td>Language 2</td>
                     <td th:text="${features.body_text_language_2}"></td>
                 </tr>
                 <tr th:replace="~{fragments/general :: listDisplay('External hosts', ${features.external_hosts}, 4)}"></tr>

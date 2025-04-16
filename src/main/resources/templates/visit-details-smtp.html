@@ -21,19 +21,19 @@
     <table>
       <tbody>
       <tr>
-        <th>visitId</th>
+        <th>Visit Id</th>
         <td th:text="${smtpVisitResult.visitId}"></td>
       </tr>
       <tr>
-        <th>timestamp</th>
+        <th>Timestamp</th>
         <td th:text="${@dateTimeUtil.format(smtpVisitResult.timestamp)}"></td>
       </tr>
       <tr>
-        <th>numConversations</th>
+        <th>Num conversations</th>
         <td th:text="${smtpVisitResult.numConversations}"></td>
       </tr>
       <tr>
-        <th>crawlStatus</th>
+        <th>Crawl status</th>
         <td th:text="${smtpVisitResult.crawlStatus}"></td>
       </tr>
       </tbody>
@@ -44,15 +44,15 @@
       <table>
         <tbody>
         <tr>
-          <th>from mx</th>
+          <th>From mx</th>
           <td th:text="${host.fromMx}"></td>
         </tr>
         <tr>
-          <th>host name</th>
+          <th>Host name</th>
           <td th:text="${host.hostName}"></td>
         </tr>
         <tr>
-          <th>priority</th>
+          <th>Priority</th>
           <td th:text="${host.priority}"></td>
         </tr>
         </tbody>
@@ -63,44 +63,44 @@
           <table th:if="${host.conversation != null}">
             <tbody>
             <tr>
-              <th>ip</th>
+              <th>Ip</th>
               <td th:text="${host.conversation.ip}"></td>
             </tr>
             <tr>
-              <th>asn</th>
+              <th>Asn</th>
               <td th:text="${host.conversation.asn}"></td>
             </tr>
             <tr>
-              <th>country</th>
+              <th>Country</th>
               <td th:text="${host.conversation.country}"></td>
             </tr>
             <tr>
-              <th>asnOrganisation</th>
+              <th>Asn organisation</th>
               <td th:text="${host.conversation.asnOrganisation}"></td>
             </tr>
             <tr>
-              <th>banner</th>
+              <th>Banner</th>
               <td th:text="${host.conversation.banner}"></td>
             </tr>
             <tr>
-              <th>connectOK</th>
-              <td th:text="${host.conversation.connectOK}"></td>
+              <th>Connect ok</th>
+              <td th:text="${host.conversation.connectOK} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
-              <th>connectReplyCode</th>
+              <th>Connect reply code</th>
               <td th:text="${host.conversation.connectReplyCode}"></td>
             </tr>
             <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${host.conversation.getSupportedExtensions()}, 4)}"></tr>
             <tr>
-              <th>ipVersion</th>
+              <th>Ip version</th>
               <td th:text="${host.conversation.ipVersion}"></td>
             </tr>
             <tr>
-              <th>startTlsOk</th>
-              <td th:text="${host.conversation.startTlsOk}"></td>
+              <th>Start tls ok</th>
+              <td th:text="${host.conversation.startTlsOk} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
-              <th>startTlsReplyCode</th>
+              <th>Start tls reply code</th>
               <td th:text="${host.conversation.startTlsReplyCode}"></td>
             </tr>
             <tr th:replace="~{fragments/general :: textDisplay('Error message', ${host.conversation.getErrorMessage()}, 200)}"></tr>
@@ -110,15 +110,15 @@
               <td th:text="${host.conversation.connectionTimeMs} + ' ms'"></td>
             </tr>
             <tr>
-              <th>software</th>
+              <th>Software</th>
               <td th:text="${host.conversation.software}"></td>
             </tr>
             <tr>
-              <th>softwareVersion</th>
+              <th>Software version</th>
               <td th:text="${host.conversation.softwareVersion}"></td>
             </tr>
             <tr>
-              <th>timestamp</th>
+              <th>Timestamp</th>
               <td th:text="${@dateTimeUtil.format(host.conversation.timestamp)}"></td>
             </tr>
             </tbody>

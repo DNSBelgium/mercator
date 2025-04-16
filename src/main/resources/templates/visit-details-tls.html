@@ -28,15 +28,15 @@
       <table>
         <tbody>
         <tr>
-          <th> crawl timestamp</th>
+          <th>Crawl timestamp</th>
           <td th:text="${@dateTimeUtil.format(result.crawlTimestamp)}"></td>
         </tr>
         <tr>
           <th>Host name matches certificate</th>
-          <td th:text="${result.hostNameMatchesCertificate}"></td>
+          <td th:text="${result.hostNameMatchesCertificate} ? 'Yes' : 'No'"></td>
         </tr>
         <tr>
-          <th>scan timestamp</th>
+          <th>Scan timestamp</th>
           <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlTimestamp)}"></td>
         </tr>
         <tr>
@@ -49,14 +49,14 @@
         </tr>
         <tr>
           <th>Scan connect ok</th>
-          <td th:text="${result.getFullScanEntity().connectOk}"></td>
+          <td th:text="${result.getFullScanEntity().connectOk} ? 'Yes' : 'No'"></td>
         </tr>
         <tr>
-          <th>certificate too soon</th>
-          <td th:text="${result.certificateTooSoon}"></td>
+          <th>Certificate too soon</th>
+          <td th:text="${result.certificateTooSoon} ? 'Yes' : 'No'"></td>
         </tr>
         <tr>
-          <th>leaf certificate</th>
+          <th>Leaf certificate</th>
           <td th:text="${result?.certificateChainFingerprints != null and result.certificateChainFingerprints.size() > 0 ? result.certificateChainFingerprints[0] : 'No Fingerprint'}"></td>
         </tr>
         <tr th:replace="~{fragments/general :: listDisplay('Certificate chain', ${result.certificateChainFingerprints}, 4)}"></tr>
