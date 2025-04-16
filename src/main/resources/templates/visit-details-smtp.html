@@ -29,7 +29,7 @@
         <td th:text="${@dateTimeUtil.format(smtpVisitResult.timestamp)}"></td>
       </tr>
       <tr>
-        <th>Num conversations</th>
+        <th># conversations</th>
         <td th:text="${smtpVisitResult.numConversations}"></td>
       </tr>
       <tr>
@@ -44,8 +44,8 @@
       <table>
         <tbody>
         <tr>
-          <th>From mx</th>
-          <td th:text="${host.fromMx}"></td>
+          <th>From MX</th>
+          <td th:text="${host.fromMx} "></td>
         </tr>
         <tr>
           <th>Host name</th>
@@ -63,11 +63,11 @@
           <table th:if="${host.conversation != null}">
             <tbody>
             <tr>
-              <th>Ip</th>
+              <th>IP</th>
               <td th:text="${host.conversation.ip}"></td>
             </tr>
             <tr>
-              <th>Asn</th>
+              <th>ASN</th>
               <td th:text="${host.conversation.asn}"></td>
             </tr>
             <tr>
@@ -75,7 +75,7 @@
               <td th:text="${host.conversation.country}"></td>
             </tr>
             <tr>
-              <th>Asn organisation</th>
+              <th>ASN organisation</th>
               <td th:text="${host.conversation.asnOrganisation}"></td>
             </tr>
             <tr>
@@ -83,7 +83,7 @@
               <td th:text="${host.conversation.banner}"></td>
             </tr>
             <tr>
-              <th>Connect ok</th>
+              <th>Connect OK</th>
               <td th:text="${host.conversation.connectOK} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
@@ -92,15 +92,15 @@
             </tr>
             <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${host.conversation.getSupportedExtensions()}, 4)}"></tr>
             <tr>
-              <th>Ip version</th>
+              <th>IP version</th>
               <td th:text="${host.conversation.ipVersion}"></td>
             </tr>
             <tr>
-              <th>Start tls ok</th>
+              <th>START_TLS OK</th>
               <td th:text="${host.conversation.startTlsOk} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
-              <th>Start tls reply code</th>
+              <th>START_TLS reply code</th>
               <td th:text="${host.conversation.startTlsReplyCode}"></td>
             </tr>
             <tr th:replace="~{fragments/general :: textDisplay('Error message', ${host.conversation.getErrorMessage()}, 200)}"></tr>
