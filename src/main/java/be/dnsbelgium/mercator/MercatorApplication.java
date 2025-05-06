@@ -32,6 +32,7 @@ public class MercatorApplication {
   public static void runDuck(String query) {
     try (Connection conn = DriverManager.getConnection("jdbc:duckdb:");
          Statement stmt = conn.createStatement()) {
+      //noinspection SqlSourceToSinkFlow
       if (!stmt.execute(query)) {
         return;
       }

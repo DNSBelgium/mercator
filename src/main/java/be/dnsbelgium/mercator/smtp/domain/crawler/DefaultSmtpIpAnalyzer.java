@@ -17,7 +17,6 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Component
 public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private final SmtpConversationFactory conversationFactory;
@@ -27,7 +26,7 @@ public class DefaultSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private static final Logger logger = getLogger(DefaultSmtpIpAnalyzer.class);
 
-  @Autowired
+
   public DefaultSmtpIpAnalyzer(
     MeterRegistry meterRegistry,
     SmtpConversationFactory conversationFactory,

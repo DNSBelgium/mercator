@@ -49,6 +49,22 @@ public class SmtpConfig {
     this.logStackTraces = logStackTraces;
     this.trustAnyone = trustAnyone;
     this.smtpPort = smtpPort;
+    if (readTimeOut.toMillis() > Duration.ofMinutes(10).toMillis()) {
+      throw new IllegalArgumentException("SMTP read time out should be less than 10 minutes");
+    }
+    if (initialResponseTimeOut.toMillis() > Duration.ofMinutes(10).toMillis()) {
+      throw new IllegalArgumentException("SMTP initial response time out should be less than 10 minutes");
+    }
+  }
+
+  public int getReadTimeOutInMillis() {
+    // casting will not cause issues because of checks in the constructor
+    return (int) readTimeOut.toMillis();
+  }
+
+  public int getInitialResponseTimeOutInMillis() {
+    // casting will not cause issues because of checks in the constructor
+    return (int) initialResponseTimeOut.toMillis();
   }
 
   public static SmtpConfig testConfig() {

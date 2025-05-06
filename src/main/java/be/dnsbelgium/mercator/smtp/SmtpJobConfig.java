@@ -80,7 +80,7 @@ public class SmtpJobConfig {
   @ConditionalOnProperty(name = "job.smtp.enabled", havingValue = "true")
   public Job smtpJob(JobRepository jobRepository,
                      PlatformTransactionManager transactionManager,
-                     ItemReader<VisitRequest> itemReader,
+                     ItemReader<VisitRequest> smtpItemReader,
                      SmtpCrawler smtpCrawler,
                      JsonItemWriter<SmtpVisit> itemWriter,
                      @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor) {
@@ -92,7 +92,7 @@ public class SmtpJobConfig {
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, SmtpVisit>chunk(chunkSize, transactionManager)
-            .reader(itemReader)
+            .reader(smtpItemReader)
             .processor(smtpCrawler)
             .writer(itemWriter)
             .taskExecutor(taskExecutor)

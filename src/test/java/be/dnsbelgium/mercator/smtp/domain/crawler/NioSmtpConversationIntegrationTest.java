@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
+import be.dnsbelgium.mercator.geoip.DisabledGeoIPService;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
@@ -88,8 +89,8 @@ public class NioSmtpConversationIntegrationTest {
   @EnabledIfEnvironmentVariable(named="smtp-outbound-test", matches = "true")
   public void outbound_test() throws KeyManagementException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
     NioSmtpConversationFactory factory = new NioSmtpConversationFactory(new SimpleMeterRegistry(), SmtpConfig.testConfig());
-    // this IP of "cavin.kuleuven.be" takes around 5.900 before accepting a connection
-    NioSmtpConversation conversation = factory.create(ip("134.58.240.3"));
+    // this is an IP of Google, it's usually fast to accept connections and reply
+    NioSmtpConversation conversation = factory.create(ip("142.250.27.26"));
     logger.info("conversation = {}", conversation);
     long start = System.currentTimeMillis();
     CompletableFuture<SmtpConversation> result = conversation.start();
@@ -99,6 +100,20 @@ public class NioSmtpConversationIntegrationTest {
     long millis = System.currentTimeMillis() - start;
     logger.info("Conversation took {} ms", millis);
     logger.info("smtpHostIp = {}", smtpConversation);
+
+    BlockingSmtpIpAnalyzer smtpIpAnalyzer = new BlockingSmtpIpAnalyzer(meterRegistry, SmtpConfig.testConfig(), new DisabledGeoIPService());
+    SmtpConversation smtpConversationBlocking = smtpIpAnalyzer.crawl(ip("142.250.27.26"));
+    logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
+
+    assertThat(smtpConversationBlocking).usingRecursiveComparison()
+            .ignoringFields( "timestamp", "connectionTimeMs", "banner" )
+            .isEqualTo(smtpConversation);
+
+    assertThat(smtpConversationBlocking.getBanner()).startsWith("220 mx.google.com ESMTP");
+    assertThat(smtpConversationBlocking.getBanner()).endsWith(" - gsmtp");
+
+    assertThat(smtpConversation.getBanner()).startsWith("220 mx.google.com ESMTP");
+    assertThat(smtpConversation.getBanner()).endsWith(" - gsmtp");
   }
 
 }
