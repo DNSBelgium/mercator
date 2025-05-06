@@ -147,6 +147,7 @@ class BlockingSmtpIpAnalyzerTest {
   }
 
   @Test
+  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
   public void noRouteToHost() throws UnknownHostException, NoSuchAlgorithmException, KeyManagementException {
     SmtpConfig smtpConfig = testConfig();
     InetAddress address = InetAddress.getByName("0.5.5.5");
