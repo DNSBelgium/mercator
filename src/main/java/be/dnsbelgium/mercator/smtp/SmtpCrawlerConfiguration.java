@@ -18,7 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class SmtpCrawlerConfiguration {
 
-  @Value("${crawler.smtp.blocking:false}")
+  @Value("${crawler.smtp.blocking:true}")
   boolean blockingSmtp;
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpCrawlerConfiguration.class);

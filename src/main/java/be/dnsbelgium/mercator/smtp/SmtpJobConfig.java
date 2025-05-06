@@ -23,6 +23,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -35,10 +37,10 @@ public class SmtpJobConfig {
   private static final Logger logger = LoggerFactory.getLogger(SmtpJobConfig.class);
   private static final String JOB_NAME = "smtp";
 
-  @Value("${smtp.corePoolSize:100}")
+  @Value("${smtp.corePoolSize:1000}")
   private int corePoolSize;
 
-  @Value("${smtp.maxPoolSize:100}")
+  @Value("${smtp.maxPoolSize:1000}")
   private int maxPoolSize;
 
   @Value("${smtp.chunkSize:1000}")
@@ -66,7 +68,11 @@ public class SmtpJobConfig {
 
   @Bean
   @Qualifier(JOB_NAME)
-  public ThreadPoolTaskExecutor smtpTaskExecutor() {
+  public TaskExecutor smtpTaskExecutor(SmtpCrawlerConfiguration configuration) {
+    if (configuration.blockingSmtp) {
+      logger.info("using a VirtualThreadTaskExecutor");
+      return new VirtualThreadTaskExecutor(JOB_NAME + "-virtual");
+    }
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
@@ -83,12 +89,11 @@ public class SmtpJobConfig {
                      ItemReader<VisitRequest> smtpItemReader,
                      SmtpCrawler smtpCrawler,
                      JsonItemWriter<SmtpVisit> itemWriter,
-                     @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor) {
+                     @Qualifier(JOB_NAME) TaskExecutor taskExecutor) {
     logger.info("creating {}", JOB_NAME);
 
-    // TODO: try a VirtualThreadExecutor since time outs for SMTP are very high
 
-    // throttleLimit is deprecated but alternative not very clear ...
+    // throttleLimit is deprecated but the suggested alternative is not very clear ...
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, SmtpVisit>chunk(chunkSize, transactionManager)
