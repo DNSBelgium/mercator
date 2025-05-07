@@ -3,20 +3,18 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import apache.commons.net.smtp.SMTPConnectionClosedException;
 import apache.commons.net.smtp.SMTPReply;
 import apache.commons.net.smtp.SMTPSClient;
 import apache.commons.net.util.TrustManagerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.TrustManager;
 import java.io.IOException;
 import java.net.*;
@@ -24,10 +22,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static apache.commons.net.smtp.SMTPCommand.EHLO;
 import static apache.commons.net.util.SSLContextUtils.createSSLContext;
+import static be.dnsbelgium.mercator.smtp.metrics.MetricName.TIMER_IP_CRAWL;
 
 public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
@@ -47,9 +47,13 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
     sslContext = createSSLContext("TLS", null, new TrustManager[]{trustManager});
   }
 
-  @SneakyThrows
   @Override
   public SmtpConversation crawl(InetAddress ip) {
+    return meterRegistry.timer(TIMER_IP_CRAWL).record(() -> doCrawl(ip));
+  }
+
+  @SneakyThrows
+  public SmtpConversation doCrawl(InetAddress ip) {
     SMTPSClient client = new SMTPSClient(sslContext);
     client.setConnectTimeout(smtpConfig.getInitialResponseTimeOutInMillis());
     client.setDefaultTimeout(smtpConfig.getInitialResponseTimeOutInMillis());
@@ -99,27 +103,27 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
       return true;
 
     } catch (SocketTimeoutException e) {
-      conversationBuilder.connectOK(false);
-      conversationBuilder.errorMessage(e.getMessage());
-      conversationBuilder.error(Error.TIME_OUT);
-      return false;
+      return error(conversationBuilder, Error.TIME_OUT, e);
     } catch (NoRouteToHostException e) {
-      conversationBuilder.connectOK(false);
-      conversationBuilder.errorMessage(e.getMessage());
-      conversationBuilder.error(Error.HOST_UNREACHABLE);
-      return false;
+      return error(conversationBuilder, Error.HOST_UNREACHABLE, e);
     } catch (IOException e) {
-      conversationBuilder.connectOK(false);
-      conversationBuilder.errorMessage(e.getMessage());
-      conversationBuilder.error(Error.CONNECTION_ERROR);
-      return false;
+      return error(conversationBuilder, Error.CONNECTION_ERROR, e);
     } finally {
       long millis = System.currentTimeMillis() - start;
       conversationBuilder.connectionTimeMs(millis);
+      meterRegistry.timer(MetricName.TIMER_SMTP_CONNECT).record(millis, TimeUnit.MILLISECONDS);
     }
   }
 
+  private boolean error(SmtpConversation.SmtpConversationBuilder conversationBuilder, Error error, Exception e) {
+    conversationBuilder.connectOK(false);
+    conversationBuilder.errorMessage(e.getMessage());
+    conversationBuilder.error(error);
+    return false;
+  }
+
   private boolean sendEHLO(SMTPSClient client, SmtpConversation.SmtpConversationBuilder conversationBuilder) {
+    long start = System.currentTimeMillis();
     try {
       client.sendCommand(EHLO, smtpConfig.getEhloDomain());
       Set<String> extensions = extractExtensions(client.getReplyStrings());
@@ -127,27 +131,29 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
       return true;
     } catch (IOException e) {
       conversationBuilder.errorMessage(e.getMessage());
+      meterRegistry.counter(MetricName.COUNTER_CONVERSATION_FAILED).increment();
       return false;
+    } finally {
+      long millis = System.currentTimeMillis() - start;
+      meterRegistry.timer(MetricName.TIMER_EHLO_RESPONSE_RECEIVED).record(millis, TimeUnit.MILLISECONDS);
     }
   }
 
   private void startTLS(SMTPSClient client, SmtpConversation.SmtpConversationBuilder conversationBuilder) {
+    long start = System.currentTimeMillis();
     try {
       boolean startTlsOk = client.execTLS();
       int startTlsReplyCode = client.getReplyCode();
       conversationBuilder.startTlsReplyCode(startTlsReplyCode);
       conversationBuilder.startTlsOk(startTlsOk);
-
-    } catch (SSLHandshakeException e) {
-      logger.debug("SSLHandshakeException: {}", e.getMessage());
-      conversationBuilder.startTlsOk(false);
-      conversationBuilder.errorMessage(e.getMessage());
-      conversationBuilder.error(Error.TLS_ERROR);
     } catch (IOException e) {
       logger.debug("IOException: {}", e.getMessage());
       conversationBuilder.startTlsOk(false);
       conversationBuilder.errorMessage(e.getMessage());
       conversationBuilder.error(Error.TLS_ERROR);
+    } finally {
+      long millis = System.currentTimeMillis() - start;
+      meterRegistry.timer(MetricName.TIMER_STARTTLS_COMPLETED).record(millis, TimeUnit.MILLISECONDS);
     }
   }
 

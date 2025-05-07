@@ -35,7 +35,7 @@ public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
 
   @Override
   public SmtpVisit process(VisitRequest visitRequest) {
-    SmtpVisit smtpVisit = smtpAnalyzer.visit(visitRequest.getDomainName());
+    SmtpVisit smtpVisit = smtpAnalyzer.analyze(visitRequest.getDomainName());
     smtpVisit.setVisitId(visitRequest.getVisitId());
     addToCache(smtpVisit);
     return smtpVisit;

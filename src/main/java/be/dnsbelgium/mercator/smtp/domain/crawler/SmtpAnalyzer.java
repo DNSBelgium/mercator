@@ -7,9 +7,9 @@ import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
 import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.time.Instant;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.smtp.metrics.MetricName.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -62,20 +63,11 @@ public class SmtpAnalyzer {
     logger.info("skipIPv4={} skipIPv6={}, maxHostsToContact={}", skipIPv4, skipIPv6, maxHostsToContact);
   }
 
-  // Basically the same as visit (except for the timer around doCrawl)
-  // only used in tests ?
-  public SmtpVisit analyze(String domainName) throws Exception {
+  @SneakyThrows
+  public SmtpVisit analyze(String domainName) {
     TxLogger.log(getClass(), "analyze");
     SmtpVisit result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
-    meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
-    return result;
-  }
-
-  @Timed
-  public SmtpVisit visit(String domainName) {
-    TxLogger.log(getClass(), "analyze");
-    SmtpVisit result = doCrawl(domainName);
-    meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
+    meterRegistry.counter(SMTP_DOMAINS_DONE).increment();
     return result;
   }
 
@@ -203,9 +195,11 @@ public class SmtpAnalyzer {
     SmtpConversation cachedConversation = conversationCache.get(ip);
     if (cachedConversation != null) {
       logger.debug("Found conversation in the cache: {}", cachedConversation);
+      meterRegistry.counter(COUNTER_CACHE_HITS).increment();
       return cachedConversation;
     } else {
       logger.debug("Not found in the cache: {}", ip);
+      meterRegistry.counter(COUNTER_CACHE_MISSES).increment();
       SmtpConversation conversation = smtpIpAnalyzer.crawl(address);
       logger.debug("done crawling ip {}", address);
       return conversation;
@@ -214,7 +208,7 @@ public class SmtpAnalyzer {
   }
 
   private SmtpConversation skip(InetAddress address, String message) {
-    meterRegistry.counter(MetricName.COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
+    meterRegistry.counter(COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
     logger.debug("{} : {}", message, address);
     SmtpConversation conversation = new SmtpConversation(address);
     conversation.setErrorMessage(message);
