@@ -32,7 +32,7 @@ class SmtpCrawlServiceTest {
   @Disabled
   public void integrationTest() {
     analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, true, 10);
-    SmtpVisit result = analyzer.visit("dnsbelgium.be");
+    SmtpVisit result = analyzer.analyze("dnsbelgium.be");
     logger.info("result = {}", result);
     // this is basically the same as  SmtpAnalyzerIntegrationTest but without using Spring
   }
