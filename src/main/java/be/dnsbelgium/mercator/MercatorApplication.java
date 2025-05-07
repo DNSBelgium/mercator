@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.*;
 
 
@@ -63,7 +64,7 @@ public class MercatorApplication {
       }
       System.exit(0);
     }
-
+    System.out.println("CWD = " + Path.of("").toAbsolutePath());
     SpringApplication.run(MercatorApplication.class, args);
   }
 
