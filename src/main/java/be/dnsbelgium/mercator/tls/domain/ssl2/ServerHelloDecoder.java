@@ -5,9 +5,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.CodecException;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.util.List;
 
+import static be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client.DOMAIN_NAME;
+import static be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client.VISIT_ID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 // MUST NOT be annotated with @Sharable.
@@ -44,6 +47,12 @@ public class ServerHelloDecoder extends ByteToMessageDecoder {
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
 
+    if (ctx != null) {
+      MDC.put("domainName", ctx.channel().attr(DOMAIN_NAME).get());
+      MDC.put("visitId", ctx.channel().attr(VISIT_ID).get());
+    }
+
+
     // TLS 1.2 servers should not support SSL 2.0 and could (or SHOULD ?) send an Alert message
     // instead of a ServerHello when receiving an SSL 2.0 ClientHello
 
@@ -57,51 +66,57 @@ public class ServerHelloDecoder extends ByteToMessageDecoder {
     // alert desc   : 0x46        => Description: Protocol Version (70)
     //
     // The server will then close the socket
+    try {
+      logger.info("decoding ServerHello coming from ctx = {}", ctx);
 
-    logger.info("decoding ServerHello coming from ctx = {}", ctx);
-    if (TlsDecoder.incompleteData(in)) {
-      return;
+
+      if (TlsDecoder.incompleteData(in)) {
+        return;
+      }
+      int msgType = in.readByte();
+      logger.info("msgType = {}", msgType);
+      if (msgType != ServerHelloEncoder.SERVER_HELLO_MESSAGE_TYPE) {
+        logger.error("Incoming message is not a ServerHello! msgType = {}", msgType);
+        throw new CodecException("Incoming message is not a ServerHello! msgType=" + msgType);
+      }
+      boolean sessionIdHit = in.readBoolean();
+      int certificateType = in.readByte();
+      byte[] versionSelectedByServer = new byte[]{in.readByte(), in.readByte()};
+
+      int certificateLength = in.readUnsignedShort();
+      int cipherSpecLength = in.readUnsignedShort();
+      int connectionIdLength = in.readUnsignedShort();
+
+      logger.info("certificateLength = {}", certificateLength);
+      logger.info("cipherSpecLength = {}", cipherSpecLength);
+      logger.info("connectionIdLength = {}", connectionIdLength);
+
+      byte[] certificate = new byte[certificateLength];
+      in.readBytes(certificate);
+      logger.debug("We have read {} bytes of the certificate", certificateLength);
+
+      byte[] cipherSpecs = new byte[cipherSpecLength];
+      in.readBytes(cipherSpecs);
+      List<SSL2CipherSuite> listSupportedCipherSuites = SSL2CipherSuite.getCipherSuites(cipherSpecs);
+
+      byte[] connectionId = new byte[connectionIdLength];
+      in.readBytes(connectionId);
+      logger.debug("We have read {} bytes of the connectionId", connectionIdLength);
+
+      ServerHello serverHello = new ServerHello(
+              sessionIdHit,
+              certificateType,
+              versionSelectedByServer,
+              certificate,
+              listSupportedCipherSuites,
+              connectionId
+      );
+      logger.info("Decoded serverHello = {}", serverHello);
+      out.add(serverHello);
+    } finally {
+      MDC.remove("domainName");
+      MDC.remove("visitId");
     }
-    int msgType = in.readByte();
-    logger.info("msgType = {}", msgType);
-    if (msgType != ServerHelloEncoder.SERVER_HELLO_MESSAGE_TYPE) {
-      logger.error("Incoming message is not a ServerHello! msgType = {}", msgType);
-      throw new CodecException("Incoming message is not a ServerHello! msgType=" + msgType);
-    }
-    boolean sessionIdHit = in.readBoolean();
-    int certificateType = in.readByte();
-    byte[] versionSelectedByServer = new byte[] { in.readByte(), in.readByte() };
-
-    int certificateLength   = in.readUnsignedShort();
-    int cipherSpecLength   = in.readUnsignedShort();
-    int connectionIdLength = in.readUnsignedShort();
-
-    logger.info("certificateLength = {}", certificateLength);
-    logger.info("cipherSpecLength = {}", cipherSpecLength);
-    logger.info("connectionIdLength = {}", connectionIdLength);
-
-    byte[] certificate = new byte[certificateLength];
-    in.readBytes(certificate);
-    logger.debug("We have read {} bytes of the certificate", certificateLength);
-
-    byte[] cipherSpecs = new byte[cipherSpecLength];
-    in.readBytes(cipherSpecs);
-    List<SSL2CipherSuite> listSupportedCipherSuites = SSL2CipherSuite.getCipherSuites(cipherSpecs);
-
-    byte[] connectionId = new byte[connectionIdLength];
-    in.readBytes(connectionId);
-    logger.debug("We have read {} bytes of the connectionId", connectionIdLength);
-
-    ServerHello serverHello = new ServerHello(
-        sessionIdHit,
-        certificateType,
-        versionSelectedByServer,
-        certificate,
-        listSupportedCipherSuites,
-        connectionId
-    );
-    logger.info("Decoded serverHello = {}", serverHello);
-    out.add(serverHello);
   }
 
 }

@@ -37,7 +37,7 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
     String query = StringSubstitutor.replace(allItemsQuery, Map.of(
             "base_location", this.visitsLocation
     ));
-    logger.info("query: {}", query);
+    logger.info("getAllItemsQuery: {}", query);
     return query;
   }
 

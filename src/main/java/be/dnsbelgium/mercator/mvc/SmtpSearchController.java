@@ -39,7 +39,7 @@ public class SmtpSearchController {
 
   @GetMapping("/search/smtp/ids")
   public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
-    logger.info("search for [{}]", domainName);
+    logger.info("searchVisitIds for [{}]", domainName);
     List<SearchVisitIdResultItem> visitIds = smtpRepository.searchVisitIds(domainName);
     logger.debug("getSmtpIds for {} => {}", domainName, visitIds);
     model.addAttribute("domainName", domainName);

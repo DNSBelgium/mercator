@@ -89,7 +89,7 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
       conversationBuilder.connectOK(connectReplyCode < 400);
       conversationBuilder.banner(client.getReplyString().trim());
       if (!SMTPReply.isPositiveCompletion(connectReplyCode)) {
-        logger.info("SMTP server refused connection: {}", client.getReplyString());
+        logger.info("SMTP server at {} refused connection: {}", ip, client.getReplyString());
         conversationBuilder.errorMessage(client.getReplyString());
         conversationBuilder.error(Error.UNEXPECTED_REPLY_CODE);
         client.disconnect();

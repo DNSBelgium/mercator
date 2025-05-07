@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.tls;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
@@ -70,6 +71,9 @@ public class TlsJobConfig {
                     TlsCrawler tlsCrawler,
                     ItemWriter<TlsCrawlResult> itemWriter) {
     logger.info("creating tlsJob");
+
+    var itemProcessor = new DelegatingItemProcessor<>(tlsCrawler);
+
     // throttleLimit method is deprecated but alternative is not well documented
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
@@ -77,7 +81,7 @@ public class TlsJobConfig {
             .reader(tlsItemReader)
             .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
             .throttleLimit(throttleLimit)
-            .processor(tlsCrawler)
+            .processor(itemProcessor)
             .writer(itemWriter)
             .build();
 

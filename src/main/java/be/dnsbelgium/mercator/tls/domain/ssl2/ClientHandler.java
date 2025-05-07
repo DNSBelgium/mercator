@@ -6,10 +6,13 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.commons.lang3.RandomUtils;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client.DOMAIN_NAME;
+import static be.dnsbelgium.mercator.tls.domain.ssl2.SSL2Client.VISIT_ID;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class ClientHandler extends ChannelInboundHandlerAdapter {
@@ -31,57 +34,89 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     this.cipherSuites = cipherSuites;
   }
 
+  private void setMDC(ChannelHandlerContext ctx) {
+    if (ctx != null) {
+      MDC.put("domainName", ctx.channel().attr(DOMAIN_NAME).get());
+      MDC.put("visitId", ctx.channel().attr(VISIT_ID).get());
+    }
+  }
+
+  private void resetMDC() {
+    MDC.remove("domainName");
+    MDC.remove("visitId");
+  }
+
   @Override
   public void channelActive(ChannelHandlerContext ctx) {
-    logger.debug("Connected to {}", ctx.channel().remoteAddress());
-    this.connectOK = true;
-    byte[] challenge = RandomUtils.nextBytes(32);
-    ClientHello clientHello = new ClientHello(
-        2,
-        cipherSuites,
-        NO_SESSION_ID,
-        challenge
-    );
-    logger.debug("Writing clientHello = {}", clientHello);
-    ctx.channel().writeAndFlush(clientHello);
+    setMDC(ctx);
+    try {
+      logger.debug("Connected to {}", ctx.channel().remoteAddress());
+      this.connectOK = true;
+      byte[] challenge = RandomUtils.secure().randomBytes(32);
+      ClientHello clientHello = new ClientHello(
+              2,
+              cipherSuites,
+              NO_SESSION_ID,
+              challenge
+      );
+      logger.debug("Writing clientHello = {}", clientHello);
+      ctx.channel().writeAndFlush(clientHello);
+    } finally {
+      resetMDC();
+    }
   }
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    logger.debug("{} => exceptionCaught: {}", ctx.channel().remoteAddress(), cause.getMessage());
-    this.errorMessage = cause.getMessage();
-    if (ctx.channel() != null) {
-      logger.info("Closing the connection");
-      ctx.channel().close();
+    setMDC(ctx);
+    try {
+      logger.debug("{} => exceptionCaught: {}", ctx.channel().remoteAddress(), cause.getMessage());
+      this.errorMessage = cause.getMessage();
+      if (ctx.channel() != null) {
+        logger.info("Closing the connection");
+        ctx.channel().close();
+      }
+    } finally {
+      resetMDC();
     }
   }
 
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
-    logger.debug("channelRead");
-    if (msg instanceof ServerHello) {
-      this.serverHello = (ServerHello) msg;
-      logger.debug("Received ServerHello: {}", serverHello);
-    } else {
-      this.errorMessage = "Unexpected response";
-    }
-    if (ctx != null) {
-      logger.info("Closing the connection");
-      ctx.channel().close();
+    setMDC(ctx);
+    try {
+      logger.debug("channelRead");
+      if (msg instanceof ServerHello) {
+        this.serverHello = (ServerHello) msg;
+        logger.debug("Received ServerHello: {}", serverHello);
+      } else {
+        this.errorMessage = "Unexpected response";
+      }
+      if (ctx != null) {
+        logger.info("Closing the connection");
+        ctx.channel().close();
+      }
+    } finally {
+      resetMDC();
     }
   }
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
-    if (evt instanceof IdleStateEvent e) {
-      if (e.state() == IdleState.READER_IDLE) {
-        logger.debug("Idle on inbound traffic => close");
-        ctx.close();
-      } else if (e.state() == IdleState.WRITER_IDLE) {
-        logger.debug("Idle on outbound traffic => close");
-        ctx.close();
+    setMDC(ctx);
+    try {
+      if (evt instanceof IdleStateEvent e) {
+        if (e.state() == IdleState.READER_IDLE) {
+          logger.debug("Idle on inbound traffic => close");
+          ctx.close();
+        } else if (e.state() == IdleState.WRITER_IDLE) {
+          logger.debug("Idle on outbound traffic => close");
+          ctx.close();
+        }
       }
+    } finally {
+      resetMDC();
     }
   }
 
@@ -95,7 +130,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
       scan.setSelectedProtocol(serverHello.selectedVersion());
       // Consider first in the list in ServerHello as the selected cipher
       if (!serverHello.getListSupportedCipherSuites().isEmpty()) {
-        scan.setSelectedCipherSuite(serverHello.getListSupportedCipherSuites().get(0).name());
+        scan.setSelectedCipherSuite(serverHello.getListSupportedCipherSuites().getFirst().name());
       }
       scan.setHandshakeOK(true);
       scan.setErrorMessage(null);

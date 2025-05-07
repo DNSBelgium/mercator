@@ -37,7 +37,7 @@ public class JsonItemWriter<T> implements ItemWriter<T> , ItemStream {
     this.repository = repository;
     this.objectMapper = objectMapper;
     this.outputDirectory = outputDirectory;
-    logger.info("outputDirectory = {}", outputDirectory);
+    logger.info("outputDirectory = {} clazz={}", outputDirectory, clazz);
     Files.createDirectories(outputDirectory);
   }
 

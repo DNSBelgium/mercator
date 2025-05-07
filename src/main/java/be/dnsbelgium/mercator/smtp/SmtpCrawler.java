@@ -45,9 +45,9 @@ public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
   private void addToCache(SmtpVisit visit) {
     for (SmtpHost host : visit.getHosts()) {
       var conversation = host.getConversation();
-        logger.debug("Saving conversation with {} in the cache", conversation.getIp());
-        cache.add(conversation.getIp(), conversation);
-      }
+      logger.debug("Saving conversation with {} in the cache", conversation.getIp());
+      cache.add(conversation.getIp(), conversation);
     }
+  }
 }
 

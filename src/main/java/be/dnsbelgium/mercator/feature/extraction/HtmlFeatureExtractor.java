@@ -142,7 +142,7 @@ public class HtmlFeatureExtractor {
    * @param url The URL where the HTML was retrieved from, to resolve relative links against.
    * @return the extracted html features
    */
-  public HtmlFeatures extractFromHtml(InputStream inputStream, String charsetName, String url, String dn) {
+  public HtmlFeatures extractFromHtml(InputStream inputStream, String charsetName, String url, String domainName) {
     HtmlFeatures features = new HtmlFeatures();
     Document document = parse(inputStream, charsetName, url);
     if (document == null) {
@@ -199,8 +199,8 @@ public class HtmlFeatureExtractor {
 
     features.htmlstruct = tagMapper.compress(document);
     if (features.htmlstruct.length() > MAX_LENGTH_HTMLSTRUCT) {
-      logger.info("length of htmlstruct = {} exceeds {} => truncating",
-          MAX_LENGTH_HTMLSTRUCT, features.htmlstruct.length());
+      logger.info("domainName={} length of htmlstruct = {} exceeds {} => truncating",
+          domainName, MAX_LENGTH_HTMLSTRUCT, features.htmlstruct.length());
       features.htmlstruct = StringUtils.abbreviate(features.htmlstruct, MAX_LENGTH_HTMLSTRUCT);
     }
     String bodyText = document.text();
@@ -215,7 +215,7 @@ public class HtmlFeatureExtractor {
     features.nb_currency_names = currencies.getNbOccurrences();
     features.nb_distinct_currencies = currencies.getNbDistinct();
 
-    computeSimilarities(features, document, url, dn);
+    computeSimilarities(features, document, url, domainName);
 
     processBodyText(features, bodyText);
     return features;

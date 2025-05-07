@@ -164,7 +164,8 @@ public class SmtpAnalyzer {
     logger.debug("We found {} addresses for hostName {}", addresses.size(), hostName);
     for (InetAddress address : addresses) {
       if (visit.getHosts().size() >= maxHostsToContact) {
-        logger.info("visit: We have already contacted {} hosts => stopping now", visit.getHosts().size());
+        logger.info("domainName: {} => we have already contacted {} hosts => stopping now", visit.getDomainName(),  visit.getHosts().size());
+        logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), visit.getHosts());
         break;
       }
       SmtpConversation smtpConversation = findInCacheOrCrawl(address);

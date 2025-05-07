@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.dns;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
@@ -70,6 +71,9 @@ public class DnsJobConfig {
                     DnsCrawlService dnsCrawler,
                     ItemWriter<DnsCrawlResult> itemWriter) {
     logger.info("creating dnsJob");
+
+    DelegatingItemProcessor<DnsCrawlResult> itemProcessor = new DelegatingItemProcessor<>(dnsCrawler);
+
     // throttleLimit method is deprecated but alternative is not well documented
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
@@ -77,7 +81,7 @@ public class DnsJobConfig {
             .reader(dnsItemReader)
             .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
             .throttleLimit(throttleLimit)
-            .processor(dnsCrawler)
+            .processor(itemProcessor)
             .writer(itemWriter)
             .build();
 

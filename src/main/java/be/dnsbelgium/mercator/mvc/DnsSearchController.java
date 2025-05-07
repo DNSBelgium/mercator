@@ -25,10 +25,10 @@ public class DnsSearchController {
 
     @GetMapping("/search/dns/latest")
     public String findLatestResult(Model model, @RequestParam("domainName") String domainName) {
-        logger.info("Finding latest result");
+        logger.info("Finding latest DNS result for {}", domainName);
         model.addAttribute("domainName", domainName);
         Optional<DnsCrawlResult> dnsCrawlResult = dnsRepository.findLatestResult(domainName);
-        logger.info(dnsCrawlResult.toString());
+        logger.info("domainName={} => dnsCrawlResult: {}", domainName, dnsCrawlResult);
         if (dnsCrawlResult.isPresent()) {
             model.addAttribute("dnsCrawlResult", dnsCrawlResult.get());
         }
@@ -37,9 +37,9 @@ public class DnsSearchController {
 
     @GetMapping("/search/dns/ids")
     public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
-        logger.info("search for [{}]", domainName);
+        logger.info("searchVisitIds for [{}]", domainName);
         List<SearchVisitIdResultItem> visitIds = dnsRepository.searchVisitIds(domainName);
-        logger.info("visitIds found: {}", visitIds);
+        logger.info("domainName={} => found: {}", domainName, visitIds);
         model.addAttribute("domainName", domainName);
         model.addAttribute("visitIds", visitIds);
         return "search-results-dns";

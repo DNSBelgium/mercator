@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.vat;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.WebRepository;
@@ -86,11 +87,14 @@ public class WebJobConfig {
                     JsonItemWriter<WebCrawlResult> jsonItemWriter,
                     @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor
   ) {
+
+    var itemProcessor = new DelegatingItemProcessor<>(processor);
+
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, WebCrawlResult>chunk(chunkSize, transactionManager)
             .reader(itemReader)
-            .processor(processor)
+            .processor(itemProcessor)
             .writer(jsonItemWriter)
             .taskExecutor(taskExecutor)
             .throttleLimit(maxPoolSize - 10)

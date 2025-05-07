@@ -19,7 +19,7 @@ class SmtpCrawlServiceTest {
   MeterRegistry meterRegistry = new SimpleMeterRegistry();
   SmtpConversationFactory conversationFactory = new NioSmtpConversationFactory(meterRegistry, SmtpConfig.testConfig(25));
   SmtpIpAnalyzer ipAnalyzer = new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, new DisabledGeoIPService());
-  MxFinder mxFinder = new MxFinder("8.8.8.8", 2, 10*1000, true);
+  MxFinder mxFinder = new MxFinder( 2, 10*1000, true);
   SmtpConversationCache conversationCache = new SmtpConversationCache(meterRegistry);
   SmtpAnalyzer analyzer = new SmtpAnalyzer(meterRegistry, ipAnalyzer, mxFinder, conversationCache, false, true, 10);
 

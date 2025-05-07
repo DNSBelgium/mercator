@@ -38,7 +38,7 @@ public class JobListener implements JobExecutionListener {
         long seconds = (System.currentTimeMillis() - start)/1000;
         logger.info("Awaiting job {} for already {} seconds ...", jobName, seconds);
       }
-      logger.info("Job completed");
+      logger.info("Job {} completed", jobName);
     } catch (InterruptedException e) {
       logger.warn("Interrupted while waiting for job {} latch: {}", jobName, e.getMessage());
       Thread.currentThread().interrupt();

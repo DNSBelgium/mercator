@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.batch.BatchConfig;
+import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
@@ -78,7 +79,7 @@ public class SmtpJobConfig {
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
     executor.setThreadNamePrefix(JOB_NAME);
-    logger.info("executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    logger.info("SMTP: executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
     return executor;
   }
 
@@ -90,15 +91,16 @@ public class SmtpJobConfig {
                      SmtpCrawler smtpCrawler,
                      JsonItemWriter<SmtpVisit> itemWriter,
                      @Qualifier(JOB_NAME) TaskExecutor taskExecutor) {
-    logger.info("creating {}", JOB_NAME);
 
+    logger.info("creating smtpJob with JOB_NAME={}", JOB_NAME);
+    DelegatingItemProcessor<SmtpVisit> itemProcessor = new DelegatingItemProcessor<>(smtpCrawler);
 
     // throttleLimit is deprecated but the suggested alternative is not very clear ...
     @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, SmtpVisit>chunk(chunkSize, transactionManager)
             .reader(smtpItemReader)
-            .processor(smtpCrawler)
+            .processor(itemProcessor)
             .writer(itemWriter)
             .taskExecutor(taskExecutor)
             .throttleLimit(maxPoolSize - 10)

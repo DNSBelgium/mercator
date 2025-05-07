@@ -37,7 +37,7 @@ public class WebSearchController {
     public String searchVisitIds(Model model, @RequestParam(name = "domainName") String domainName) {
         logger.info("search for [{}]", domainName);
         List<SearchVisitIdResultItem> visitIds = webRepository.searchVisitIds(domainName);
-        logger.info("visitIds found: {}", visitIds);
+        logger.info("domainName={} => found: {}", domainName, visitIds);
         model.addAttribute("domainName", domainName);
         model.addAttribute("visitIds", visitIds);
         return "search-results-web";
