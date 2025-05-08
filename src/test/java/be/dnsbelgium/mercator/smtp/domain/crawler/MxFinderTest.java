@@ -23,7 +23,7 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void dnsbelgium() {
         MxLookupResult result = mxFinder.findMxRecordsFor("dnsbelgium.be");
         logger.info("result = {}", result);
@@ -34,7 +34,7 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void nxdomain() {
         MxLookupResult result = mxFinder.findMxRecordsFor("--.be");
         logger.info("result = {}", result);
@@ -55,7 +55,7 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void servfail() {
         MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
         logger.info("result = {}", result);
@@ -76,7 +76,7 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void manyMxRecords() {
         MxLookupResult result = mxFinder.findMxRecordsFor("kuleuven.be");
         logger.info("result = {}", result);
@@ -87,7 +87,7 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void noMxRecords() {
         MxLookupResult result = mxFinder.findMxRecordsFor("dc3.be");
         logger.info("result = {}", result);
@@ -97,7 +97,7 @@ class MxFinderTest {
         assertThat(result.getMxRecords().size()).isEqualTo(0);
     }
 
-    @EnabledIfEnvironmentVariable(named="enable-outbound-tests", matches = "true")
+    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     @Test
     public void idn() {
         MxLookupResult result = mxFinder.findMxRecordsFor("sénat.be");

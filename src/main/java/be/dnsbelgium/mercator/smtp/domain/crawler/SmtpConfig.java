@@ -25,7 +25,6 @@ public class SmtpConfig {
   public static final String DEFAULT_EHLO_DOMAIN = "smtp.crawler";
 
   private final String ehloDomain;
-  private final int numThreads;
   private final Duration initialResponseTimeOut;
   private final Duration readTimeOut;
   private final int smtpPort;
@@ -35,7 +34,6 @@ public class SmtpConfig {
   @ConstructorBinding
   public SmtpConfig(
       @DefaultValue(DEFAULT_EHLO_DOMAIN) String ehloDomain,
-      @DefaultValue("1") int numThreads,
       @DefaultValue(DEFAULT_READ_TIME_OUT) Duration readTimeOut,
       @DefaultValue(DEFAULT_INITIAL_RESPONSE_TIME_OUT) Duration initialResponseTimeOut,
       @DefaultValue("25") int smtpPort,
@@ -43,7 +41,6 @@ public class SmtpConfig {
       @DefaultValue("false") boolean trustAnyone
   ) {
     this.ehloDomain = ehloDomain;
-    this.numThreads = numThreads;
     this.initialResponseTimeOut = initialResponseTimeOut;
     this.readTimeOut = readTimeOut;
     this.logStackTraces = logStackTraces;
@@ -74,7 +71,6 @@ public class SmtpConfig {
   public static SmtpConfig testConfig(int port) {
     return new SmtpConfig(
         DEFAULT_EHLO_DOMAIN,
-        1,
         Duration.ofSeconds(15),
         Duration.ofSeconds(15),
         port,

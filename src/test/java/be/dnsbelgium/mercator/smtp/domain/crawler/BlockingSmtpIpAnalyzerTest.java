@@ -13,8 +13,6 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 
 import static be.dnsbelgium.mercator.smtp.domain.crawler.Mailpit.getMailPitContainer;
@@ -69,30 +67,11 @@ class BlockingSmtpIpAnalyzerTest {
   }
 
   @Test
-  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
-  public void compareWithNioSmtp() throws NoSuchAlgorithmException, KeyManagementException, UnknownHostException {
-    GenericContainer<?> mailpit = getMailPitContainer(true);
-    mailpit.start();
-    var smtpConfig = SmtpConfig.testConfig(mailpit.getMappedPort(1025));
-    var conversationFactory = new NioSmtpConversationFactory(meterRegistry, smtpConfig);
-    var ip = InetAddress.getLocalHost();
-    NioSmtpConversation conversation = conversationFactory.create(ip);
-    SmtpConversation smtpConversationNio = conversation.talk();
-    logger.info("smtpConversationNio = {}", smtpConversationNio);
-    BlockingSmtpIpAnalyzer smtpIpAnalyzer = new BlockingSmtpIpAnalyzer(meterRegistry, smtpConfig, new DisabledGeoIPService());
-    SmtpConversation smtpConversationBlocking = smtpIpAnalyzer.crawl(ip);
-    assertThat(smtpConversationBlocking).usingRecursiveComparison()
-            .ignoringFields( "timestamp", "connectionTimeMs" )
-            .isEqualTo(smtpConversationNio);
-  }
-
-  @Test
-  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
-  public void timeOut() throws UnknownHostException, NoSuchAlgorithmException, KeyManagementException {
+  @EnabledIfEnvironmentVariable(named="SMTP_INTEGRATION_TEST_ENABLED", matches = "true")
+  public void timeOut() throws UnknownHostException {
     String ip = "52.101.68.8";
     SmtpConfig smtpConfig = new SmtpConfig(
             DEFAULT_EHLO_DOMAIN,
-            1,
             Duration.ofSeconds(4),
             Duration.ofSeconds(8),
             25,
@@ -104,70 +83,38 @@ class BlockingSmtpIpAnalyzerTest {
     SmtpConversation smtpConversationBlocking = smtpIpAnalyzer.crawl(address);
     smtpConversationBlocking.supportedExtensions = null;
     logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
-
     assertThat(smtpConversationBlocking).isNotNull();
     assertThat(smtpConversationBlocking.getConnectionTimeMs()).isGreaterThan(8000);
     assertThat(smtpConversationBlocking.getErrorMessage()).isEqualTo("Connect timed out");
     assertThat(smtpConversationBlocking.getError()).isEqualTo(Error.TIME_OUT);
-
-
-    var conversationFactory = new NioSmtpConversationFactory(meterRegistry, smtpConfig);
-    NioSmtpConversation conversation = conversationFactory.create(address);
-    SmtpConversation smtpConversationNio = conversation.talk();
-    logger.info("smtpConversationNio = {}", smtpConversationNio);
-    assertThat(smtpConversationBlocking).usingRecursiveComparison()
-            .ignoringFields( "timestamp", "connectionTimeMs", "errorMessage", "error" )
-            .isEqualTo(smtpConversationNio);
-
   }
 
   @Test
-  public void connectionRefused() throws UnknownHostException, NoSuchAlgorithmException, KeyManagementException {
+  public void connectionRefused() throws UnknownHostException {
     SmtpConfig smtpConfig = testConfig();
     InetAddress address = InetAddress.getByName("127.0.0.1");
     BlockingSmtpIpAnalyzer smtpIpAnalyzer = new BlockingSmtpIpAnalyzer(meterRegistry, smtpConfig, new DisabledGeoIPService());
     SmtpConversation smtpConversationBlocking = smtpIpAnalyzer.crawl(address);
     smtpConversationBlocking.supportedExtensions = null;
     logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
-
     assertThat(smtpConversationBlocking).isNotNull();
     assertThat(smtpConversationBlocking.getConnectionTimeMs()).isLessThan(100);
     assertThat(smtpConversationBlocking.getErrorMessage()).isEqualTo("Connection refused");
     assertThat(smtpConversationBlocking.getError()).isEqualTo(Error.CONNECTION_ERROR);
-
-
-    var conversationFactory = new NioSmtpConversationFactory(meterRegistry, smtpConfig);
-    NioSmtpConversation conversation = conversationFactory.create(address);
-    SmtpConversation smtpConversationNio = conversation.talk();
-    logger.info("smtpConversationNio = {}", smtpConversationNio);
-    assertThat(smtpConversationBlocking).usingRecursiveComparison()
-            .ignoringFields( "timestamp", "connectionTimeMs", "errorMessage" )
-            .isEqualTo(smtpConversationNio);
-
   }
 
   @Test
-  @EnabledIfEnvironmentVariable(named="smtp-integration-test", matches = "true")
-  public void noRouteToHost() throws UnknownHostException, NoSuchAlgorithmException, KeyManagementException {
+  @EnabledIfEnvironmentVariable(named="SMTP_INTEGRATION_TEST_ENABLED", matches = "true")
+  public void noRouteToHost() throws UnknownHostException {
     SmtpConfig smtpConfig = testConfig();
     InetAddress address = InetAddress.getByName("0.5.5.5");
     BlockingSmtpIpAnalyzer smtpIpAnalyzer = new BlockingSmtpIpAnalyzer(meterRegistry, smtpConfig, new DisabledGeoIPService());
     SmtpConversation smtpConversationBlocking = smtpIpAnalyzer.crawl(address);
     logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
-
     assertThat(smtpConversationBlocking).isNotNull();
     assertThat(smtpConversationBlocking.getErrorMessage()).isEqualTo("No route to host");
     assertThat(smtpConversationBlocking.getError()).isEqualTo(Error.HOST_UNREACHABLE);
     assertThat(smtpConversationBlocking.getConnectionTimeMs()).isLessThan(80);
-
-    var conversationFactory = new NioSmtpConversationFactory(meterRegistry, smtpConfig);
-    NioSmtpConversation conversation = conversationFactory.create(address);
-    SmtpConversation smtpConversationNio = conversation.talk();
-    logger.info("smtpConversationNio = {}", smtpConversationNio);
-    assertThat(smtpConversationBlocking).usingRecursiveComparison()
-            .ignoringFields( "timestamp", "connectionTimeMs", "errorMessage", "supportedExtensions" )
-            .isEqualTo(smtpConversationNio);
-
   }
 
 }

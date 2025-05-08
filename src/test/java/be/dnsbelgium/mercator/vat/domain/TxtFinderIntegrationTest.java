@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 // These test make an internet connections, set the env var WEB_OUTBOUND_TEST_ENABLED to "True" to enable the tests
-// Running one individual test method in IntelliJ also seems to work (it seem to ignore the @EnabledIfEnvironmentVariable)
+// Running one individual test method in IntelliJ also seems to work (it seems to ignore the @EnabledIfEnvironmentVariable)
 public class TxtFinderIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(TxtFinderIntegrationTest.class);
@@ -35,7 +35,7 @@ public class TxtFinderIntegrationTest {
     private final JdbcClient jdbcClient = JdbcClient.create(DuckDataSource.memory());
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "true")
     public void testFindSecurityTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
         PageVisit foundPage = webCrawler.findSecurityTxt(visitRequest);
@@ -45,7 +45,7 @@ public class TxtFinderIntegrationTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "true")
     public void testFindSecurityTxtOnPopularDomainNames() {
         List<String> domainNames = getTop(200);
         List<PageVisit> pageVisits =  new ArrayList<>();
@@ -68,7 +68,7 @@ public class TxtFinderIntegrationTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "true")
     public void testFindRobotsTxt() {
         VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
         PageVisit found = webCrawler.findRobotsTxt(visitRequest);
@@ -79,7 +79,7 @@ public class TxtFinderIntegrationTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "True")
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "true")
     public void testFindRobotsTxtOnPopularDomainNames() {
         List<String> domainNames = getTop(100);
         List<PageVisit> pageVisits =  new ArrayList<>();

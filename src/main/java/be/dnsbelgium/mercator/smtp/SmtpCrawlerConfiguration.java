@@ -24,13 +24,9 @@ public class SmtpCrawlerConfiguration {
   private static final Logger logger = LoggerFactory.getLogger(SmtpCrawlerConfiguration.class);
 
   @Bean
-  SmtpIpAnalyzer smtpIpAnalyzer(MeterRegistry meterRegistry, SmtpConfig smtpConfig, SmtpConversationFactory conversationFactory, GeoIPService geoIPService) {
-    if (blockingSmtp) {
-      logger.info("SmtpCrawlerConfiguration: blockingSmtp is enabled");
-      return new BlockingSmtpIpAnalyzer(meterRegistry, smtpConfig, geoIPService);
-    }
-    logger.info("SmtpCrawlerConfiguration: blockingSmtp is disabled");
-    return new DefaultSmtpIpAnalyzer(meterRegistry, conversationFactory, geoIPService);
+  SmtpIpAnalyzer smtpIpAnalyzer(MeterRegistry meterRegistry, SmtpConfig smtpConfig, GeoIPService geoIPService) {
+    logger.info("SmtpCrawlerConfiguration: blockingSmtp is enabled");
+    return new BlockingSmtpIpAnalyzer(meterRegistry, smtpConfig, geoIPService);
   }
 
 

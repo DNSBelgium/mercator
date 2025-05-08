@@ -35,7 +35,7 @@ class WebRepositoryTest {
   private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString());
 
   @Test
-  @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
+  @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
   public void toS3Parquet() throws IOException {
 
     WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));

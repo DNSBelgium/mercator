@@ -38,6 +38,13 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
   private static final Logger logger = LoggerFactory.getLogger(BlockingSmtpIpAnalyzer.class);
 
+  // https://tools.ietf.org/html/rfc5321#section-4.5.3.1.5
+  // The maximum total length of a reply line including the reply code and
+  // the <CRLF> is 512 octets.  More information may be conveyed through
+  // multiple-line replies.
+  public static final int MAX_REPLY_LENGTH = 512;
+
+
   @SneakyThrows
   public BlockingSmtpIpAnalyzer(MeterRegistry meterRegistry, SmtpConfig smtpConfig, GeoIPService geoIPService) {
     this.meterRegistry = meterRegistry;
@@ -89,9 +96,9 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
 
       int connectReplyCode = client.getReplyCode();
       conversationBuilder.connectReplyCode(connectReplyCode);
-      // TODO: should we check the reply code or just that the TCP connection was set up ?
       conversationBuilder.connectOK(connectReplyCode < 400);
-      conversationBuilder.banner(client.getReplyString().trim());
+      final String banner = StringUtils.abbreviate(client.getReplyString().trim(), MAX_REPLY_LENGTH);
+      conversationBuilder.banner(banner);
       if (!SMTPReply.isPositiveCompletion(connectReplyCode)) {
         logger.info("SMTP server at {} refused connection: {}", ip, client.getReplyString());
         conversationBuilder.errorMessage(client.getReplyString());

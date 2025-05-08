@@ -40,7 +40,7 @@ class SmtpRepositoryTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "True")
+    @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
     public void toS3Parquet() throws IOException {
 
         SmtpRepository s3SmtpRepository = new SmtpRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));

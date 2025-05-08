@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
 // This test is slow (and brittle since it relies on external state)
-@EnabledIfEnvironmentVariable(named = "SMTP_TEST_ENABLED", matches = "True")
+@EnabledIfEnvironmentVariable(named = "SMTP_INTEGRATION_TEST_ENABLED", matches = "true")
 @SpringBootTest(classes = { MercatorApplication.class } )
 @ActiveProfiles("test")
 class SmtpAnalyzerIntegrationTest {
@@ -37,12 +37,12 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result.getTimestamp()).isNotNull();
     List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
-    assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getConversation().getConnectionTimeMs()).isGreaterThan(1);
-    assertThat(hosts.get(0).getConversation().isConnectOK()).isTrue();
-    assertThat(hosts.get(0).getConversation().isStartTlsOk()).isTrue();
-    assertThat(hosts.get(0).getConversation().getErrorMessage()).isNull();
+    assertThat(hosts.getFirst().getConversation().getConnectReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversation().getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversation().getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(hosts.getFirst().getConversation().isConnectOK()).isTrue();
+    assertThat(hosts.getFirst().getConversation().isStartTlsOk()).isTrue();
+    assertThat(hosts.getFirst().getConversation().getErrorMessage()).isNull();
   }
 
 }
