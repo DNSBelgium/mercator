@@ -21,6 +21,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static be.dnsbelgium.mercator.smtp.metrics.MetricName.*;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -157,7 +158,8 @@ public class SmtpAnalyzer {
     for (InetAddress address : addresses) {
       if (visit.getHosts().size() >= maxHostsToContact) {
         logger.info("domainName: {} => we have already contacted {} hosts => stopping now", visit.getDomainName(),  visit.getHosts().size());
-        logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), visit.getHosts());
+        var hostNames = visit.getHosts().stream().map(SmtpHost::getHostName).toList();
+        logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), hostNames);
         break;
       }
       SmtpConversation smtpConversation = findInCacheOrCrawl(address);
