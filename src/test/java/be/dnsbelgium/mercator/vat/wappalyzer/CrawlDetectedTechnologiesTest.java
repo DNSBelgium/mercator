@@ -1,35 +1,38 @@
 package be.dnsbelgium.mercator.vat.wappalyzer;
 
+import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.WebCrawler;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
-import org.junit.jupiter.api.Disabled;
+import be.dnsbelgium.mercator.vat.domain.Page;
+import be.dnsbelgium.mercator.vat.domain.PageFetcher;
+import be.dnsbelgium.mercator.vat.domain.PageFetcherConfig;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import okhttp3.HttpUrl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
 public class CrawlDetectedTechnologiesTest {
 
     private final Logger logger = LoggerFactory.getLogger(CrawlDetectedTechnologiesTest.class);
 
-
-    @Autowired
-    WebCrawler webCrawler;
-
     @Test
-    @Disabled // because it makes a request to test the actual crawler for detecting technologies
-    public void testCrawlDetectedTechnologies_setsDetectedTechnologiesToWebCrawlResult() {
-        VisitRequest visitRequest = new VisitRequest("abcd-efgh-ijkl-123", "dnsbelgium.be");
+    @EnabledIfEnvironmentVariable(named = "WEB_OUTBOUND_TEST_ENABLED", matches = "true")
+    public void testCrawlDetectedTechnologies_setsDetectedTechnologiesToWebCrawlResult() throws IOException {
+        VisitRequest visitRequest = new VisitRequest(VisitIdGenerator.generate(), "dnsbelgium.be");
 
-        WebCrawlResult webCrawlResult = webCrawler.crawl(visitRequest);
-        logger.info("Detected technologies for {}: are: {}", visitRequest.getDomainName(), webCrawlResult.getDetectedTechnologies());
-        assertThat(webCrawlResult.getDetectedTechnologies().contains(List.of("Caddy", "HSTS", "Imperva", "Go")));
+        PageFetcher pageFetcher = new PageFetcher(new SimpleMeterRegistry(), PageFetcherConfig.defaultConfig());
+        Page page = pageFetcher.fetch(HttpUrl.get("https://www.dnsbelgium.be/"));
+
+        TechnologyAnalyzer technologyAnalyzer = new TechnologyAnalyzer();
+        Set<String> technologies = technologyAnalyzer.analyze(page);
+
+        logger.info("Detected technologies for {}: are: {}", visitRequest.getDomainName(), technologies);
+        assertThat(technologies).contains("Open Graph", "HSTS", "Imperva", "PWA");
     }
 }
