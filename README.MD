@@ -24,10 +24,9 @@ Important differences compared to previous version of Mercator
 * Zero required dependencies to deploy it.
 * Can be run as a single docker image 
 * No longer requires a PhD in Kubernetes in order to deploy it ;-)
-* Heck, it doesn't even need Kubernetes at all.
+* It doesn't even need Kubernetes at all.
 * Does not require any AWS services (but can optionally save its output on Amazon S3). 
 * Uses an embedded [duckdb](https://duckdb.org/) database and writes its output as parquet files
-* Uses an embedded ActiveMQ to distribute the work over multiple threads
 * Only one Javascript dependency: [htmx](https://htmx.org/)
 * Multi-platform docker images published to docker hub (x86 and aarch64) so it also works an Apple Silicon machines
 
