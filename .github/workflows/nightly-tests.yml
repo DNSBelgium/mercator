@@ -1,0 +1,38 @@
+name: Run unit tests
+
+on:
+
+  schedule:
+    - cron: '30 5 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github  # Value of the distributionManagement/repository/id field of the pom.xml
+          cache: maven
+
+      - name: Run the Maven verify phase
+        run:
+          SMTP_INTEGRATION_TEST_ENABLED="true" DNS_OUTBOUND_TESTS_ENABLED="true" WEB_OUTBOUND_TEST_ENABLED="true" mvn --batch-mode -Dsnyk.skip verify
+
+      - name: Nightly Test Report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()
+        with:
+          name: Nightly Junit Test Report
+          path: 'target/surefire-reports/*.xml'
+          reporter: java-junit
+          fail-on-error: true
