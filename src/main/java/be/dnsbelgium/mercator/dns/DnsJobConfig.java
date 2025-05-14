@@ -20,12 +20,14 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.task.VirtualThreadTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.nio.file.Path;
@@ -39,8 +41,27 @@ public class DnsJobConfig {
   @Value("${dns.chunkSize:1000}")
   private int chunkSize;
 
+  @Value("${dns.corePoolSize:1000}")
+  private int corePoolSize;
+
+  @Value("${dns.maxPoolSize:1000}")
+  private int maxPoolSize;
+
   @Value("${dns.throttleLimit:200}")
   private int throttleLimit;
+
+  @Bean
+  @Qualifier(JOB_NAME)
+  public TaskExecutor dnsTaskExecutor() {
+    var executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(corePoolSize);
+    executor.setMaxPoolSize(maxPoolSize);
+    executor.setQueueCapacity(-1);
+    executor.setThreadNamePrefix(JOB_NAME);
+    logger.info("DNS: executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    return executor;
+  }
+
 
   @Bean
   @StepScope
@@ -68,6 +89,7 @@ public class DnsJobConfig {
   public Job dnsJob(JobRepository jobRepository,
                     PlatformTransactionManager transactionManager,
                     ItemReader<VisitRequest> dnsItemReader,
+                    TaskExecutor dnsTaskExecutor,
                     DnsCrawlService dnsCrawler,
                     ItemWriter<DnsCrawlResult> itemWriter) {
     logger.info("creating dnsJob");
@@ -79,7 +101,7 @@ public class DnsJobConfig {
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, DnsCrawlResult>chunk(chunkSize, transactionManager)
             .reader(dnsItemReader)
-            .taskExecutor(new VirtualThreadTaskExecutor(JOB_NAME + "-virtual"))
+            .taskExecutor(dnsTaskExecutor)
             .throttleLimit(throttleLimit)
             .processor(itemProcessor)
             .writer(itemWriter)
