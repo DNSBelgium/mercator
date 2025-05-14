@@ -70,7 +70,7 @@ public class SmtpJobConfig {
   @Bean
   @Qualifier(JOB_NAME)
   public TaskExecutor smtpTaskExecutor(SmtpCrawlerConfiguration configuration) {
-    if (configuration.blockingSmtp) {
+    if (configuration.virtualThreads) {
       logger.info("using a VirtualThreadTaskExecutor");
       return new VirtualThreadTaskExecutor(JOB_NAME + "-virtual");
     }

@@ -18,8 +18,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class SmtpCrawlerConfiguration {
 
-  @Value("${crawler.smtp.blocking:true}")
-  boolean blockingSmtp;
+  @Value("${crawler.smtp.virtual.threads:false}")
+  boolean virtualThreads;
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpCrawlerConfiguration.class);
 
