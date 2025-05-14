@@ -47,7 +47,18 @@ public class BaseRepository<T> {
    * @return an autocloseable datasource that should only be used by a single thread.
    */
   public SingleConnectionDataSource singleThreadedDataSource() {
-    return new SingleConnectionDataSource("jdbc:duckdb:", false);
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false);
+    createSecret(dataSource);
+    return dataSource;
+  }
+
+  private void createSecret(DataSource dataSource) {
+    JdbcClient jdbcClient = JdbcClient.create(dataSource);
+    String create_secret = "CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
+    logger.info("executing: {}", create_secret);
+    JdbcClient.ResultQuerySpec x = jdbcClient.sql(create_secret).query();
+    logger.info("x = {}", x);
+    logger.info("s3 secret created");
   }
 
   public static boolean isURL(String dataLocation) {
@@ -116,7 +127,7 @@ public class BaseRepository<T> {
   @NonNull
   @SneakyThrows
   private Optional<T> queryForObject(Map<String,?> params, String query) {
-    try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
       JdbcClient jdbcClient = JdbcClient.create(dataSource);
       setVariables(jdbcClient);
       try {
@@ -149,7 +160,7 @@ public class BaseRepository<T> {
 
   @SneakyThrows
   private <S> List<S> queryForList(String query, String domainName, Class<S> clazz) {
-    try (var dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
       JdbcClient jdbcClient = JdbcClient.create(dataSource);
       setVariables(jdbcClient);
       try {
@@ -186,7 +197,12 @@ public class BaseRepository<T> {
         """, Map.of("get_all_items_query", getAllItemsQuery(),
                     "timestamp_field", timestampField(),
                     "domain_name_field", domainNameField()));
-    return queryForObject(Map.of("domainName", domainName), query);
+    long start = System.currentTimeMillis();
+    Optional<T> resutls = queryForObject(Map.of("domainName", domainName), query);
+    long millis = System.currentTimeMillis() - start;
+    logger.info("queryForObject SQL = \n{}", query);
+    logger.info("findLatestResult took {} millis", millis);
+    return resutls;
   }
 
   @SneakyThrows
@@ -208,7 +224,7 @@ public class BaseRepository<T> {
    * @param jsonResultsLocation : location of JSON file(s)
    */
   public void storeResults(String jsonResultsLocation) {
-    try (SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false)) {
+    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
       JdbcClient jdbcClient = JdbcClient.create(dataSource);
       jdbcClient.sql(String.format("""
       copy (
@@ -254,4 +270,5 @@ public class BaseRepository<T> {
     jdbcClient.sql(copyStatement).update();
     logger.info("copying {} as parquet to {} done", cte, destination);
   }
+
 }

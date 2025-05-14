@@ -23,15 +23,16 @@ public class DuckDataSource extends AbstractDriverBasedDataSource implements Aut
     @SneakyThrows
     public void init() {
         String url = getUrl();
-        logger.debug("Creating connection with url = {}", url);
+        logger.info("Creating connection with url = {}", url);
         Objects.requireNonNull(url);
         // TODO: should we only execute this when e.g. env var is set with init script?
         this.connection = (DuckDBConnection) DriverManager.getConnection(url);
         // create s3 secret
         try (Statement stmt = connection.createStatement()) {
-            stmt.executeQuery("CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)");
-        } catch (SQLException e) {
-            throw e;
+            String create_secret = "CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
+            logger.info("executing: {}", create_secret);
+            stmt.executeQuery(create_secret);
+            logger.info("s3 secret created");
         }
     }
 
