@@ -20,14 +20,14 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static be.dnsbelgium.mercator.smtp.metrics.MetricName.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Analyzes the SMTP servers for a given domain, by retrieving all MX records
+ * Analyzes the SMTP servers for a given domain by retrieving all MX records
  * and talking with all corresponding SMTP servers
  */
 @Component
@@ -104,7 +104,7 @@ public class SmtpAnalyzer {
 
   private void visitAddressRecords(SmtpVisit visit) {
     // CNAME-s are followed when resolving hostnames to addresses
-    // It seems that CNAME's are also followed hen looking up MX records
+    // It seems that CNAME's are also followed when looking up MX records
     //
     //    https://tools.ietf.org/html/rfc5321#section-5.1
     //
@@ -139,9 +139,8 @@ public class SmtpAnalyzer {
   }
 
   private void setStatus(SmtpVisit visit) {
-    if (visit.getHosts().stream().anyMatch(host -> host
-        .getConversation()
-        .getError() == null)) {
+    if (visit.getHosts().stream().anyMatch(host ->
+        host.getConversations().stream().anyMatch(c -> c.getError() == null))) {
       visit.setCrawlStatus(CrawlStatus.OK);
     } else {
       visit.setCrawlStatus(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
@@ -149,31 +148,31 @@ public class SmtpAnalyzer {
   }
 
   private void visitHostname(SmtpVisit visit, String hostName, int priority, boolean fromMx) {
+    if (visit.getHosts().size() >= maxHostsToContact) {
+      logger.info("domainName: {} => we have already contacted {} hosts => stopping now", visit.getDomainName(),  visit.getHosts().size());
+      var hostNames = visit.getHosts().stream().map(SmtpHost::getHostName).toList();
+      logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), hostNames);
+      return;
+    }
     List<InetAddress> addresses = mxFinder.findIpAddresses(hostName);
     if (addresses.isEmpty()) {
       logger.debug("No addresses found for hostName {}", hostName);
       return;
     }
     logger.debug("We found {} addresses for hostName {}", addresses.size(), hostName);
+    SmtpHost host = new SmtpHost();
+    host.setHostName(hostName);
+    host.setPriority(priority);
+    host.setFromMx(fromMx);
+    List<SmtpConversation> conversations = new ArrayList<>();
     for (InetAddress address : addresses) {
-      if (visit.getHosts().size() >= maxHostsToContact) {
-        logger.info("domainName: {} => we have already contacted {} hosts => stopping now", visit.getDomainName(),  visit.getHosts().size());
-        var hostNames = visit.getHosts().stream().map(SmtpHost::getHostName).toList();
-        logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), hostNames);
-        break;
-      }
+
       SmtpConversation smtpConversation = findInCacheOrCrawl(address);
       smtpConversation.clean();
-      SmtpHost host = new SmtpHost();
-      host.setHostName(hostName);
-      host.setPriority(priority);
-      host.setConversation(smtpConversation);
-      host.setFromMx(fromMx);
-      if (!fromMx) {
-        host.setHostName(smtpConversation.getIp());
-      }
-      visit.add(host);
+      conversations.add(smtpConversation);
     }
+    host.setConversations(conversations);
+    visit.add(host);
   }
 
   private SmtpConversation findInCacheOrCrawl(InetAddress address) {

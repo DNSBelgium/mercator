@@ -119,7 +119,7 @@ public class SmtpSearchControllerTest {
                         .param("domainName", "dnsbelgium.be"))
                 .andExpect(view().name("visit-details-smtp"))
                 .andExpect(model().attributeExists( "smtpVisitResult"))
-                .andExpect(content().string(containsString("No conversation")));
+                .andExpect(content().string(containsString("No conversations")));
     }
 
     @Test

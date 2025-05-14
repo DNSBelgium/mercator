@@ -30,69 +30,71 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.lang3.tuple.Pair;
+
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 
 public class ObjectMother {
 
   private final HtmlFeatureExtractor htmlFeatureExtractor = new HtmlFeatureExtractor(new SimpleMeterRegistry(), false);
 
-  Instant started  = LocalDateTime.of(2024,11,28, 23, 59).toInstant(ZoneOffset.UTC);
+  Instant started = LocalDateTime.of(2024, 11, 28, 23, 59).toInstant(ZoneOffset.UTC);
 
   public static String VISIT_ID_1 = "v104";
   public static String VISIT_ID_2 = "v105";
 
   public PageVisit pageVisit1() {
     return PageVisit.builder()
-            .visitId(VISIT_ID_1)
-            .responseBody("<h1>I am a page </h1>")
-            .url("https://www.dnsbelgium.be/")
-            .domainName("dnsbelgium.be")
-            .statusCode(200)
-            .crawlStarted(started)
-            .crawlStarted(started.plusMillis(312))
-            .path("/")
-            .build();
+        .visitId(VISIT_ID_1)
+        .responseBody("<h1>I am a page </h1>")
+        .url("https://www.dnsbelgium.be/")
+        .domainName("dnsbelgium.be")
+        .statusCode(200)
+        .crawlStarted(started)
+        .crawlStarted(started.plusMillis(312))
+        .path("/")
+        .build();
   }
 
   public PageVisit pageVisit2() {
     return PageVisit.builder()
-            .visitId(VISIT_ID_1)
-            .responseBody("<h1>I am the EN page </h1>")
-            .url("https://www.dnsbelgium.be/en")
-            .domainName("dnsbelgium.be")
-            .statusCode(200)
-            .crawlStarted(started)
-            .crawlStarted(started.plusMillis(312))
-            .path("/en")
-            .build();
+        .visitId(VISIT_ID_1)
+        .responseBody("<h1>I am the EN page </h1>")
+        .url("https://www.dnsbelgium.be/en")
+        .domainName("dnsbelgium.be")
+        .statusCode(200)
+        .crawlStarted(started)
+        .crawlStarted(started.plusMillis(312))
+        .path("/en")
+        .build();
   }
 
   public PageVisit pageVisit3() {
     return PageVisit.builder()
-            .visitId(VISIT_ID_1)
-            .responseBody("<h1>I am the contact page </h1>")
-            .url("https://www.dnsbelgium.be/en/contact")
-            .domainName("dnsbelgium.be")
-            .vatValues(List.of("BE0466158640", "BE0841242495"))
-            .statusCode(200)
-            .crawlStarted(started)
-            .crawlStarted(started.plusMillis(312))
-            .path("/en/contact")
-            .build();
+        .visitId(VISIT_ID_1)
+        .responseBody("<h1>I am the contact page </h1>")
+        .url("https://www.dnsbelgium.be/en/contact")
+        .domainName("dnsbelgium.be")
+        .vatValues(List.of("BE0466158640", "BE0841242495"))
+        .statusCode(200)
+        .crawlStarted(started)
+        .crawlStarted(started.plusMillis(312))
+        .path("/en/contact")
+        .build();
   }
 
   public PageVisit pageVisit4() {
     return PageVisit.builder()
-            .visitId(VISIT_ID_2)
-            .responseBody(null)
-            .url("https://www.no-website.org/")
-            .domainName("no-website.org")
-            .statusCode(400)
-            .crawlStarted(started)
-            .crawlStarted(started.plusMillis(312))
-            .path("/")
-            .build();
+        .visitId(VISIT_ID_2)
+        .responseBody(null)
+        .url("https://www.no-website.org/")
+        .domainName("no-website.org")
+        .statusCode(400)
+        .crawlStarted(started)
+        .crawlStarted(started.plusMillis(312))
+        .path("/")
+        .build();
   }
 
   public Page page1() {
@@ -121,42 +123,42 @@ public class ObjectMother {
 
   public PageVisit pageVisitWithSecurityTxtFields() {
     return PageVisit.builder()
-            .visitId("security-txt-test-id")
-            .url("https://www.example.org/.well-known/security.txt")
-            .domainName("example.org")
-            .path("/.well-known/security.txt")
-            .statusCode(200)
-            .responseBody("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
-            .contentLength(128L)
-            .headers(Map.of(
-                    "Content-Type", List.of("text/plain"),
-                    "Content-Length", List.of("128")
-            ))
-            .build();
+        .visitId("security-txt-test-id")
+        .url("https://www.example.org/.well-known/security.txt")
+        .domainName("example.org")
+        .path("/.well-known/security.txt")
+        .statusCode(200)
+        .responseBody("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
+        .contentLength(128L)
+        .headers(Map.of(
+            "Content-Type", List.of("text/plain"),
+            "Content-Length", List.of("128")
+        ))
+        .build();
   }
 
   public PageVisit pageVisitWithRobotsTxtFields() {
     return PageVisit.builder()
-            .visitId("robots-txt-test-id")
-            .url("https://www.example.org/robots.txt")
-            .domainName("example.org")
-            .path("/robots.txt")
-            .statusCode(200)
-            .responseBody("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
-            .contentLength(128L)
-            .headers(Map.of(
-                    "Content-Type", List.of("text/plain"),
-                    "Content-Length", List.of("128")
-            ))
-            .build();
+        .visitId("robots-txt-test-id")
+        .url("https://www.example.org/robots.txt")
+        .domainName("example.org")
+        .path("/robots.txt")
+        .statusCode(200)
+        .responseBody("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
+        .contentLength(128L)
+        .headers(Map.of(
+            "Content-Type", List.of("text/plain"),
+            "Content-Length", List.of("128")
+        ))
+        .build();
   }
 
   public HtmlFeatures htmlFeatures1() {
     HtmlFeatures features = htmlFeatureExtractor
-            .extractFromHtml(
-                    "<h1>I am a page </h1>",
-                    "https://www.dnsbelgium.be/",
-                    "dnsbelgium.be");
+        .extractFromHtml(
+            "<h1>I am a page </h1>",
+            "https://www.dnsbelgium.be/",
+            "dnsbelgium.be");
     features.visitId = VISIT_ID_1;
     features.crawlTimestamp = started.plusMillis(11);
     features.domainName = "dnsbelgium.be";
@@ -166,11 +168,11 @@ public class ObjectMother {
   }
 
   public HtmlFeatures htmlFeatures2() {
-    HtmlFeatures features =  htmlFeatureExtractor
-            .extractFromHtml(
-                    "<h1>I am the English page </h1>",
-                    "https://www.dnsbelgium.be/en",
-                    "dnsbelgium.be");
+    HtmlFeatures features = htmlFeatureExtractor
+        .extractFromHtml(
+            "<h1>I am the English page </h1>",
+            "https://www.dnsbelgium.be/en",
+            "dnsbelgium.be");
     features.visitId = VISIT_ID_1;
     features.crawlTimestamp = started.plusMillis(12);
     features.domainName = "dnsbelgium.be";
@@ -180,11 +182,11 @@ public class ObjectMother {
   }
 
   public HtmlFeatures htmlFeatures3() {
-    HtmlFeatures features =  htmlFeatureExtractor
-            .extractFromHtml(
-                    "<h1>I am the Contact page </h1>",
-                    "https://www.dnsbelgium.be/en/contact",
-                    "dnsbelgium.be");
+    HtmlFeatures features = htmlFeatureExtractor
+        .extractFromHtml(
+            "<h1>I am the Contact page </h1>",
+            "https://www.dnsbelgium.be/en/contact",
+            "dnsbelgium.be");
     features.visitId = VISIT_ID_1;
     features.crawlTimestamp = started.plusMillis(13);
     features.domainName = "dnsbelgium.be";
@@ -195,119 +197,121 @@ public class ObjectMother {
 
   public WebCrawlResult webCrawlResult1() {
     return WebCrawlResult.builder()
-            .visitId(VISIT_ID_1)
-            .crawlStarted(started)
-            .crawlFinished(started.plusMillis(235))
-            .domainName("dnsbelgium.be")
-            .matchingUrl("https://www.dnsbelgium.be/en/contact")
-            .vatValues(List.of("BE0466158640", "BE0841242495"))
-            .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en","https://www.dnsbelgium.be/en/contact"))
-            .startUrl("https://www.dnsbelgium.be/")
-            .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
-            .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
-            .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
-            .build();
+        .visitId(VISIT_ID_1)
+        .crawlStarted(started)
+        .crawlFinished(started.plusMillis(235))
+        .domainName("dnsbelgium.be")
+        .matchingUrl("https://www.dnsbelgium.be/en/contact")
+        .vatValues(List.of("BE0466158640", "BE0841242495"))
+        .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en", "https://www.dnsbelgium.be/en/contact"))
+        .startUrl("https://www.dnsbelgium.be/")
+        .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
+        .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
+        .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
+        .build();
 
   }
 
   public WebCrawlResult webCrawlResult2() {
     return WebCrawlResult.builder()
-            .crawlStarted(started.plusMillis(10))
-            .crawlFinished(started.plusSeconds(115))
-            .visitId(VISIT_ID_2)
-            .domainName("no-website.org")
-            .visitedUrls(List.of())
-            .startUrl("https://www.no-website.be/")
-            .htmlFeatures(List.of())
-            .pageVisits(List.of(pageVisit4()))
-            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
-            .build();
+        .crawlStarted(started.plusMillis(10))
+        .crawlFinished(started.plusSeconds(115))
+        .visitId(VISIT_ID_2)
+        .domainName("no-website.org")
+        .visitedUrls(List.of())
+        .startUrl("https://www.no-website.be/")
+        .htmlFeatures(List.of())
+        .pageVisits(List.of(pageVisit4()))
+        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+        .build();
   }
 
   public WebCrawlResult webCrawlResultWithPageVisitWithSecurityTxt() {
     return WebCrawlResult.builder()
-            .crawlStarted(started.plusMillis(10))
-            .crawlFinished(started.plusSeconds(115))
-            .visitId(VISIT_ID_2)
-            .domainName("no-website.org")
-            .visitedUrls(List.of())
-            .startUrl("https://www.no-website.be/")
-            .htmlFeatures(List.of())
-            .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
-            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
-            .build();
+        .crawlStarted(started.plusMillis(10))
+        .crawlFinished(started.plusSeconds(115))
+        .visitId(VISIT_ID_2)
+        .domainName("no-website.org")
+        .visitedUrls(List.of())
+        .startUrl("https://www.no-website.be/")
+        .htmlFeatures(List.of())
+        .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
+        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+        .build();
   }
 
   public WebCrawlResult webCrawlResultWithPageVisitWithRobotsTxt() {
     return WebCrawlResult.builder()
-            .crawlStarted(started.plusMillis(10))
-            .crawlFinished(started.plusSeconds(115))
-            .visitId(VISIT_ID_2)
-            .domainName("no-website.org")
-            .visitedUrls(List.of())
-            .startUrl("https://www.no-website.be/")
-            .htmlFeatures(List.of())
-            .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
-            .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
-            .build();
+        .crawlStarted(started.plusMillis(10))
+        .crawlFinished(started.plusSeconds(115))
+        .visitId(VISIT_ID_2)
+        .domainName("no-website.org")
+        .visitedUrls(List.of())
+        .startUrl("https://www.no-website.be/")
+        .htmlFeatures(List.of())
+        .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
+        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+        .build();
   }
 
   public WebCrawlResult webCrawlResultWithNullValues() {
     return WebCrawlResult.builder()
-            .visitId(null)
-            .crawlStarted(null)
-            .crawlFinished(null)
-            .domainName(null)
-            .matchingUrl(null)
-            .vatValues(null)
-            .visitedUrls(null)
-            .startUrl(null)
-            .htmlFeatures(null)
-            .pageVisits(null)
-            .detectedTechnologies(null)
-            .build();
+        .visitId(null)
+        .crawlStarted(null)
+        .crawlFinished(null)
+        .domainName(null)
+        .matchingUrl(null)
+        .vatValues(null)
+        .visitedUrls(null)
+        .startUrl(null)
+        .htmlFeatures(null)
+        .pageVisits(null)
+        .detectedTechnologies(null)
+        .build();
 
   }
+
   public WebCrawlResult webCrawlResultWithHtmlFeaturesNullValues() {
     return WebCrawlResult.builder()
-            .visitId(null)
-            .crawlStarted(null)
-            .crawlFinished(null)
-            .domainName(null)
-            .matchingUrl(null)
-            .vatValues(null)
-            .visitedUrls(null)
-            .startUrl(null)
-            .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
-            .pageVisits(null)
-            .detectedTechnologies(null)
-            .build();
+        .visitId(null)
+        .crawlStarted(null)
+        .crawlFinished(null)
+        .domainName(null)
+        .matchingUrl(null)
+        .vatValues(null)
+        .visitedUrls(null)
+        .startUrl(null)
+        .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
+        .pageVisits(null)
+        .detectedTechnologies(null)
+        .build();
 
   }
+
   public WebCrawlResult webCrawlResultWithPageVisitNullValues() {
     return WebCrawlResult.builder()
-            .visitId(null)
-            .crawlStarted(null)
-            .crawlFinished(null)
-            .domainName(null)
-            .matchingUrl(null)
-            .vatValues(null)
-            .visitedUrls(null)
-            .startUrl(null)
-            .htmlFeatures(null)
-            .pageVisits(List.of(pageVisitWithNullValues()))
-            .detectedTechnologies(null)
-            .build();
+        .visitId(null)
+        .crawlStarted(null)
+        .crawlFinished(null)
+        .domainName(null)
+        .matchingUrl(null)
+        .vatValues(null)
+        .visitedUrls(null)
+        .startUrl(null)
+        .htmlFeatures(null)
+        .pageVisits(List.of(pageVisitWithNullValues()))
+        .detectedTechnologies(null)
+        .build();
 
   }
 
 
   public HtmlFeatures htmlFeaturesWithNullValues() {
     HtmlFeatures features = htmlFeatureExtractor
-            .extractFromHtml(
-                    "",
-                    "https://www.no-website.be/",
-                    null);
+        .extractFromHtml(
+            "",
+            "https://www.no-website.be/",
+            null);
     features.visitId = null;
     features.crawlTimestamp = null;
     features.domainName = null;
@@ -318,41 +322,40 @@ public class ObjectMother {
 
   public PageVisit pageVisitWithNullValues() {
     return PageVisit.builder()
-            .visitId(null)
-            .responseBody(null)
-            .url(null)
-            .domainName(null)
-            .statusCode(null)
-            .crawlStarted(null)
-            .crawlStarted(null)
-            .path(null)
-            .build();
+        .visitId(null)
+        .responseBody(null)
+        .url(null)
+        .domainName(null)
+        .statusCode(null)
+        .crawlStarted(null)
+        .crawlStarted(null)
+        .path(null)
+        .build();
   }
 
 
-
-  public TlsCrawlResult tlsCrawlResult1()  {
+  public TlsCrawlResult tlsCrawlResult1() {
     return getTlsCrawlResult("visit01", "tls.org", singleVersionScan1());
   }
 
   @NotNull
   private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
     return new TlsCrawlResult(visitId, domainName, List.of(
-            TlsVisit.fromCache(visitId, domainName, domainName, started, fullScanEntity(domainName), scan),
-            TlsVisit.fromCache(visitId, domainName, "www." + domainName, started, fullScanEntity(domainName), scan)
+        TlsVisit.fromCache(visitId, domainName, domainName, started, fullScanEntity(domainName), scan),
+        TlsVisit.fromCache(visitId, domainName, "www." + domainName, started, fullScanEntity(domainName), scan)
     ));
   }
 
-  public TlsCrawlResult tlsCrawlResult2()  {
+  public TlsCrawlResult tlsCrawlResult2() {
     return getTlsCrawlResult("visit02", "example.be", singleVersionScan2());
   }
 
-  public TlsCrawlResult tlsCrawlResult3()  {
+  public TlsCrawlResult tlsCrawlResult3() {
     return getTlsCrawlResult("visit03", "example.be", singleVersionScan2());
   }
 
   @SneakyThrows
-  SingleVersionScan singleVersionScan1()  {
+  SingleVersionScan singleVersionScan1() {
     Certificate certificate = Certificate.from(readTestCertificate("blackanddecker.be.pem"));
     SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_0, new InetSocketAddress("abc.be", 443));
     singleVersionScan.setConnectOK(false);
@@ -363,7 +366,7 @@ public class ObjectMother {
   }
 
   @SneakyThrows
-  SingleVersionScan singleVersionScan2()  {
+  SingleVersionScan singleVersionScan2() {
     Certificate certificate = Certificate.from(readTestCertificate("cll.be.pem"));
     Certificate certificate2 = Certificate.from(readTestCertificate("digicert-ca.pem"));
     SingleVersionScan singleVersionScan = SingleVersionScan.of(TlsProtocolVersion.TLS_1_3, new InetSocketAddress("cll.be", 443));
@@ -377,79 +380,79 @@ public class ObjectMother {
 
   public FullScanEntity fullScanEntity(String serverName) {
     return FullScanEntity.builder()
-            .crawlTimestamp(started)
-            .ip("10.20.30.40")
-            .serverName(serverName)
-            .connectOk(true)
-            .supportTls_1_3(true)
-            .supportTls_1_2(true)
-            .supportTls_1_1(true)
-            .supportTls_1_0(true)
-            .supportSsl_3_0(false)
-            .supportSsl_2_0(false)
-            .errorTls_1_0("Version not supported")
-            .selectedCipherTls_1_2("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
-            .selectedCipherTls_1_1("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
-            .selectedCipherTls_1_0("")
-            .lowestVersionSupported("TLSv1")
-            .lowestVersionSupported("TLSv1.2")
-            .millis_tls_1_0(10)
-            .millis_tls_1_1(11)
-            .millis_tls_1_2(12)
-            .millis_tls_1_3(13)
-            .millis_ssl_2_0(20)
-            .millis_ssl_3_0(30)
-            .build();
+        .crawlTimestamp(started)
+        .ip("10.20.30.40")
+        .serverName(serverName)
+        .connectOk(true)
+        .supportTls_1_3(true)
+        .supportTls_1_2(true)
+        .supportTls_1_1(true)
+        .supportTls_1_0(true)
+        .supportSsl_3_0(false)
+        .supportSsl_2_0(false)
+        .errorTls_1_0("Version not supported")
+        .selectedCipherTls_1_2("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA")
+        .selectedCipherTls_1_1("TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384")
+        .selectedCipherTls_1_0("")
+        .lowestVersionSupported("TLSv1")
+        .lowestVersionSupported("TLSv1.2")
+        .millis_tls_1_0(10)
+        .millis_tls_1_1(11)
+        .millis_tls_1_2(12)
+        .millis_tls_1_3(13)
+        .millis_ssl_2_0(20)
+        .millis_ssl_3_0(30)
+        .build();
 
   }
 
   public FullScanEntity fullScanEntityWithNullValues() {
     return FullScanEntity.builder()
-            .crawlTimestamp(null)
-            .ip(null)
-            .serverName(null)
-            .connectOk(false)
-            .supportTls_1_3(false)
-            .supportTls_1_2(false)
-            .supportTls_1_1(false)
-            .supportTls_1_0(false)
-            .supportSsl_3_0(false)
-            .supportSsl_2_0(false)
-            .errorTls_1_0(null)
-            .selectedCipherTls_1_2(null)
-            .selectedCipherTls_1_1(null)
-            .selectedCipherTls_1_0(null)
-            .lowestVersionSupported(null)
-            .lowestVersionSupported(null)
-            .millis_tls_1_0(0)
-            .millis_tls_1_1(0)
-            .millis_tls_1_2(0)
-            .millis_tls_1_3(0)
-            .millis_ssl_2_0(0)
-            .millis_ssl_3_0(0)
-            .build();
+        .crawlTimestamp(null)
+        .ip(null)
+        .serverName(null)
+        .connectOk(false)
+        .supportTls_1_3(false)
+        .supportTls_1_2(false)
+        .supportTls_1_1(false)
+        .supportTls_1_0(false)
+        .supportSsl_3_0(false)
+        .supportSsl_2_0(false)
+        .errorTls_1_0(null)
+        .selectedCipherTls_1_2(null)
+        .selectedCipherTls_1_1(null)
+        .selectedCipherTls_1_0(null)
+        .lowestVersionSupported(null)
+        .lowestVersionSupported(null)
+        .millis_tls_1_0(0)
+        .millis_tls_1_1(0)
+        .millis_tls_1_2(0)
+        .millis_tls_1_3(0)
+        .millis_ssl_2_0(0)
+        .millis_ssl_3_0(0)
+        .build();
 
   }
 
   private TlsCrawlResult getTlsCrawlResultWithFullScanEntityNull(SingleVersionScan scan) {
     return new TlsCrawlResult("visit02", "example.be", List.of(
-            TlsVisit.fromCache("visit02", "example.be", "example.be", started, fullScanEntityWithNullValues(), scan),
-            TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", started, fullScanEntityWithNullValues(), scan)
+        TlsVisit.fromCache("visit02", "example.be", "example.be", started, fullScanEntityWithNullValues(), scan),
+        TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", started, fullScanEntityWithNullValues(), scan)
     ));
   }
 
-  public TlsCrawlResult tlsCrawlResultWithNullFullVersionEntityScan()  {
+  public TlsCrawlResult tlsCrawlResultWithNullFullVersionEntityScan() {
     return getTlsCrawlResultWithFullScanEntityNull(singleVersionScan2());
   }
 
-  public TlsCrawlResult tlsCrawlResultWithNullValues()  {
+  public TlsCrawlResult tlsCrawlResultWithNullValues() {
     return new TlsCrawlResult(null, null, List.of(
-            TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
-            TlsVisit.fromCache(null, null,  null, started, fullScanEntity(""), singleVersionScanWithNullValues())
+        TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
+        TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues())
     ));
   }
 
-  SingleVersionScan singleVersionScanWithNullValues()  {
+  SingleVersionScan singleVersionScanWithNullValues() {
     SingleVersionScan singleVersionScan = SingleVersionScan.of(null, new InetSocketAddress("", 0));
     singleVersionScan.setConnectOK(false);
     singleVersionScan.setPeerCertificate(null);
@@ -458,222 +461,221 @@ public class ObjectMother {
 
   public SmtpVisit smtpVisit1() {
     return SmtpVisit.builder()
-            .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
-            .hosts(List.of(smtpHost1(), smtpHost2()))
-            .domainName("example1.com")
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .crawlStatus(CrawlStatus.OK)
-            .numConversations(2)
-            .build();
+        .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
+        .hosts(List.of(smtpHost1(), smtpHost2()))
+        .domainName("example1.com")
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStatus(CrawlStatus.OK)
+        .numConversations(2)
+        .build();
   }
 
   public SmtpVisit smtpVisit2() {
     return SmtpVisit.builder()
-            .visitId("02HJR2Z6DZHS4G4P9X1BZSD4YV")
-            .hosts(List.of(smtpHost3(), smtpHost4()))
-            .domainName("example2.com")
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .crawlStatus(CrawlStatus.OK)
-            .numConversations(2)
-            .build();
+        .visitId("02HJR2Z6DZHS4G4P9X1BZSD4YV")
+        .hosts(List.of(smtpHost3(), smtpHost4()))
+        .domainName("example2.com")
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStatus(CrawlStatus.OK)
+        .numConversations(2)
+        .build();
   }
 
 
   public SmtpConversation smtpConversation1() {
     return SmtpConversation.builder()
-            .asn(12345L)
-            .ip("192.168.1.1")
-            .asnOrganisation("Example ISP")
-            .banner("110 mail.example.com ESMTP Postfix")
-            .connectionTimeMs(150)
-            .connectReplyCode(220)
-            .country("BE")
-            .ipVersion(4)
-            .startTlsOk(true)
-            .connectOK(true)
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .errorMessage(null)
-            .software("Postfix")
-            .softwareVersion("3.5.8")
-            .startTlsReplyCode(250)
-            .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
-            .build();
+        .asn(12345L)
+        .ip("192.168.1.1")
+        .asnOrganisation("Example ISP")
+        .banner("110 mail.example.com ESMTP Postfix")
+        .connectionTimeMs(150)
+        .connectReplyCode(220)
+        .country("BE")
+        .ipVersion(4)
+        .startTlsOk(true)
+        .connectOK(true)
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .errorMessage(null)
+        .software("Postfix")
+        .softwareVersion("3.5.8")
+        .startTlsReplyCode(250)
+        .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
+        .build();
   }
 
   public SmtpConversation smtpConversation2() {
     return SmtpConversation.builder()
-            .asn(12345L)
-            .ip("192.168.1.2")
-            .asnOrganisation("Example ISP")
-            .banner("220 mail.example.com ESMTP Postfix")
-            .connectionTimeMs(150)
-            .connectReplyCode(220)
-            .country("BE")
-            .ipVersion(4)
-            .startTlsOk(true)
-            .connectOK(true)
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .errorMessage(null)
-            .software("Postfix")
-            .softwareVersion("3.5.8")
-            .startTlsReplyCode(250)
-            .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
-            .build();
+        .asn(12345L)
+        .ip("192.168.1.2")
+        .asnOrganisation("Example ISP")
+        .banner("220 mail.example.com ESMTP Postfix")
+        .connectionTimeMs(150)
+        .connectReplyCode(220)
+        .country("BE")
+        .ipVersion(4)
+        .startTlsOk(true)
+        .connectOK(true)
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .errorMessage(null)
+        .software("Postfix")
+        .softwareVersion("3.5.8")
+        .startTlsReplyCode(250)
+        .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
+        .build();
   }
 
   public SmtpConversation smtpConversation3() {
     return SmtpConversation.builder()
-            .asn(12345L)
-            .ip("192.168.1.3")
-            .asnOrganisation("Example ISP")
-            .banner("330 mail.example.com ESMTP Postfix")
-            .connectionTimeMs(150)
-            .connectReplyCode(220)
-            .country("BE")
-            .ipVersion(4)
-            .startTlsOk(true)
-            .connectOK(true)
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .errorMessage(null)
-            .software("Postfix")
-            .softwareVersion("3.5.8")
-            .startTlsReplyCode(250)
-            .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
-            .build();
+        .asn(12345L)
+        .ip("192.168.1.3")
+        .asnOrganisation("Example ISP")
+        .banner("330 mail.example.com ESMTP Postfix")
+        .connectionTimeMs(150)
+        .connectReplyCode(220)
+        .country("BE")
+        .ipVersion(4)
+        .startTlsOk(true)
+        .connectOK(true)
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .errorMessage(null)
+        .software("Postfix")
+        .softwareVersion("3.5.8")
+        .startTlsReplyCode(250)
+        .supportedExtensions(Set.of("STARTTLS", "PIPELINING", "8BITMIME"))
+        .build();
   }
 
   public SmtpConversation smtpConversation4() {
     return SmtpConversation.builder()
-            .asn(12345L)
-            .ip("192.168.1.4")
-            .asnOrganisation("Example ISP")
-            .banner("440 mail.example.com ESMTP Postfix")
-            .connectionTimeMs(150)
-            .connectReplyCode(220)
-            .country("BE")
-            .ipVersion(4)
-            .startTlsOk(true)
-            .connectOK(true)
-            .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
-            .errorMessage(null)
-            .software("Postfix")
-            .softwareVersion("3.5.8")
-            .startTlsReplyCode(400)
-            .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
-            .build();
+        .asn(12345L)
+        .ip("192.168.1.4")
+        .asnOrganisation("Example ISP")
+        .banner("440 mail.example.com ESMTP Postfix")
+        .connectionTimeMs(150)
+        .connectReplyCode(220)
+        .country("BE")
+        .ipVersion(4)
+        .startTlsOk(true)
+        .connectOK(true)
+        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .errorMessage(null)
+        .software("Postfix")
+        .softwareVersion("3.5.8")
+        .startTlsReplyCode(400)
+        .supportedExtensions(Set.of("PIPELINING", "8BITMIME"))
+        .build();
   }
 
 
   public SmtpHost smtpHost1() {
     return SmtpHost.builder()
-            .fromMx(true)
-            .hostName("mail.example.com")
-            .priority(10)
-            .conversation(smtpConversation1())
-            .build();
+        .fromMx(true)
+        .hostName("mail1.example.com")
+        .priority(10)
+        .conversations(List.of(smtpConversation1()))
+        .build();
   }
 
   public SmtpHost smtpHost2() {
     return SmtpHost.builder()
-            .fromMx(true)
-            .hostName("mail.example.com")
-            .priority(10)
-            .conversation(smtpConversation2())
-            .build();
+        .fromMx(true)
+        .hostName("mail2.example.com")
+        .priority(10)
+        .conversations(List.of(smtpConversation2()))
+        .build();
   }
 
   public SmtpHost smtpHost3() {
     return SmtpHost.builder()
-            .fromMx(true)
-            .hostName("mail4.example.com")
-            .priority(110)
-            .conversation(smtpConversation3())
-            .build();
+        .fromMx(true)
+        .hostName("mail4.example.com")
+        .priority(110)
+        .conversations(List.of(smtpConversation3()))
+        .build();
   }
 
   public SmtpHost smtpHost4() {
     return SmtpHost.builder()
-            .fromMx(true)
-            .hostName("mail4.example.com")
-            .priority(110)
-            .conversation(smtpConversation4())
-            .build();
+        .fromMx(true)
+        .hostName("mail4.example.com")
+        .priority(110)
+        .conversations(List.of(smtpConversation4()))
+        .build();
   }
-
-
 
 
   public SmtpVisit smtpVisitWithNullValues() {
     return SmtpVisit.builder()
-            .visitId(null)
-            .hosts(null)
-            .domainName(null)
-            .timestamp(null)
-            .crawlStatus(null)
-            .numConversations(1)
-            .build();
+        .visitId(null)
+        .hosts(null)
+        .domainName(null)
+        .timestamp(null)
+        .crawlStatus(null)
+        .numConversations(1)
+        .build();
   }
+
   public SmtpVisit smtpVisitWithNullValues2() {
     return SmtpVisit.builder()
-            .visitId(null)
-            .hosts(List.of(smtpHostWithNullValues1()))
-            .domainName(null)
-            .timestamp(null)
-            .crawlStatus(null)
-            .numConversations(1)
-            .build();
+        .visitId(null)
+        .hosts(List.of(smtpHostWithNullValues1()))
+        .domainName(null)
+        .timestamp(null)
+        .crawlStatus(null)
+        .numConversations(1)
+        .build();
   }
 
   public SmtpVisit smtpVisitWithNullValues3() {
     return SmtpVisit.builder()
-            .visitId(null)
-            .hosts(List.of(smtpHostWithNullValues2()))
-            .domainName(null)
-            .timestamp(null)
-            .crawlStatus(null)
-            .numConversations(1)
-            .build();
+        .visitId(null)
+        .hosts(List.of(smtpHostWithNullValues2()))
+        .domainName(null)
+        .timestamp(null)
+        .crawlStatus(null)
+        .numConversations(1)
+        .build();
   }
 
   public SmtpHost smtpHostWithNullValues1() {
     return SmtpHost.builder()
-            .fromMx(false)
-            .hostName(null)
-            .priority(0)
-            .conversation(null)
-            .build();
+        .fromMx(false)
+        .hostName(null)
+        .priority(0)
+        .conversations(List.of())
+        .build();
   }
 
   public SmtpHost smtpHostWithNullValues2() {
     return SmtpHost.builder()
-            .fromMx(false)
-            .hostName(null)
-            .priority(0)
-            .conversation(smtpConversationWithNullValues())
-            .build();
+        .fromMx(false)
+        .hostName(null)
+        .priority(0)
+        .conversations(List.of(smtpConversationWithNullValues()))
+        .build();
   }
 
 
   public SmtpConversation smtpConversationWithNullValues() {
     return SmtpConversation.builder()
-            .asn(null)
-            .ip(null)
-            .asnOrganisation(null)
-            .banner(null)
-            .connectReplyCode(0)
-            .country(null)
-            .ipVersion(0)
-            .startTlsOk(false)
-            .connectOK(false)
-            .timestamp(null)
-            .errorMessage(null)
-            .error(null)
-            .software(null)
-            .softwareVersion(null)
-            .startTlsReplyCode(0)
-            .supportedExtensions(null)
-            .connectionTimeMs(0)
-            .build();
+        .asn(null)
+        .ip(null)
+        .asnOrganisation(null)
+        .banner(null)
+        .connectReplyCode(0)
+        .country(null)
+        .ipVersion(0)
+        .startTlsOk(false)
+        .connectOK(false)
+        .timestamp(null)
+        .errorMessage(null)
+        .error(null)
+        .software(null)
+        .softwareVersion(null)
+        .startTlsReplyCode(0)
+        .supportedExtensions(null)
+        .connectionTimeMs(0)
+        .build();
   }
 
   public DnsCrawlResult dnsCrawlResultWithMultipleResponses1(String domain, String visitId) {
@@ -681,34 +683,34 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
     Response response1 = Response.builder()
-            .responseId(100L)
-            .recordData("192.168.1.1")
-            .ttl(3600L)
-            .responseGeoIps(List.of(geoIp1, geoIp2))
-            .build();
+        .responseId(100L)
+        .recordData("192.168.1.1")
+        .ttl(3600L)
+        .responseGeoIps(List.of(geoIp1, geoIp2))
+        .build();
 
     ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(54321L, "ISP Netherlands"), "NL", 4, "192.168.1.2");
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
 
     Response response2 = Response.builder()
-            .responseId(101L)
-            .recordData("192.168.1.2")
-            .ttl(3600L)
-            .responseGeoIps(List.of(geoIp3, geoIp4))
-            .build();
+        .responseId(101L)
+        .recordData("192.168.1.2")
+        .ttl(3600L)
+        .responseGeoIps(List.of(geoIp3, geoIp4))
+        .build();
 
     Request request = Request.builder()
-            .requestId(9153627412115712L)
-            .visitId(visitId)
-            .domainName(domain)
-            .prefix("www")
-            .recordType(RecordType.A)
-            .rcode(0)
-            .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
-            .ok(true)
-            .responses(List.of(response1, response2))
-            .numOfResponses(2)
-            .build();
+        .requestId(9153627412115712L)
+        .visitId(visitId)
+        .domainName(domain)
+        .prefix("www")
+        .recordType(RecordType.A)
+        .rcode(0)
+        .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
+        .ok(true)
+        .responses(List.of(response1, response2))
+        .numOfResponses(2)
+        .build();
 
     return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
   }
@@ -718,113 +720,110 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(6780L, "ISP Belgium"), "FR", 4, "192.168.11");
 
     Response response1 = Response.builder()
-            .responseId(10517255249230897L)
-            .recordData("192.1681.1")
-            .ttl(3600L)
-            .responseGeoIps(List.of(geoIp1, geoIp2))
-            .build();
+        .responseId(10517255249230897L)
+        .recordData("192.1681.1")
+        .ttl(3600L)
+        .responseGeoIps(List.of(geoIp1, geoIp2))
+        .build();
 
     ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(5321L, "ISP Germany"), "NL", 4, "192.1681.2");
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(9865L, "ISP Belgium"), "DE", 4, "192.1681.2");
 
     Response response2 = Response.builder()
-            .responseId(10517864259230897L)
-            .recordData("192.1681.2")
-            .ttl(3600L)
-            .responseGeoIps(List.of(geoIp3, geoIp4))
-            .build();
+        .responseId(10517864259230897L)
+        .recordData("192.1681.2")
+        .ttl(3600L)
+        .responseGeoIps(List.of(geoIp3, geoIp4))
+        .build();
 
     Request request = Request.builder()
-            .requestId(9153627412115712L)
-            .visitId(visitId)
-            .domainName(domain)
-            .prefix("www")
-            .recordType(RecordType.A)
-            .rcode(0)
-            .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
-            .ok(true)
-            .responses(List.of(response1, response2))
-            .numOfResponses(2)
-            .build();
+        .requestId(9153627412115712L)
+        .visitId(visitId)
+        .domainName(domain)
+        .prefix("www")
+        .recordType(RecordType.A)
+        .rcode(0)
+        .crawlTimestamp(ZonedDateTime.parse("2025-03-28T12:00:00Z"))
+        .ok(true)
+        .responses(List.of(response1, response2))
+        .numOfResponses(2)
+        .build();
 
     return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
   }
 
 
-
   public DnsCrawlResult dnsCrawlResultWithNullValues() {
-    return new DnsCrawlResult(null, null, null,null, null);
+    return new DnsCrawlResult(null, null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullRequest() {
     Request request = Request.builder()
-            .requestId(null)
-            .visitId(null)
-            .domainName(null)
-            .prefix(null)
-            .recordType(null)
-            .rcode(null)
-            .crawlTimestamp(null)
-            .ok(false)
-            .responses(List.of())
-            .numOfResponses(0)
-            .build();
+        .requestId(null)
+        .visitId(null)
+        .domainName(null)
+        .prefix(null)
+        .recordType(null)
+        .rcode(null)
+        .crawlTimestamp(null)
+        .ok(false)
+        .responses(List.of())
+        .numOfResponses(0)
+        .build();
 
     return new DnsCrawlResult(List.of(request), null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullResponse() {
     Response response1 = Response.builder()
-            .responseId(null)
-            .recordData(null)
-            .ttl(null)
-            .responseGeoIps(null)
-            .build();
+        .responseId(null)
+        .recordData(null)
+        .ttl(null)
+        .responseGeoIps(null)
+        .build();
 
     Request request = Request.builder()
-            .requestId(null)
-            .visitId(null)
-            .domainName(null)
-            .prefix(null)
-            .recordType(null)
-            .rcode(null)
-            .crawlTimestamp(null)
-            .ok(false)
-            .responses(List.of(response1))
-            .numOfResponses(1)
-            .build();
+        .requestId(null)
+        .visitId(null)
+        .domainName(null)
+        .prefix(null)
+        .recordType(null)
+        .rcode(null)
+        .crawlTimestamp(null)
+        .ok(false)
+        .responses(List.of(response1))
+        .numOfResponses(1)
+        .build();
 
-    return new DnsCrawlResult(List.of(request), null, null,null, null);
+    return new DnsCrawlResult(List.of(request), null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullGeoIp() {
     ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(null, null), null, 0, null);
 
     Response response1 = Response.builder()
-            .responseId(null)
-            .recordData(null)
-            .ttl(null)
-            .responseGeoIps(List.of(geoIp1))
-            .build();
+        .responseId(null)
+        .recordData(null)
+        .ttl(null)
+        .responseGeoIps(List.of(geoIp1))
+        .build();
 
 
     Request request = Request.builder()
-            .requestId(null)
-            .visitId(null)
-            .domainName(null)
-            .prefix(null)
-            .recordType(null)
-            .rcode(null)
-            .crawlTimestamp(null)
-            .ok(false)
-            .responses(List.of(response1))
-            .numOfResponses(1)
-            .build();
+        .requestId(null)
+        .visitId(null)
+        .domainName(null)
+        .prefix(null)
+        .recordType(null)
+        .rcode(null)
+        .crawlTimestamp(null)
+        .ok(false)
+        .responses(List.of(response1))
+        .numOfResponses(1)
+        .build();
 
     return new DnsCrawlResult(List.of(request), null, null, null, null);
   }
-
-
 
 
 }

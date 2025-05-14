@@ -23,141 +23,131 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class SmtpRepositoryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
 
-    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    Path baseLocation;
+  @TempDir(cleanup = CleanupMode.ON_SUCCESS)
+  Path baseLocation;
 
-    @TempDir(cleanup = CleanupMode.ON_SUCCESS)
-    Path tempDir;
+  @TempDir(cleanup = CleanupMode.ON_SUCCESS)
+  Path tempDir;
 
-    private final ObjectMother objectMother = new ObjectMother();
-    private SmtpRepository repository;
+  private final ObjectMother objectMother = new ObjectMother();
+  private SmtpRepository repository;
 
-    @BeforeEach
-    void setUp() {
-        repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
+  @BeforeEach
+  void setUp() {
+    repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
+  }
+
+  @Test
+  @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
+  public void toS3Parquet() throws IOException {
+
+    SmtpRepository s3SmtpRepository = new SmtpRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+
+    logger.info("tempDir = {}", baseLocation);
+    Files.createDirectories(baseLocation);
+    SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
+
+    logger.info("SmtpVisitResult = {}", smtpVisitResult1);
+
+    File jsonFile = tempDir.resolve("smtpVisitResult1.json").toFile();
+    logger.info("jsonFile = {}", jsonFile);
+
+    ObjectWriter jsonWriter = TestUtils.jsonWriter();
+    jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
+
+    s3SmtpRepository.storeResults(jsonFile.toString());
+
+    List<SmtpVisit> smtpVisitResults = s3SmtpRepository.findByDomainName("example.com");
+    logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
+    logger.info("smtpVisitResults = {}", smtpVisitResults);
+    for (SmtpVisit smtpVisitResult : smtpVisitResults) {
+      logger.info("smtpVisitResult = {}", smtpVisitResult);
     }
+    assertThat(smtpVisitResults.size()).isGreaterThan(0);
+  }
 
-    @Test
-    @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
-    public void toS3Parquet() throws IOException {
+  @Test
+  public void toParquet() throws IOException {
 
-        SmtpRepository s3SmtpRepository = new SmtpRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+    logger.info("tempDir = {}", baseLocation);
+    Files.createDirectories(baseLocation);
+    SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
 
-        logger.info("tempDir = {}", baseLocation);
-        Files.createDirectories(baseLocation);
-        SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
+    logger.info("SmtpVisitResult = {}", smtpVisitResult1);
 
-        logger.info("SmtpVisitResult = {}", smtpVisitResult1);
+    File jsonFile = tempDir.resolve("smtpVisitResult2.json").toFile();
+    logger.info("jsonFile = {}", jsonFile);
 
-        File jsonFile = tempDir.resolve("smtpVisitResult1.json").toFile();
-        logger.info("jsonFile = {}", jsonFile);
+    ObjectWriter jsonWriter = TestUtils.jsonWriter();
+    jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
 
-        ObjectWriter jsonWriter = TestUtils.jsonWriter();
-        jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
+    repository.storeResults(jsonFile.toString());
 
-        s3SmtpRepository.storeResults(jsonFile.toString());
+    logger.info("TempDir = {}", tempDir.toAbsolutePath());
 
-        List<SmtpVisit> smtpVisitResults = s3SmtpRepository.findByDomainName("example.com");
-        logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
-        logger.info("smtpVisitResults = {}", smtpVisitResults);
-        for (SmtpVisit smtpVisitResult : smtpVisitResults) {
-            logger.info("smtpVisitResult = {}", smtpVisitResult);
-        }
-        assertThat(smtpVisitResults.size()).isGreaterThan(0);
+
+    List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example1.com");
+    List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example1.com");
+    Optional<SmtpVisit> smtpVisitResultByLatest = repository.findLatestResult("example1.com");
+    Optional<SmtpVisit> smtpVisitResultById = repository.findByVisitId("01HJR2Z6DZHS4G4P9X1BZSD4YV");
+
+    logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
+    logger.info("smtpVisitResults = {}", smtpVisitResults);
+    logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst());
+    logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(1).getConversations().getFirst());
+
+    SearchVisitIdResultItem first = smtpIdAndTimestamp.getFirst();
+    logger.info("ids and timestamp for smtp visit results: {}", first.getVisitId() + ":" + first.getTimestamp());
+    logger.info("latest smtp visit results: {}", smtpVisitResultByLatest);
+    logger.info("smtp visit by id: {}", smtpVisitResultById.orElseThrow().getVisitId());
+
+    for (SmtpVisit smtpVisitResult : smtpVisitResults) {
+      logger.info("smtpVisitResult = {}", smtpVisitResult);
     }
+    assertThat(smtpVisitResults.size()).isEqualTo(1);
+    assertThat(smtpVisitResults.getFirst())
+        .usingRecursiveComparison()
+        .isEqualTo(smtpVisitResult1);
+    assertThat(smtpVisitResults.getFirst().getHosts().size()).isEqualTo(2);
+    assertThat(smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst().toString()).isNotEmpty();
+    assertThat(smtpVisitResults.getFirst().getHosts().get(1).getConversations().getFirst().toString()).isNotEmpty();
+    logger.info(smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst().getTimestamp().toString());
+    logger.info(smtpVisitResults.getFirst().getTimestamp().toString());
+  }
 
-    @Test
-    public void toParquet() throws IOException {
+  @Test
+  public void findShouldReturnCorrectSmtpVisitResultsWhenMultipleWithMultipleHostsArePresent() throws IOException {
+    SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
+    SmtpVisit smtpVisitResult2 = objectMother.smtpVisit2();
 
-        logger.info("tempDir = {}", baseLocation);
-        Files.createDirectories(baseLocation);
-        SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
+    File jsonFile = tempDir.resolve("smtpVisitResult3.json").toFile();
+    logger.info("jsonFile = {}", jsonFile);
 
-        logger.info("SmtpVisitResult = {}", smtpVisitResult1);
+    ObjectWriter jsonWriter = TestUtils.jsonWriter();
+    jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1, smtpVisitResult2));
 
-        File jsonFile = tempDir.resolve("smtpVisitResult2.json").toFile();
-        logger.info("jsonFile = {}", jsonFile);
+    repository.storeResults(jsonFile.toString());
 
-        ObjectWriter jsonWriter = TestUtils.jsonWriter();
-        jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
+    // when
+    List<SmtpVisit> smtpVisitResults1 = repository.findByDomainName("example1.com");
+    List<SmtpVisit> smtpVisitResults2 = repository.findByDomainName("example2.com");
 
-        repository.storeResults(jsonFile.toString());
+    // then
+    assertThat(smtpVisitResults1.size()).isEqualTo(1);
+    assertThat(smtpVisitResults2.size()).isEqualTo(1);
 
-        logger.info("TempDir = {}", tempDir.toAbsolutePath());
+    List<String> hostNames = smtpVisitResults1.stream().flatMap(r -> r.getHosts().stream()).map(h -> h.getHostName()).toList();
 
+    logger.info("hostnames found (there should be 2): {}", hostNames);
+    assertThat(hostNames.size()).isEqualTo(2);
+    assertThat(smtpVisitResults1.getFirst().getHosts().size()).isEqualTo(2);
+    assertThat(smtpVisitResults2.getFirst().getHosts().size()).isEqualTo(2);
 
-        List<SmtpVisit> smtpVisitResults = repository.findByDomainName("example1.com");
-        List<SearchVisitIdResultItem> smtpIdAndTimestamp = repository.searchVisitIds("example1.com");
-        Optional<SmtpVisit> smtpVisitResultByLatest = repository.findLatestResult("example1.com");
-        Optional<SmtpVisit> smtpVisitResultById = repository.findByVisitId("01HJR2Z6DZHS4G4P9X1BZSD4YV");
+    assertThat(smtpVisitResults1.getFirst().getHosts().getFirst().getConversations().getFirst().toString()).isNotEmpty();
+    assertThat(smtpVisitResults2.getFirst().getHosts().getFirst().getConversations().getFirst().toString()).isNotEmpty();
 
-        logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
-        logger.info("smtpVisitResults = {}", smtpVisitResults);
-        logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(0).getConversation());
-        logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(1).getConversation());
-
-        SearchVisitIdResultItem first = smtpIdAndTimestamp.getFirst();
-        logger.info("ids and timestamp for smtp visit results: {}", first.getVisitId() + ":" + first.getTimestamp());
-        logger.info("latest smtp visit results: {}", smtpVisitResultByLatest);
-        logger.info("smtp visit by id: {}", smtpVisitResultById.orElseThrow().getVisitId());
-
-        for (SmtpVisit smtpVisitResult : smtpVisitResults) {
-            logger.info("smtpVisitResult = {}", smtpVisitResult);
-        }
-        assertThat(smtpVisitResults.size()).isEqualTo(1);
-        assertThat(smtpVisitResults.getFirst())
-                .usingRecursiveComparison()
-                .isEqualTo(smtpVisitResult1);
-        assertThat(smtpVisitResults.getFirst().getHosts().size()).isEqualTo(2);
-        assertThat(smtpVisitResults.getFirst().getHosts().get(0).getConversation().toString()).isNotEmpty();
-        assertThat(smtpVisitResults.getFirst().getHosts().get(1).getConversation().toString()).isNotEmpty();
-        logger.info(smtpVisitResults.getFirst().getHosts().get(0).getConversation().getTimestamp().toString());
-        logger.info(smtpVisitResults.getFirst().getTimestamp().toString());
-    }
-
-    @Test
-    public void findShouldReturnCorrectSmtpVisitResultsWhenMultipleWithMultipleHostsArePresent() throws IOException {
-        SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
-        SmtpVisit smtpVisitResult2 = objectMother.smtpVisit2();
-
-        File jsonFile = tempDir.resolve("smtpVisitResult3.json").toFile();
-        logger.info("jsonFile = {}", jsonFile);
-
-        ObjectWriter jsonWriter = TestUtils.jsonWriter();
-        jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1, smtpVisitResult2));
-
-        repository.storeResults(jsonFile.toString());
-
-        // when
-        List<SmtpVisit> smtpVisitResults1 = repository.findByDomainName("example1.com");
-        List<SmtpVisit> smtpVisitResults2 = repository.findByDomainName("example2.com");
-
-        // then
-        assertThat(smtpVisitResults1.size()).isEqualTo(1);
-        assertThat(smtpVisitResults2.size()).isEqualTo(1);
-
-        List<String> hostNames = new ArrayList<>();
-
-        for (SmtpHost smtpHost : smtpVisitResults1.getFirst().getHosts()) {
-            hostNames.add(smtpHost.getHostName());
-
-        }
-
-        logger.info("hostnames found (there should be 2): {}",hostNames);
-        assertThat(hostNames.size()).isEqualTo(2);
-        assertThat(smtpVisitResults1.getFirst().getHosts().size()).isEqualTo(2);
-        assertThat(smtpVisitResults2.getFirst().getHosts().size()).isEqualTo(2);
-
-        assertThat(smtpVisitResults1.getFirst().getHosts().getFirst().getConversation().toString()).isNotEmpty();
-        assertThat(smtpVisitResults2.getFirst().getHosts().getFirst().getConversation().toString()).isNotEmpty();
-
-
-
-
-
-
-    }
+  }
 
 }

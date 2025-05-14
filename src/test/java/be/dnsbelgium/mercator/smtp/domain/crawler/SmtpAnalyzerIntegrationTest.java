@@ -37,12 +37,12 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result.getTimestamp()).isNotNull();
     List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
-    assertThat(hosts.getFirst().getConversation().getConnectReplyCode()).isEqualTo(220);
-    assertThat(hosts.getFirst().getConversation().getStartTlsReplyCode()).isEqualTo(220);
-    assertThat(hosts.getFirst().getConversation().getConnectionTimeMs()).isGreaterThan(1);
-    assertThat(hosts.getFirst().getConversation().isConnectOK()).isTrue();
-    assertThat(hosts.getFirst().getConversation().isStartTlsOk()).isTrue();
-    assertThat(hosts.getFirst().getConversation().getErrorMessage()).isNull();
+    assertThat(hosts.getFirst().getConversations().getFirst().getConnectReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversations().getFirst().getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversations().getFirst().getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(hosts.getFirst().getConversations().getFirst().isConnectOK()).isTrue();
+    assertThat(hosts.getFirst().getConversations().getFirst().isStartTlsOk()).isTrue();
+    assertThat(hosts.getFirst().getConversations().getFirst().getErrorMessage()).isNull();
   }
 
 }

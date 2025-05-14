@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.smtp;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpAnalyzer;
 import be.dnsbelgium.mercator.smtp.domain.crawler.SmtpConversationCache;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import org.slf4j.Logger;
@@ -44,9 +45,10 @@ public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
   @SuppressWarnings("unused")
   private void addToCache(SmtpVisit visit) {
     for (SmtpHost host : visit.getHosts()) {
-      var conversation = host.getConversation();
-      logger.debug("Saving conversation with {} in the cache", conversation.getIp());
-      cache.add(conversation.getIp(), conversation);
+      for (SmtpConversation conversation : host.getConversations()) {
+        logger.debug("Saving conversation with {} in the cache", conversation.getIp());
+        cache.add(conversation.getIp(), conversation);
+      }
     }
   }
 }

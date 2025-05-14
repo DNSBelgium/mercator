@@ -2,6 +2,9 @@ package be.dnsbelgium.mercator.smtp.dto;
 
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,6 +17,6 @@ public class SmtpHost {
 
   private int priority;
 
-  private SmtpConversation conversation;
+  private List<SmtpConversation> conversations = new ArrayList<>();
 
 }

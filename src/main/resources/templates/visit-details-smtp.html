@@ -57,75 +57,77 @@
         </tr>
         </tbody>
       </table>
-      <div th:if="${host.conversation != null}">
+      <div th:if="${host.conversations != null}">
+        <div th:each="conversation : ${host.conversations}">
         <details>
-          <summary>Click to show conversation with <span th:text="${host.conversation.ip}"></span></summary>
-          <table th:if="${host.conversation != null}">
+          <summary>Click to show conversation with <span th:text="${conversation.ip}"></span></summary>
+          <table th:if="${conversation != null}">
             <tbody>
             <tr>
               <th>IP</th>
-              <td th:text="${host.conversation.ip}"></td>
+              <td th:text="${conversation.ip}"></td>
             </tr>
             <tr>
               <th>ASN</th>
-              <td th:text="${host.conversation.asn}"></td>
+              <td th:text="${conversation.asn}"></td>
             </tr>
             <tr>
               <th>Country</th>
-              <td th:text="${host.conversation.country}"></td>
+              <td th:text="${conversation.country}"></td>
             </tr>
             <tr>
               <th>ASN organisation</th>
-              <td th:text="${host.conversation.asnOrganisation}"></td>
+              <td th:text="${conversation.asnOrganisation}"></td>
             </tr>
             <tr>
               <th>Banner</th>
-              <td th:text="${host.conversation.banner}"></td>
+              <td th:text="${conversation.banner}"></td>
             </tr>
             <tr>
               <th>Connect OK</th>
-              <td th:text="${host.conversation.connectOK} ? 'Yes' : 'No'"></td>
+              <td th:text="${conversation.connectOK} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
               <th>Connect reply code</th>
-              <td th:text="${host.conversation.connectReplyCode}"></td>
+              <td th:text="${conversation.connectReplyCode}"></td>
             </tr>
-            <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${host.conversation.getSupportedExtensions()}, 4)}"></tr>
+            <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${conversation.getSupportedExtensions()}, 4)}"></tr>
             <tr>
               <th>IP version</th>
-              <td th:text="${host.conversation.ipVersion}"></td>
+              <td th:text="${conversation.ipVersion}"></td>
             </tr>
             <tr>
               <th>START_TLS OK</th>
-              <td th:text="${host.conversation.startTlsOk} ? 'Yes' : 'No'"></td>
+              <td th:text="${conversation.startTlsOk} ? 'Yes' : 'No'"></td>
             </tr>
             <tr>
               <th>START_TLS reply code</th>
-              <td th:text="${host.conversation.startTlsReplyCode}"></td>
+              <td th:text="${conversation.startTlsReplyCode}"></td>
             </tr>
-            <tr th:replace="~{fragments/general :: textDisplay('Error message', ${host.conversation.getErrorMessage()}, 200)}"></tr>
-            <tr th:replace="~{fragments/general :: textDisplay('Error', ${host.conversation.getError()}, 200)}"></tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error message', ${conversation.getErrorMessage()}, 200)}"></tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error', ${conversation.getError()}, 200)}"></tr>
             <tr>
               <th>Connection time</th>
-              <td th:text="${host.conversation.connectionTimeMs} + ' ms'"></td>
+              <td th:text="${conversation.connectionTimeMs} + ' ms'"></td>
             </tr>
             <tr>
               <th>Software</th>
-              <td th:text="${host.conversation.software}"></td>
+              <td th:text="${conversation.software}"></td>
             </tr>
             <tr>
               <th>Software version</th>
-              <td th:text="${host.conversation.softwareVersion}"></td>
+              <td th:text="${conversation.softwareVersion}"></td>
             </tr>
             <tr>
               <th>Timestamp</th>
-              <td th:text="${@dateTimeUtil.format(host.conversation.timestamp)}"></td>
+              <td th:text="${@dateTimeUtil.format(conversation.timestamp)}"></td>
             </tr>
             </tbody>
           </table>
         </details>
+        </div>
       </div>
-      <p th:if="${host.conversation == null}">No conversation</p>
+        <p th:if="${host.getConversations() == null or #lists.isEmpty(host.getConversations())}">No conversations</p>
     </div>
   </div>
 </main>

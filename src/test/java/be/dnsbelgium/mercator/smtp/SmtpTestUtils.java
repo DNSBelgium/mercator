@@ -16,6 +16,7 @@ import org.xbill.DNS.TextParseException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -75,7 +76,7 @@ public class SmtpTestUtils {
     public static SmtpHost host() {
         return SmtpHost.builder()
             .hostName("smtp1.example.org")
-            .conversation(conversation())
+            .conversations(List.of(conversation()))
             .fromMx(true)
             .priority(10)
             .build();
@@ -119,7 +120,7 @@ public class SmtpTestUtils {
             .build();
         SmtpHost host = SmtpHost.builder()
             .hostName("smtp1.example.com")
-            .conversation(conversation)
+            .conversations(Collections.singletonList(conversation))
             .build();
         return SmtpVisit.builder()
             .visitId(visitId)
