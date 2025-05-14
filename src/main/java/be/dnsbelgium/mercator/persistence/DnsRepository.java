@@ -53,7 +53,7 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
             String cteDefinitions = readFromClasspath("sql/dns/cte_definitions.sql");
             logger.debug("cteDefinitions: {}", cteDefinitions);
             copyToParquet(jsonLocation, dataSource, cteDefinitions, "requests", requestDestination);
-            copyToParquet(jsonLocation, dataSource, cteDefinitions, "responses", responseDestination);
+            copyToParquet(jsonLocation, dataSource, cteDefinitions, "responses_without_geoips", responseDestination);
             copyToParquet(jsonLocation, dataSource, cteDefinitions, "geo_ips_casted", geoIpDestination);
         }
     }

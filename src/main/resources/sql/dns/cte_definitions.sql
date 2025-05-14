@@ -48,6 +48,10 @@ with
             response_geo_ips
         from responses_unnested
     ),
+    responses_without_geoips as (
+        select * exclude (response_geo_ips)
+        from responses
+    ),
     geo_ips as (
         select
             visit_id,
