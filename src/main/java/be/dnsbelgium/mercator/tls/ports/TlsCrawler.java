@@ -48,7 +48,6 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
     this.meterRegistry = meterRegistry;
   }
 
-  @SuppressWarnings("unused") // TODO
   public void addToCache(TlsVisit tlsVisit) {
     fullScanCache.add(Instant.now(), tlsVisit.getFullScanEntity());
   }
@@ -92,12 +91,14 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
       }
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
-    return TlsVisit.fromScan(
+    TlsVisit tlsVisit = TlsVisit.fromScan(
             visitRequest.getVisitId(),
             visitRequest.getDomainName(),
             hostName,
             Instant.now(),
             fullScan);
+    addToCache(tlsVisit);
+    return tlsVisit;
   }
 
   private FullScan scanIfNotBlacklisted(InetSocketAddress address) {
