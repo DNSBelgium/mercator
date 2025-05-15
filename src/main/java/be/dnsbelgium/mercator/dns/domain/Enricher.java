@@ -48,7 +48,8 @@ public class Enricher {
       InetAddress[] ips = InetAddress.getAllByName(host_or_ip);
       for (InetAddress ip : ips) {
         ResponseGeoIp enriched = geoIpEnricher.enrich(ip);
-        result.add(enriched);
+        if (enriched != null)
+          result.add(enriched);
       }
     } catch (UnknownHostException e) {
       // TODO: should we log this? Does this also happen when hostname is valid but does not exist?

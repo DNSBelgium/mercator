@@ -45,7 +45,13 @@ with
             ttl                 ::INTEGER      as ttl,
             year                ::INTEGER      as year,
             month               ::INTEGER      as month,
-            response_geo_ips
+            response_geo_ips    ::STRUCT(
+                                    asn VARCHAR,
+                                    country VARCHAR,
+                                    ip VARCHAR,
+                                    asn_organisation VARCHAR,
+                                    ip_version VARCHAR
+                                    )[] as response_geo_ips
         from responses_unnested
     ),
     responses_without_geoips as (
