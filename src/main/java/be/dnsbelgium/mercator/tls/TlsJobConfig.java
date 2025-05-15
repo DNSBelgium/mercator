@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.batch.BatchConfig;
 import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequestFieldSetMapper;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
@@ -19,6 +20,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +76,7 @@ public class TlsJobConfig {
             .resource(resource)
             .delimited()
             .names("visitId", "domainName")
-            .targetType(VisitRequest.class)
+            .fieldSetMapper(new VisitRequestFieldSetMapper())
             .build();
   }
 
@@ -104,6 +106,8 @@ public class TlsJobConfig {
             .reader(tlsItemReader)
             .taskExecutor(tlsTaskExecutor)
             .throttleLimit(throttleLimit)
+            .faultTolerant()
+            .skip(FlatFileParseException.class)
             .processor(itemProcessor)
             .writer(itemWriter)
             .build();
