@@ -509,7 +509,8 @@
                     </to>
                     <from>
                         <image>
-                            eclipse-temurin:23.0.1_11-jre-ubi9-minimal@sha256:f2521f4f7cf25f1259e5db99cda2a6a676f44c68cc452cd1cc0bbeb3f72c06f8
+<!--                            eclipse-temurin:23.0.1_11-jre-ubi9-minimal@sha256:f2521f4f7cf25f1259e5db99cda2a6a676f44c68cc452cd1cc0bbeb3f72c06f8-->
+                            eclipse-temurin:24.0.1_9-jdk-ubi9-minimal
                         </image>
                         <platforms>
                             <platform>
