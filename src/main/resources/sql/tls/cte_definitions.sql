@@ -14,7 +14,7 @@ with tls as (
                 certificate_expired             ::bool          as certificate_expired,
                 certificate_too_soon            ::bool          as certificate_too_soon,
                 certificate_chain_fingerprints  ::varchar[]     as certificate_chain_fingerprints,
-                to_timestamp(crawl_timestamp)                   as crawl_timestamp
+                crawl_timestamp                 ::timestamp     as crawl_timestamp
          from visits
      ),
      full_scan_entity as (
@@ -22,7 +22,7 @@ with tls as (
          from visits
      ),
      full_scan_typed as (
-         select to_timestamp(crawl_timestamp)               as full_scan_crawl_timestamp,
+         select crawl_timestamp             ::timestamp     as full_scan_crawl_timestamp,
                 ip                          ::varchar       as ip,
                 server_name                 ::varchar       as server_name,
                 connect_ok                  ::bool          as connect_ok,
@@ -59,20 +59,14 @@ with tls as (
                       serial_number_hex varchar,
                       public_key_schema varchar,
                       public_key_length int,
-                      not_before bigint,
-                      not_after bigint,
+                      not_before timestamp,
+                      not_after timestamp,
                       issuer varchar,
                       subject varchar,
                       signature_hash_algorithm varchar,
                       sha256_fingerprint varchar,
                       subject_alternative_names varchar[]
           )[]), max_depth :=2 ) from visits
-     ),
-     certificates_typed as (
-         select * exclude(not_before, not_after),
-                to_timestamp(not_before) as not_before,
-                to_timestamp(not_after) as not_after
-         from certificates_unnested
      ),
      export_visits as (
          select *,
@@ -83,5 +77,5 @@ with tls as (
             full_scan_typed
      ),
      export_certificates as (
-         select distinct(*) from certificates_typed
+         select distinct(*) from certificates_unnested
      )

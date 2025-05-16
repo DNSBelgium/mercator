@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class Request {
     private Integer rcode;
 
     @Builder.Default
-    private ZonedDateTime crawlTimestamp = ZonedDateTime.now();
+    private Instant crawlTimestamp = Instant.now();
 
     private boolean ok;
 

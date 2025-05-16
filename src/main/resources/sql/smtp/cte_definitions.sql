@@ -5,15 +5,15 @@ with
     ),
     all_results as (
         select *,
-               year(to_timestamp(timestamp)) as year,
-               month(to_timestamp(timestamp)) as month
+               year(timestamp) as year,
+               month(timestamp) as month
         from json_data
     ),
     smtp_visit_results as (
         select
             visit_id                ::VARCHAR       as visit_id,
             domain_name             ::VARCHAR       as domain_name,
-            to_timestamp(timestamp)                 as timestamp,
+            timestamp               ::TIMESTAMP     as timestamp,
             num_conversations       ::INTEGER       as num_conversations,
             crawl_status            ::VARCHAR       as crawl_status,
             year,
@@ -46,7 +46,7 @@ with
             connection_time_ms      ::BIGINT        AS conversation_connection_time_ms,
             software                ::VARCHAR       AS conversation_software,
             software_version        ::VARCHAR       AS conversation_software_version,
-            to_timestamp(timestamp)                 AS conversation_timestamp,
+            timestamp               ::TIMESTAMP     AS conversation_timestamp,
             month,
             year
         FROM extract_unnested_hosts_from_smtp

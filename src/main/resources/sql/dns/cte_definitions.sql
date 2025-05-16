@@ -6,8 +6,8 @@ with
     all_results as (
         select
             *,
-            year(to_timestamp(crawl_timestamp))     as year,
-            month(to_timestamp(crawl_timestamp))    as month
+            year(crawl_timestamp)     as year,
+            month(crawl_timestamp)    as month
         from unnested
     ),
     requests as (
@@ -19,7 +19,7 @@ with
             prefix             ::VARCHAR       as prefix,
             record_type        ::VARCHAR       as record_type,
             rcode              ::INTEGER       as rcode,
-            to_timestamp(crawl_timestamp)      as crawl_timestamp,
+            crawl_timestamp    ::TIMESTAMP     as crawl_timestamp,
             ok                 ::BOOLEAN       as ok,
             problem            ::VARCHAR       as problem,
             num_of_responses   ::INTEGER       as num_of_responses,

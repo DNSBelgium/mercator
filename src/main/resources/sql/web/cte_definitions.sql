@@ -9,15 +9,15 @@ with
             domain_name                   ::varchar            as domain_name,
             start_url                     ::varchar            as start_url,
             matching_url                  ::varchar            as matching_url,
-            to_timestamp(crawl_started)   ::timestamptz        as crawl_started,
-            to_timestamp(crawl_finished)  ::timestamptz        as crawl_finished,
+            crawl_started                 ::timestamp          as crawl_started,
+            crawl_finished                ::timestamp          as crawl_finished,
             vat_values                    ::varchar[]          as vat_values,
             visited_urls                  ::varchar[]          as visited_urls,
             page_visits                                        as page_visits,
             html_features                                      as html_features,
             detected_technologies         ::varchar[]          as detected_technologies,
-            year(to_timestamp(crawl_started))  as year,
-            month(to_timestamp(crawl_started)) as month
+            year(crawl_started)  as year,
+            month(crawl_started) as month
         from json_data
     ),
     web_crawl_result as (
@@ -48,8 +48,8 @@ with
         select
             visit_id                      ::VARCHAR            as visit_id,
             domain_name                   ::VARCHAR            as domain_name,
-            to_timestamp(crawl_started::double)                as crawl_started,
-            to_timestamp(crawl_finished::double)               as crawl_finished,
+            crawl_started                 ::TIMESTAMP          as crawl_started,
+            crawl_finished                ::TIMESTAMP          as crawl_finished,
             status_code                   ::INTEGER            as status_code,
             url                           ::VARCHAR            as url,
             link_text                     ::VARCHAR            as link_text,
@@ -72,7 +72,7 @@ with
     html_features_casted as (
         select
             visit_id                              ::VARCHAR     as visit_id,
-            to_timestamp(crawl_timestamp)                       as crawl_timestamp,
+            crawl_timestamp                       ::TIMESTAMP   as crawl_timestamp,
             domain_name                           ::VARCHAR     as domain_name,
             url                                   ::VARCHAR     as url,
             nb_imgs                               ::INTEGER     as nb_imgs,

@@ -4,7 +4,7 @@ WITH
         FROM read_parquet(coalesce(getvariable('smtpVisitDestination'), '~/mercator/data/smtp/visits') || '/**/*/*.parquet', union_by_name=True)
     ),
     visits_result AS (
-        SELECT * replace(epoch(timestamp) as timestamp)
+        SELECT *
         FROM visits_result1
     ),
     hosts_result AS (
@@ -33,7 +33,7 @@ WITH
                        connection_time_ms := conversation_connection_time_ms,
                        software := conversation_software,
                        software_version := conversation_software_version,
-                       "timestamp" := epoch(conversation_timestamp)
+                       "timestamp" := conversation_timestamp
                ) as conversation
         from hosts_result
     ),

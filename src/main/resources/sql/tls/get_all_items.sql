@@ -10,9 +10,9 @@ with visits as (
                 certificate_expired,
                 certificate_too_soon,
                 certificate_chain_fingerprints,
-                epoch(crawl_timestamp) as crawl_timestamp,
+                crawl_timestamp,
              {
-             crawl_timestamp: epoch(full_scan_crawl_timestamp),
+             crawl_timestamp: full_scan_crawl_timestamp,
              ip: ip,
              server_name: server_name,
              connect_ok: connect_ok,

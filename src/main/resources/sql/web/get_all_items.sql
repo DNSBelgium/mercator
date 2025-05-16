@@ -1,27 +1,15 @@
 with
-    crawl_result1  as (
+    crawl_result  as (
         select * exclude (year, month)
         from read_parquet(coalesce(getvariable('webCrawlDestination'), '~/mercator/data/web/crawl_result') || '/**/*.parquet', union_by_name=True)
     ),
-    html_feature1  as (
+    html_feature  as (
         select * exclude (year, month)
         from read_parquet(coalesce(getvariable('featuresDestination'), '~/mercator/data/web/html_features') || '/**/*.parquet', union_by_name=True)
     ),
-    page_visit1    as (
+    page_visit    as (
         select * exclude (year, month)
         from read_parquet(coalesce(getvariable('pageVisitDestination'), '~/mercator/data/web/page_visit') || '/**/*.parquet', union_by_name=True)
-    ),
-    crawl_result   as (
-        select * replace(epoch(crawl_started) as crawl_started, epoch(crawl_finished) as crawl_finished)
-        from crawl_result1
-    ),
-    html_feature   as (
-        select * replace(epoch(crawl_timestamp) as crawl_timestamp)
-        from html_feature1
-    ),
-    page_visit     as (
-        select * replace(epoch(crawl_started) as crawl_started, epoch(crawl_finished) as crawl_finished)
-        from page_visit1
     ),
     features_per_visit as (
         select visit_id,

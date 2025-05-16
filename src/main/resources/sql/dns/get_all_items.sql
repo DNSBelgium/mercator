@@ -8,7 +8,7 @@ with
         from read_parquet(coalesce(getvariable('responseDestination'), '~/mercator/data/dns/responses') || '/**/*.parquet')
     ),
     dns_request as (
-        select * replace(epoch(crawl_timestamp) as crawl_timestamp)
+        select *
         from read_parquet(coalesce(getvariable('requestDestination'), '~/mercator/data/dns/requests') || '/**/*.parquet')
     ),
     geo_ip as (
