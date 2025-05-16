@@ -16,8 +16,8 @@ with
             page_visits                                        as page_visits,
             html_features                                      as html_features,
             detected_technologies         ::varchar[]          as detected_technologies,
-            year(crawl_started)  as year,
-            month(crawl_started) as month
+            year(crawl_started::timestamp)  as year,
+            month(crawl_started::timestamp) as month
         from json_data
     ),
     web_crawl_result as (

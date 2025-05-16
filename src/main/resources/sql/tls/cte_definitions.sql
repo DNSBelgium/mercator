@@ -70,8 +70,8 @@ with tls as (
      ),
      export_visits as (
          select *,
-             year(crawl_timestamp)  AS year,
-             month(crawl_timestamp) AS month
+             year(crawl_timestamp::timestamp)  AS year,
+             month(crawl_timestamp::timestamp) AS month
          from visits_typed
             positional join
             full_scan_typed

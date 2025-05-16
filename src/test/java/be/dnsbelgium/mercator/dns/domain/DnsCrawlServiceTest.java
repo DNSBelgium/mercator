@@ -24,6 +24,7 @@ import org.xbill.DNS.Name;
 import org.xbill.DNS.Rcode;
 import org.xbill.DNS.TextParseException;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -131,9 +132,9 @@ class DnsCrawlServiceTest {
     VisitRequest visitRequest = new VisitRequest(visitId, "dnsbelgium.be");
     var records = List.of(new RRecord(TTL, IP1), new RRecord(TTL, IP2));
     var dnsRequest = DnsRequest.success("@", A, records);
-    ZonedDateTime before = ZonedDateTime.now();
+    Instant before = Instant.now();
     Request request = dnsCrawlService.buildEntity(visitRequest, dnsRequest);
-    ZonedDateTime after = ZonedDateTime.now();
+    Instant after = Instant.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
     assertThat(request.getRequestId()).isNotNull();
@@ -143,7 +144,7 @@ class DnsCrawlServiceTest {
     assertThat(request.getRcode()).isEqualTo(0);
     assertThat(request.getVisitId()).isEqualTo(visitId);
     assertThat(request.getProblem()).isNull();
-    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(ZonedDateTime.now());
+    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(Instant.now());
     assertThat(request.getCrawlTimestamp()).isBetween(before,after);
     assertThat(request.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(request.isOk()).isTrue();
@@ -162,9 +163,9 @@ class DnsCrawlServiceTest {
     var visitId = VisitIdGenerator.generate();
     VisitRequest visitRequest = new VisitRequest(visitId, "dnsbelgium.be");
     var nxdomain = DnsRequest.nxdomain("@", A);
-    ZonedDateTime before = ZonedDateTime.now();
+    Instant before = Instant.now();
     Request request = dnsCrawlService.buildEntity(visitRequest, nxdomain);
-    ZonedDateTime after = ZonedDateTime.now();
+    Instant after = Instant.now();
     logRequest(request);
     assertThat(request.getRecordType()).isEqualTo(A);
     assertThat(request.getRequestId()).isNotNull();
@@ -174,7 +175,7 @@ class DnsCrawlServiceTest {
     assertThat(request.getRcode()).isEqualTo(Rcode.NXDOMAIN);
     assertThat(request.getVisitId()).isEqualTo(visitId);
     assertThat(request.getProblem()).isEqualTo("nxdomain");
-    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(ZonedDateTime.now());
+    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(Instant.now());
     assertThat(request.getCrawlTimestamp()).isBetween(before,after);
     assertThat(request.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(request.isOk()).isFalse();

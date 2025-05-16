@@ -5,8 +5,8 @@ with
     ),
     all_results as (
         select *,
-               year(timestamp) as year,
-               month(timestamp) as month
+               year(timestamp::timestamp) as year,
+               month(timestamp::timestamp) as month
         from json_data
     ),
     smtp_visit_results as (

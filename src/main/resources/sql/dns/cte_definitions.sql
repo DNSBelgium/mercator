@@ -6,8 +6,8 @@ with
     all_results as (
         select
             *,
-            year(crawl_timestamp)     as year,
-            month(crawl_timestamp)    as month
+            year(crawl_timestamp::timestamp)     as year,
+            month(crawl_timestamp::timestamp)    as month
         from unnested
     ),
     requests as (
