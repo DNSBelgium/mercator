@@ -30,8 +30,11 @@ public class JobListener implements JobExecutionListener {
 
     jobExecution.getAllFailureExceptions().forEach(e -> logger.error("Failure while executing job {}", jobName, e));
 
-    jobExecution.getStepExecutions().forEach(e -> {
-      logger.error("Failure(s) in step {} : {}", e.getStepName(), e.getFailureExceptions());
+    jobExecution.getStepExecutions().forEach(step -> {
+      step.getFailureExceptions().forEach(e -> {
+        logger.error("Failure(s) in step {} : {}", step.getStepName(), e.getMessage(), e);
+      });
+
     });
 
     latch.countDown();

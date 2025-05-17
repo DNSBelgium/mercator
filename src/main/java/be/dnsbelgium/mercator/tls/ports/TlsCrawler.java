@@ -77,9 +77,12 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
       if (resultFromCache.isPresent()) {
         logger.debug("Found matching result in the cache. Now get certificates for {}", hostName);
         TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
-        SingleVersionScan singleVersionScan = null;
-        if (version != null) {
-          singleVersionScan = tlsScanner.scan(version, hostName);
+        if (version == null) {
+          version = TlsProtocolVersion.TLS_1_0;
+        }
+        SingleVersionScan singleVersionScan = tlsScanner.scan(version, hostName);
+        if (singleVersionScan == null) {
+          logger.warn("singleVersionScan is null for hostName={} version={} resultFromCache.get()={}", hostName, version, resultFromCache.get());
         }
         return TlsVisit.fromCache(
                 visitRequest.getVisitId(),
