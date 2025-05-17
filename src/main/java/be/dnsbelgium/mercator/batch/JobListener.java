@@ -27,6 +27,13 @@ public class JobListener implements JobExecutionListener {
   @Override
   public void afterJob(@NonNull JobExecution jobExecution) {
     logger.info("afterJob: jobName={}, instance={}", jobName, jobExecution.getJobInstance());
+
+    jobExecution.getAllFailureExceptions().forEach(e -> logger.error("Failure while executing job {}", jobName, e));
+
+    jobExecution.getStepExecutions().forEach(e -> {
+      logger.error("Failure(s) in step {} : {}", e.getStepName(), e.getFailureExceptions());
+    });
+
     latch.countDown();
   }
 

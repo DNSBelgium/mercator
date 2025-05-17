@@ -67,7 +67,9 @@ public class JobRunner implements CommandLineRunner {
 
           logger.info("job {} exit description: {}", name, jobExecution.getExitStatus().getExitDescription());
 
-          if (jobExecution.getStatus() != BatchStatus.COMPLETED) {
+          int failureCount = jobExecution.getAllFailureExceptions().size();
+          if (failureCount > 0 || jobExecution.getStatus() != BatchStatus.COMPLETED) {
+            logger.error("job {} failed => exit 1", name);
             SpringApplication.exit(context, () -> 1);
             System.exit(1);
           }

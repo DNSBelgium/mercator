@@ -84,7 +84,7 @@ public class WebJobConfig {
                     ResourcelessTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
-                    JsonItemWriter<WebCrawlResult> jsonItemWriter,
+                    JsonItemWriter<WebCrawlResult> webItemWriter,
                     @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor
   ) {
 
@@ -95,7 +95,7 @@ public class WebJobConfig {
             .<VisitRequest, WebCrawlResult>chunk(chunkSize, transactionManager)
             .reader(itemReader)
             .processor(itemProcessor)
-            .writer(jsonItemWriter)
+            .writer(webItemWriter)
             .taskExecutor(taskExecutor)
             .throttleLimit(maxPoolSize - 10)
             .build();
