@@ -26,15 +26,10 @@ public class JsonConfiguration {
 
   private static final Logger logger = LoggerFactory.getLogger(JsonConfiguration.class);
 
-  private static DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
-      .appendPattern("yyyy-MM-dd HH:mm:ss")
-      .optionalStart()
-      .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
-      .optionalEnd()
-      .toFormatter()
-      .withZone(ZoneOffset.UTC);
 
   public static class CustomInstantSerializer extends JsonSerializer<Instant> {
+    // Always serialize with 6 digits (duckdb bug?)
+    DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneOffset.UTC);
 
     @Override
     public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
@@ -43,7 +38,14 @@ public class JsonConfiguration {
   }
 
   public class CustomInstantDeserializer extends JsonDeserializer<Instant> {
-
+    // always deserialize with flexible fraction because duckdb does not always add a fraction
+    private static DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+        .appendPattern("yyyy-MM-dd HH:mm:ss")
+        .optionalStart()
+        .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+        .optionalEnd()
+        .toFormatter()
+        .withZone(ZoneOffset.UTC);
     @Override
     public Instant deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
       return Instant.from(DATE_TIME_FORMATTER.parse(p.getText()));
