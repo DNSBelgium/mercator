@@ -41,9 +41,10 @@ public class Jappalyzer {
     private Set<TechnologyMatch> getTechnologyMatches(Page page) {
         Set<TechnologyMatch> matchesSet = technologies
                 .stream()
-                //.parallel()
+                .parallel()
                 .map(technology -> technology.applicableTo(page))
-                .filter(TechnologyMatch::isMatched).collect(Collectors.toSet());
+                .filter(TechnologyMatch::isMatched)
+                .collect(Collectors.toSet());
         enrichMatchesWithImpliedTechnologies(matchesSet);
         return matchesSet;
     }

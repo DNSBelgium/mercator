@@ -197,14 +197,19 @@ public class WebCrawler {
             pageVisits.add(securityTxtVisit);
         }
 
-        Set<String> detectedTechnologies = siteVisit.getVisitedPages().entrySet().stream().map(Map.Entry::getValue)
-            .map(technologyAnalyzer::analyze).flatMap(Set::stream).collect(Collectors.toSet());
+        Set<String> detectedTechnologies = siteVisit.getVisitedPages()
+                .values()
+                .stream()
+                .map(technologyAnalyzer::analyze)
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
 
         logger.debug("detectedTechnologies = {}", detectedTechnologies);
 
         // integrated wappalyzer
         webCrawlResult.setDetectedTechnologies(detectedTechnologies);
         webCrawlResult.setPageVisits(pageVisits);
+        webCrawlResult.setCrawlFinished(Instant.now());
         return webCrawlResult;
     }
 

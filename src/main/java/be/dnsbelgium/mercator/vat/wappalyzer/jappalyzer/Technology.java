@@ -5,6 +5,7 @@ import be.dnsbelgium.mercator.vat.domain.Page;
 
 import java.util.*;
 
+@SuppressWarnings("LombokGetterMayBeUsed")
 public class Technology {
 
     private final String name;
@@ -209,6 +210,9 @@ public class Technology {
 
     private PatternMatch getTechnologyStringListMatch(List<String> lines, PatternWithVersion pattern) {
         for (String line : lines) {
+            if (line.length() > 500) {
+                line = line.substring(0, 500);
+            }
             PatternMatch match = pattern.match(line);
             if (match.isMatched()) {
                 return match;
