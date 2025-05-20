@@ -62,6 +62,39 @@
         <tr th:replace="~{fragments/general :: listDisplay('Certificate chain', ${result.certificateChainFingerprints}, 4)}"></tr>
         </tbody>
       </table>
+      <h3>Certificate chain</h3>
+      <div th:if="${result.certificateChain != null and !result.certificateChain.isEmpty()}">
+        <div th:each="cert : ${result.certificateChain}">
+          <details>
+            <summary><h4 th:text="${cert.subject}"></h4></summary>
+            <table>
+              <tbody>
+              <tr><th>Version</th><td th:text="${cert.version}"></td></tr>
+              <tr><th>Serial Number</th><td th:text="${cert.serialNumberHex}"></td></tr>
+              <tr><th>Public Key Schema</th><td th:text="${#strings.replace(cert.publicKeySchema, 'PublicKey', '')}"></td></tr>
+              <tr><th>Public Key Length</th><td th:text="${cert.publicKeyLength}"></td></tr>
+              <tr><th>Not Before</th><td th:text="${@dateTimeUtil.format(cert.notBefore)}"></td></tr>
+              <tr><th>Not After</th><td th:text="${@dateTimeUtil.format(cert.notAfter)}"></td></tr>
+              <tr><th>Issuer</th><td th:text="${cert.issuer}"></td></tr>
+              <tr><th>Subject</th><td th:text="${cert.subject}"></td></tr>
+              <tr><th>Signature Hash Algorithm</th><td th:text="${cert.signatureHashAlgorithm}"></td></tr>
+              <tr><th>SHA-256 Fingerprint</th><td th:text="${cert.sha256Fingerprint}"></td></tr>
+              <tr><th>Subject Alternative Names</th>
+                <td>
+                  <ul>
+                    <li th:each="san : ${cert.subjectAlternativeNames}" th:text="${san}"></li>
+                  </ul>
+                </td>
+              </tr>
+              <tr><th>Signature Hash Algorithm</th><td th:text="${cert.signatureHashAlgorithm}"></td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+      <div th:if="${result.certificateChain == null or result.certificateChain.isEmpty()}">
+        <p>No certificates available.</p>
+      </div>
       <h3>Protocols</h3>
       <table>
         <thead>
