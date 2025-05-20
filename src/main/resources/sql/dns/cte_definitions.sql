@@ -1,84 +1,36 @@
-with
-    unnested as (
-        select status, unnest(requests, max_depth:=2)
-        from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/dns/*.json'), field_appearance_threshold = 1)
-    ),
-    all_results as (
-        select
-            *,
-            year(crawl_timestamp::timestamp)     as year,
-            month(crawl_timestamp::timestamp)    as month
-        from unnested
-    ),
-    requests as (
-        select
-            status             ::VARCHAR       as status,
-            request_id         ::VARCHAR       as request_id,
-            visit_id           ::VARCHAR       as visit_id,
-            domain_name        ::VARCHAR       as domain_name,
-            prefix             ::VARCHAR       as prefix,
-            record_type        ::VARCHAR       as record_type,
-            rcode              ::INTEGER       as rcode,
-            crawl_timestamp    ::TIMESTAMP     as crawl_timestamp,
-            ok                 ::BOOLEAN       as ok,
-            problem            ::VARCHAR       as problem,
-            num_of_responses   ::INTEGER       as num_of_responses,
-            year,
-            month
-        from all_results
-    ),
-    responses_unnested as (
-        select
-            request_id,
-            visit_id,
-            unnest(responses, max_depth := 2),
-            year,
-            month
-        from all_results
-    ),
-    responses as (
-        select
-            request_id          ::VARCHAR      as request_id,
-            visit_id            ::VARCHAR      as visit_id,
-            response_id         ::VARCHAR      as response_id,
-            record_data         ::VARCHAR      as record_data,
-            ttl                 ::INTEGER      as ttl,
-            year                ::INTEGER      as year,
-            month               ::INTEGER      as month,
-            response_geo_ips    ::STRUCT(
-                                    asn VARCHAR,
-                                    country VARCHAR,
-                                    ip VARCHAR,
-                                    asn_organisation VARCHAR,
-                                    ip_version VARCHAR
-                                    )[] as response_geo_ips
-        from responses_unnested
-    ),
-    responses_without_geoips as (
-        select * exclude (response_geo_ips)
-        from responses
-    ),
-    geo_ips as (
-        select
-            visit_id,
-            request_id,
-            response_id,
-            unnest(response_geo_ips, max_depth := 2),
-            year,
-            month
-        from responses
-    ),
-    geo_ips_casted as (
-        select
-            visit_id            ::VARCHAR       as visit_id,
-            request_id          ::VARCHAR       as request_id,
-            response_id         ::VARCHAR       as response_id,
-            asn                 ::VARCHAR       as asn,
-            country             ::VARCHAR       as country,
-            ip                  ::VARCHAR       as ip,
-            asn_organisation    ::VARCHAR       as asn_organisation,
-            ip_version          ::VARCHAR       as ip_version,
-            year,
-            month
-        from geo_ips
+with typed as (select *
+  from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/dns/*.json'), columns ={
+        requests: 'struct(
+            request_id BIGINT,
+            visit_id VARCHAR,
+            domain_name VARCHAR,
+            prefix VARCHAR,
+            record_type VARCHAR,
+            rcode BIGINT,
+            crawl_timestamp TIMESTAMP,
+            ok BOOLEAN,
+            problem VARCHAR,
+            num_of_responses BIGINT,
+            responses struct(
+              response_id BIGINT,
+              record_data VARCHAR,
+              ttl BIGINT,
+              response_geo_ips struct(
+                asn VARCHAR,
+                country VARCHAR,
+                ip VARCHAR,
+                asn_organisation VARCHAR,
+                ip_version BIGINT
+              )[]
+            )[]
+          )[]',
+        status: 'VARCHAR',
+        domain_name: 'VARCHAR',
+        crawl_timestamp: 'TIMESTAMP',
+        visit_id: 'VARCHAR' }
+    )
+),
+     added_year_month as (
+         select *, year(crawl_timestamp) as year, month(crawl_timestamp) as month
+from typed
     )

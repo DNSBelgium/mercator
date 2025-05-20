@@ -15,36 +15,12 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
 
     private static final Logger logger = LoggerFactory.getLogger(WebRepository.class);
 
-    private final String webCrawlDestination;
-    private final String pageVisitDestination;
-    private final String featuresDestination;
+    private String baseLocation;
 
     @SneakyThrows
-    public WebRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}") String baseLocation) {
+    public WebRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/web") String baseLocation) {
         super(objectMapper, baseLocation, WebCrawlResult.class);
-        String subPath = "web";
-        webCrawlDestination = createDestination(baseLocation, subPath, "crawl_result");
-        pageVisitDestination = createDestination(baseLocation, subPath, "page_visit");
-        featuresDestination = createDestination(baseLocation, subPath, "html_features");
-    }
-
-    public void setVariables(JdbcClient jdbcClient) {
-        jdbcClient.sql("set variable webCrawlDestination = ?")
-                .param(webCrawlDestination)
-                .update();
-        jdbcClient.sql("set variable pageVisitDestination = ?")
-                .param(pageVisitDestination)
-                .update();
-        jdbcClient.sql("set variable featuresDestination = ?")
-                .param(featuresDestination)
-                .update();
-    }
-
-    @Override
-    public String getAllItemsQuery() {
-        String allItemsQuery = readFromClasspath("sql/web/get_all_items.sql");
-        logger.debug("allItemsQuery: {}", allItemsQuery);
-        return allItemsQuery;
+        this.baseLocation = baseLocation;
     }
 
     @Override
@@ -57,9 +33,7 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
         try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
             String cteDefinitions = readFromClasspath("sql/web/cte_definitions.sql");
             logger.debug("cteDefinitions: {}", cteDefinitions);
-            copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "web_crawl_result", webCrawlDestination);
-            copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "page_visits", pageVisitDestination);
-            copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "html_features_casted", featuresDestination);
+            copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "added_year_month", baseLocation);
         }
     }
 }
