@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
+
 @Builder
 @AllArgsConstructor
 @Getter
@@ -77,7 +79,10 @@ public class PageVisit {
     if (input.contains("\u0000")) {
       return null;
     }
-    return StringUtils.abbreviate(input, maxLength);
+    String abbreviated = StringUtils.abbreviate(input, maxLength);
+    // we need to remove incomplete surrogate code points
+    // to avoid JSON files that duckdb (and jq) cannot read
+    return removeIncompleteSurrogates(abbreviated);
   }
 
   public void setLinkText(String linkText) {
