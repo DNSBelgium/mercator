@@ -22,7 +22,6 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import org.jetbrains.annotations.NotNull;
 
-import java.time.ZonedDateTime;
 import java.net.InetSocketAddress;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -343,7 +342,7 @@ public class ObjectMother {
     return new TlsCrawlResult(visitId, domainName, List.of(
         TlsVisit.fromCache(visitId, domainName, domainName, started, fullScanEntity(domainName), scan),
         TlsVisit.fromCache(visitId, domainName, "www." + domainName, started, fullScanEntity(domainName), scan)
-    ));
+    ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
   public TlsCrawlResult tlsCrawlResult2() {
@@ -438,7 +437,7 @@ public class ObjectMother {
     return new TlsCrawlResult("visit02", "example.be", List.of(
         TlsVisit.fromCache("visit02", "example.be", "example.be", started, fullScanEntityWithNullValues(), scan),
         TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", started, fullScanEntityWithNullValues(), scan)
-    ));
+    ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
   public TlsCrawlResult tlsCrawlResultWithNullFullVersionEntityScan() {
@@ -449,7 +448,7 @@ public class ObjectMother {
     return new TlsCrawlResult(null, null, List.of(
         TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
         TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues())
-    ));
+    ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
   SingleVersionScan singleVersionScanWithNullValues() {

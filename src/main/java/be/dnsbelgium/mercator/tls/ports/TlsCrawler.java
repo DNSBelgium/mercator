@@ -119,7 +119,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
       return new TlsCrawlResult(
           visitRequest.getVisitId(),
           visitRequest.getDomainName(),
-          prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList());
+          prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList(), Instant.now());
     } finally {
       meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
       Threads.TLS.decrementAndGet();

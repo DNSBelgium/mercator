@@ -18,10 +18,10 @@ public class TlsCrawlResult {
 
   private final List<TlsVisit> visits;
 
-  public TlsCrawlResult(String visitId, String domainName, List<TlsVisit> visits) {
+  public TlsCrawlResult(String visitId, String domainName, List<TlsVisit> visits, Instant crawlTimestamp) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.visits = visits;
-    this.crawlTimestamp = Instant.now();
+    this.crawlTimestamp = crawlTimestamp;
   }
 }

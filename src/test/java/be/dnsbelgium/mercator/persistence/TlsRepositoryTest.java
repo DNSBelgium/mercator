@@ -42,7 +42,6 @@ class TlsRepositoryTest {
     TlsCrawlResult output = repository.findByVisitId(input.getVisitId()).orElseThrow();
     assertThat(output)
             .usingRecursiveComparison()
-            .ignoringFields("visits.certificateChain")
             .isEqualTo(input);
   }
 
