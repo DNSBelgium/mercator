@@ -6,8 +6,6 @@ import com.fasterxml.jackson.core.JsonpCharacterEscapes;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
@@ -19,8 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
 import static be.dnsbelgium.mercator.common.SurrogateCodePoints.replaceIncompleteSurrogates;
@@ -92,22 +88,6 @@ public class SurrogateCodeUnitsTest {
     }
   }
 
-  @Test
-  @Disabled
-  public void readJson() throws IOException {
-    String json = FileUtils.readFileToString(new File("t2.json"), "UTF-8");
-    System.out.println("json = " + json);
-    //Pattern p1 = Pattern.compile("\\\\uD83D");
-    Pattern p1 = Pattern.compile("\\\\u....");
-
-    Matcher matcher = p1.matcher(json);
-    System.out.println("matcher.matches() = " + matcher.matches());
-
-    String replaced = matcher.replaceAll("x");
-    System.out.println("replaced = " + replaced);
-    System.out.println("replaced.equals(json) = " + replaced.equals(json));
-
-  }
 
   @Test
   public void testReplace() throws IOException {
@@ -130,9 +110,6 @@ public class SurrogateCodeUnitsTest {
     TestUtils.jsonWriter().writeValue(new File("out2.json"), person);
 
     assertThrows(UncategorizedSQLException.class, () -> readWithDuckDB(new File("out2.json")));
-
-    //readWithDuckDB(new File("out2.json"));
-
   }
 
 }
