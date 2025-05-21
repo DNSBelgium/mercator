@@ -87,7 +87,7 @@ public class VatScraper {
       return;
     }
     if (page.getDocument() == null) {
-      logger.debug("Document on {} has no body", url);
+      logger.debug("Page {} has no document", url);
       siteVisit.markVisited(link);
       return;
     }

@@ -5,12 +5,20 @@ import be.dnsbelgium.mercator.vat.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PreDestroy;
 import okhttp3.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.io.output.NullOutputStream;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataSize;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -157,7 +165,59 @@ public class PageFetcher {
     }
   }
 
+  /**
+   * Processes the response body by:
+   * - Reading up to a configured maximum number of bytes into memory.
+   * - Truncating the body if it exceeds the limit.
+   * - Estimating total content length; sets to -1 if it exceeds a hard limit.
+   *
+   * @param responseBody the HTTP response body
+   * @param builder the PageBuilder to populate
+   * @param config configuration containing max content length
+   * @throws IOException if an I/O error occurs
+   */
+  public static void handleBody(ResponseBody responseBody, Page.PageBuilder builder, PageFetcherConfig config) throws IOException {
+
+    int maxInMemoryLength = (int) config.getMaxContentLength().toBytes();
+    int maxTotalLength = (int) config.getContentLengthDetectionLimit().toBytes();
+
+    long contentLength;
+    String body;
+
+    try (InputStream is = responseBody.byteStream();
+         ByteArrayOutputStream os = new ByteArrayOutputStream(maxInMemoryLength)) {
+
+      // Read up to maxInMemoryLength into memory
+      BoundedInputStream limitedIn = BoundedInputStream.builder()
+          .setInputStream(is)
+          .setMaxCount(maxInMemoryLength)
+          .get();
+
+      long bytesRead = IOUtils.copyLarge(limitedIn, os);
+
+      // Continue reading (without storing) to check total size
+      BoundedInputStream fullReadCheck = BoundedInputStream.builder()
+          .setInputStream(is)
+          .setCount(bytesRead)
+          .setMaxCount(maxTotalLength)
+          .get();
+
+      long extraBytes = IOUtils.copyLarge(fullReadCheck, new NullOutputStream());
+
+      contentLength = bytesRead + extraBytes;
+      if (contentLength == maxTotalLength) {
+        contentLength = -1;
+      }
+      body = os.toString(StandardCharsets.UTF_8);
+
+      builder.responseBody(body)
+          .contentLength(contentLength);
+    }
+  }
+
   public Page fetch(HttpUrl url) throws IOException {
+
+    Page.PageBuilder builder = Page.builder();
 
     Instant started = Instant.now();
     String cacheControl = "max-stale=" + config.getCacheMaxStale().toSeconds();
@@ -170,17 +230,21 @@ public class PageFetcher {
     logger.debug("request = {}", request);
 
     try (Response response = client.newCall(request).execute()) {
+
       if (logger.isDebugEnabled()) {
         debug(response);
       }
+
       Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
       Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
+
+      builder.visitStarted(sentRequest);
+      builder.visitFinished(receivedResponse);
+
       Duration duration = Duration.between(sentRequest, receivedResponse);
       logger.debug("Receiving response took {}", duration);
       meterRegistry.timer(MetricName.TIMER_PAGE_RESPONSE_RECEIVED).record(duration);
 
-      long millis = response.receivedResponseAtMillis() - response.sentRequestAtMillis();
-      logger.debug("millis = {}", millis);
 
       try (ResponseBody responseBody = response.body()) {
         if (responseBody == null) {
@@ -188,6 +252,8 @@ public class PageFetcher {
           meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
           return Page.failed(url, sentRequest, receivedResponse);
         }
+        handleBody(responseBody, builder, config);
+
         MediaType contentType = responseBody.contentType();
         if (!isSupported(contentType)) {
           logger.debug("Skipping content since type = {}", contentType);
@@ -195,14 +261,7 @@ public class PageFetcher {
                   "content-type", contentType != null ? contentType.toString() : null).increment();
           return Page.CONTENT_TYPE_NOT_SUPPORTED;
         }
-        long contentLength = responseBody.contentLength();
-        if (contentLength > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(),
-                  config.getMaxContentLength().toBytes());
-          meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
-          return Page.PAGE_TOO_BIG;
-        }
-        String body = responseBody.string();
+
         Duration fetchDuration = Duration.between(started, Instant.now());
         meterRegistry.timer(MetricName.TIMER_PAGE_BODY_FETCHED).record(fetchDuration);
         meterRegistry.counter(MetricName.COUNTER_PAGES_FETCHED).increment();
@@ -210,21 +269,13 @@ public class PageFetcher {
           logger.debug("Requested {} but received response for {}", url, response.request().url());
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
-        if (body.length() > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}",
-                  url, body.length(), config.getMaxContentLength().toBytes());
-          meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
-          return Page.PAGE_TOO_BIG;
-        }
 
-        Map<String, List<String>> headers = new HashMap<>();
-        for (String name : response.headers().names()) {
-          headers.put(name, response.headers(name));
-        }
+        Page page = builder.url(response.request().url())
+            .statusCode(response.code())
+            .headers(getHeaders(response))
+            .mediaType(responseBody.contentType()).build();
 
-        return new Page(
-                response.request().url(),
-                sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType, headers);
+        return page;
       }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
@@ -233,7 +284,16 @@ public class PageFetcher {
     }
   }
 
-  protected boolean isSupported(MediaType contentType) {
+  @NotNull
+  private static Map<String, List<String>> getHeaders(Response response) {
+    Map<String, List<String>> headers = new HashMap<>();
+    for (String name : response.headers().names()) {
+      headers.put(name, response.headers(name));
+    }
+    return headers;
+  }
+
+  protected static boolean isSupported(MediaType contentType) {
     logger.debug("contentType = {}", contentType);
     if (contentType == null) {
       return true;

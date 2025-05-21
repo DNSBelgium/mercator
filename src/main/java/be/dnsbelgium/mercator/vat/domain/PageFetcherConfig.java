@@ -23,7 +23,10 @@ public class PageFetcherConfig {
   private final Duration writeTimeOut;
   private final Duration cacheMaxStale;
   private final String userAgent;
+  // maximum content size to store
   private final DataSize maxContentLength;
+  // maximum number of bytes to detect the content size
+  private final DataSize contentLengthDetectionLimit;
 
   private final static String DEFAULT_USER_AGENT
       = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0";
@@ -41,8 +44,10 @@ public class PageFetcherConfig {
       @DefaultValue("Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0")
                                     String userAgent,
       @DefaultValue("8MB")
-                                    DataSize maxContentLength
-      ) {
+                                    DataSize maxContentLength,
+      @DefaultValue("100MB")
+                                    DataSize contentLengthDetectionLimit
+  ) {
     this.cacheDirectory = cacheDirectory;
     this.cacheSize = cacheSize;
     this.cacheMaxStale = cacheMaxStale;
@@ -54,6 +59,7 @@ public class PageFetcherConfig {
     this.callTimeOut = callTimeOut;
     this.userAgent = userAgent;
     this.maxContentLength = maxContentLength;
+    this.contentLengthDetectionLimit = contentLengthDetectionLimit;
   }
 
   public static PageFetcherConfig defaultConfig() {
@@ -66,7 +72,8 @@ public class PageFetcherConfig {
         Duration.ofSeconds(5),
         Duration.ofSeconds(8),
         DEFAULT_USER_AGENT,
-        DataSize.of(8, DataUnit.MEGABYTES)
+        DataSize.of(8, DataUnit.MEGABYTES),
+        DataSize.of(100, DataUnit.MEGABYTES)
     );
   }
 
@@ -106,6 +113,10 @@ public class PageFetcherConfig {
     return maxContentLength;
   }
 
+  public DataSize getContentLengthDetectionLimit() {
+    return contentLengthDetectionLimit;
+  }
+
   @Override
   public String toString() {
     return new StringJoiner(", ", PageFetcherConfig.class.getSimpleName() + "[", "]")
@@ -117,6 +128,7 @@ public class PageFetcherConfig {
         .add("writeTimeOut=" + writeTimeOut)
         .add("callTimeOut=" + callTimeOut)
         .add("maxContentLength=" + maxContentLength.toMegabytes() + "MB")
+        .add("contentLengthDetectionLimit=" + contentLengthDetectionLimit.toMegabytes() + "MB")
         .toString();
   }
 }
