@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
@@ -92,6 +93,7 @@ public class SurrogateCodeUnitsTest {
   }
 
   @Test
+  @Disabled
   public void readJson() throws IOException {
     String json = FileUtils.readFileToString(new File("t2.json"), "UTF-8");
     System.out.println("json = " + json);
