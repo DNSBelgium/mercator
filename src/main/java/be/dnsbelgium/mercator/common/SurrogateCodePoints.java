@@ -14,6 +14,9 @@ public class SurrogateCodePoints {
    * @return the input string with all incomplete surrogates removed
    */
   public static String replaceIncompleteSurrogates(String input, String replacement) {
+    if (input == null) {
+      return null;
+    }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < input.length(); i++) {
       char currentChar = input.charAt(i);
