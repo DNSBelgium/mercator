@@ -1,6 +1,6 @@
 with typed as (
     select *
-    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/dns/*.json'),
+    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/web/*.json'),
                    columns={
                        visit_id: 'VARCHAR',
                        domain_name: 'VARCHAR',
