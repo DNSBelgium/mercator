@@ -252,15 +252,16 @@ public class PageFetcher {
           meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
           return Page.failed(url, sentRequest, receivedResponse);
         }
-        handleBody(responseBody, builder, config);
 
         MediaType contentType = responseBody.contentType();
         if (!isSupported(contentType)) {
           logger.debug("Skipping content since type = {}", contentType);
           meterRegistry.counter(MetricName.COUNTER_PAGES_CONTENT_TYPE_NOT_SUPPORTED,
-                  "content-type", contentType != null ? contentType.toString() : null).increment();
+              "content-type", contentType != null ? contentType.toString() : null).increment();
           return Page.CONTENT_TYPE_NOT_SUPPORTED;
         }
+
+        handleBody(responseBody, builder, config);
 
         Duration fetchDuration = Duration.between(started, Instant.now());
         meterRegistry.timer(MetricName.TIMER_PAGE_BODY_FETCHED).record(fetchDuration);
