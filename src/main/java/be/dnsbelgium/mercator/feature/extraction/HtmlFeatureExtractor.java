@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
 import static be.dnsbelgium.mercator.feature.extraction.MercatorLanguageDetector.LanguageSelection;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -390,6 +391,7 @@ public class HtmlFeatureExtractor {
       features.body_text = bodyText;
       features.body_text_truncated = false;
     }
+    features.body_text = removeIncompleteSurrogates(features.body_text);
   }
 
   private void processLinks(Document document, HtmlFeatures features) {
