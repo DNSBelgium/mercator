@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,11 @@ public class DataLoader {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
+    private final MeterRegistry meterRegistry;
+
+    public DataLoader(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     public List<Technology> loadInternalTechnologies() {
         Map<Integer, Group> idGroupMap = readInternalGroups();
@@ -106,7 +112,7 @@ public class DataLoader {
                 String fileContent = readFileContentFromResource(techFilename);
                 technologies.addAll(readTechnologiesFromString(fileContent, categories));
             } catch (IOException e) {
-                logger.error("Failed to load " + techFilename, e);
+                logger.error("Failed to load file '{}': {}", techFilename, e.getMessage());
             }
         }
         return technologies;
@@ -132,10 +138,10 @@ public class DataLoader {
         try {
             fileJSON = objectMapper.readTree(technologiesString);
         } catch (IOException e) {
-            logger.error("Failed to load " + technologiesString, e);
+            logger.error("Failed to load '{}': {}", technologiesString, e.getMessage());
             return technologies;
         }
-        TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories);
+        TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories, meterRegistry);
         fileJSON.fields().forEachRemaining(entry -> {
             JsonNode object = entry.getValue();
             try {

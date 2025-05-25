@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.io.IOException;
 import java.util.*;
@@ -12,13 +13,15 @@ public class TechnologyBuilder {
 
     private final List<Category> categories = new LinkedList<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MeterRegistry meterRegistry;
 
-    public TechnologyBuilder() {
-        this(Collections.emptyList());
+    public TechnologyBuilder(MeterRegistry meterRegistry) {
+        this(Collections.emptyList(), meterRegistry);
     }
 
-    public TechnologyBuilder(List<Category> categories) {
-        this.categories.addAll(categories);
+    public TechnologyBuilder(List<Category> categories, MeterRegistry meterRegistry) {
+      this.meterRegistry = meterRegistry;
+      this.categories.addAll(categories);
     }
 
     public Technology fromString(String name, String technologyContent) throws IOException {
@@ -26,7 +29,7 @@ public class TechnologyBuilder {
     }
 
     public Technology fromJSON(String name, JsonNode object) {
-        Technology technology = new Technology(name);
+        Technology technology = new Technology(name, meterRegistry);
         technology.setDescription(readStringOrEmpty("description", object));
         technology.setWebsite(readStringOrEmpty("website", object));
         technology.setIconName(readStringOrEmpty("icon", object));
@@ -52,8 +55,8 @@ public class TechnologyBuilder {
         }
 
         if (object.has("pricing")) {
-            ArrayNode pricings = (ArrayNode) object.get("pricing");
-            for (JsonNode node : pricings) {
+            ArrayNode pricing = (ArrayNode) object.get("pricing");
+            for (JsonNode node : pricing) {
                 technology.addPricing(node.asText());
             }
         }
@@ -113,12 +116,12 @@ public class TechnologyBuilder {
     private List<DomPattern> readDOMPatterns(JsonNode object) {
         List<DomPattern> templates = new LinkedList<>();
         if (object.isTextual()) {
-            templates.add(new DomPattern(object.asText()));
+            templates.add(new DomPattern(meterRegistry, object.asText()));
         } else if (object.isArray()) {
             ArrayNode array = (ArrayNode) object;
             for (JsonNode item : array) {
                 if (item.isTextual()) {
-                    templates.add(new DomPattern(item.asText()));
+                    templates.add(new DomPattern(meterRegistry, item.asText()));
                 }
             }
         } else if (object.isObject()) {
@@ -134,16 +137,19 @@ public class TechnologyBuilder {
 
                 if (selectorParams.has("attributes")) {
                     ObjectNode attributesObject = (ObjectNode) selectorParams.get("attributes");
-                    attributesObject.fields().forEachRemaining(attrEntry -> {
-                        attributesMap.put(attrEntry.getKey(), attrEntry.getValue().asText());
-                    });
+                    attributesObject
+                            .fields()
+                            .forEachRemaining(attrEntry ->
+                                    attributesMap.put(attrEntry.getKey(), attrEntry.getValue().asText()));
                 }
 
                 if (selectorParams.has("properties")) {
                     ObjectNode propertiesObject = (ObjectNode) selectorParams.get("properties");
-                    propertiesObject.fields().forEachRemaining(propEntry -> {
-                        propertiesMap.put(propEntry.getKey(), propEntry.getValue().asText());
-                    });
+                    propertiesObject
+                            .fields()
+                            .forEachRemaining(propEntry
+                                    -> propertiesMap.put(propEntry.getKey(), propEntry.getValue().asText())
+                            );
                 }
 
                 if (selectorParams.has("text")) {
@@ -154,7 +160,7 @@ public class TechnologyBuilder {
                     exists = selectorParams.get("exists").asText();
                 }
 
-                templates.add(new DomPattern(selector, attributesMap, propertiesMap, text, exists));
+                templates.add(new DomPattern(meterRegistry, selector, attributesMap, propertiesMap, text, exists));
             });
         }
         return templates;

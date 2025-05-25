@@ -1,7 +1,10 @@
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
+import lombok.Getter;
+
 import java.util.Objects;
 
+@Getter
 public class TechnologyMatch {
 
     public static final String HEADER = "header";
@@ -28,11 +31,7 @@ public class TechnologyMatch {
 
     public TechnologyMatch(Technology technology, String version, String reason, boolean matched, long duration) {
         this.technology = technology;
-        if (version == null) {
-            this.version = "";
-        } else {
-            this.version = version;
-        }
+        this.version = Objects.requireNonNullElse(version, "");
         this.matched = matched;
         this.duration = duration;
         this.reason = reason;
@@ -42,27 +41,7 @@ public class TechnologyMatch {
         return new TechnologyMatch(technology, "", "", false, duration);
     }
 
-    public boolean isMatched() {
-        return matched;
-    }
-
-    public Technology getTechnology() {
-        return technology;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public long getDuration() {
-        return duration;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    @Override
+  @Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
@@ -75,6 +54,7 @@ public class TechnologyMatch {
 
     @Override
     public int hashCode() {
+        // used in getTechnologyMatches when creating set of matches
         return Objects.hash(technology, reason, matched);
     }
 

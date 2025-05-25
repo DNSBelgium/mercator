@@ -3,6 +3,8 @@ package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
 import be.dnsbelgium.mercator.test.ResourceReader;
 import be.dnsbelgium.mercator.vat.domain.Page;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -16,9 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JappalyzerTests {
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     @Test
     public void shouldDetectAbicartTechnology() throws IOException {
-        TechnologyBuilder technologyBuilder = new TechnologyBuilder();
+        TechnologyBuilder technologyBuilder = new TechnologyBuilder(meterRegistry);
         String techDesc = ResourceReader.readFileToString("technologies/abicart.json");
         Technology technology = technologyBuilder.fromString("Abicart", techDesc);
         String htmlContent = ResourceReader.readFileToString("contents/abicart_meta.html");
@@ -28,8 +32,13 @@ public class JappalyzerTests {
 
     @Test
     public void shouldReturnTechnologiesWithTwoLevelImplies() {
-        Jappalyzer jappalyzer = Jappalyzer.create();
-        Set<TechnologyMatch> matches = jappalyzer.fromPage(Page.builder().statusCode(200).responseBody("").headers(Map.of("X-Powered-By", List.of("WP Engine"))).build());
+        Jappalyzer jappalyzer = Jappalyzer.create(meterRegistry);
+        Page page = Page.builder()
+                .statusCode(200)
+                .responseBody("")
+                .headers(Map.of("X-Powered-By", List.of("WP Engine")))
+                .build();
+        Set<TechnologyMatch> matches = jappalyzer.fromPage(page);
         List<String> techNames = getTechnologiesNames(matches);
 
         assertThat(techNames).contains("WordPress", "PHP", "MySQL");

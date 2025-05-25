@@ -11,7 +11,6 @@ import org.apache.commons.io.output.NullOutputStream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.util.unit.DataSize;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.ByteArrayOutputStream;
@@ -202,7 +201,7 @@ public class PageFetcher {
           .setMaxCount(maxTotalLength)
           .get();
 
-      long extraBytes = IOUtils.copyLarge(fullReadCheck, new NullOutputStream());
+      long extraBytes = IOUtils.copyLarge(fullReadCheck, NullOutputStream.INSTANCE);
 
       contentLength = bytesRead + extraBytes;
       if (contentLength == maxTotalLength) {
@@ -271,12 +270,12 @@ public class PageFetcher {
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
 
-        Page page = builder.url(response.request().url())
+        return builder
+            .url(response.request().url())
             .statusCode(response.code())
             .headers(getHeaders(response))
-            .mediaType(responseBody.contentType()).build();
-
-        return page;
+            .mediaType(responseBody.contentType())
+            .build();
       }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());

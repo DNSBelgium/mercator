@@ -1,6 +1,8 @@
 // copied from jappalyzer library
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -13,9 +15,11 @@ import static org.assertj.core.api.Assertions.fail;
 
 public class DataLoaderTests {
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     @Test
     public void shouldLoadOneGroup() {
-        DataLoader loader = new DataLoader();
+        DataLoader loader = new DataLoader(meterRegistry);
         List<Technology> technologies = loader.loadInternalTechnologies();
         Optional<Technology> technology = technologies.stream()
                 .filter(item -> item.getName().equals("Gauges"))
@@ -32,7 +36,7 @@ public class DataLoaderTests {
 
     @Test
     public void shouldLoadSeveralGroups() {
-        DataLoader loader = new DataLoader();
+        DataLoader loader = new DataLoader(meterRegistry);
         List<Technology> technologies = loader.loadInternalTechnologies();
 
         Optional<Technology> technology = technologies.stream()

@@ -119,11 +119,11 @@ public class WebCrawler {
     private List<HtmlFeatures> findFeatures(VisitRequest visitRequest, SiteVisit siteVisit) {
         Threads.FEATURE_EXTRACTION.incrementAndGet();
         try {
-            logger.info("siteVisit = {}", siteVisit);
+            logger.debug("findFeatures for siteVisit = {}", siteVisit);
             List<HtmlFeatures> featuresList = new ArrayList<>();
             for (Page page : siteVisit.getVisitedPages().values()) {
                 var html = page.getDocument().html();
-                logger.info("page.url = {}", page.getUrl());
+                logger.debug("findFeatures for url = {}", page.getUrl());
                 var features = htmlFeatureExtractor.extractFromHtml(
                         html,
                         page.getUrl().url().toExternalForm(),

@@ -2,107 +2,84 @@
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
 import be.dnsbelgium.mercator.vat.domain.Page;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import lombok.Getter;
+import lombok.Setter;
+
 
 import java.util.*;
 
-@SuppressWarnings("LombokGetterMayBeUsed")
+import static be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.MetricName.TIMER_JAPPALYZER_TECHNOLOGY_MATCH_APPLICABLE_TO;
+
 public class Technology {
 
+    @Getter
     private final String name;
+
+    @Getter
+    @Setter
     private String description;
+
+    @Getter
+    @Setter
     private String iconName;
+
+    @Getter
+    @Setter
     private String website;
+
+    @Getter
     private String cpe;
+
+    @Getter
+    @Setter
     private boolean saas;
+
+    @Getter
     private final List<String> pricing = new LinkedList<>();
+
+    @Getter
     private final List<Category> categories = new LinkedList<>();
+
+    @Getter
     private final List<String> implies = new LinkedList<>();
 
     private final List<PatternWithVersion> htmlTemplates = new LinkedList<>();
     private final List<DomPattern> domTemplates = new LinkedList<>();
+    @Getter
     private final List<PatternWithVersion> scriptSrc = new LinkedList<>();
     private final Map<String, List<PatternWithVersion>> headerTemplates = new HashMap<>();
     private final Map<String, List<PatternWithVersion>> cookieTemplates = new HashMap<>();
     private final Map<String, List<PatternWithVersion>> metaTemplates = new HashMap<>();
 
-    public Technology(String name) {
-        this.name = name;
-    }
+    private final Timer applicableToTimer;
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getIconName() {
-        return iconName;
-    }
-
-    public void setIconName(String iconName) {
-        this.iconName = iconName;
-    }
-
-    public String getWebsite() {
-        return website;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
-    }
-
-    public String getCPE() {
-        return this.cpe;
+    public Technology(String name, MeterRegistry meterRegistry) {
+      this.name = name;
+      this.applicableToTimer = Timer.builder(TIMER_JAPPALYZER_TECHNOLOGY_MATCH_APPLICABLE_TO)
+                .publishPercentiles(0.5, 0.80, 0.95, 0.99)
+                .description("Time needed to check if a Technology is applicable to a page")
+                .register(meterRegistry);
     }
 
     public void setCPE(String cpe) {
         this.cpe = cpe;
     }
 
-    public boolean isSaas() {
-        return saas;
-    }
-
-    public void setSaas(boolean saas) {
-        this.saas = saas;
-    }
-
-    public List<String> getPricing() {
-        return pricing;
-    }
-
     public void addPricing(String pricing) {
         this.pricing.add(pricing);
-    }
-
-    public List<Category> getCategories() {
-        return this.categories;
     }
 
     public void addCategory(Category category) {
         this.categories.add(category);
     }
 
-    public List<String> getImplies() {
-        return this.implies;
-    }
-
     public void addImplies(String imply) {
         this.implies.add(imply);
     }
 
-    public List<PatternWithVersion> getHtmlTemplates() {
-        return htmlTemplates;
-    }
-
     public void addHtmlTemplate(String template) {
-        // Pattern pattern = Pattern.compile(prepareRegexp(template));
         this.htmlTemplates.add(new PatternWithVersion(template));
     }
 
@@ -119,17 +96,9 @@ public class Technology {
         this.metaTemplates.get(name).add(new PatternWithVersion(pattern));
     }
 
-    public Map<String, List<PatternWithVersion>> getCookieTemplates() {
-        return this.cookieTemplates;
-    }
-
     public void addCookieTemplate(String cookie, String cookiePattern) {
         this.cookieTemplates.putIfAbsent(cookie, new LinkedList<>());
         this.cookieTemplates.get(cookie).add(new PatternWithVersion(cookiePattern));
-    }
-
-    public Map<String, List<PatternWithVersion>> getHeaderTemplates() {
-        return headerTemplates;
     }
 
     public List<PatternWithVersion> getHeaderTemplates(String headerKey) {
@@ -149,16 +118,23 @@ public class Technology {
         this.domTemplates.add(template);
     }
 
-    public List<PatternWithVersion> getScriptSrc() {
-        return scriptSrc;
-    }
-
     public void addScriptSrc(String scriptSrc) {
         this.scriptSrc.add(new PatternWithVersion(scriptSrc));
     }
 
+    public TechnologyMatch applicableTo(JappalyzerPage page) {
+        if (page.getDuration().toMillis() > 5000) {
+            // already spent 5 seconds analysing this page => give up
+            return TechnologyMatch.notMatched(this, 0);
+        }
+        return applicableTo(page.getPage());
+    }
 
     public TechnologyMatch applicableTo(Page page) {
+        return applicableToTimer.record(() -> match(page));
+    }
+
+    private TechnologyMatch match(Page page) {
         long startTimestamp = System.currentTimeMillis();
 
         if (!page.getHeaders().isEmpty()) {
@@ -222,7 +198,7 @@ public class Technology {
     }
 
     private PatternMatch getTechnologyMapMatch(Map<String, List<PatternWithVersion>> templates,
-            Map<String, List<String>> page) {
+                                               Map<String, List<String>> page) {
         for (String header : templates.keySet()) {
             List<PatternWithVersion> patterns = templates.get(header);
             for (PatternWithVersion pattern : patterns) {

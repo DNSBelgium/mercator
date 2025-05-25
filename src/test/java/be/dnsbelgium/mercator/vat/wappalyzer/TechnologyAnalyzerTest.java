@@ -1,6 +1,9 @@
 package be.dnsbelgium.mercator.vat.wappalyzer;
 
 import be.dnsbelgium.mercator.vat.domain.Page;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,11 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TechnologyAnalyzerTest {
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private TechnologyAnalyzer technologyAnalyzer;
 
     @Before
     public void setUp() {
-        technologyAnalyzer = new TechnologyAnalyzer();
+        technologyAnalyzer = new TechnologyAnalyzer(meterRegistry);
     }
 
     @Test
@@ -37,6 +41,8 @@ public class TechnologyAnalyzerTest {
         assertNotNull(detectedTechnologies);
         Set<String> expectedTechnologies = Set.of("WordPress", "Joomla", "MySQL", "PHP");
         assertEquals(expectedTechnologies, detectedTechnologies);
+
+
 
     }
 

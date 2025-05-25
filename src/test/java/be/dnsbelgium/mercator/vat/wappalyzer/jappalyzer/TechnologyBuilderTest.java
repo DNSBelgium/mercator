@@ -2,6 +2,8 @@
 package be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer;
 
 import be.dnsbelgium.mercator.test.ResourceReader;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,6 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class TechnologyBuilderTest {
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
     @Test
     public void shouldContainsBasicFields() throws IOException {
         Technology technology = buildTechnologyFromFile("DERAK.CLOUD", "derak.json");
@@ -22,14 +26,14 @@ public class TechnologyBuilderTest {
         assertThat(technology.getDescription()).isEqualTo("Derak cloud service");
         assertThat(technology.getWebsite()).isEqualTo("https://derak.cloud");
         assertThat(technology.getIconName()).isEqualTo("DerakCloud.png");
-        assertThat(technology.getHeaderTemplates("Derak-Umbrage").get(0).getPattern()).isEmpty();
-        assertThat(technology.getHeaderTemplates("Server").get(0).getPattern()).isEqualTo("^DERAK\\.CLOUD$");
+        assertThat(technology.getHeaderTemplates("Derak-Umbrage").getFirst().getPattern()).isEmpty();
+        assertThat(technology.getHeaderTemplates("Server").getFirst().getPattern()).isEqualTo("^DERAK\\.CLOUD$");
     }
 
     @Test
     public void shouldReadCPEFromTechDescription() throws IOException {
         Technology technology = buildTechnologyFromFile("Joomla", "joomla.json");
-        assertThat(technology.getCPE()).isEqualTo("cpe:/a:joomla:joomla");
+        assertThat(technology.getCpe()).isEqualTo("cpe:/a:joomla:joomla");
     }
 
     @Test
@@ -83,35 +87,43 @@ public class TechnologyBuilderTest {
     @Test
     public void shouldContainsTwoDOMPatternsFromObject() throws IOException {
         Technology technology = buildTechnologyFromFile("Magento", "magento.json");
-        DomPattern expected1 = new DomPattern(
+        DomPattern expected1 = makeDomPattern(
                 "script[data-requiremodule*='mage'], script[data-requiremodule*='Magento_'], html[data-image-optimizing-origin]");
-        DomPattern expected2 = new DomPattern("script[type='text/x-magento-init']");
+        DomPattern expected2 = makeDomPattern("script[type='text/x-magento-init']");
         assertThat(technology.getDomPatterns()).containsExactlyInAnyOrder(expected1, expected2);
     }
 
     @Test
     public void shouldContainsTwoDOMPatternsFromArray() throws IOException {
         Technology technology = buildTechnologyFromFile("Adobe Flash", "adobeflash.json");
-        DomPattern expected1 = new DomPattern("object[type='application/x-shockwave-flash']");
-        DomPattern expected2 = new DomPattern("param[value*='.swf']");
+        DomPattern expected1 = makeDomPattern("object[type='application/x-shockwave-flash']");
+        DomPattern expected2 = makeDomPattern("param[value*='.swf']");
         assertThat(technology.getDomPatterns()).containsExactlyInAnyOrder(expected1, expected2);
+    }
+
+    private DomPattern makeDomPattern(String selector, Map<String, String> attributes) {
+        return new DomPattern(meterRegistry, selector, attributes, Collections.emptyMap(), "", "");
+    }
+
+    private DomPattern makeDomPattern(String selector) {
+        return new DomPattern(meterRegistry, selector, Collections.emptyMap(), Collections.emptyMap(), "", "");
     }
 
     @Test
     public void shouldContainsAttributesAtDomPattern() throws IOException {
         Technology technology = buildTechnologyFromFile("Rezgo", "rezgo.json");
         Map<String, String> expectedAttrs1 = Collections.singletonMap("id", "rezgo_content_frame");
-        DomPattern expected1 = new DomPattern("iframe", expectedAttrs1);
+        DomPattern expected1 = makeDomPattern("iframe", expectedAttrs1);
         Map<String, String> expectedAttrs2 = Collections.singletonMap("href",
                 "wp-content/plugins/rezgo/rezgo/templates");
-        DomPattern expected2 = new DomPattern("link", expectedAttrs2);
+        DomPattern expected2 = makeDomPattern("link", expectedAttrs2);
         assertThat(technology.getDomPatterns()).containsExactlyInAnyOrder(expected1, expected2);
     }
 
     @Test
     public void shouldContainsOneDOMPatternFromString() throws IOException {
         Technology technology = buildTechnologyFromFile("Jetpack", "jetpack.json");
-        DomPattern expected = new DomPattern("link[href*='/wp-content/plugins/jetpack/']");
+        DomPattern expected = makeDomPattern("link[href*='/wp-content/plugins/jetpack/']");
         assertThat(technology.getDomPatterns()).containsExactlyInAnyOrder(expected);
     }
 
@@ -122,7 +134,7 @@ public class TechnologyBuilderTest {
                 new Category(91, "Buy now pay later", 9),
                 new Category(22, "TEST CATEGORY 1", 9),
                 new Category(33, "TEST CATEGORY 2", 9));
-        TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories);
+        TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories, meterRegistry);
         return technologyBuilder.fromString(Abicart, techDesc);
     }
 
