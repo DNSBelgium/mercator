@@ -288,7 +288,7 @@ public class PageFetcher {
   private static Map<String, List<String>> getHeaders(Response response) {
     Map<String, List<String>> headers = new HashMap<>();
     for (String name : response.headers().names()) {
-      headers.put(name, response.headers(name));
+      headers.put(name.toLowerCase(), response.headers(name));
     }
     return headers;
   }
