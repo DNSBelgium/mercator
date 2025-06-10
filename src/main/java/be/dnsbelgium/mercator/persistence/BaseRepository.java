@@ -50,14 +50,14 @@ public class BaseRepository<T> {
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
     this.dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
-    createSecret(dataSource);
+    //createSecret(dataSource);
     this.jdbcClient = JdbcClient.create(dataSource);
   }
 
   @SneakyThrows
   private void createSecret(DataSource dataSource) {
     try (Statement stmt = dataSource.getConnection().createStatement()) {
-      String create_secret = "CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
+      String create_secret = "CREATE OR REPLACE PERSISTENT SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
       logger.info("executing: {}", create_secret);
       stmt.executeQuery(create_secret);
       logger.info("s3 secret created");
