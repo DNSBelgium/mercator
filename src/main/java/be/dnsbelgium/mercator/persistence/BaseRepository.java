@@ -50,7 +50,7 @@ public class BaseRepository<T> {
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
     this.dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
-    //createSecret(dataSource);
+    createSecret(dataSource);
     this.jdbcClient = JdbcClient.create(dataSource);
   }
 
