@@ -19,7 +19,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Statement;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @SuppressWarnings("SqlSourceToSinkFlow")
 public class BaseRepository<T> {
@@ -32,6 +35,11 @@ public class BaseRepository<T> {
 
   private final Class<T> type;
 
+  private final SingleConnectionDataSource dataSource;
+
+  private final JdbcClient jdbcClient;
+  private final Lock lock = new ReentrantLock();
+
   @SneakyThrows
   public BaseRepository(ObjectMapper objectMapper, String baseLocation, Class<T> type) {
     this.objectMapper = objectMapper;
@@ -41,24 +49,19 @@ public class BaseRepository<T> {
     logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
-  }
-
-  /**
-   * @return an autocloseable datasource that should only be used by a single thread.
-   */
-  public SingleConnectionDataSource singleThreadedDataSource() {
-    SingleConnectionDataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", false);
+    this.dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
     createSecret(dataSource);
-    return dataSource;
+    this.jdbcClient = JdbcClient.create(dataSource);
   }
 
+  @SneakyThrows
   private void createSecret(DataSource dataSource) {
-    JdbcClient jdbcClient = JdbcClient.create(dataSource);
-    String create_secret = "CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
-    logger.info("executing: {}", create_secret);
-    JdbcClient.ResultQuerySpec x = jdbcClient.sql(create_secret).query();
-    logger.info("x = {}", x);
-    logger.info("s3 secret created");
+    try (Statement stmt = dataSource.getConnection().createStatement()) {
+      String create_secret = "CREATE OR REPLACE SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
+      logger.info("executing: {}", create_secret);
+      stmt.executeQuery(create_secret);
+      logger.info("s3 secret created");
+    }
   }
 
   public static boolean isURL(String dataLocation) {
@@ -89,15 +92,15 @@ public class BaseRepository<T> {
     return "crawl_timestamp";
   }
 
-  public void setVariables(JdbcClient jdbcClient) {
-  }
-
   public String domainNameField() { return "domain_name"; }
 
   @SneakyThrows
   public List<SearchVisitIdResultItem> searchVisitIds(String domainName) {
     String query = StringSubstitutor.replace("""
-        with all_items as (${get_all_items_query}),
+        with all_items
+        as (
+           ${get_all_items_query}
+        ),
         foo as (
           select visit_id, ${timestamp_field} as timestamp
           from all_items
@@ -127,9 +130,6 @@ public class BaseRepository<T> {
   @NonNull
   @SneakyThrows
   private Optional<T> queryForObject(Map<String,?> params, String query) {
-    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
-      JdbcClient jdbcClient = JdbcClient.create(dataSource);
-      setVariables(jdbcClient);
       try {
         Optional<String> json = jdbcClient.sql(query)
                 .params(params)
@@ -155,14 +155,10 @@ public class BaseRepository<T> {
         }
         throw e;
       }
-    }
   }
 
   @SneakyThrows
   private <S> List<S> queryForList(String query, String domainName, Class<S> clazz) {
-    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
-      JdbcClient jdbcClient = JdbcClient.create(dataSource);
-      setVariables(jdbcClient);
       try {
         List<String> jsonList = jdbcClient.sql(query)
                 .param("domainName", domainName)
@@ -182,13 +178,14 @@ public class BaseRepository<T> {
         }
         throw e;
       }
-    }
   }
 
   @SneakyThrows
   public Optional<T> findLatestResult(String domainName) {
     String query = StringSubstitutor.replace("""
-        with all_items as (${get_all_items_query})
+        \n
+        with all_items as
+          (${get_all_items_query})
         select row_to_json(all_items)
         from all_items
         where ${domain_name_field} = :domainName
@@ -198,11 +195,11 @@ public class BaseRepository<T> {
                     "timestamp_field", timestampField(),
                     "domain_name_field", domainNameField()));
     long start = System.currentTimeMillis();
-    Optional<T> resutls = queryForObject(Map.of("domainName", domainName), query);
+    Optional<T> results = queryForObject(Map.of("domainName", domainName), query);
     long millis = System.currentTimeMillis() - start;
     logger.info("queryForObject SQL = \n{}", query);
     logger.info("findLatestResult took {} millis", millis);
-    return resutls;
+    return results;
   }
 
   @SneakyThrows
@@ -224,8 +221,6 @@ public class BaseRepository<T> {
    * @param jsonResultsLocation : location of JSON file(s)
    */
   public void storeResults(String jsonResultsLocation) {
-    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
-      JdbcClient jdbcClient = JdbcClient.create(dataSource);
       jdbcClient.sql(String.format("""
       copy (
         select
@@ -236,7 +231,6 @@ public class BaseRepository<T> {
       ) to '%s' (format parquet, partition_by (year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
               timestampField(), timestampField(), jsonResultsLocation, baseLocation)
       ).update();
-    }
   }
 
   @SneakyThrows
@@ -248,8 +242,8 @@ public class BaseRepository<T> {
 
   /*
    * This method will use the passed in CTE definitions and the name of a specific CTE to copy the data to the given destination
-  */
-  void copyToParquet(String jsonLocation, DataSource dataSource, String cteDefinitions, String cte, String destination) {
+   */
+  void copyToParquet(String jsonLocation, String cteDefinitions, String cte, String destination) {
     String copyStatement = StringSubstitutor.replace("""
                 COPY (
                     ${cteDefinitions}
@@ -263,12 +257,18 @@ public class BaseRepository<T> {
             )
     );
     logger.debug("cte={}, copyStatement=\n{}", cte, copyStatement);
-    JdbcClient jdbcClient = JdbcClient.create(dataSource);
-    jdbcClient.sql("set variable jsonLocation = ?")
-            .param(jsonLocation)
-            .update();
-    jdbcClient.sql(copyStatement).update();
-    logger.info("copying {} as parquet to {} done", cte, destination);
+    // we need to acquire a lock to prevent another thread from setting a different jsonLocation
+    // before we start the copyStatement
+    lock.lock();
+    try {
+      jdbcClient.sql("set variable jsonLocation = ?")
+              .param(jsonLocation)
+              .update();
+      jdbcClient.sql(copyStatement).update();
+      logger.info("copying {} as parquet to {} is done", cte, destination);
+    } finally {
+      lock.unlock();
+    }
   }
 
 }

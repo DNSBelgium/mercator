@@ -30,10 +30,8 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
 
     @Override
     public void storeResults(String jsonResultsLocation) {
-        try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
-            String cteDefinitions = readFromClasspath("sql/web/cte_definitions.sql");
-            logger.debug("cteDefinitions: {}", cteDefinitions);
-            copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "added_year_month", baseLocation);
-        }
+        String cteDefinitions = readFromClasspath("sql/web/cte_definitions.sql");
+        logger.debug("cteDefinitions: {}", cteDefinitions);
+        copyToParquet(jsonResultsLocation, cteDefinitions, "added_year_month", baseLocation);
     }
 }

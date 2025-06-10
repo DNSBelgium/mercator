@@ -29,11 +29,9 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
 
   @Override
   public void storeResults(String jsonResultsLocation) {
-    try (SingleConnectionDataSource dataSource = singleThreadedDataSource()) {
-      String cteDefinitions = readFromClasspath("sql/tls/cte_definitions.sql");
-      logger.debug("cteDefinitions: {}", cteDefinitions);
-      copyToParquet(jsonResultsLocation, dataSource, cteDefinitions, "added_year_month", baseLocation);
-    }
+    String cteDefinitions = readFromClasspath("sql/tls/cte_definitions.sql");
+    logger.debug("cteDefinitions: {}", cteDefinitions);
+    copyToParquet(jsonResultsLocation, cteDefinitions, "added_year_month", baseLocation);
   }
 
 }
