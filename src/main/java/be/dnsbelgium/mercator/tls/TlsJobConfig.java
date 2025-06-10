@@ -106,8 +106,8 @@ public class TlsJobConfig {
             .reader(tlsItemReader)
             .taskExecutor(tlsTaskExecutor)
             .throttleLimit(throttleLimit)
-            .faultTolerant()
-            .skip(FlatFileParseException.class)
+//            .faultTolerant()
+//            .skip(FlatFileParseException.class)
             .processor(itemProcessor)
             .writer(itemWriter)
             .build();
