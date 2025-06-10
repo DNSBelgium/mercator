@@ -28,7 +28,7 @@ public class DnsSearchController {
         logger.info("Finding latest DNS result for {}", domainName);
         model.addAttribute("domainName", domainName);
         Optional<DnsCrawlResult> dnsCrawlResult = dnsRepository.findLatestResult(domainName);
-        logger.info("domainName={} => dnsCrawlResult: {}", domainName, dnsCrawlResult);
+        logger.info("domainName={} => dnsCrawlResult.isPresent = {}", domainName, dnsCrawlResult.isPresent());
         if (dnsCrawlResult.isPresent()) {
             model.addAttribute("dnsCrawlResult", dnsCrawlResult.get());
         }
