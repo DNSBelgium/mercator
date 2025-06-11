@@ -50,8 +50,38 @@ public class BaseRepository<T> {
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
     this.dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
-    createSecret(dataSource);
     this.jdbcClient = JdbcClient.create(dataSource);
+
+    try {
+      // logging secrets
+      List<Map<String, Object>> secrets = jdbcClient.sql("from duckdb_secrets()").query().listOfRows();
+      for (Map<String, Object> secret : secrets) {
+        logger.info("{} => known secret: {}", getClass().getSimpleName(), secret);
+      }
+    } catch (Exception e) {
+      logger.error("Exception while reading secrets: {}", e.getMessage());
+    }
+
+    // test S3 access before creating secret
+    logger.info("test S3 access before creating secret");
+    String sql = "select domain_name from read_parquet('%s/**/*.parquet') limit 1".formatted(baseLocation);
+    logger.info("sql = {}", sql);
+
+    try {
+      List<Object> rows = jdbcClient.sql(sql).query().singleColumn();
+      logger.info("before creating secret: rows = {}", rows);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+    }
+
+    createSecret(dataSource);
+
+    try {
+      List<Object> rows = jdbcClient.sql(sql).query().singleColumn();
+      logger.info("after creating secret: rows = {}", rows);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+    }
   }
 
   @SneakyThrows
