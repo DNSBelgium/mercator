@@ -33,14 +33,17 @@ class WebRepositoryTest {
 
   private final ObjectMother objectMother = new ObjectMother();
 
-  private final WebRepository repository = new WebRepository(TestUtils.jsonReader(), baseLocation.toString());
+  private final WebRepository repository = makeRepository(baseLocation.toString());
+
+  private WebRepository makeRepository(String baseLocation) {
+    return new WebRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), baseLocation);
+  }
+
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
   public void toS3Parquet() throws IOException {
-
-    WebRepository s3WebRepository = new WebRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
-
+    WebRepository s3WebRepository = makeRepository(System.getProperty("mercator_s3_base_path"));
     logger.info("tempDir = {}", baseLocation);
     Files.createDirectories(baseLocation);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();

@@ -10,16 +10,13 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.lang.NonNull;
 
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,13 +32,11 @@ public class BaseRepository<T> {
 
   private final Class<T> type;
 
-  private final SingleConnectionDataSource dataSource;
-
   private final JdbcClient jdbcClient;
   private final Lock lock = new ReentrantLock();
 
   @SneakyThrows
-  public BaseRepository(ObjectMapper objectMapper, String baseLocation, Class<T> type) {
+  public BaseRepository(JdbcClient jdbcClient, ObjectMapper objectMapper, String baseLocation, Class<T> type) {
     this.objectMapper = objectMapper;
     if (baseLocation == null || baseLocation.isEmpty()) {
       throw new IllegalArgumentException("baseLocation must not be null or empty");
@@ -49,50 +44,22 @@ public class BaseRepository<T> {
     logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
-    this.dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
-    this.jdbcClient = JdbcClient.create(dataSource);
+    this.jdbcClient = jdbcClient;
+    testAccessToS3();
+  }
 
-    try {
-      // logging secrets
-      List<Map<String, Object>> secrets = jdbcClient.sql("from duckdb_secrets()").query().listOfRows();
-      for (Map<String, Object> secret : secrets) {
-        logger.info("{} => known secret: {}", getClass().getSimpleName(), secret);
-      }
-    } catch (Exception e) {
-      logger.error("Exception while reading secrets: {}", e.getMessage());
-    }
-
-    // test S3 access before creating secret
-    logger.info("test S3 access before creating secret");
+  public void testAccessToS3() {
+    logger.info("test S3 access using duckdb");
     String sql = "select domain_name from read_parquet('%s/**/*.parquet') limit 1".formatted(baseLocation);
     logger.info("sql = {}", sql);
-
     try {
       List<Object> rows = jdbcClient.sql(sql).query().singleColumn();
-      logger.info("before creating secret: rows = {}", rows);
+      logger.info("rows = {}", rows);
     } catch (Exception e) {
-      logger.error(e.getMessage());
-    }
-
-    createSecret(dataSource);
-
-    try {
-      List<Object> rows = jdbcClient.sql(sql).query().singleColumn();
-      logger.info("after creating secret: rows = {}", rows);
-    } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error("Accessing data on S3 failed: {}", e.getMessage());
     }
   }
 
-  @SneakyThrows
-  private void createSecret(DataSource dataSource) {
-    try (Statement stmt = dataSource.getConnection().createStatement()) {
-      String create_secret = "CREATE OR REPLACE PERSISTENT SECRET (TYPE S3, PROVIDER CREDENTIAL_CHAIN)";
-      logger.info("executing: {}", create_secret);
-      stmt.executeQuery(create_secret);
-      logger.info("s3 secret created");
-    }
-  }
 
   public static boolean isURL(String dataLocation) {
     try {

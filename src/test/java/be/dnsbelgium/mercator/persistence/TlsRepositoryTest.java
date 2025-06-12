@@ -34,6 +34,12 @@ class TlsRepositoryTest {
   private static final Logger logger = LoggerFactory.getLogger(TlsRepositoryTest.class);
 
   @Test
+  public void constructor() {
+    new TlsRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), "s3://dc3-eu-west-1-dev-mercator-data/tls");
+
+  }
+
+  @Test
   public void pojo_to_parquet_and_back() throws IOException {
     TlsRepository repository = makeRepository();
     TlsCrawlResult input = objectMother.tlsCrawlResult2();
@@ -72,7 +78,7 @@ class TlsRepositoryTest {
   }
 
   private TlsRepository makeRepository() {
-    return new TlsRepository(TestUtils.jsonReader(), baseLocation.toString());
+    return new TlsRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), baseLocation.toString());
   }
 
   private String saveToJson(List<TlsCrawlResult> crawlResults, String fileName) throws IOException {

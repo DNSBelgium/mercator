@@ -18,8 +18,8 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
     private final String baseLocation;
 
     @SneakyThrows
-    public DnsRepository(ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/dns") String baseLocation) {
-        super(objectMapper, baseLocation, DnsCrawlResult.class);
+    public DnsRepository(JdbcClient jdbcClient, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/dns") String baseLocation) {
+        super(jdbcClient, objectMapper, baseLocation, DnsCrawlResult.class);
         this.baseLocation = baseLocation;
 
     }

@@ -3,7 +3,10 @@ package be.dnsbelgium.mercator.test;
 import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.sql.DataSource;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -47,4 +50,8 @@ public class TestUtils {
     return objectMapper;
   }
 
+  public static JdbcClient jdbcClient() {
+    DataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
+    return JdbcClient.create(dataSource);
+  }
 }

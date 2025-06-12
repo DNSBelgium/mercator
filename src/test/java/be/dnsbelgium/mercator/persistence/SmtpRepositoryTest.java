@@ -36,14 +36,18 @@ class SmtpRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    repository = new SmtpRepository(TestUtils.jsonReader(), baseLocation.toString());
+    repository = makeRepository(baseLocation.toString());
+  }
+
+  private SmtpRepository makeRepository(String location) {
+    return new SmtpRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), location);
   }
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
   public void toS3Parquet() throws IOException {
 
-    SmtpRepository s3SmtpRepository = new SmtpRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+    SmtpRepository s3SmtpRepository = makeRepository(System.getProperty("mercator_s3_base_path"));
 
     logger.info("tempDir = {}", baseLocation);
     Files.createDirectories(baseLocation);
@@ -138,7 +142,7 @@ class SmtpRepositoryTest {
     assertThat(smtpVisitResults1.size()).isEqualTo(1);
     assertThat(smtpVisitResults2.size()).isEqualTo(1);
 
-    List<String> hostNames = smtpVisitResults1.stream().flatMap(r -> r.getHosts().stream()).map(h -> h.getHostName()).toList();
+    List<String> hostNames = smtpVisitResults1.stream().flatMap(r -> r.getHosts().stream()).map(SmtpHost::getHostName).toList();
 
     logger.info("hostnames found (there should be 2): {}", hostNames);
     assertThat(hostNames.size()).isEqualTo(2);

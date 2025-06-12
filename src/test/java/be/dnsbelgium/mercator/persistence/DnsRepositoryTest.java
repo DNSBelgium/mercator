@@ -41,14 +41,16 @@ class DnsRepositoryTest {
 
     @BeforeEach
     public void init() {
-        repository = new DnsRepository(TestUtils.jsonReader(), baseLocation.toString());
+        repository = new DnsRepository(TestUtils.jdbcClient(),  TestUtils.jsonReader(), baseLocation.toString());
     }
+
+
 
     @Test
     @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
     public void toS3Parquet() throws IOException {
 
-        DnsRepository s3DnsRepository = new DnsRepository(TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
+        DnsRepository s3DnsRepository = new DnsRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), System.getProperty("mercator_s3_base_path"));
 
         logger.info("tempDir = {}", baseLocation);
         Files.createDirectories(baseLocation);
