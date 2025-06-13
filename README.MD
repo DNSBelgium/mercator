@@ -126,7 +126,66 @@ docker compose logs monocator
 The Mercator UI should be available at http://localhost:8082
 
 Metrics are available on http://localhost:3000 
-                 
+
+# Running Mercator Batch
+
+```shell
+
+cd $(mktemp -d)
+
+mkdir -p data
+
+docker pull dnsbelgium/mercator:batch2
+
+echo -n "$(uuidgen),dnsbelgium.be" > input.csv
+
+# copy your maxmind settings to .env
+cat <<EOF > .env
+CRAWLER_DNS_GEOIP_ENABLED=true
+MAXMIND_LICENSE_KEY=***
+EOF
+
+# make sure to have enough memory
+podman machine stop
+podman machine set --memory=8192
+podman machine start
+
+docker run \
+  --env-file .env \
+  -e SPRING_PROFILES_ACTIVE=batch \
+  -e DNS_CHUNKSIZE=10 \
+  -e DNS_THROTTLELIMIT=500 \
+  -e RESOLVER_TIMEOUT_SECONDS=10 \
+  -e SMTP_CHUNKSIZE=10 \
+  -e SMTP_COREPOOLSIZE=500 \
+  -e SMTP_CRAWLER_INITIAL_RESPONSE_TIME_OUT=20s \
+  -e SMTP_CRAWLER_READ_TIME_OUT=20s \
+  -e SMTP_MAXPOOLSIZE=500 \
+  -e TLS_CHUNKSIZE=10 \
+  -e TLS_SCANNER_CONNECT_TIMEOUT_MILLISECONDS=3000 \
+  -e TLS_SCANNER_READ_TIMEOUT_MILLISECONDS=3000 \
+  -e TLS_THROTTLELIMIT=500 \
+  -e WEB_CHUNKSIZE=10 \
+  -e WEB_COREPOOLSIZE=500 \
+  -e WEB_MAXPOOLSIZE=500 \
+  -v $(pwd)/data:/root/mercator/data \
+  -v $(pwd)/input.csv:/root/mercator/input.csv \
+  --rm \
+  dnsbelgium/mercator:batch2
+```
+
+# Running mercator GUI
+
+```shell
+docker run \
+  -v $(pwd)/data:/root/mercator/data \
+  -p 8082:8082 \
+  --rm \
+  dnsbelgium/mercator:batch2
+  
+open http://localhost:8082
+```
+
 # Instructions for running it in production
 
 Will follow soon.
