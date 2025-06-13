@@ -103,13 +103,15 @@ public class SurrogateCodeUnitsTest {
 
     Person person = new Person();
     person.name = out;
-    TestUtils.jsonWriter().writeValue(new File("out.json"), person);
-    readWithDuckDB(new File("out.json"));
+    File outFile = new File(tempDir, "out.json");
+    TestUtils.jsonWriter().writeValue(outFile, person);
+    readWithDuckDB(outFile);
 
     person.name = input;
-    TestUtils.jsonWriter().writeValue(new File("out2.json"), person);
+    File out2File = new File(tempDir, "out2.json");
+    TestUtils.jsonWriter().writeValue(out2File, person);
 
-    assertThrows(UncategorizedSQLException.class, () -> readWithDuckDB(new File("out2.json")));
+    assertThrows(UncategorizedSQLException.class, () -> readWithDuckDB(out2File));
   }
 
 }
