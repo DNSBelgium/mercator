@@ -18,6 +18,9 @@ public class BatchConfig {
   @Value("${mercator.json.location}")
   private String outputDirectory;
 
+  @Value("${mercator.shutdown-wait-seconds:0}")
+  private int shutdownWaitSeconds;
+
   public Path outputPathFor(String jobName) {
     return Path.of(outputDirectory, jobName + ".json");
   }

@@ -25,6 +25,7 @@ public class JobRunner implements CommandLineRunner {
   private final JobLauncher jobLauncher;
   private final Map<String, Job> jobs;
   private static final Logger logger = LoggerFactory.getLogger(JobRunner.class);
+  
 
   // for some reason IntelliJ does not find the JobLauncher bean
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -34,6 +35,23 @@ public class JobRunner implements CommandLineRunner {
     this.jobLauncher = jobLauncher;
     this.batchConfig = batchConfig;
     this.jobs = jobs;
+  }
+
+  private void exit(int exitCode) {
+    logger.info("Exiting application with code {}", exitCode);
+    int shutdownWaitSeconds = batchConfig.getShutdownWaitSeconds();
+    if (shutdownWaitSeconds > 0) {
+      logger.info("Waiting for shutdown... (this may take up to {} seconds)", shutdownWaitSeconds);
+      try {
+        Thread.sleep(shutdownWaitSeconds * 1000L);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      logger.info("Shutdown wait completed.");
+    }
+    logger.info("Exiting with code {}", exitCode);
+    SpringApplication.exit(context, () -> exitCode);
+    System.exit(exitCode);
   }
 
   @Override
@@ -70,8 +88,7 @@ public class JobRunner implements CommandLineRunner {
           int failureCount = jobExecution.getAllFailureExceptions().size();
           if (failureCount > 0 || jobExecution.getStatus() != BatchStatus.COMPLETED) {
             logger.error("job {} failed => exit 1", name);
-            SpringApplication.exit(context, () -> 1);
-            System.exit(1);
+            exit(1);
           }
 
         } catch (Exception e) {
@@ -80,12 +97,11 @@ public class JobRunner implements CommandLineRunner {
                   .addArgument(name)
                   .setCause(e)
                   .log();
-          SpringApplication.exit(context, () -> 1);
-          System.exit(1);
+          exit(1);
         }
     });
     logger.info("All batch jobs executed => exiting");
-    SpringApplication.exit(context);
+    exit(0);
     logger.info("SpringApplication has exited");
 
   }
