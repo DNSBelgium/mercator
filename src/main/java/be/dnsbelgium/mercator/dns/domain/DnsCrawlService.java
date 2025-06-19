@@ -2,10 +2,13 @@ package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.dns.dto.*;
+import be.dnsbelgium.mercator.dns.metrics.MetricName;
 import be.dnsbelgium.mercator.idn.IdnException;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
 import be.dnsbelgium.mercator.metrics.Threads;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import com.github.f4b6a3.ulid.Ulid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +34,13 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
   private final DnsResolver resolver;
   private final Enricher enricher;
   private final DnsCrawlerConfigurationProperties dnsCrawlerConfig;
-
-  public DnsCrawlService(DnsResolver resolver, Enricher enricher, DnsCrawlerConfigurationProperties dnsCrawlerConfig) {
+  private final MeterRegistry meterRegistry;
+  
+  public DnsCrawlService(DnsResolver resolver, Enricher enricher, DnsCrawlerConfigurationProperties dnsCrawlerConfig, MeterRegistry meterRegistry) {
     this.resolver = resolver;
     this.enricher = enricher;
     this.dnsCrawlerConfig = dnsCrawlerConfig;
+    this.meterRegistry = meterRegistry;
   }
 
   public DnsCrawlResult visit(VisitRequest visitRequest) {
@@ -43,6 +48,7 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
     try {
       return retrieveDnsRecords(visitRequest);
     } finally {
+      meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
       Threads.DNS.decrementAndGet();
     }
   }

@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.dns.metrics;
 
 public interface MetricName {
 
+  String COUNTER_VISITS_COMPLETED = "dns.crawler.visits.completed";
   String GEO_ENRICH = "dns.crawler.geo.enrich";
 
   String DNS_RESOLVER_LOOKUP_DONE = "dns.resolver.lookup.done";
