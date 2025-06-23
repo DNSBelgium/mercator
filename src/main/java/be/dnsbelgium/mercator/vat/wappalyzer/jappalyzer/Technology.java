@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import static be.dnsbelgium.mercator.vat.wappalyzer.jappalyzer.MetricName.TIMER_JAPPALYZER_TECHNOLOGY_MATCH_APPLICABLE_TO;
@@ -122,20 +124,27 @@ public class Technology {
         this.scriptSrc.add(new PatternWithVersion(scriptSrc));
     }
 
-    public TechnologyMatch applicableTo(JappalyzerPage page) {
-        if (page.getDuration().toMillis() > 5000) {
-            // already spent 5 seconds analysing this page => give up
-            return TechnologyMatch.notMatched(this, 0);
+    public TechnologyMatch applicableTo(JappalyzerPage jappalyzerPage) {
+        if (jappalyzerPage.shouldAbort()) {
+            // already spent too long analysing this page => give up
+            return abort();
         }
-        return applicableTo(page.getPage());
+        long start = System.currentTimeMillis();
+        TechnologyMatch technologyMatch = match(jappalyzerPage);
+        long millis =  System.currentTimeMillis() - start;
+        jappalyzerPage.record(this.name, millis);
+
+        return technologyMatch;
     }
 
     public TechnologyMatch applicableTo(Page page) {
-        return applicableToTimer.record(() -> match(page));
+        JappalyzerPage jappalyzerPage = new JappalyzerPage(page, Instant.now(), Duration.ofSeconds(10));
+        return applicableToTimer.record(() -> match(jappalyzerPage));
     }
 
-    private TechnologyMatch match(Page page) {
+    private TechnologyMatch match(JappalyzerPage jappalyzerPage) {
         long startTimestamp = System.currentTimeMillis();
+        Page page = jappalyzerPage.getPage();
 
         if (!page.getHeaders().isEmpty()) {
             PatternMatch match = getTechnologyMapMatch(this.headerTemplates, page.getHeaders());
@@ -143,12 +152,18 @@ public class Technology {
             if (match.isMatched())
                 return new TechnologyMatch(this, match.getVersion(), TechnologyMatch.HEADER, true, duration);
         }
+        if (jappalyzerPage.shouldAbort()) {
+            return abort();
+        }
 
         if (!page.getCookies().isEmpty()) {
             PatternMatch match = getTechnologyMapMatch(this.cookieTemplates, page.getCookies());
             long duration = System.currentTimeMillis() - startTimestamp;
             if (match.isMatched())
                 return new TechnologyMatch(this, match.getVersion(), TechnologyMatch.COOKIE, true, duration);
+        }
+        if (jappalyzerPage.shouldAbort()) {
+            return abort();
         }
 
         if (!page.getMetaMap().isEmpty()) {
@@ -159,13 +174,19 @@ public class Technology {
         }
 
         for (DomPattern domTemplate : this.domTemplates) {
-            if (domTemplate.applicableToDocument(page.getDocument())) {
+            if (jappalyzerPage.shouldAbort()) {
+                return abort();
+            }
+            if (domTemplate.applicableToDocument(jappalyzerPage)) {
                 long duration = System.currentTimeMillis() - startTimestamp;
                 return new TechnologyMatch(this, TechnologyMatch.DOM, duration);
             }
         }
 
         for (PatternWithVersion scriptSrcPattern : this.scriptSrc) {
+            if (jappalyzerPage.shouldAbort()) {
+                return abort();
+            }
             PatternMatch match = getTechnologyStringListMatch(page.getScriptSources(), scriptSrcPattern);
             long duration = System.currentTimeMillis() - startTimestamp;
             if (match.isMatched())
@@ -173,6 +194,9 @@ public class Technology {
         }
 
         for (PatternWithVersion htmlTemplate : this.htmlTemplates) {
+            if (jappalyzerPage.shouldAbort()) {
+                return abort();
+            }
             PatternMatch match = getTechnologyStringListMatch(page.getResponseBody().lines().toList(), htmlTemplate);
             long duration = System.currentTimeMillis() - startTimestamp;
             if (match.isMatched()) {
@@ -182,6 +206,10 @@ public class Technology {
 
         long duration = System.currentTimeMillis() - startTimestamp;
         return TechnologyMatch.notMatched(this, duration);
+    }
+
+    private TechnologyMatch abort() {
+        return TechnologyMatch.notMatched(this, 0);
     }
 
     private PatternMatch getTechnologyStringListMatch(List<String> lines, PatternWithVersion pattern) {

@@ -81,7 +81,12 @@ public class DomPattern {
         }
     }
 
-    public boolean applicableToDocument(Document document) {
+    public boolean applicableToDocument(JappalyzerPage jappalyzerPage) {
+        Document document = jappalyzerPage.getPage().getDocument();
+        return applicableToDocument(document, jappalyzerPage);
+    }
+
+    private boolean applicableToDocument(Document document, Abortable abortable) {
         Timer.Sample sample = Timer.start(meterRegistry);
         try {
             List<Element> elements = select(document);
@@ -90,6 +95,9 @@ public class DomPattern {
                     return true;
                 }
                 for (Element element : elements) {
+                    if (abortable.shouldAbort()) {
+                        return false;
+                    }
                     if (matchedWithConstraints(element)) {
                         return true;
                     }
@@ -102,6 +110,10 @@ public class DomPattern {
             sample.stop(applicableTimer);
         }
         return false;
+    }
+
+    public boolean applicableToDocument(Document document) {
+        return applicableToDocument(document, () -> false);
     }
 
     private boolean matchedWithConstraints(Element element) {

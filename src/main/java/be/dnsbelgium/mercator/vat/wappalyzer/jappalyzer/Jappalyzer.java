@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,10 +41,12 @@ public class Jappalyzer {
   }
 
   private Set<TechnologyMatch> getTechnologyMatches(Page page) {
-    JappalyzerPage jappalyzerPage = new JappalyzerPage(page, Instant.now());
+    JappalyzerPage jappalyzerPage = new JappalyzerPage(page, Instant.now(), Duration.ofSeconds(5));
+    // Don't parallelize this stream processing
+    // It's better for latency but worse for throughput.
+    // We could make it optional if latency matters in some cases ?
     Set<TechnologyMatch> matchesSet = technologies
             .stream()
-            .parallel()
             .map(technology -> technology.applicableTo(jappalyzerPage))
             .filter(TechnologyMatch::isMatched)
             .collect(Collectors.toSet());

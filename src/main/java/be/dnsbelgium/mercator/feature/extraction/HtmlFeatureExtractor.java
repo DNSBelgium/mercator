@@ -192,16 +192,12 @@ public class HtmlFeatureExtractor {
       features.meta_text_truncated = true;
     }
 
-    //the number of strings that look like numbers (see regex at top for explanation)
-    Matcher numericMatcher = numeric_pattern.matcher(document.text());
-    features.nb_numerical_strings = (int) numericMatcher.results().count();
-
     features.nb_tags = document.getAllElements().size();
 
     features.htmlstruct = tagMapper.compress(document);
     if (features.htmlstruct.length() > MAX_LENGTH_HTMLSTRUCT) {
       logger.info("domainName={} length of htmlstruct = {} exceeds {} => truncating",
-          domainName, MAX_LENGTH_HTMLSTRUCT, features.htmlstruct.length());
+              features.htmlstruct.length(), domainName, MAX_LENGTH_HTMLSTRUCT);
       features.htmlstruct = StringUtils.abbreviate(features.htmlstruct, MAX_LENGTH_HTMLSTRUCT);
     }
     String bodyText = document.text();
@@ -392,6 +388,11 @@ public class HtmlFeatureExtractor {
       features.body_text_truncated = false;
     }
     features.body_text = removeIncompleteSurrogates(features.body_text);
+    // We do this after abbreviating the body text since the regex match can take a very long time otherwise
+    // (like 10 minutes for one page)
+    // the number of strings that look like numbers (see regex at top for explanation)
+    Matcher numericMatcher = numeric_pattern.matcher(features.body_text);
+    features.nb_numerical_strings = (int) numericMatcher.results().count();
   }
 
   private void processLinks(Document document, HtmlFeatures features) {

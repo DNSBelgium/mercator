@@ -118,6 +118,7 @@ public class WebCrawler {
 
     private List<HtmlFeatures> findFeatures(VisitRequest visitRequest, SiteVisit siteVisit) {
         Threads.FEATURE_EXTRACTION.incrementAndGet();
+        long start = System.currentTimeMillis();
         try {
             logger.debug("findFeatures for siteVisit = {}", siteVisit);
             List<HtmlFeatures> featuresList = new ArrayList<>();
@@ -137,6 +138,8 @@ public class WebCrawler {
             return featuresList;
         } finally {
             Threads.FEATURE_EXTRACTION.decrementAndGet();
+            long millis = System.currentTimeMillis() - start;
+            logger.info("findFeatures took {} millis", millis);
         }
     }
 
@@ -175,7 +178,11 @@ public class WebCrawler {
         SiteVisit siteVisit = this.visit(visitRequest);
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
         meterRegistry.counter(COUNTER_WEB_CRAWLS_DONE).increment();
+
+
         List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
+
+
         webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
         logger.info(siteVisit.getBaseURL().toString());
@@ -197,6 +204,8 @@ public class WebCrawler {
             pageVisits.add(securityTxtVisit);
         }
 
+        long start = System.currentTimeMillis();
+
         Set<String> detectedTechnologies = siteVisit.getVisitedPages()
                 .values()
                 .stream()
@@ -204,7 +213,8 @@ public class WebCrawler {
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
 
-        logger.debug("detectedTechnologies = {}", detectedTechnologies);
+        long millis = System.currentTimeMillis() - start;
+        logger.info("technologyAnalyzer took {} millis", millis);
 
         // integrated wappalyzer
         webCrawlResult.setDetectedTechnologies(detectedTechnologies);
