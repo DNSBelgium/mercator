@@ -11,12 +11,11 @@ with typed as (
                        vat_values: 'VARCHAR[]',
                        visited_urls: 'VARCHAR[]',
                        page_visits: 'STRUCT(
-                                    visit_id VARCHAR,
-                                    domain_name VARCHAR,
                                     crawl_started TIMESTAMP,
                                     crawl_finished TIMESTAMP,
                                     status_code INTEGER,
                                     url VARCHAR,
+                                    final_url VARCHAR,
                                     link_text VARCHAR,
                                     path VARCHAR,
                                     response_body VARCHAR,
@@ -25,9 +24,6 @@ with typed as (
                                     vat_values VARCHAR[]
                                 )[]',
                        html_features: 'STRUCT(
-                                       visit_id VARCHAR,
-                                       crawl_timestamp TIMESTAMP,
-                                       domain_name VARCHAR,
                                        url VARCHAR,
                                        nb_imgs INTEGER,
                                        nb_links_int INTEGER,

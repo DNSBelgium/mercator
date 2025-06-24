@@ -104,8 +104,7 @@ class PageTest {
     Page page = makePageFrom(responseBody);
     PageVisit pageVisit = page.asPageVisit(visitRequest);
     logger.info("pageVisit = {}", pageVisit);
-    assertThat(pageVisit.getVisitId()).isEqualTo(visitRequest.getVisitId());
-    assertThat(pageVisit.getDomainName()).isEqualTo("abc.be");
+    assertThat(pageVisit.getUrl()).isEqualTo(page.getUrl().toString());
     assertThat(pageVisit.getCrawlStarted()).isEqualTo(page.getVisitStarted());
     assertThat(pageVisit.getCrawlFinished()).isEqualTo(page.getVisitFinished());
     assertThat(pageVisit.getStatusCode()).isEqualTo(page.getStatusCode());

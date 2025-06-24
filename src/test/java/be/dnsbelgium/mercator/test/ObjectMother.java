@@ -45,10 +45,8 @@ public class ObjectMother {
 
   public PageVisit pageVisit1() {
     return PageVisit.builder()
-        .visitId(VISIT_ID_1)
         .responseBody("<h1>I am a page </h1>")
         .url("https://www.dnsbelgium.be/")
-        .domainName("dnsbelgium.be")
         .statusCode(200)
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
@@ -58,10 +56,8 @@ public class ObjectMother {
 
   public PageVisit pageVisit2() {
     return PageVisit.builder()
-        .visitId(VISIT_ID_1)
         .responseBody("<h1>I am the EN page </h1>")
         .url("https://www.dnsbelgium.be/en")
-        .domainName("dnsbelgium.be")
         .statusCode(200)
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
@@ -71,10 +67,8 @@ public class ObjectMother {
 
   public PageVisit pageVisit3() {
     return PageVisit.builder()
-        .visitId(VISIT_ID_1)
         .responseBody("<h1>I am the contact page </h1>")
         .url("https://www.dnsbelgium.be/en/contact")
-        .domainName("dnsbelgium.be")
         .vatValues(List.of("BE0466158640", "BE0841242495"))
         .statusCode(200)
         .crawlStarted(started)
@@ -85,10 +79,8 @@ public class ObjectMother {
 
   public PageVisit pageVisit4() {
     return PageVisit.builder()
-        .visitId(VISIT_ID_2)
         .responseBody(null)
         .url("https://www.no-website.org/")
-        .domainName("no-website.org")
         .statusCode(400)
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
@@ -122,9 +114,7 @@ public class ObjectMother {
 
   public PageVisit pageVisitWithSecurityTxtFields() {
     return PageVisit.builder()
-        .visitId("security-txt-test-id")
         .url("https://www.example.org/.well-known/security.txt")
-        .domainName("example.org")
         .path("/.well-known/security.txt")
         .statusCode(200)
         .responseBody("Contact: mailto:security@example.org\nEncryption: https://example.org/pgp-key.txt")
@@ -138,9 +128,7 @@ public class ObjectMother {
 
   public PageVisit pageVisitWithRobotsTxtFields() {
     return PageVisit.builder()
-        .visitId("robots-txt-test-id")
         .url("https://www.example.org/robots.txt")
-        .domainName("example.org")
         .path("/robots.txt")
         .statusCode(200)
         .responseBody("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
@@ -158,9 +146,6 @@ public class ObjectMother {
             "<h1>I am a page </h1>",
             "https://www.dnsbelgium.be/",
             "dnsbelgium.be");
-    features.visitId = VISIT_ID_1;
-    features.crawlTimestamp = started.plusMillis(11);
-    features.domainName = "dnsbelgium.be";
     features.body_text_language = "nl";
     features.body_text_language_2 = "nl";
     return features;
@@ -172,9 +157,6 @@ public class ObjectMother {
             "<h1>I am the English page </h1>",
             "https://www.dnsbelgium.be/en",
             "dnsbelgium.be");
-    features.visitId = VISIT_ID_1;
-    features.crawlTimestamp = started.plusMillis(12);
-    features.domainName = "dnsbelgium.be";
     features.body_text_language = "en";
     features.body_text_language_2 = "en";
     return features;
@@ -186,9 +168,6 @@ public class ObjectMother {
             "<h1>I am the Contact page </h1>",
             "https://www.dnsbelgium.be/en/contact",
             "dnsbelgium.be");
-    features.visitId = VISIT_ID_1;
-    features.crawlTimestamp = started.plusMillis(13);
-    features.domainName = "dnsbelgium.be";
     features.body_text_language = "en";
     features.body_text_language_2 = "en";
     return features;
@@ -203,7 +182,6 @@ public class ObjectMother {
         .matchingUrl("https://www.dnsbelgium.be/en/contact")
         .vatValues(List.of("BE0466158640", "BE0841242495"))
         .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en", "https://www.dnsbelgium.be/en/contact"))
-        .startUrl("https://www.dnsbelgium.be/")
         .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
         .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
         .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
@@ -218,7 +196,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .startUrl("https://www.no-website.be/")
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisit4()))
         .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
@@ -232,7 +209,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .startUrl("https://www.no-website.be/")
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
         .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
@@ -246,7 +222,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .startUrl("https://www.no-website.be/")
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
         .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
@@ -262,7 +237,6 @@ public class ObjectMother {
         .matchingUrl(null)
         .vatValues(null)
         .visitedUrls(null)
-        .startUrl(null)
         .htmlFeatures(null)
         .pageVisits(null)
         .detectedTechnologies(null)
@@ -279,7 +253,6 @@ public class ObjectMother {
         .matchingUrl(null)
         .vatValues(null)
         .visitedUrls(null)
-        .startUrl(null)
         .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
         .pageVisits(null)
         .detectedTechnologies(null)
@@ -296,7 +269,6 @@ public class ObjectMother {
         .matchingUrl(null)
         .vatValues(null)
         .visitedUrls(null)
-        .startUrl(null)
         .htmlFeatures(null)
         .pageVisits(List.of(pageVisitWithNullValues()))
         .detectedTechnologies(null)
@@ -311,9 +283,6 @@ public class ObjectMother {
             "",
             "https://www.no-website.be/",
             null);
-    features.visitId = null;
-    features.crawlTimestamp = null;
-    features.domainName = null;
     features.body_text_language = null;
     features.body_text_language_2 = null;
     return features;
@@ -321,10 +290,8 @@ public class ObjectMother {
 
   public PageVisit pageVisitWithNullValues() {
     return PageVisit.builder()
-        .visitId(null)
         .responseBody(null)
         .url(null)
-        .domainName(null)
         .statusCode(null)
         .crawlStarted(null)
         .crawlStarted(null)
@@ -340,8 +307,8 @@ public class ObjectMother {
   @NotNull
   private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
     return new TlsCrawlResult(visitId, domainName, List.of(
-        TlsVisit.fromCache(visitId, domainName, domainName, started, fullScanEntity(domainName), scan),
-        TlsVisit.fromCache(visitId, domainName, "www." + domainName, started, fullScanEntity(domainName), scan)
+        TlsVisit.fromCache(domainName, started, fullScanEntity(domainName), scan),
+        TlsVisit.fromCache("www." + domainName, started, fullScanEntity(domainName), scan)
     ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
@@ -435,8 +402,8 @@ public class ObjectMother {
 
   private TlsCrawlResult getTlsCrawlResultWithFullScanEntityNull(SingleVersionScan scan) {
     return new TlsCrawlResult("visit02", "example.be", List.of(
-        TlsVisit.fromCache("visit02", "example.be", "example.be", started, fullScanEntityWithNullValues(), scan),
-        TlsVisit.fromCache("visit02", "example.be", "www." + "example.be", started, fullScanEntityWithNullValues(), scan)
+        TlsVisit.fromCache("example.be", started, fullScanEntityWithNullValues(), scan),
+        TlsVisit.fromCache("www." + "example.be", started, fullScanEntityWithNullValues(), scan)
     ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
@@ -446,8 +413,8 @@ public class ObjectMother {
 
   public TlsCrawlResult tlsCrawlResultWithNullValues() {
     return new TlsCrawlResult(null, null, List.of(
-        TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
-        TlsVisit.fromCache(null, null, null, started, fullScanEntity(""), singleVersionScanWithNullValues())
+        TlsVisit.fromCache(null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
+        TlsVisit.fromCache(null, started, fullScanEntity(""), singleVersionScanWithNullValues())
     ), Instant.parse("2025-03-28T12:00:00Z"));
   }
 
@@ -465,7 +432,6 @@ public class ObjectMother {
         .domainName("example1.com")
         .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
         .crawlStatus(CrawlStatus.OK)
-        .numConversations(2)
         .build();
   }
 
@@ -476,7 +442,6 @@ public class ObjectMother {
         .domainName("example2.com")
         .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
         .crawlStatus(CrawlStatus.OK)
-        .numConversations(2)
         .build();
   }
 
@@ -610,7 +575,6 @@ public class ObjectMother {
         .domainName(null)
         .timestamp(null)
         .crawlStatus(null)
-        .numConversations(1)
         .build();
   }
 
@@ -621,7 +585,6 @@ public class ObjectMother {
         .domainName(null)
         .timestamp(null)
         .crawlStatus(null)
-        .numConversations(1)
         .build();
   }
 
@@ -632,7 +595,6 @@ public class ObjectMother {
         .domainName(null)
         .timestamp(null)
         .crawlStatus(null)
-        .numConversations(1)
         .build();
   }
 
@@ -682,7 +644,6 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
     Response response1 = Response.builder()
-        .responseId(100L)
         .recordData("192.168.1.1")
         .ttl(3600L)
         .responseGeoIps(List.of(geoIp1, geoIp2))
@@ -692,15 +653,12 @@ public class ObjectMother {
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
 
     Response response2 = Response.builder()
-        .responseId(101L)
         .recordData("192.168.1.2")
         .ttl(3600L)
         .responseGeoIps(List.of(geoIp3, geoIp4))
         .build();
 
     Request request = Request.builder()
-        .requestId(9153627412115712L)
-        .visitId(visitId)
         .domainName(domain)
         .prefix("www")
         .recordType(RecordType.A)
@@ -708,7 +666,6 @@ public class ObjectMother {
         .crawlTimestamp(Instant.parse("2025-03-28T12:00:00Z"))
         .ok(true)
         .responses(List.of(response1, response2))
-        .numOfResponses(2)
         .build();
 
     return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
@@ -719,7 +676,6 @@ public class ObjectMother {
     ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(6780L, "ISP Belgium"), "FR", 4, "192.168.11");
 
     Response response1 = Response.builder()
-        .responseId(10517255249230897L)
         .recordData("192.1681.1")
         .ttl(3600L)
         .responseGeoIps(List.of(geoIp1, geoIp2))
@@ -729,15 +685,12 @@ public class ObjectMother {
     ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(9865L, "ISP Belgium"), "DE", 4, "192.1681.2");
 
     Response response2 = Response.builder()
-        .responseId(10517864259230897L)
         .recordData("192.1681.2")
         .ttl(3600L)
         .responseGeoIps(List.of(geoIp3, geoIp4))
         .build();
 
     Request request = Request.builder()
-        .requestId(9153627412115712L)
-        .visitId(visitId)
         .domainName(domain)
         .prefix("www")
         .recordType(RecordType.A)
@@ -745,7 +698,6 @@ public class ObjectMother {
         .crawlTimestamp(Instant.parse("2025-03-28T12:00:00Z"))
         .ok(true)
         .responses(List.of(response1, response2))
-        .numOfResponses(2)
         .build();
 
     return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
@@ -758,8 +710,6 @@ public class ObjectMother {
 
   public DnsCrawlResult dnsCrawlResultWithNullRequest() {
     Request request = Request.builder()
-        .requestId(null)
-        .visitId(null)
         .domainName(null)
         .prefix(null)
         .recordType(null)
@@ -767,7 +717,6 @@ public class ObjectMother {
         .crawlTimestamp(null)
         .ok(false)
         .responses(List.of())
-        .numOfResponses(0)
         .build();
 
     return new DnsCrawlResult(List.of(request), null, null, null, null);
@@ -775,15 +724,12 @@ public class ObjectMother {
 
   public DnsCrawlResult dnsCrawlResultWithNullResponse() {
     Response response1 = Response.builder()
-        .responseId(null)
         .recordData(null)
         .ttl(null)
         .responseGeoIps(null)
         .build();
 
     Request request = Request.builder()
-        .requestId(null)
-        .visitId(null)
         .domainName(null)
         .prefix(null)
         .recordType(null)
@@ -791,7 +737,6 @@ public class ObjectMother {
         .crawlTimestamp(null)
         .ok(false)
         .responses(List.of(response1))
-        .numOfResponses(1)
         .build();
 
     return new DnsCrawlResult(List.of(request), null, null, null, null);
@@ -801,7 +746,6 @@ public class ObjectMother {
     ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(null, null), null, 0, null);
 
     Response response1 = Response.builder()
-        .responseId(null)
         .recordData(null)
         .ttl(null)
         .responseGeoIps(List.of(geoIp1))
@@ -809,8 +753,6 @@ public class ObjectMother {
 
 
     Request request = Request.builder()
-        .requestId(null)
-        .visitId(null)
         .domainName(null)
         .prefix(null)
         .recordType(null)
@@ -818,7 +760,6 @@ public class ObjectMother {
         .crawlTimestamp(null)
         .ok(false)
         .responses(List.of(response1))
-        .numOfResponses(1)
         .build();
 
     return new DnsCrawlResult(List.of(request), null, null, null, null);

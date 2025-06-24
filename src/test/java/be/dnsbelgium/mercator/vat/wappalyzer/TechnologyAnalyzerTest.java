@@ -2,7 +2,6 @@ package be.dnsbelgium.mercator.vat.wappalyzer;
 
 import be.dnsbelgium.mercator.vat.domain.Page;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;

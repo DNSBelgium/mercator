@@ -33,6 +33,7 @@ public class Page {
   // the URL we retrieved, might be different from the URL we requested (because
   // we follow redirects)
   private final HttpUrl url;
+  private final HttpUrl finalUrl;
 
   private final Instant visitStarted;
   private final Instant visitFinished;
@@ -58,15 +59,21 @@ public class Page {
 
   // TODO: use this constructor and remember the Link that got us here so that we
   // can build the path that lead to VAT number
-  public Page(Link link, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
+  public Page(Link link, HttpUrl finalUrl, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
               long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
-    this(link.getUrl(), visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
+    this(link.getUrl(), finalUrl, visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
+  }
+
+  public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
+              long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
+        this(url, url, visitStarted, visitFinished, statusCode, responseBody, contentLength, mediaType, headers);
   }
 
   @Builder
-  public Page(HttpUrl url, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
+  public Page(HttpUrl url, HttpUrl finalUrl, Instant visitStarted, Instant visitFinished, int statusCode, String responseBody,
               long contentLength, MediaType mediaType, Map<String, List<String>> headers) {
     this.url = url;
+    this.finalUrl = finalUrl == null ? url : finalUrl;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
     this.statusCode = statusCode;
@@ -130,12 +137,14 @@ public class Page {
 
   private Page() {
     this.url = null;
+    this.finalUrl = null;
     this.visitStarted = Instant.now();
     this.visitFinished = Instant.now();
   }
 
   private Page(HttpUrl url, Instant visitStarted, Instant visitFinished) {
     this.url = url;
+    this.finalUrl = url;
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
   }
@@ -217,7 +226,7 @@ public class Page {
   }
 
   public static String getSecondLevelDomainName(HttpUrl url) {
-    // TODO use : url.topPrivateDomain();
+    // TODO: use url.topPrivateDomain();
     String host = url.host();
     String[] labels = host.split("\\.");
     int labelCount = labels.length;
@@ -250,9 +259,8 @@ public class Page {
 
   public PageVisit asPageVisit(VisitRequest visitRequest) {
     return new PageVisit(
-            visitRequest.getVisitId(),
-            visitRequest.getDomainName(),
             url != null ? StringUtils.abbreviate(url.toString(), 255) : null,
+            finalUrl != null ? StringUtils.abbreviate(url.toString(), 255) : null,
             url != null ? StringUtils.abbreviate(url.encodedPath(), 255) : null,
             visitStarted,
             visitFinished,

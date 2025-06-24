@@ -7,6 +7,7 @@ from read_json(
     domain_name: 'VARCHAR',
     timestamp: 'TIMESTAMP',
     num_conversations: 'BIGINT',
+    num_hosts: 'BIGINT',
     hosts: 'struct(
       from_mx BOOLEAN,
       host_name VARCHAR,

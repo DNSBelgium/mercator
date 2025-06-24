@@ -18,9 +18,6 @@ import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncomplete
 @EqualsAndHashCode
 public class PageVisit {
 
-  private final String visitId;
-  private final String domainName;
-
   Instant crawlStarted;
   Instant crawlFinished;
 
@@ -39,14 +36,14 @@ public class PageVisit {
 
   private final Long contentLength;
 
+  private final String finalUrl;
 
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();
 
   public PageVisit(
-      String visitId,
-      String domainName,
       String url,
+      String finalUrl,
       String path,
       Instant crawlStarted,
       Instant crawlFinished,
@@ -55,9 +52,8 @@ public class PageVisit {
       List<String> vatValues,
       long contentLength,
       Map<String, List<String>> headers) {
-    this.visitId = visitId;
-    this.domainName = domainName;
     this.url  = cleanUp(url, 500);
+    this.finalUrl = cleanUp(finalUrl, 500);
     this.path = cleanUp(path,500);
     this.crawlStarted = crawlStarted;
     this.crawlFinished = crawlFinished;

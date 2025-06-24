@@ -9,7 +9,6 @@ import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
 import be.dnsbelgium.mercator.metrics.Threads;
 import io.micrometer.core.instrument.MeterRegistry;
 
-import com.github.f4b6a3.ulid.Ulid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.item.ItemProcessor;
@@ -129,19 +128,16 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
 
   public Request buildEntity(VisitRequest visitRequest, DnsRequest dnsRequest) {
     Request request = Request.builder()
-        .visitId(visitRequest.getVisitId())
         .domainName(visitRequest.u_label())
         .prefix(dnsRequest.prefix())
         .recordType(dnsRequest.recordType())
         .rcode(dnsRequest.rcode())
         .ok(dnsRequest.isOk())
         .problem(dnsRequest.humanReadableProblem())
-        .requestId(Ulid.fast().getMostSignificantBits())
         .build();
     for (RRecord record : dnsRequest.records()) {
       Response response = Response.builder()
           .recordData(record.getData())
-          .responseId(Ulid.fast().getMostSignificantBits())
           .ttl(record.getTtl())
           .build();
       request.getResponses().add(response);

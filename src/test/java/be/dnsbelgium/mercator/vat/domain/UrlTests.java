@@ -23,8 +23,9 @@ public class UrlTests {
   public void javaURL() throws MalformedURLException, URISyntaxException {
     String attack = "http://example.com/static/images/../../../../../etc/passwd";
     //noinspection deprecation
-    logger.info("new URL(attack).getPath() = {}", new URL(attack).getPath());
-    logger.info("new URI(attack).getPath() = {}" , new URI(attack).getPath());
+    
+    logger.info("new URL(attack).getPath() = {}", URI.create(attack).getPath());
+    logger.info("new URI(attack).getPath() = {}" , URI.create(attack).getPath());
     logger.info("HttpUrl.parse(attack).encodedPath() = {}", HttpUrl.parse(attack).encodedPath());
     logger.info("HttpUrl.parse(attack).pathSegments() = {}", HttpUrl.parse(attack).pathSegments());
     logger.info("HttpUrl.parse(attack).encodedPathSegments() = {}", HttpUrl.parse(attack).encodedPathSegments());
@@ -32,8 +33,8 @@ public class UrlTests {
 
   @Test
   public void equals() throws MalformedURLException {
-    URL url1 = new URL("http://example.com");
-    URL url2 = new URL("http://example.org");
+    URL url1 = URI.create("http://example.com").toURL();
+    URL url2 = URI.create("http://example.org").toURL();
     boolean equals = url1.equals(url2);
     logger.info("equals = {}", equals);
 
@@ -45,8 +46,8 @@ public class UrlTests {
     httpUrl2 = HttpUrl.parse("http://example.com/def");
     logger.info("equals = {}", httpUrl1.equals(httpUrl2));
 
-    url1 = new URL("http://example.com/abc/../def");
-    url2 = new URL("http://example.org/def");
+    url1 = URI.create("http://example.com/abc/../def").toURL();
+    url2 = URI.create("http://example.org/def").toURL();
     logger.info("equals = {}", url1.equals(url2));
 
   }

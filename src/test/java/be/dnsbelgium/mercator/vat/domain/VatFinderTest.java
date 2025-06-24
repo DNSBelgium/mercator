@@ -170,13 +170,6 @@ class VatFinderTest {
 
   @Test
   public void badInputs() {
-    String[] bad_inputs = new String[] {
-        "01234567890",     // too many digits
-        "0-1234567890",    // too many digits
-        "12345678901",     // too many digits
-        "0479/23.45.78",   // slash not allowed as separator
-        "016 123456 0479/23.45.78"
-    };
     //expectNoVatValuesIn("0-1234567890");
     expectNoVatValuesIn("12345678901");
     expectNoVatValuesIn("0479/23.45.78");

@@ -36,7 +36,9 @@
             </tr>
             <tr>
                 <th>Start URL</th>
-                <td th:text="${webCrawlResult.startUrl}"></td>
+                <td th:if="${webCrawlResult.visitedUrls != null and !webCrawlResult.visitedUrls.isEmpty()}"
+                    th:text="${webCrawlResult.visitedUrls[0]}"></td>
+                <td th:if="${webCrawlResult.visitedUrls == null or webCrawlResult.visitedUrls.isEmpty()}">No URLs found</td>
             </tr>
             <tr>
                 <th>Matching URL</th>
@@ -83,6 +85,10 @@
                                 <tr>
                                     <th>Path</th>
                                     <td th:text="${pageVisit.path}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Final URL</th>
+                                    <td th:text="${pageVisit.finalUrl}"></td>
                                 </tr>
                                 <tr>
                                     <th>Crawl started</th>

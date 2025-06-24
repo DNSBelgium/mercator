@@ -20,7 +20,6 @@ public class WebCrawlResult {
   private String visitId;
   private String domainName;
 
-  private String startUrl;
   private String matchingUrl;
 
   private Instant crawlStarted;
@@ -36,7 +35,6 @@ public class WebCrawlResult {
 
   public void abbreviateData() {
     domainName = StringUtils.abbreviate(domainName, 255);
-    startUrl = StringUtils.abbreviate(startUrl, 255);
     matchingUrl = StringUtils.abbreviate(matchingUrl, 255);
   }
 }

@@ -2,13 +2,11 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.Data;
-import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.List;
 
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Represents the result of scanning a host name for one specific <code>{@link TlsProtocolVersion}</code>
@@ -42,8 +40,6 @@ public class SingleVersionScan {
   public final static String CONNECTION_TIMED_OUT = "Connection timed out";
   public final static String CONNECTION_REFUSED   = "Connection refused";
   public final static String CONNECTION_RESET     = "Connection reset";
-
-  private static final Logger logger = getLogger(SingleVersionScan.class);
 
   protected SingleVersionScan(TlsProtocolVersion protocolVersion) {
     this.protocolVersion = protocolVersion;

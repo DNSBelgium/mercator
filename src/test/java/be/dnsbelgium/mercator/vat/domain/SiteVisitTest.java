@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import okhttp3.HttpUrl;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -75,7 +75,9 @@ class SiteVisitTest {
   }
 
   private PrioritizedLink makeRandomLinkWithPriority(double priority) {
-    String suffix = RandomStringUtils.randomAlphabetic(8);
+    String suffix = new RandomStringGenerator.Builder()
+      .withinRange('a', 'z')
+      .build().generate(8);
     HttpUrl url = HttpUrl.get("http://localhost/" + suffix);
     return new PrioritizedLink(new Link(url, suffix), priority);
   }

@@ -85,8 +85,6 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
           logger.warn("singleVersionScan is null for hostName={} version={} resultFromCache.get()={}", hostName, version, resultFromCache.get());
         }
         return TlsVisit.fromCache(
-                visitRequest.getVisitId(),
-                visitRequest.getDomainName(),
                 hostName,
                 Instant.now(),
                 resultFromCache.get(),
@@ -95,8 +93,6 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
     TlsVisit tlsVisit = TlsVisit.fromScan(
-            visitRequest.getVisitId(),
-            visitRequest.getDomainName(),
             hostName,
             Instant.now(),
             fullScan);

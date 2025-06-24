@@ -6,8 +6,6 @@ from read_json(
     domain_name: 'VARCHAR',
     crawl_timestamp: 'TIMESTAMP',
     visits: 'struct(
-      visit_id VARCHAR,
-      domain_name VARCHAR,
       full_scan_entity struct(
         crawl_timestamp TIMESTAMP,
         ip VARCHAR,

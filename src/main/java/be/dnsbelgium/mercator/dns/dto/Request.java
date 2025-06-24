@@ -9,15 +9,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Request {
-
-    private Long requestId;
-
-    private String visitId;
 
     private String domainName;
 
@@ -36,8 +35,6 @@ public class Request {
 
     @Builder.Default
     private List<Response> responses = new ArrayList<>();
-
-    private int numOfResponses;
 
     public int getNumOfResponses() {
         return this.responses.size();

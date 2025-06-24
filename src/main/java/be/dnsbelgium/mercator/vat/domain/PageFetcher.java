@@ -237,6 +237,8 @@ public class PageFetcher {
       Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
       Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
 
+      builder.finalUrl(response.request().url());
+      
       builder.visitStarted(sentRequest);
       builder.visitFinished(receivedResponse);
 
@@ -322,6 +324,22 @@ public class PageFetcher {
     logger.debug("response.sentRequestAtMillis = {}", response.sentRequestAtMillis());
     logger.debug("response.receivedResponseAtMillis = {}", response.receivedResponseAtMillis());
     logger.debug("response.body.contentLength = {}", response.body() == null ? 0 : response.body().contentLength());
+  }
+
+  public static void main(String[] args) throws IOException {
+            OkHttpClient client = new OkHttpClient(); // follows redirects by default
+
+        Request request = new Request.Builder()
+                .url("https://www.dnsbelgium.be/en")
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            String finalUrl = response.request().url().toString();
+            String body = response.body().string();
+
+            System.out.println("Final URL: " + finalUrl);
+            // System.out.println("Response body: " + body);
+        }
   }
 
 }

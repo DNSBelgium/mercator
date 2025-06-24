@@ -439,7 +439,7 @@ public class HtmlFeatureExtractor {
     if (maxExternalHosts > 0 && features.external_hosts.size() > maxExternalHosts) {
       features.external_hosts = features.external_hosts.subList(0, maxExternalHosts);
     }
-    logger.debug("domainName={} => externalHosts = {}", features.domainName, externalHosts);
+    logger.debug("url={} => externalHosts = {}", features.url, externalHosts);
   }
 
   public LinkType getLinkType(String url, String baseUri) {

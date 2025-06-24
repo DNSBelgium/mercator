@@ -17,6 +17,7 @@ public class SmtpHost {
 
   private int priority;
 
+  @Builder.Default
   private List<SmtpConversation> conversations = new ArrayList<>();
 
 }

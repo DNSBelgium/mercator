@@ -144,12 +144,11 @@ class DnsRepositoryTest {
         assertThat(firstRequest.getResponses().size()).isEqualTo(2);
         assertThat(firstRequest.getResponses().getFirst().getResponseGeoIps().size()).isEqualTo(2);
 
-
         Response response100 = firstRequest.getResponses().stream()
-                .filter(response -> response.getResponseId().equals(100L)).findFirst().orElseThrow();
+                .filter(response -> response.getRecordData().equals("192.168.1.1")).findFirst().orElseThrow();
 
         Response response101 = firstRequest.getResponses().stream()
-                .filter(response -> response.getResponseId().equals(101L)).findFirst().orElseThrow();
+                .filter(response -> response.getRecordData().equals("192.168.1.2")).findFirst().orElseThrow();
 
         assertThat(response100.getResponseGeoIps().get(0).getIp()).isEqualTo("192.168.1.1");
         assertThat(response100.getResponseGeoIps().get(1).getIp()).isEqualTo("192.168.1.1");

@@ -45,8 +45,8 @@ class CertificateTest {
   }
 
   // TODO: test self-signed
-  // TODO : test EV certificate
-  // TODO : test OV certificate
+  // TODO: test EV certificate
+  // TODO: test OV certificate
 
   @Test
   public void blackanddecker_be() throws CertificateException, IOException {

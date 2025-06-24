@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.tls.domain.ssl2;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
   Modified to remove unused fields and the dependency on BouncyCastle. See https://www.bouncycastle.org/licence.html
 
  */
-public enum SSL2CipherSuite implements Serializable {
+public enum SSL2CipherSuite {
   SSL_CK_RC4_128_WITH_MD5(0x010080),
   SSL_CK_RC4_128_EXPORT40_WITH_MD5(0x020080),
   SSL_CK_RC2_128_CBC_WITH_MD5(0x030080),

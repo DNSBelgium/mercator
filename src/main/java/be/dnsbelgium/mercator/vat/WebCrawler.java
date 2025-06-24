@@ -104,7 +104,6 @@ public class WebCrawler {
         WebCrawlResult crawlResult = WebCrawlResult.builder()
                 .visitId(visitRequest.getVisitId())
                 .domainName(visitRequest.getDomainName())
-                .startUrl(siteVisit.getBaseURL().toString())
                 .crawlStarted(siteVisit.getStarted())
                 .crawlFinished(siteVisit.getFinished())
                 .vatValues(siteVisit.getVatValues())
@@ -130,9 +129,6 @@ public class WebCrawler {
                         page.getUrl().url().toExternalForm(),
                         visitRequest.getDomainName()
                 );
-                features.visitId = visitRequest.getVisitId();
-                features.crawlTimestamp = Instant.now();
-                features.domainName = visitRequest.getDomainName();
                 featuresList.add(features);
             }
             return featuresList;

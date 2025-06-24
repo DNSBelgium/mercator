@@ -39,7 +39,7 @@ public class FullScanEntity {
   private String selectedCipherTls_1_0;
   private String selectedCipherSsl_3_0;
 
-  // TODO acceptedCipherSsl_2_0
+  // TODO: acceptedCipherSsl_2_0
   //private List<String> acceptedCipherSsl_2_0;
 
   private String lowestVersionSupported;

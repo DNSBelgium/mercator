@@ -1,8 +1,6 @@
 with typed as (select *
   from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/dns/*.json'), columns ={
         requests: 'struct(
-            request_id BIGINT,
-            visit_id VARCHAR,
             domain_name VARCHAR,
             prefix VARCHAR,
             record_type VARCHAR,
@@ -12,7 +10,6 @@ with typed as (select *
             problem VARCHAR,
             num_of_responses BIGINT,
             responses struct(
-              response_id BIGINT,
               record_data VARCHAR,
               ttl BIGINT,
               response_geo_ips struct(

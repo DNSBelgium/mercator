@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.smtp.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.f4b6a3.ulid.Ulid;
 import lombok.*;
 
@@ -11,6 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SmtpVisit {
 
   private String visitId;
@@ -20,9 +23,6 @@ public class SmtpVisit {
   @Builder.Default
   private Instant timestamp = Instant.now();
 
-  @Builder.Default
-  private int numConversations = 0;
-
   @ToString.Exclude
   @Builder.Default
   private List<SmtpHost> hosts = new ArrayList<>();
@@ -31,7 +31,19 @@ public class SmtpVisit {
 
   public void add(SmtpHost host) {
     hosts.add(host);
-    ++numConversations;
+  }
+
+  public int getNumHosts() {
+    return this.hosts.size();
+  }
+
+  public int getNumConversations() {
+      return hosts != null
+        ? hosts.stream()
+               .filter(h -> h.getConversations() != null)
+               .mapToInt(h -> h.getConversations().size())
+               .sum()
+        : 0;
   }
 
   public static String generateVisitId() {

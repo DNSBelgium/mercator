@@ -13,9 +13,6 @@ import java.util.Optional;
 @NoArgsConstructor(force = true)
 public class TlsVisit {
 
-  private final String visitId;
-  private final String domainName;
-
   private final FullScanEntity fullScanEntity;
   private final String hostName;
   private final boolean hostNameMatchesCertificate;
@@ -27,16 +24,12 @@ public class TlsVisit {
   private final List<Certificate> certificateChain;
 
   private TlsVisit(
-          String visitId,
-          String domainName,
           String hostName,
           Instant crawlTimestamp,
           FullScanEntity fullScanEntity,
           FullScan fullScan,
           SingleVersionScan singleVersionScan
   ) {
-    this.visitId = visitId;
-    this.domainName = domainName;
     this.crawlTimestamp = crawlTimestamp;
     this.fullScanEntity = fullScanEntity;
     this.hostName = hostName;
@@ -73,23 +66,19 @@ public class TlsVisit {
   }
 
   public static TlsVisit fromCache(
-          String visitId,
-          String domainName,
           String hostName,
           Instant crawlTimestamp,
           FullScanEntity fullScanEntity,
           SingleVersionScan singleVersionScan) {
-    return new TlsVisit(visitId, domainName, hostName, crawlTimestamp, fullScanEntity, null, singleVersionScan);
+    return new TlsVisit(hostName, crawlTimestamp, fullScanEntity, null, singleVersionScan);
   }
 
   public static TlsVisit fromScan(
-          String visitId,
-          String domainName,
           String hostName,
           Instant crawlTimestamp,
           FullScan fullScan) {
     FullScanEntity fullScanEntity = convert(fullScan);
-    return new TlsVisit(visitId, domainName, hostName, crawlTimestamp, fullScanEntity, fullScan, null);
+    return new TlsVisit(hostName, crawlTimestamp, fullScanEntity, fullScan, null);
   }
 
   public static FullScanEntity convert(FullScan fullScan) {
