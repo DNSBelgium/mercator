@@ -4,7 +4,6 @@ with typed as (
                    columns={
                        visit_id: 'VARCHAR',
                        domain_name: 'VARCHAR',
-                       start_url: 'VARCHAR',
                        matching_url: 'VARCHAR',
                        crawl_started: 'TIMESTAMP',
                        crawl_finished: 'TIMESTAMP',
