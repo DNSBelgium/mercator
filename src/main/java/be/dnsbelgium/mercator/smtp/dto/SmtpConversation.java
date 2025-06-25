@@ -63,18 +63,20 @@ public class SmtpConversation {
   // SMTP software version detected from banner (wild guess, easy to spoof)
   private String softwareVersion;
 
-  private Instant timestamp;
+  private Instant crawlStarted;
+  
+  private Instant crawlFinished;
 
   private final static String NULL_BYTE = "\u0000";
   private final static String EMPTY_STRING = "";
 
   public SmtpConversation() {
-    this.timestamp = Instant.now();
+    this.crawlStarted = Instant.now();
   }
 
   public SmtpConversation(InetAddress ip) {
     this.ip = ip.getHostAddress();
-    this.timestamp = Instant.now();
+    this.crawlStarted = Instant.now();
     if (ip instanceof Inet4Address) {
       ipVersion = 4;
     }

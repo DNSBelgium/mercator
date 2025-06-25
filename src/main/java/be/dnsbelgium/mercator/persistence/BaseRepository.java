@@ -86,7 +86,7 @@ public class BaseRepository<T> {
   }
 
   public String timestampField() {
-    return "crawl_timestamp";
+    return "crawl_started";
   }
 
   public String domainNameField() { return "domain_name"; }

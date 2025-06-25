@@ -62,7 +62,7 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
     String a_label, u_label;
     DnsCrawlResult.DnsCrawlResultBuilder builder = DnsCrawlResult.builder().domainName(visitRequest.getDomainName())
         .visitId(visitRequest.getVisitId())
-        .crawlTimestamp(Instant.now());
+        .crawlStarted(Instant.now());
     try {
       a_label = visitRequest.a_label();
       u_label = visitRequest.u_label();
@@ -123,11 +123,13 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
       }
     }
     enricher.enrichResponses(requests);
-    return builder.requests(requests).build();
+    return builder.crawlFinished(Instant.now()).requests(requests).build();
   }
 
   public Request buildEntity(VisitRequest visitRequest, DnsRequest dnsRequest) {
     Request request = Request.builder()
+        .crawlStarted(dnsRequest.requestSent())
+        .crawlFinished(dnsRequest.answersReceived())
         .domainName(visitRequest.u_label())
         .prefix(dnsRequest.prefix())
         .recordType(dnsRequest.recordType())

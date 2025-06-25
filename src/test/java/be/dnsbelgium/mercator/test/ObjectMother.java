@@ -307,9 +307,9 @@ public class ObjectMother {
   @NotNull
   private TlsCrawlResult getTlsCrawlResult(String visitId, String domainName, SingleVersionScan scan) {
     return new TlsCrawlResult(visitId, domainName, List.of(
-        TlsVisit.fromCache(domainName, started, fullScanEntity(domainName), scan),
-        TlsVisit.fromCache("www." + domainName, started, fullScanEntity(domainName), scan)
-    ), Instant.parse("2025-03-28T12:00:00Z"));
+        TlsVisit.fromCache(domainName, started, started.plusMillis(10), fullScanEntity(domainName), scan),
+        TlsVisit.fromCache("www." + domainName, started, started.plusMillis(10), fullScanEntity(domainName), scan)
+    ), Instant.parse("2025-03-28T12:00:00Z"), Instant.parse("2025-03-28T12:01:00Z"));
   }
 
   public TlsCrawlResult tlsCrawlResult2() {
@@ -346,7 +346,7 @@ public class ObjectMother {
 
   public FullScanEntity fullScanEntity(String serverName) {
     return FullScanEntity.builder()
-        .crawlTimestamp(started)
+        .crawlStarted(started)
         .ip("10.20.30.40")
         .serverName(serverName)
         .connectOk(true)
@@ -374,7 +374,7 @@ public class ObjectMother {
 
   public FullScanEntity fullScanEntityWithNullValues() {
     return FullScanEntity.builder()
-        .crawlTimestamp(null)
+        .crawlStarted(null)
         .ip(null)
         .serverName(null)
         .connectOk(false)
@@ -402,9 +402,9 @@ public class ObjectMother {
 
   private TlsCrawlResult getTlsCrawlResultWithFullScanEntityNull(SingleVersionScan scan) {
     return new TlsCrawlResult("visit02", "example.be", List.of(
-        TlsVisit.fromCache("example.be", started, fullScanEntityWithNullValues(), scan),
-        TlsVisit.fromCache("www." + "example.be", started, fullScanEntityWithNullValues(), scan)
-    ), Instant.parse("2025-03-28T12:00:00Z"));
+        TlsVisit.fromCache("example.be", started, started.plusMillis(10), fullScanEntityWithNullValues(), scan),
+        TlsVisit.fromCache("www." + "example.be", started, started.plusMillis(10), fullScanEntityWithNullValues(), scan)
+    ), Instant.parse("2025-03-28T12:00:00Z"), Instant.parse("2025-03-28T12:01:00Z"));
   }
 
   public TlsCrawlResult tlsCrawlResultWithNullFullVersionEntityScan() {
@@ -413,9 +413,9 @@ public class ObjectMother {
 
   public TlsCrawlResult tlsCrawlResultWithNullValues() {
     return new TlsCrawlResult(null, null, List.of(
-        TlsVisit.fromCache(null, started, fullScanEntity(""), singleVersionScanWithNullValues()),
-        TlsVisit.fromCache(null, started, fullScanEntity(""), singleVersionScanWithNullValues())
-    ), Instant.parse("2025-03-28T12:00:00Z"));
+        TlsVisit.fromCache(null, started, started.plusMillis(10), fullScanEntity(""), singleVersionScanWithNullValues()),
+        TlsVisit.fromCache(null, started, started.plusMillis(10), fullScanEntity(""), singleVersionScanWithNullValues())
+    ), Instant.parse("2025-03-28T12:00:00Z"), Instant.parse("2025-03-28T12:01:00Z"));
   }
 
   SingleVersionScan singleVersionScanWithNullValues() {
@@ -430,7 +430,7 @@ public class ObjectMother {
         .visitId("01HJR2Z6DZHS4G4P9X1BZSD4YV")
         .hosts(List.of(smtpHost1(), smtpHost2()))
         .domainName("example1.com")
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .crawlStatus(CrawlStatus.OK)
         .build();
   }
@@ -440,7 +440,7 @@ public class ObjectMother {
         .visitId("02HJR2Z6DZHS4G4P9X1BZSD4YV")
         .hosts(List.of(smtpHost3(), smtpHost4()))
         .domainName("example2.com")
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .crawlStatus(CrawlStatus.OK)
         .build();
   }
@@ -458,7 +458,7 @@ public class ObjectMother {
         .ipVersion(4)
         .startTlsOk(true)
         .connectOK(true)
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .errorMessage(null)
         .software("Postfix")
         .softwareVersion("3.5.8")
@@ -479,7 +479,7 @@ public class ObjectMother {
         .ipVersion(4)
         .startTlsOk(true)
         .connectOK(true)
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .errorMessage(null)
         .software("Postfix")
         .softwareVersion("3.5.8")
@@ -500,7 +500,7 @@ public class ObjectMother {
         .ipVersion(4)
         .startTlsOk(true)
         .connectOK(true)
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .errorMessage(null)
         .software("Postfix")
         .softwareVersion("3.5.8")
@@ -521,7 +521,7 @@ public class ObjectMother {
         .ipVersion(4)
         .startTlsOk(true)
         .connectOK(true)
-        .timestamp(Instant.parse("2025-03-24T12:34:56Z"))
+        .crawlStarted(Instant.parse("2025-03-24T12:34:56Z"))
         .errorMessage(null)
         .software("Postfix")
         .softwareVersion("3.5.8")
@@ -573,7 +573,7 @@ public class ObjectMother {
         .visitId(null)
         .hosts(null)
         .domainName(null)
-        .timestamp(null)
+        .crawlStarted(null)
         .crawlStatus(null)
         .build();
   }
@@ -583,7 +583,7 @@ public class ObjectMother {
         .visitId(null)
         .hosts(List.of(smtpHostWithNullValues1()))
         .domainName(null)
-        .timestamp(null)
+        .crawlStarted(null)
         .crawlStatus(null)
         .build();
   }
@@ -593,7 +593,7 @@ public class ObjectMother {
         .visitId(null)
         .hosts(List.of(smtpHostWithNullValues2()))
         .domainName(null)
-        .timestamp(null)
+        .crawlStarted(null)
         .crawlStatus(null)
         .build();
   }
@@ -628,7 +628,7 @@ public class ObjectMother {
         .ipVersion(0)
         .startTlsOk(false)
         .connectOK(false)
-        .timestamp(null)
+        .crawlStarted(null)
         .errorMessage(null)
         .error(null)
         .software(null)
@@ -663,12 +663,12 @@ public class ObjectMother {
         .prefix("www")
         .recordType(RecordType.A)
         .rcode(0)
-        .crawlTimestamp(Instant.parse("2025-03-28T12:00:00Z"))
+        .crawlStarted(Instant.parse("2025-03-28T12:00:00Z"))
         .ok(true)
         .responses(List.of(response1, response2))
         .build();
 
-    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
+    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), null, visitId);
   }
 
   public DnsCrawlResult dnsCrawlResultWithMultipleResponses2(String domain, String visitId) {
@@ -695,17 +695,17 @@ public class ObjectMother {
         .prefix("www")
         .recordType(RecordType.A)
         .rcode(0)
-        .crawlTimestamp(Instant.parse("2025-03-28T12:00:00Z"))
+        .crawlStarted(Instant.parse("2025-03-28T12:00:00Z"))
         .ok(true)
         .responses(List.of(response1, response2))
         .build();
 
-    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), visitId);
+    return new DnsCrawlResult(List.of(request), be.dnsbelgium.mercator.dns.dto.CrawlStatus.OK, domain, Instant.parse("2025-03-28T12:00:00Z"), null, visitId);
   }
 
 
   public DnsCrawlResult dnsCrawlResultWithNullValues() {
-    return new DnsCrawlResult(null, null, null, null, null);
+    return new DnsCrawlResult(null, null, null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullRequest() {
@@ -714,12 +714,12 @@ public class ObjectMother {
         .prefix(null)
         .recordType(null)
         .rcode(null)
-        .crawlTimestamp(null)
+        .crawlStarted(null)
         .ok(false)
         .responses(List.of())
         .build();
 
-    return new DnsCrawlResult(List.of(request), null, null, null, null);
+    return new DnsCrawlResult(List.of(request), null, null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullResponse() {
@@ -734,12 +734,12 @@ public class ObjectMother {
         .prefix(null)
         .recordType(null)
         .rcode(null)
-        .crawlTimestamp(null)
+        .crawlStarted(null)
         .ok(false)
         .responses(List.of(response1))
         .build();
 
-    return new DnsCrawlResult(List.of(request), null, null, null, null);
+    return new DnsCrawlResult(List.of(request), null, null, null, null, null);
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullGeoIp() {
@@ -757,12 +757,12 @@ public class ObjectMother {
         .prefix(null)
         .recordType(null)
         .rcode(null)
-        .crawlTimestamp(null)
+        .crawlStarted(null)
         .ok(false)
         .responses(List.of(response1))
         .build();
 
-    return new DnsCrawlResult(List.of(request), null, null, null, null);
+    return new DnsCrawlResult(List.of(request), null, null, null, null, null);
   }
 
 

@@ -20,7 +20,9 @@ public class SmtpVisit {
   private String domainName;
 
   @Builder.Default
-  private Instant timestamp = Instant.now();
+  private Instant crawlStarted = Instant.now();
+
+  private Instant crawlFinished;
 
   @ToString.Exclude
   @Builder.Default

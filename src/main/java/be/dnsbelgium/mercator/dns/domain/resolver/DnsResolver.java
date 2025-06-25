@@ -16,6 +16,7 @@ import org.xbill.DNS.*;
 
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,14 +55,17 @@ public class DnsResolver {
   public DnsRequest lookup(String prefix, Name name, RecordType recordType) {
     logger.info("Resolving DNS records of type {} for name {}", recordType, name);
     var start = LocalDateTime.now();
+    Instant requestSent = null;
     try {
       concurrentCalls.incrementAndGet();
       Name ownerName = Name.fromString(prefix, name);
+      requestSent = Instant.now();
       Lookup lookup = initLookup(ownerName, recordType);
       lookup.run();
       updateMetrics(recordType, lookup);
       int rcode = lookup.getResult();
       Record[] answers = lookup.getAnswers();
+      Instant answersReceived = Instant.now();
 
       List<RRecord> records = new ArrayList<>();
       int expectedType = Type.value(recordType.name());
@@ -76,7 +80,7 @@ public class DnsResolver {
       }
       String error = lookup.getErrorString();
       String problem = ("successful".equals(error)) ? null : error;
-      DnsRequest request = new DnsRequest(prefix, recordType, rcode, problem, records);
+      DnsRequest request = new DnsRequest(prefix, recordType, rcode, problem, records, requestSent, answersReceived);
       if (lookup.getResult() != Lookup.SUCCESSFUL) {
         logger.debug("No result for lookup {} for {}, dnsjava told us: {}", recordType, name, lookup.getErrorString());
       }
@@ -85,7 +89,7 @@ public class DnsResolver {
     } catch (TextParseException e) {
       var problem = "Prefix %s for %s is invalid".formatted(prefix, name);
       logger.error(problem, e);
-      return new DnsRequest(prefix, recordType, UNRECOVERABLE, problem, List.of());
+      return new DnsRequest(prefix, recordType, UNRECOVERABLE, problem, List.of(), requestSent, Instant.now());
     } finally {
       var end = LocalDateTime.now();
       Timer timer = meterRegistry.timer(MetricName.DNS_RESOLVER_LOOKUP_DONE, tagFor(recordType));

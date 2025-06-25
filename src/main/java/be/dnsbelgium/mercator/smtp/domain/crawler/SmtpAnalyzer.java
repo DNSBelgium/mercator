@@ -77,25 +77,29 @@ public class SmtpAnalyzer {
     logger.debug("Starting SMTP crawl for domainName={}", domainName);
     SmtpVisit result = new SmtpVisit();
     result.setDomainName(domainName);
-    result.setTimestamp(Instant.now());
+    result.setCrawlStarted(Instant.now());
     MxLookupResult mxLookupResult = mxFinder.findMxRecordsFor(domainName);
     switch (mxLookupResult.getStatus()) {
       case INVALID_HOSTNAME -> {
         result.setCrawlStatus(CrawlStatus.INVALID_HOSTNAME);
+        result.setCrawlFinished(Instant.now());
         meterRegistry.counter(MetricName.COUNTER_INVALID_HOSTNAME).increment();
         return result;
       }
       case QUERY_FAILED -> {
         result.setCrawlStatus(CrawlStatus.NETWORK_ERROR);
+        result.setCrawlFinished(Instant.now());
         meterRegistry.counter(MetricName.COUNTER_NETWORK_ERROR).increment();
         return result;
       }
       case NO_MX_RECORDS_FOUND -> {
         visitAddressRecords(result);
+        result.setCrawlFinished(Instant.now());
         return result;
       }
       case OK -> {
         visitMxRecords(result, mxLookupResult);
+        result.setCrawlFinished(Instant.now());
         return result;
       }
       default -> throw new RuntimeException("Unknown MxLookupResult Status");
@@ -202,6 +206,7 @@ public class SmtpAnalyzer {
       logger.debug("Not found in the cache: {}", ip);
       meterRegistry.counter(COUNTER_CACHE_MISSES).increment();
       SmtpConversation conversation = smtpIpAnalyzer.crawl(address);
+      conversation.setCrawlFinished(Instant.now());
       logger.debug("done crawling ip {}", address);
       return conversation;
     }
@@ -214,6 +219,7 @@ public class SmtpAnalyzer {
     SmtpConversation conversation = new SmtpConversation(address);
     conversation.setErrorMessage(message);
     conversation.setError(Error.SKIPPED);
+    conversation.setCrawlFinished(Instant.now());
     return conversation;
   }
 

@@ -5,7 +5,8 @@ with typed as (select *
             prefix VARCHAR,
             record_type VARCHAR,
             rcode BIGINT,
-            crawl_timestamp TIMESTAMP,
+            crawl_started TIMESTAMP,
+            crawl_finished TIMESTAMP,
             ok BOOLEAN,
             problem VARCHAR,
             num_of_responses BIGINT,
@@ -23,11 +24,12 @@ with typed as (select *
           )[]',
         status: 'VARCHAR',
         domain_name: 'VARCHAR',
-        crawl_timestamp: 'TIMESTAMP',
+        crawl_started: 'TIMESTAMP',
+        crawl_finished: 'TIMESTAMP',
         visit_id: 'VARCHAR' }
     )
 ),
      added_year_month as (
-         select *, year(crawl_timestamp) as year, month(crawl_timestamp) as month
+         select *, year(crawl_started) as year, month(crawl_started) as month
 from typed
     )

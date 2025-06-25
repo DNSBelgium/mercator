@@ -28,16 +28,24 @@
       <table>
         <tbody>
         <tr>
-          <th>Crawl timestamp</th>
-          <td th:text="${@dateTimeUtil.format(result.crawlTimestamp)}"></td>
+          <th>Crawl started</th>
+          <td th:text="${@dateTimeUtil.format(result.crawlStarted)}"></td>
+        </tr>
+        <tr>
+          <th>Crawl finished</th>
+          <td th:text="${@dateTimeUtil.format(result.crawlFinished)}"></td>
         </tr>
         <tr>
           <th>Host name matches certificate</th>
           <td th:text="${result.hostNameMatchesCertificate} ? 'Yes' : 'No'"></td>
         </tr>
         <tr>
-          <th>Scan timestamp</th>
-          <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlTimestamp)}"></td>
+          <th>Scan started</th>
+          <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlStarted)}"></td>
+        </tr>
+        <tr>
+          <th>Scan finished</th>
+          <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlFinished)}"></td>
         </tr>
         <tr>
           <th>Scanned ip</th>

@@ -14,14 +14,14 @@ public class TlsCrawlResult {
 
   private final String domainName;
 
-  private final Instant crawlTimestamp;
+  private final Instant crawlStarted;
 
   private final List<TlsVisit> visits;
 
-  public TlsCrawlResult(String visitId, String domainName, List<TlsVisit> visits, Instant crawlTimestamp) {
+  public TlsCrawlResult(String visitId, String domainName, List<TlsVisit> visits, Instant crawlStarted, Instant crawlFinished) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.visits = visits;
-    this.crawlTimestamp = crawlTimestamp;
+    this.crawlStarted = crawlStarted;
   }
 }

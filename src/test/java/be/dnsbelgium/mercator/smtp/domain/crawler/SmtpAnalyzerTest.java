@@ -74,7 +74,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(0);
   }
 
@@ -86,7 +86,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     assertThat(result.getHosts().getFirst().getConversations().size()).isEqualTo(1);
     SmtpHost server = result.getHosts().get(0);
@@ -102,7 +102,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     assertThat(result.getHosts().get(0).getConversations().size()).isEqualTo(3);
     var host1 = result.getHosts().get(0);
@@ -118,7 +118,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     assertThat(result.getHosts().get(0).getConversations().size()).isEqualTo(1);
     var host1 = result.getHosts().get(0);
@@ -136,7 +136,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     assertThat(result.getHosts().get(0).getConversations().size()).isEqualTo(3);
     var host1 = result.getHosts().get(0);
@@ -155,7 +155,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     assertThat(result.getHosts().get(0).getConversations().size()).isEqualTo(3);
     var host1 = result.getHosts().get(0);
@@ -185,7 +185,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NETWORK_ERROR);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(0);
   }
 
@@ -198,7 +198,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     var host = result.getHosts().get(0);
     logger.info("host = {}", host);
@@ -216,7 +216,7 @@ class SmtpAnalyzerTest {
 
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(1);
     var host = result.getHosts().get(0);
     logger.info("host = {}", host);
@@ -236,7 +236,7 @@ class SmtpAnalyzerTest {
     logger.info("result = {}", result);
     assertThat(result.getDomainName()).isEqualTo(DOMAIN_NAME);
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     assertThat(result.getHosts().size()).isEqualTo(2);
     var server1 = result.getHosts().get(0);
     var server2 = result.getHosts().get(1);
@@ -279,7 +279,7 @@ class SmtpAnalyzerTest {
         assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
       else
         assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
-      assertThat(result.getTimestamp()).isNotNull();
+      assertThat(result.getCrawlStarted()).isNotNull();
       assertThat(result.getHosts().size()).isEqualTo(Math.min(maxHostsToContact, 1));
       if (result.getHosts().size() > 0) {
         assertThat(result.getHosts().get(0).getConversations().size()).isEqualTo(4);
@@ -304,7 +304,7 @@ class SmtpAnalyzerTest {
         assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
       else
         assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
-      assertThat(result.getTimestamp()).isNotNull();
+      assertThat(result.getCrawlStarted()).isNotNull();
       assertThat(result.getHosts().size()).isEqualTo(maxHostsToContact);
     }
   }

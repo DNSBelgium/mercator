@@ -64,7 +64,7 @@ public class SmtpTestUtils {
           //.hosts(List.of(host1, host2))
           .domainName("example.com")
           .crawlStatus(CrawlStatus.OK)
-          .timestamp(TestUtils.now())
+          .crawlStarted(TestUtils.now())
           .build();
         visit.add(host1);
         visit.add(host2);
@@ -95,7 +95,7 @@ public class SmtpTestUtils {
             .startTlsReplyCode(230)
             .software("ACME SMTP")
             .softwareVersion("0.never")
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .supportedExtensions(Set.of("SMTPUTF8", "SIZE 157286400"))
             .errorMessage("Connection timed out")
             .error(Error.TIME_OUT)
@@ -114,7 +114,7 @@ public class SmtpTestUtils {
             .country("Jamaica \u0000")
             .asnOrganisation("Happy \u0000 Green grass")
             .asn(654L)
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .build();
         SmtpHost host = SmtpHost.builder()
             .hostName("smtp1.example.com")
@@ -123,7 +123,7 @@ public class SmtpTestUtils {
         return SmtpVisit.builder()
             .visitId(visitId)
             .domainName("dnsbelgium.be")
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .hosts(List.of(host))
             .build();
     }

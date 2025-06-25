@@ -5,7 +5,8 @@ from read_json(
     visit_id: 'VARCHAR',
     crawl_status: 'VARCHAR',
     domain_name: 'VARCHAR',
-    timestamp: 'TIMESTAMP',
+    crawl_started: 'TIMESTAMP',
+    crawl_finished: 'TIMESTAMP',
     num_conversations: 'BIGINT',
     num_hosts: 'BIGINT',
     hosts: 'struct(
@@ -29,13 +30,14 @@ from read_json(
         connection_time_ms BIGINT,
         software VARCHAR,
         software_version VARCHAR,
-        timestamp TIMESTAMP
+        crawl_started TIMESTAMP,
+        crawl_finished TIMESTAMP
       )[]
     )[]'
   }
 )
 ),
 added_year_month as (
-    select *, year(timestamp) as year, month(timestamp) as month
+    select *, year(crawl_started) as year, month(crawl_started) as month
     from typed
 )

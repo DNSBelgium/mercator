@@ -25,8 +25,12 @@
         <td th:text="${smtpVisitResult.visitId}"></td>
       </tr>
       <tr>
-        <th>Timestamp</th>
-        <td th:text="${@dateTimeUtil.format(smtpVisitResult.timestamp)}"></td>
+        <th>Crawl started</th>
+        <td th:text="${@dateTimeUtil.format(smtpVisitResult.crawlStarted)}"></td>
+      </tr>
+      <tr>
+        <th>Crawl finished</th>
+        <td th:text="${@dateTimeUtil.format(smtpVisitResult.crawlFinished)}"></td>
       </tr>
       <tr>
         <th># conversations</th>
@@ -119,8 +123,12 @@
               <td th:text="${conversation.softwareVersion}"></td>
             </tr>
             <tr>
-              <th>Timestamp</th>
-              <td th:text="${@dateTimeUtil.format(conversation.timestamp)}"></td>
+              <th>Crawl started</th>
+              <td th:text="${@dateTimeUtil.format(conversation.crawlStarted)}"></td>
+            </tr>
+            <tr>
+              <th>Crawl finished</th>
+              <td th:text="${@dateTimeUtil.format(conversation.crawlFinished)}"></td>
             </tr>
             </tbody>
           </table>

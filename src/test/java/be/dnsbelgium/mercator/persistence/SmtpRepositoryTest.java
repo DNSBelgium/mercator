@@ -117,8 +117,8 @@ class SmtpRepositoryTest {
     assertThat(smtpVisitResults.getFirst().getHosts().size()).isEqualTo(2);
     assertThat(smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst().toString()).isNotEmpty();
     assertThat(smtpVisitResults.getFirst().getHosts().get(1).getConversations().getFirst().toString()).isNotEmpty();
-    logger.info(smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst().getTimestamp().toString());
-    logger.info(smtpVisitResults.getFirst().getTimestamp().toString());
+    logger.info(smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst().getCrawlStarted().toString());
+    logger.info(smtpVisitResults.getFirst().getCrawlStarted().toString());
   }
 
   @Test

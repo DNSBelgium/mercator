@@ -34,7 +34,7 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     assertThat(result.getDomainName()).isEqualTo("dnsbelgium.be");
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
     assertThat(hosts.getFirst().getConversations().getFirst().getConnectReplyCode()).isEqualTo(220);

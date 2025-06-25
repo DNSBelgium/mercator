@@ -19,18 +19,20 @@ public class TlsVisit {
   private final boolean chainTrustedByJavaPlatform;
   private boolean certificateExpired;
   private boolean certificateTooSoon;
-  private final Instant crawlTimestamp;
+  private final Instant crawlStarted;
+  private final Instant crawlFinished;
   private final List<String> certificateChainFingerprints;
   private final List<Certificate> certificateChain;
 
   private TlsVisit(
           String hostName,
-          Instant crawlTimestamp,
+          Instant crawlStarted,
+          Instant crawlFinished,
           FullScanEntity fullScanEntity,
           FullScan fullScan,
           SingleVersionScan singleVersionScan
   ) {
-    this.crawlTimestamp = crawlTimestamp;
+    this.crawlStarted = crawlStarted;
     this.fullScanEntity = fullScanEntity;
     this.hostName = hostName;
     Certificate certificate = null;
@@ -63,22 +65,25 @@ public class TlsVisit {
       this.certificateExpired = false;
     }
     this.certificateChainFingerprints = this.certificateChain.stream().map(Certificate::getSha256Fingerprint).toList();
+    this.crawlFinished = crawlFinished;
   }
 
   public static TlsVisit fromCache(
           String hostName,
-          Instant crawlTimestamp,
+          Instant crawlStarted,
+          Instant crawlFinished,
           FullScanEntity fullScanEntity,
           SingleVersionScan singleVersionScan) {
-    return new TlsVisit(hostName, crawlTimestamp, fullScanEntity, null, singleVersionScan);
+    return new TlsVisit(hostName, crawlStarted, crawlFinished, fullScanEntity, null, singleVersionScan);
   }
 
   public static TlsVisit fromScan(
           String hostName,
-          Instant crawlTimestamp,
+          Instant crawlStarted,
+          Instant crawlFinished,
           FullScan fullScan) {
     FullScanEntity fullScanEntity = convert(fullScan);
-    return new TlsVisit(hostName, crawlTimestamp, fullScanEntity, fullScan, null);
+    return new TlsVisit(hostName, crawlStarted, crawlFinished, fullScanEntity, fullScan, null);
   }
 
   public static FullScanEntity convert(FullScan fullScan) {
@@ -121,7 +126,8 @@ public class TlsVisit {
         .selectedCipherTls_1_1(tls11.getSelectedCipherSuite())
         .selectedCipherTls_1_0(tls10.getSelectedCipherSuite())
         .selectedCipherSsl_3_0(ssl3.getSelectedCipherSuite())
-        .crawlTimestamp(fullScan.getCrawlTimestamp())
+        .crawlStarted(fullScan.getCrawlStarted())
+        .crawlFinished(fullScan.getCrawlFinished())
         .build();
   }
 }

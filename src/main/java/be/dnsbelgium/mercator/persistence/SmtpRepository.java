@@ -24,11 +24,6 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
     }
 
     @Override
-    public String timestampField() {
-        return "timestamp";
-    }
-
-    @Override
     public void storeResults(String jsonResultsLocation) {
         String cteDefinitions = readFromClasspath("sql/smtp/cte_definitions.sql");
         logger.debug("cteDefinitions: {}", cteDefinitions);

@@ -41,7 +41,7 @@
         <header>
             <h4>DNS crawl results for: <strong th:text="${dnsCrawlResult.domainName}"></strong></h4>
         </header>
-        <p>Crawled at: <span th:text="${@dateTimeUtil.format(dnsCrawlResult.getCrawlTimestamp())}"></span></p>
+        <p>Crawled at: <span th:text="${@dateTimeUtil.format(dnsCrawlResult.getCrawlStarted())}"></span></p>
         <table>
             <thead>
             <tr>
@@ -187,8 +187,12 @@
                                     <td th:text="${request.rcode}"></td>
                                 </tr>
                                 <tr>
-                                    <th>Crawl timestamp</th>
-                                    <td th:text="${@dateTimeUtil.format(request.crawlTimestamp)}"></td>
+                                    <th>Crawl started</th>
+                                    <td th:text="${@dateTimeUtil.format(request.crawlStarted)}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Crawl finished</th>
+                                    <td th:text="${@dateTimeUtil.format(request.crawlFinished)}"></td>
                                 </tr>
                                 <tr>
                                     <th>OK</th>

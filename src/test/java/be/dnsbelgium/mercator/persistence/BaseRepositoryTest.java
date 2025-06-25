@@ -29,12 +29,12 @@ class BaseRepositoryTest {
    * Sample class to store and find
    */
   public static class BaseItem {
-    public Instant crawlTimestamp;
+    public Instant crawlStarted;
     public String visitId;
     public String domainName;
 
-    public BaseItem(Instant crawlTimestamp, String visitId, String domainName) {
-      this.crawlTimestamp = crawlTimestamp;
+    public BaseItem(Instant crawlStarted, String visitId, String domainName) {
+      this.crawlStarted = crawlStarted;
       this.visitId = visitId;
       this.domainName = domainName;
     }
@@ -69,7 +69,7 @@ class BaseRepositoryTest {
     Optional<BaseItem> latestResult = repository.findLatestResult("domain-name-1");
     Assertions.assertTrue(latestResult.isPresent());
     Assertions.assertEquals("visit-2", latestResult.get().visitId);
-    Assertions.assertEquals(Instant.ofEpochSecond(2), latestResult.get().crawlTimestamp);
+    Assertions.assertEquals(Instant.ofEpochSecond(2), latestResult.get().crawlStarted);
 
     // test searchVisitIds
     List<SearchVisitIdResultItem> visitIds = repository.searchVisitIds("domain-name-1");

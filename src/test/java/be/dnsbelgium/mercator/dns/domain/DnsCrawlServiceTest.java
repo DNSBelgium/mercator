@@ -128,8 +128,8 @@ class DnsCrawlServiceTest {
     String visitId = VisitIdGenerator.generate();
     VisitRequest visitRequest = new VisitRequest(visitId, "dnsbelgium.be");
     var records = List.of(new RRecord(TTL, IP1), new RRecord(TTL, IP2));
-    var dnsRequest = DnsRequest.success("@", A, records);
     Instant before = Instant.now();
+    var dnsRequest = DnsRequest.success("@", A, records);
     Request request = dnsCrawlService.buildEntity(visitRequest, dnsRequest);
     Instant after = Instant.now();
     logRequest(request);
@@ -139,8 +139,8 @@ class DnsCrawlServiceTest {
     assertThat(request.getNumOfResponses()).isEqualTo(2);
     assertThat(request.getRcode()).isEqualTo(0);
     assertThat(request.getProblem()).isNull();
-    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(Instant.now());
-    assertThat(request.getCrawlTimestamp()).isBetween(before,after);
+    assertThat(request.getCrawlStarted()).isBeforeOrEqualTo(Instant.now());
+    assertThat(request.getCrawlStarted()).isBetween(before,after);
     assertThat(request.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(request.isOk()).isTrue();
     assertThat(request.getResponses().get(0).getRecordData()).isEqualTo(IP1);
@@ -157,8 +157,8 @@ class DnsCrawlServiceTest {
   @Test void buildEntityNxdomain() {
     var visitId = VisitIdGenerator.generate();
     VisitRequest visitRequest = new VisitRequest(visitId, "dnsbelgium.be");
-    var nxdomain = DnsRequest.nxdomain("@", A);
     Instant before = Instant.now();
+    var nxdomain = DnsRequest.nxdomain("@", A);
     Request request = dnsCrawlService.buildEntity(visitRequest, nxdomain);
     Instant after = Instant.now();
     logRequest(request);
@@ -168,8 +168,8 @@ class DnsCrawlServiceTest {
     assertThat(request.getNumOfResponses()).isEqualTo(0);
     assertThat(request.getRcode()).isEqualTo(Rcode.NXDOMAIN);
     assertThat(request.getProblem()).isEqualTo("nxdomain");
-    assertThat(request.getCrawlTimestamp()).isBeforeOrEqualTo(Instant.now());
-    assertThat(request.getCrawlTimestamp()).isBetween(before,after);
+    assertThat(request.getCrawlStarted()).isBeforeOrEqualTo(Instant.now());
+    assertThat(request.getCrawlStarted()).isBetween(before,after);
     assertThat(request.getDomainName()).isEqualTo("dnsbelgium.be");
     assertThat(request.isOk()).isFalse();
   }
@@ -228,7 +228,7 @@ class DnsCrawlServiceTest {
     for (String data : rdata) {
       records.add(new RRecord(TTL, data));
     }
-    var expected = new DnsRequest(prefix, recordType, 0, null, records);
+    var expected = new DnsRequest(prefix, recordType, 0, null, records, Instant.now(), Instant.now());
     when(dnsResolver.lookup(prefix, name, recordType)).thenReturn(expected);
   }
 
@@ -261,7 +261,7 @@ class DnsCrawlServiceTest {
     for (int i=0; i<numResponses; i++) {
       records.add(new RRecord(TTL, RandomStringUtils.random(10, 0, 0, true, true, null, random)));
     }
-    return new DnsRequest("anything", A, 0, null, records);
+    return new DnsRequest("anything", A, 0, null, records, Instant.now(), Instant.now());
   }
 
   @Test

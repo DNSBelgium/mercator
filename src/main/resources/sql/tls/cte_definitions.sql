@@ -4,10 +4,12 @@ from read_json(
     columns = {
     visit_id: 'VARCHAR',
     domain_name: 'VARCHAR',
-    crawl_timestamp: 'TIMESTAMP',
+    crawl_started: 'TIMESTAMP',
+    crawl_finished: 'TIMESTAMP',
     visits: 'struct(
       full_scan_entity struct(
-        crawl_timestamp TIMESTAMP,
+        crawl_started TIMESTAMP,
+        crawl_finished TIMESTAMP,
         ip VARCHAR,
         server_name VARCHAR,
         connect_ok BOOLEAN,
@@ -42,7 +44,8 @@ from read_json(
       chain_trusted_by_java_platform BOOLEAN,
       certificate_expired BOOLEAN,
       certificate_too_soon BOOLEAN,
-      crawl_timestamp TIMESTAMP,
+      crawl_started TIMESTAMP,
+      crawl_finished TIMESTAMP,
       certificate_chain_fingerprints VARCHAR[],
       certificate_chain struct(
         version BIGINT,
@@ -62,6 +65,6 @@ from read_json(
     )
 ),
 added_year_month as (
-  select *, year(crawl_timestamp) as year, month(crawl_timestamp) as month
+  select *, year(crawl_started) as year, month(crawl_started) as month
   from typed
 )

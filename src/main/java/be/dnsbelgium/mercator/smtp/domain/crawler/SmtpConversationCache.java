@@ -41,7 +41,7 @@ public class SmtpConversationCache {
     Instant notBefore = Instant.now().minus(duration);
     logger.info("Evicting entries that older than {}, so after {}", duration, notBefore);
     int entriesBefore = cache.size();
-    cache.entrySet().removeIf(e -> e.getValue().getTimestamp().isBefore(notBefore));
+    cache.entrySet().removeIf(e -> e.getValue().getCrawlStarted().isBefore(notBefore));
     int entriesAfter = cache.size();
     logger.info("Eviction done. before cache had {} entries, now it has {} entries", entriesBefore, entriesAfter);
   }

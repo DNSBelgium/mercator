@@ -2,6 +2,8 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
 import lombok.Getter;
+import lombok.Setter;
+
 import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
@@ -16,13 +18,15 @@ public class FullScan {
   private final Map<TlsProtocolVersion, SingleVersionScan> scanPerVersionMap = new HashMap<>();
 
   private final boolean connectOK;
-  private final Instant crawlTimestamp;
+  private final Instant crawlStarted;
+  @Setter
+  private Instant crawlFinished;
 
   private static final Logger logger = getLogger(FullScan.class);
 
   public FullScan(boolean connectOK) {
     this.connectOK = connectOK;
-    this.crawlTimestamp = Instant.now();
+    this.crawlStarted = Instant.now();
   }
 
   public static FullScan connectFailed(InetSocketAddress address, String errorMessage) {

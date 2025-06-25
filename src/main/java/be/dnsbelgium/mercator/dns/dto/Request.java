@@ -27,7 +27,9 @@ public class Request {
     private Integer rcode;
 
     @Builder.Default
-    private Instant crawlTimestamp = Instant.now();
+    private Instant crawlStarted = Instant.now();
+    
+    private Instant crawlFinished = Instant.now();
 
     private boolean ok;
 

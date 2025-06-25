@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -68,6 +69,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
    */
   public TlsVisit visit(VisitRequest visitRequest, String prefix) {
     logger.info("Crawling {}", visitRequest);
+    Instant start = Instant.now();
     String hostName = prefix + visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
 
@@ -86,6 +88,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
         }
         return TlsVisit.fromCache(
                 hostName,
+                start,
                 Instant.now(),
                 resultFromCache.get(),
                 singleVersionScan);
@@ -94,6 +97,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
     FullScan fullScan = scanIfNotBlacklisted(address);
     TlsVisit tlsVisit = TlsVisit.fromScan(
             hostName,
+            start,
             Instant.now(),
             fullScan);
     addToCache(tlsVisit);
@@ -112,10 +116,13 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
   public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
     try {
       Threads.TLS.incrementAndGet();
+      Instant crawlStarted = Instant.now();
+      List<TlsVisit> visits = prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList();
+      Instant crawlFinished= Instant.now();
       return new TlsCrawlResult(
           visitRequest.getVisitId(),
           visitRequest.getDomainName(),
-          prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList(), Instant.now());
+          visits, crawlStarted, crawlFinished); 
     } finally {
       meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
       Threads.TLS.decrementAndGet();

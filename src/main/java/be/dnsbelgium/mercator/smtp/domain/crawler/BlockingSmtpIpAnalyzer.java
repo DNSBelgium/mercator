@@ -67,7 +67,7 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
     logger.debug("crawling {}", ip);
 
     SmtpConversation.SmtpConversationBuilder conversationBuilder = SmtpConversation.builder();
-    conversationBuilder.timestamp(Instant.now());
+    conversationBuilder.crawlStarted(Instant.now());
     conversationBuilder.ip(ip.getHostAddress());
     if (ip instanceof Inet4Address) {
       conversationBuilder.ipVersion(4);
@@ -84,6 +84,7 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
     }
     SmtpConversation conversation = conversationBuilder.build();
     geoIP(conversation);
+    conversation.setCrawlFinished(Instant.now());
     return conversation;
   }
 

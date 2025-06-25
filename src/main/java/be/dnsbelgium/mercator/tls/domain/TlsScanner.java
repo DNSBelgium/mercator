@@ -133,6 +133,7 @@ public class TlsScanner {
     crawlResult.add(scanForProtocol(TlsProtocolVersion.TLS_1_0, address));
     crawlResult.add(scanForProtocol(TlsProtocolVersion.SSL_3, address));
     crawlResult.add(scanForProtocol(TlsProtocolVersion.SSL_2, address));
+    crawlResult.setCrawlFinished(Instant.now());
     return crawlResult;
   }
 
