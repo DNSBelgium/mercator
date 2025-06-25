@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.smtp.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.f4b6a3.ulid.Ulid;
 import lombok.*;
 
