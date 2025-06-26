@@ -237,8 +237,6 @@ public class PageFetcher {
       Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
       Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
 
-      builder.finalUrl(response.request().url());
-      
       builder.visitStarted(sentRequest);
       builder.visitFinished(receivedResponse);
 
@@ -273,7 +271,8 @@ public class PageFetcher {
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
 
         return builder
-            .url(response.request().url())
+            .url(url)
+            .finalUrl(response.request().url())
             .statusCode(response.code())
             .headers(getHeaders(response))
             .mediaType(responseBody.contentType())
