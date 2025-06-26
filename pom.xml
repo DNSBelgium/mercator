@@ -494,9 +494,9 @@
                 <version>3.4.4</version>
                 <configuration>
                     <to>
+                        <!-- use `mvn -D jib.to.image=dnsbelgium/mercator  jib:dockerBuild` to publish to local docker daemon -->
                         <!--suppress MavenModelInspection -->
-<!--                        <image>${env.REGISTRY}/dnsbelgium/mercator:${env.DEFAULT_TAG}</image>-->
-                        <image>${jib_image_to}</image>
+                        <image>${env.REGISTRY}/dnsbelgium/mercator:${env.DEFAULT_TAG}</image>
                         <auth>
                             <!--suppress MavenModelInspection -->
                             <username>${env.DOCKER_USERNAME}</username>
@@ -565,31 +565,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>docker_registry_is_set</id>
-            <activation>
-                <os>
-                    <name>REGISTRY</name>
-                </os>
-            </activation>
-            <properties>
-                <jib_image_to>${env.REGISTRY}/dnsbelgium/mercator:${env.DEFAULT_TAG}</jib_image_to>
-            </properties>
-        </profile>
-        <profile>
-            <!-- This allows us to do `mvn jib:dockerBuild` locally and publishing to local docker -->
-            <id>docker_registry_is_not_set</id>
-            <activation>
-                <os>
-                    <name>!REGISTRY</name>
-                </os>
-            </activation>
-            <properties>
-                <jib_image_to>dnsbelgium/mercator:${project.version}</jib_image_to>
-            </properties>
-        </profile>
-
-    </profiles>
 </project>
