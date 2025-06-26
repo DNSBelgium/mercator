@@ -36,7 +36,8 @@ public class PageVisit {
 
   private final String finalUrl;
 
-  private Set<String> detectedTechnologies = new HashSet<>();
+  @Setter
+  private Set<String> detectedTechnologies;
 
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();
@@ -66,6 +67,7 @@ public class PageVisit {
     // The 1.3 million other websites sum up to 89 GB
     this.contentLength = contentLength;
     this.headers = headers;
+    this.detectedTechnologies = new HashSet<>();
   }
 
   private String cleanUp(String input, int maxLength) {
@@ -85,7 +87,4 @@ public class PageVisit {
     this.linkText  = cleanUp(linkText, 500);
   }
 
-  public void setDetectedTechnologies(Set<String> detectedTechnologies) {
-    this.detectedTechnologies = detectedTechnologies;
-  }
 }
