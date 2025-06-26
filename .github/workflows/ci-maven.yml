@@ -60,20 +60,20 @@ jobs:
             echo "DEFAULT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
           fi
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish container image to GitHub Container registry
-        id: publish
-        env:
-          REGISTRY: ${{ env.REGISTRY }}
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
+#      - name: Log in to the Container registry
+#        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Publish container image to GitHub Container registry
+#        id: publish
+#        env:
+#          REGISTRY: ${{ env.REGISTRY }}
+#          DOCKER_USERNAME: ${{ github.actor }}
+#          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+#        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1

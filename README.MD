@@ -109,9 +109,9 @@ Once compiled, it is possible to *run* the application with Java 23.
 
 # Running with docker compose
 
-Build container image:
+Build container image and publish to local docker daemon:
 ```
-mvn jib:dockerBuild
+mvn -D jib.to.image=dnsbelgium/mercator jib:dockerBuild
 ```
 
 * Store a username in ~/.env.grafana-username
