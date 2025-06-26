@@ -50,7 +50,7 @@ public class Jappalyzer {
             .map(technology -> technology.applicableTo(jappalyzerPage))
             .filter(TechnologyMatch::isMatched)
             .collect(Collectors.toSet());
-    if (jappalyzerPage.getDuration().toMillis() > 5000) {
+    if (jappalyzerPage.getDuration().toMillis() > 10_000) {
       logger.info("Spent {} on page with url '{}'", jappalyzerPage.getDuration(), page.getUrl());
     }
     enrichMatchesWithImpliedTechnologies(matchesSet);

@@ -186,6 +186,8 @@ public class WebCrawler {
             Page page = linkPageEntry.getValue();
             PageVisit pageVisit = page.asPageVisit(visitRequest);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
+            Set<String> detectedTechnologies = technologyAnalyzer.analyze(page);
+            pageVisit.setDetectedTechnologies(detectedTechnologies);
             pageVisits.add(pageVisit);
         }
 
@@ -199,21 +201,6 @@ public class WebCrawler {
         if (securityTxtVisit != null) {
             pageVisits.add(securityTxtVisit);
         }
-
-        long start = System.currentTimeMillis();
-
-        Set<String> detectedTechnologies = siteVisit.getVisitedPages()
-                .values()
-                .stream()
-                .map(technologyAnalyzer::analyze)
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
-
-        long millis = System.currentTimeMillis() - start;
-        logger.info("technologyAnalyzer took {} millis", millis);
-
-        // integrated wappalyzer
-        webCrawlResult.setDetectedTechnologies(detectedTechnologies);
         webCrawlResult.setPageVisits(pageVisits);
         webCrawlResult.setCrawlFinished(Instant.now());
         return webCrawlResult;

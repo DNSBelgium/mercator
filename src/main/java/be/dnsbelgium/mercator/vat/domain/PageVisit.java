@@ -4,9 +4,7 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
 
@@ -37,6 +35,8 @@ public class PageVisit {
   private final Long contentLength;
 
   private final String finalUrl;
+
+  private Set<String> detectedTechnologies = new HashSet<>();
 
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();
@@ -85,4 +85,7 @@ public class PageVisit {
     this.linkText  = cleanUp(linkText, 500);
   }
 
+  public void setDetectedTechnologies(Set<String> detectedTechnologies) {
+    this.detectedTechnologies = detectedTechnologies;
+  }
 }

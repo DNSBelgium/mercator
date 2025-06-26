@@ -20,7 +20,8 @@ with typed as (
                                     response_body VARCHAR,
                                     headers MAP(VARCHAR, VARCHAR[]),
                                     content_length INTEGER,
-                                    vat_values VARCHAR[]
+                                    vat_values VARCHAR[],
+                                    detected_technologies VARCHAR[]
                                 )[]',
                        html_features: 'STRUCT(
                                        url VARCHAR,
@@ -74,7 +75,7 @@ with typed as (
                                        meta_text_truncated BOOLEAN,
                                        title_truncated BOOLEAN
                                      )[]',
-                       detected_technologies: 'VARCHAR []'})
+                       })
 ),
 added_year_month as (
     select *, year(crawl_started) as year, month(crawl_started) as month

@@ -51,6 +51,7 @@ public class ObjectMother {
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
         .path("/")
+        .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
         .build();
   }
 
@@ -62,6 +63,7 @@ public class ObjectMother {
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
         .path("/en")
+        .detectedTechnologies(Set.of("Twitter"))
         .build();
   }
 
@@ -74,6 +76,7 @@ public class ObjectMother {
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))
         .path("/en/contact")
+        .detectedTechnologies(Set.of("Twitter", "Drupal"))
         .build();
   }
 
@@ -184,7 +187,7 @@ public class ObjectMother {
         .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en", "https://www.dnsbelgium.be/en/contact"))
         .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
         .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
-        .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
+        //.detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
         .build();
 
   }
@@ -198,7 +201,7 @@ public class ObjectMother {
         .visitedUrls(List.of())
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisit4()))
-        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
+        //.detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
         .build();
   }
 
@@ -211,7 +214,6 @@ public class ObjectMother {
         .visitedUrls(List.of())
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
-        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
         .build();
   }
 
@@ -224,7 +226,6 @@ public class ObjectMother {
         .visitedUrls(List.of())
         .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
-        .detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
         .build();
   }
 
@@ -239,7 +240,6 @@ public class ObjectMother {
         .visitedUrls(null)
         .htmlFeatures(null)
         .pageVisits(null)
-        .detectedTechnologies(null)
         .build();
 
   }
@@ -255,7 +255,6 @@ public class ObjectMother {
         .visitedUrls(null)
         .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
         .pageVisits(null)
-        .detectedTechnologies(null)
         .build();
 
   }
@@ -271,7 +270,6 @@ public class ObjectMother {
         .visitedUrls(null)
         .htmlFeatures(null)
         .pageVisits(List.of(pageVisitWithNullValues()))
-        .detectedTechnologies(null)
         .build();
 
   }
@@ -296,6 +294,7 @@ public class ObjectMother {
         .crawlStarted(null)
         .crawlStarted(null)
         .path(null)
+        .detectedTechnologies(null)
         .build();
   }
 

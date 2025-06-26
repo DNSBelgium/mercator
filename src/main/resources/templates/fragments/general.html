@@ -29,7 +29,9 @@
             </ul>
 
             <details th:if="${items != null and #lists.size(items) > maxElements}">
-                <summary>Click to show more</summary>
+                <summary>
+                    Click to show <span th:text="${#lists.size(items)}"></span> <span th:text="${label.toLowerCase()}"></span>
+                </summary>
                 <ul>
                     <li th:each="item : ${items}">
                         <p th:text="${item}"></p>
@@ -39,6 +41,34 @@
         </td>
     </tr>
 </th:block>
+
+<th:block th:fragment="mapDisplay(label, items, maxElements)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${items == null or #maps.isEmpty(items)}">None</span>
+
+            <ul th:if="${items != null and !#maps.isEmpty(items) and #maps.size(items) <= maxElements}">
+                <li th:each="item : ${items}">
+                    <p th:text="${item}"></p>
+                </li>
+            </ul>
+
+            <details th:if="${items != null and #maps.size(items) > maxElements}">
+                <summary>
+                    Click to show <span th:text="${#maps.size(items)}"></span> <span th:text="${label}"></span>
+                </summary>
+
+                <ul>
+                    <li th:each="item : ${items}">
+                        <p th:text="${item}"></p>
+                    </li>
+                </ul>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
 
 <th:block th:fragment="textDisplay(label, text, maxChars)">
     <tr>

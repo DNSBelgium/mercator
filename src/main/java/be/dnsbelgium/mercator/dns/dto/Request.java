@@ -28,7 +28,8 @@ public class Request {
 
     @Builder.Default
     private Instant crawlStarted = Instant.now();
-    
+
+    @Builder.Default
     private Instant crawlFinished = Instant.now();
 
     private boolean ok;

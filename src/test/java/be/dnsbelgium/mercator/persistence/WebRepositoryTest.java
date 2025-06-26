@@ -70,17 +70,18 @@ class WebRepositoryTest {
   }
 
   @Test
-  @Disabled //until we fix the root cause
   public void toParquet() throws IOException {
     logger.info("tempDir = {}", baseLocation);
     Files.createDirectories(baseLocation);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
     WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
 
+    WebRepository repository = makeRepository(baseLocation.toString());
+
     logger.info("webCrawlResult1 = {}", webCrawlResult1);
     logger.info("webCrawlResult2 = {}", webCrawlResult2);
 
-    File jsonFile = tempDir.resolve("webCrawlResult1.json").toFile();
+    File jsonFile = tempDir.resolve("*.json").toFile();
     logger.info("jsonFile = {}", jsonFile);
 
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
@@ -99,5 +100,6 @@ class WebRepositoryTest {
             .usingRecursiveComparison()
             .isEqualTo(webCrawlResult1);
   }
+
 
 }

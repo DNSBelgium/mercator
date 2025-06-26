@@ -61,7 +61,6 @@
                     </details>
                 </td>
             </tr>
-            <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${webCrawlResult.getDetectedTechnologies()}, 4)}"></tr>
             <tr>
                 <th>Number of visited URL's</th>
                 <td th:text="${webCrawlResult.visitedUrls != null ? webCrawlResult.visitedUrls.size() : 0}"></td>
@@ -152,10 +151,12 @@
                                         </details>
                                     </td>
                                 </tr>
-                                <tr th:replace="~{fragments/general :: listDisplay('headers', ${pageVisit.getHeaders()}, 4)}"></tr>
+                                <tr th:replace="~{fragments/general :: mapDisplay('headers', ${pageVisit.getHeaders()}, 1)}"></tr>
                                 <tr>
                                     <td>Content length</td>
                                     <td th:text="${pageVisit.getContentLength()}"></td>
+                                </tr>
+                                <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${pageVisit.getDetectedTechnologies()}, 4)}">
                                 </tr>
                                 </tbody>
                             </table>

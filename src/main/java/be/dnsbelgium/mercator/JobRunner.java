@@ -45,7 +45,7 @@ public class JobRunner implements CommandLineRunner {
       try {
         Thread.sleep(shutdownWaitSeconds * 1000L);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        logger.error("Interrupted while waiting for shutdown.", e);
       }
       logger.info("Shutdown wait completed.");
     }

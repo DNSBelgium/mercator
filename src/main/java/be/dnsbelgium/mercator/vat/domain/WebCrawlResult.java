@@ -31,8 +31,6 @@ public class WebCrawlResult {
   private List<PageVisit> pageVisits;
   private List<HtmlFeatures> htmlFeatures;
 
-  private Set<String> detectedTechnologies;
-
   public void abbreviateData() {
     domainName = StringUtils.abbreviate(domainName, 255);
     matchingUrl = StringUtils.abbreviate(matchingUrl, 255);
