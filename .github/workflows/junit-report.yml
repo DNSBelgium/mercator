@@ -31,7 +31,7 @@ jobs:
         run: mvn --batch-mode -Dsnyk.skip verify
 
       - name: Junit Test Report
-        uses: dorny/test-reporter@v1.9.1
+        uses: dorny/test-reporter@v2
         if: success() || failure()
         with:
           name: Junit Test Report
