@@ -175,9 +175,7 @@ public class WebCrawler {
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
         meterRegistry.counter(COUNTER_WEB_CRAWLS_DONE).increment();
 
-
         List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
-
 
         webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
