@@ -13,8 +13,6 @@ import java.util.StringJoiner;
 @Builder
 public class HtmlFeatures {
 
-  public String url;
-
   // using public fields and the same names as the python code did
   public int nb_imgs;
   public int nb_links_int;

@@ -94,7 +94,6 @@ public class HtmlFeatureExtractor {
     InputStream inputStream = new ByteArrayInputStream(rawHtml.getBytes(StandardCharsets.UTF_8));
     HtmlFeatures htmlFeatures = extractFromHtml(inputStream, url, domainName);
     htmlFeatures.html_length = rawHtml.length();
-    htmlFeatures.url = url;
     return htmlFeatures;
   }
 
@@ -439,7 +438,7 @@ public class HtmlFeatureExtractor {
     if (maxExternalHosts > 0 && features.external_hosts.size() > maxExternalHosts) {
       features.external_hosts = features.external_hosts.subList(0, maxExternalHosts);
     }
-    logger.debug("url={} => externalHosts = {}", features.url, externalHosts);
+    logger.debug("externalHosts = {}", externalHosts);
   }
 
   public LinkType getLinkType(String url, String baseUri) {

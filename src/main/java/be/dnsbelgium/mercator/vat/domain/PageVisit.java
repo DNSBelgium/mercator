@@ -3,6 +3,8 @@ package be.dnsbelgium.mercator.vat.domain;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
+import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
+
 import java.time.Instant;
 import java.util.*;
 
@@ -38,6 +40,9 @@ public class PageVisit {
 
   @Setter
   private Set<String> detectedTechnologies;
+
+  @Setter
+  private HtmlFeatures htmlFeatures;
 
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();

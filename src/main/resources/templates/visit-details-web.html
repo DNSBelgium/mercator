@@ -65,10 +65,6 @@
                 <th>Number of visited URL's</th>
                 <td th:text="${webCrawlResult.visitedUrls != null ? webCrawlResult.visitedUrls.size() : 0}"></td>
             </tr>
-            <tr>
-                <th>Number of pages with html features</th>
-                <td th:text="${webCrawlResult.htmlFeatures != null ? webCrawlResult.htmlFeatures.size() : 0}"></td>
-            </tr>
             <tr th:replace="~{fragments/general :: listDisplay('Visited URL\'s', ${webCrawlResult.getVisitedUrls()}, 4)}"></tr>
             <tr>
                 <th>Page visits</th>
@@ -158,6 +154,156 @@
                                 </tr>
                                 <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${pageVisit.getDetectedTechnologies()}, 4)}">
                                 </tr>
+                                <tr>
+                                    <td>HTML features</td>
+                                    <td th:with="features=${pageVisit.htmlFeatures}">
+                                        <span th:if="${features == null}">None</span>
+                                        <table th:if="${features != nulll}">
+                                          <tbody>
+                                          <tr>
+                                              <td>Title</td>
+                                              <td th:text="${features.title}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Meta text</td>
+                                              <td th:text="${features.meta_text}"></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: textDisplay('Features body text', ${features.body_text}, 200)}"></tr>
+                                          <tr>
+                                              <td># images</td>
+                                              <td th:text="${features.nb_imgs}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># internal links</td>
+                                              <td th:text="${features.nb_links_int}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># internal links</td>
+                                              <td th:text="${features.nb_links_ext}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># email links</td>
+                                              <td th:text="${features.nb_links_email}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># telephone links</td>
+                                              <td th:text="${features.nb_links_tel}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># inputs of type txt</td>
+                                              <td th:text="${features.nb_input_txt}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># buttons</td>
+                                              <td th:text="${features.nb_button}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># meta descriptions</td>
+                                              <td th:text="${features.nb_meta_desc}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># meta keywords</td>
+                                              <td th:text="${features.nb_meta_keyw}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># numerical strings</td>
+                                              <td th:text="${features.nb_numerical_strings}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># tags</td>
+                                              <td th:text="${features.nb_tags}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># words</td>
+                                              <td th:text="${features.nb_words}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># letters</td>
+                                              <td th:text="${features.nb_letters}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Facebook links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_facebook_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_facebook_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Facebook links', ${features.facebook_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>Twitter links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_twitter_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_twitter_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Twitter links', ${features.twitter_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>LinkedIn links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_linkedin_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_linkedin_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('LinkedIn links', ${features.linkedin_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>YouTube links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_youtube_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_youtube_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Youtube links', ${features.youtube_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>Vimeo links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_vimeo_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_vimeo_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Vimeo links', ${features.vimeo_links}, 4)}"></tr>
+                                          <tr>
+                                              <td># number of currency names</td>
+                                              <td th:text="${features.nb_currency_names}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># distinct currencies</td>
+                                              <td th:text="${features.nb_distinct_currencies}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distance between title and domainName in initial url</td>
+                                              <td th:text="${features.distance_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distance between title and domainName in final url</td>
+                                              <td th:text="${features.distance_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Longest subsequence between title and domainName in initial url</td>
+                                              <td th:text="${features.longest_subsequence_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Longest subsequence between title and domainName in final url</td>
+                                              <td th:text="${features.longest_subsequence_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Fraction between title and domainName in initial url</td>
+                                              <td th:text="${features.fraction_words_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Fraction subsequence between title and domainName in final url</td>
+                                              <td th:text="${features.fraction_words_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distinct words in title</td>
+                                              <td th:text="${features.nb_distinct_words_in_title}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># distinct hosts in url's</td>
+                                              <td th:text="${features.nb_distinct_hosts_in_urls}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Language</td>
+                                              <td th:text="${features.body_text_language}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Language 2</td>
+                                              <td th:text="${features.body_text_language_2}"></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('External hosts', ${features.external_hosts}, 4)}"></tr>
+                                          </tbody>
+                                      </table>
+                                    </td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -166,157 +312,6 @@
             </tr>
             </tbody>
         </table>
-        <div th:each="features : ${webCrawlResult.getHtmlFeatures()}">
-            <header>
-                <h5 th:text="${features.url}"></h5>
-            </header>
-
-            <table>
-                <thead></thead>
-                <tbody>
-                <tr>
-                    <td>Title</td>
-                    <td th:text="${features.title}"></td>
-                </tr>
-                <tr>
-                    <td>Meta text</td>
-                    <td th:text="${features.meta_text}"></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: textDisplay('Features body text', ${features.body_text}, 200)}"></tr>
-                <tr>
-                    <td># images</td>
-                    <td th:text="${features.nb_imgs}"></td>
-                </tr>
-                <tr>
-                    <td># internal links</td>
-                    <td th:text="${features.nb_links_int}"></td>
-                </tr>
-                <tr>
-                    <td># internal links</td>
-                    <td th:text="${features.nb_links_ext}"></td>
-                </tr>
-                <tr>
-                    <td># email links</td>
-                    <td th:text="${features.nb_links_email}"></td>
-                </tr>
-                <tr>
-                    <td># telephone links</td>
-                    <td th:text="${features.nb_links_tel}"></td>
-                </tr>
-                <tr>
-                    <td># inputs of type txt</td>
-                    <td th:text="${features.nb_input_txt}"></td>
-                </tr>
-                <tr>
-                    <td># buttons</td>
-                    <td th:text="${features.nb_button}"></td>
-                </tr>
-                <tr>
-                    <td># meta descriptions</td>
-                    <td th:text="${features.nb_meta_desc}"></td>
-                </tr>
-                <tr>
-                    <td># meta keywords</td>
-                    <td th:text="${features.nb_meta_keyw}"></td>
-                </tr>
-                <tr>
-                    <td># numerical strings</td>
-                    <td th:text="${features.nb_numerical_strings}"></td>
-                </tr>
-                <tr>
-                    <td># tags</td>
-                    <td th:text="${features.nb_tags}"></td>
-                </tr>
-                <tr>
-                    <td># words</td>
-                    <td th:text="${features.nb_words}"></td>
-                </tr>
-                <tr>
-                    <td># letters</td>
-                    <td th:text="${features.nb_letters}"></td>
-                </tr>
-                <tr>
-                    <td>Facebook links (shallow/deep)</td>
-                    <td><span th:text="${features.nb_facebook_shallow_links}"></span> / <span
-                            th:text="${features.nb_facebook_deep_links}"></span></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('Facebook links', ${features.facebook_links}, 4)}"></tr>
-                <tr>
-                    <td>Twitter links (shallow/deep)</td>
-                    <td><span th:text="${features.nb_twitter_shallow_links}"></span> / <span
-                            th:text="${features.nb_twitter_deep_links}"></span></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('Twitter links', ${features.twitter_links}, 4)}"></tr>
-                <tr>
-                    <td>LinkedIn links (shallow/deep)</td>
-                    <td><span th:text="${features.nb_linkedin_shallow_links}"></span> / <span
-                            th:text="${features.nb_linkedin_deep_links}"></span></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('LinkedIn links', ${features.linkedin_links}, 4)}"></tr>
-                <tr>
-                    <td>YouTube links (shallow/deep)</td>
-                    <td><span th:text="${features.nb_youtube_shallow_links}"></span> / <span
-                            th:text="${features.nb_youtube_deep_links}"></span></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('Youtube links', ${features.youtube_links}, 4)}"></tr>
-                <tr>
-                    <td>Vimeo links (shallow/deep)</td>
-                    <td><span th:text="${features.nb_vimeo_shallow_links}"></span> / <span
-                            th:text="${features.nb_vimeo_deep_links}"></span></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('Vimeo links', ${features.vimeo_links}, 4)}"></tr>
-                <tr>
-                    <td># number of currency names</td>
-                    <td th:text="${features.nb_currency_names}"></td>
-                </tr>
-                <tr>
-                    <td># distinct currencies</td>
-                    <td th:text="${features.nb_distinct_currencies}"></td>
-                </tr>
-                <tr>
-                    <td>Distance between title and domainName in initial url</td>
-                    <td th:text="${features.distance_title_initial_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Distance between title and domainName in final url</td>
-                    <td th:text="${features.distance_title_final_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Longest subsequence between title and domainName in initial url</td>
-                    <td th:text="${features.longest_subsequence_title_initial_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Longest subsequence between title and domainName in final url</td>
-                    <td th:text="${features.longest_subsequence_title_final_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Fraction between title and domainName in initial url</td>
-                    <td th:text="${features.fraction_words_title_initial_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Fraction subsequence between title and domainName in final url</td>
-                    <td th:text="${features.fraction_words_title_final_dn}"></td>
-                </tr>
-                <tr>
-                    <td>Distinct words in title</td>
-                    <td th:text="${features.nb_distinct_words_in_title}"></td>
-                </tr>
-                <tr>
-                    <td># distinct hosts in url's</td>
-                    <td th:text="${features.nb_distinct_hosts_in_urls}"></td>
-                </tr>
-                <tr>
-                    <td>Language</td>
-                    <td th:text="${features.body_text_language}"></td>
-                </tr>
-                <tr>
-                    <td>Language 2</td>
-                    <td th:text="${features.body_text_language_2}"></td>
-                </tr>
-                <tr th:replace="~{fragments/general :: listDisplay('External hosts', ${features.external_hosts}, 4)}"></tr>
-                </tbody>
-            </table>
-        </div>
     </div>
 </main>
 

@@ -52,6 +52,7 @@ public class ObjectMother {
         .crawlStarted(started.plusMillis(312))
         .path("/")
         .detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
+        .htmlFeatures(htmlFeatures1())
         .build();
   }
 
@@ -64,6 +65,7 @@ public class ObjectMother {
         .crawlStarted(started.plusMillis(312))
         .path("/en")
         .detectedTechnologies(Set.of("Twitter"))
+        .htmlFeatures(htmlFeatures2())
         .build();
   }
 
@@ -77,6 +79,7 @@ public class ObjectMother {
         .crawlStarted(started.plusMillis(312))
         .path("/en/contact")
         .detectedTechnologies(Set.of("Twitter", "Drupal"))
+        .htmlFeatures(htmlFeatures3())
         .build();
   }
 
@@ -185,7 +188,6 @@ public class ObjectMother {
         .matchingUrl("https://www.dnsbelgium.be/en/contact")
         .vatValues(List.of("BE0466158640", "BE0841242495"))
         .visitedUrls(List.of("https://www.dnsbelgium.be/", "https://www.dnsbelgium.be/en", "https://www.dnsbelgium.be/en/contact"))
-        .htmlFeatures(List.of(htmlFeatures1(), htmlFeatures2(), htmlFeatures3()))
         .pageVisits(List.of(pageVisit1(), pageVisit2(), pageVisit3()))
         //.detectedTechnologies(Set.of("Google Tag Manager", "Open Graph", "Drupal"))
         .build();
@@ -199,7 +201,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisit4()))
         //.detectedTechnologies(Set.of("HSTS", "Caddy", "Go"))
         .build();
@@ -212,7 +213,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithSecurityTxtFields()))
         .build();
   }
@@ -224,7 +224,6 @@ public class ObjectMother {
         .visitId(VISIT_ID_2)
         .domainName("no-website.org")
         .visitedUrls(List.of())
-        .htmlFeatures(List.of())
         .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
         .build();
   }
@@ -238,22 +237,6 @@ public class ObjectMother {
         .matchingUrl(null)
         .vatValues(null)
         .visitedUrls(null)
-        .htmlFeatures(null)
-        .pageVisits(null)
-        .build();
-
-  }
-
-  public WebCrawlResult webCrawlResultWithHtmlFeaturesNullValues() {
-    return WebCrawlResult.builder()
-        .visitId(null)
-        .crawlStarted(null)
-        .crawlFinished(null)
-        .domainName(null)
-        .matchingUrl(null)
-        .vatValues(null)
-        .visitedUrls(null)
-        .htmlFeatures(List.of(htmlFeaturesWithNullValues()))
         .pageVisits(null)
         .build();
 
@@ -268,7 +251,6 @@ public class ObjectMother {
         .matchingUrl(null)
         .vatValues(null)
         .visitedUrls(null)
-        .htmlFeatures(null)
         .pageVisits(List.of(pageVisitWithNullValues()))
         .build();
 

@@ -21,10 +21,8 @@ with typed as (
                                     headers MAP(VARCHAR, VARCHAR[]),
                                     content_length INTEGER,
                                     vat_values VARCHAR[],
-                                    detected_technologies VARCHAR[]
-                                )[]',
-                       html_features: 'STRUCT(
-                                       url VARCHAR,
+                                    detected_technologies VARCHAR[],
+                                    html_features STRUCT(
                                        nb_imgs INTEGER,
                                        nb_links_int INTEGER,
                                        nb_links_ext INTEGER,
@@ -74,7 +72,8 @@ with typed as (
                                        body_text_truncated BOOLEAN,
                                        meta_text_truncated BOOLEAN,
                                        title_truncated BOOLEAN
-                                     )[]',
+                                     )
+                                )[]'
                        })
 ),
 added_year_month as (

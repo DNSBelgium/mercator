@@ -13,7 +13,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"pageVisits", "htmlFeatures"})
+@ToString(exclude = {"pageVisits"})
 @EqualsAndHashCode
 public class WebCrawlResult {
 
@@ -29,7 +29,6 @@ public class WebCrawlResult {
   private List<String> visitedUrls;
 
   private List<PageVisit> pageVisits;
-  private List<HtmlFeatures> htmlFeatures;
 
   public void abbreviateData() {
     domainName = StringUtils.abbreviate(domainName, 255);

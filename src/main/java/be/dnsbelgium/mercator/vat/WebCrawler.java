@@ -115,6 +115,16 @@ public class WebCrawler {
         return crawlResult;
     }
 
+    private HtmlFeatures findFeatures(VisitRequest visitRequest, Page page) {
+        var html = page.getDocument().html();
+        logger.debug("findFeatures for url = {}", page.getUrl());
+        return htmlFeatureExtractor.extractFromHtml(
+            html,
+            page.getUrl().url().toExternalForm(),
+            visitRequest.getDomainName()
+        );
+    }
+
     private List<HtmlFeatures> findFeatures(VisitRequest visitRequest, SiteVisit siteVisit) {
         Threads.FEATURE_EXTRACTION.incrementAndGet();
         long start = System.currentTimeMillis();
@@ -122,13 +132,7 @@ public class WebCrawler {
             logger.debug("findFeatures for siteVisit = {}", siteVisit);
             List<HtmlFeatures> featuresList = new ArrayList<>();
             for (Page page : siteVisit.getVisitedPages().values()) {
-                var html = page.getDocument().html();
-                logger.debug("findFeatures for url = {}", page.getUrl());
-                var features = htmlFeatureExtractor.extractFromHtml(
-                        html,
-                        page.getUrl().url().toExternalForm(),
-                        visitRequest.getDomainName()
-                );
+                HtmlFeatures features = findFeatures(visitRequest, page);
                 featuresList.add(features);
             }
             return featuresList;
@@ -175,9 +179,6 @@ public class WebCrawler {
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
         meterRegistry.counter(COUNTER_WEB_CRAWLS_DONE).increment();
 
-        List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
-
-        webCrawlResult.setHtmlFeatures(featuresList);
         List<PageVisit> pageVisits = new ArrayList<>();
         logger.info(siteVisit.getBaseURL().toString());
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
@@ -186,6 +187,7 @@ public class WebCrawler {
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
             Set<String> detectedTechnologies = technologyAnalyzer.analyze(page);
             pageVisit.setDetectedTechnologies(detectedTechnologies);
+            pageVisit.setHtmlFeatures(findFeatures(visitRequest, page));
             pageVisits.add(pageVisit);
         }
 
