@@ -82,7 +82,7 @@ public class Page {
     this.mediaType = mediaType;
     this.headers = mergeHeaders(headers);
 
-    this.document = Jsoup.parse(this.responseBody, url == null? "" : url.toString());
+    this.document = Jsoup.parse(this.responseBody, url == null? "" : finalUrl.toString());
 
     Elements scripts = document.select("script");
     for (Element script : scripts) {
@@ -172,15 +172,15 @@ public class Page {
           try {
             HttpUrl url = HttpUrl.parse(href);
             if (url != null) {
-              Link link = new Link(url, element.text(), getUrl());
+              Link link = new Link(url, element.text(), getFinalUrl());
               linksOnPage.add(link);
             }
           } catch (Exception e) {
-            logger.warn("Skipping href={} on {} because of {}", href, getUrl(), e.getMessage());
+            logger.warn("Skipping href={} on {} because of {}", href, getFinalUrl(), e.getMessage());
           }
         } else {
           // we just ignore invalid URL's
-          logger.debug("Invalid url: [{}] found on {}", href, getUrl());
+          logger.debug("Invalid url: [{}] found on {}", href, getFinalUrl());
         }
       }
     }
@@ -189,7 +189,7 @@ public class Page {
 
   public Set<Link> getInnerLinks() {
     Set<Link> linksOnPage = getLinks();
-    String domainName = getSecondLevelDomainName(url);
+    String domainName = getSecondLevelDomainName(getFinalUrl());
 
     logger.debug("Before filtering: {} links", linksOnPage.size());
     Set<Link> filtered = linksOnPage.stream()
