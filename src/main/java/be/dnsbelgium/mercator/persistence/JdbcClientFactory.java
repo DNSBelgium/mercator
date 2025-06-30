@@ -4,40 +4,38 @@ import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
-@Configuration
-public class DbConfig {
+@Component
+public class JdbcClientFactory {
 
   @Value("${duckdb.create.s3.secret:false}")
   private boolean createS3Secret;
 
-  private static final Logger logger = LoggerFactory.getLogger(DbConfig.class);
+  @Value("${duckdb.log.s3.secrets:false}")
+  private boolean logSecrets;
 
-  @Bean
-  public DataSource dataSource() {
+  private static final Logger logger = LoggerFactory.getLogger(JdbcClientFactory.class);
+
+  public JdbcClient jdbcClient() {
     String url = "jdbc:duckdb:";
     DataSource dataSource = new SingleConnectionDataSource(url, true);
     logger.info("created dataSource with url='{}'", url);
-    return dataSource;
-  }
-
-  @Bean
-  public JdbcClient jdbcClient(DataSource dataSource) {
     JdbcClient jdbcClient = JdbcClient.create(dataSource);
     logSecrets(jdbcClient);
     if (createS3Secret) {
       createSecret(dataSource);
     }
-    logSecrets(jdbcClient);
+    if (logSecrets) {
+      logSecrets(jdbcClient);
+    }
     return jdbcClient;
   }
 

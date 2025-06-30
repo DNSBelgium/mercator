@@ -43,7 +43,7 @@ class BaseRepositoryTest {
   @Test
   void testAll() throws IOException {
     BaseRepository<BaseItem> repository = new BaseRepository<>(
-            TestUtils.jdbcClient(), TestUtils.jsonReader(), baseLocation.toString(), BaseItem.class);
+            TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), baseLocation.toString(), BaseItem.class);
 
     // prep data
     File jsonFile = tempDir.resolve("data.json").toFile();

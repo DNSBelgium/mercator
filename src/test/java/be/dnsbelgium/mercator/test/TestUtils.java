@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.test;
 
 import be.dnsbelgium.mercator.batch.JsonConfiguration;
+import be.dnsbelgium.mercator.persistence.JdbcClientFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -50,8 +51,7 @@ public class TestUtils {
     return objectMapper;
   }
 
-  public static JdbcClient jdbcClient() {
-    DataSource dataSource = new SingleConnectionDataSource("jdbc:duckdb:", true);
-    return JdbcClient.create(dataSource);
+  public static JdbcClientFactory jdbcClientFactory() {
+    return new JdbcClientFactory();
   }
 }

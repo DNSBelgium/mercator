@@ -36,7 +36,7 @@ class WebRepositoryTest {
   private final WebRepository repository = makeRepository(baseLocation.toString());
 
   private WebRepository makeRepository(String baseLocation) {
-    return new WebRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), baseLocation);
+    return new WebRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), baseLocation);
   }
 
 

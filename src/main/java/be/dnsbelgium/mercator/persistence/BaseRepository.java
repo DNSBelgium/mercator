@@ -32,11 +32,11 @@ public class BaseRepository<T> {
 
   private final Class<T> type;
 
-  private final JdbcClient jdbcClient;
+  private final JdbcClientFactory jdbcClientFactory;
   private final Lock lock = new ReentrantLock();
 
   @SneakyThrows
-  public BaseRepository(JdbcClient jdbcClient, ObjectMapper objectMapper, String baseLocation, Class<T> type) {
+  public BaseRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper, String baseLocation, Class<T> type) {
     this.objectMapper = objectMapper;
     if (baseLocation == null || baseLocation.isEmpty()) {
       throw new IllegalArgumentException("baseLocation must not be null or empty");
@@ -44,19 +44,22 @@ public class BaseRepository<T> {
     logger.info("baseLocation = [{}]", baseLocation);
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
-    this.jdbcClient = jdbcClient;
-    testAccessToS3();
+    this.jdbcClientFactory = jdbcClientFactory;
+    testAccessToBaseLocation();
   }
 
-  public void testAccessToS3() {
-    logger.info("test S3 access using duckdb");
+  private JdbcClient jdbcClient() {
+    return jdbcClientFactory.jdbcClient();
+  }
+
+  public void testAccessToBaseLocation() {
     String sql = "select domain_name from read_parquet('%s/**/*.parquet') limit 1".formatted(baseLocation);
     logger.info("sql = {}", sql);
     try {
-      List<Object> rows = jdbcClient.sql(sql).query().singleColumn();
+      List<Object> rows = jdbcClient().sql(sql).query().singleColumn();
       logger.info("rows = {}", rows);
     } catch (Exception e) {
-      logger.error("Accessing data on S3 failed: {}", e.getMessage());
+      logger.error("Accessing data failed: {}", e.getMessage());
     }
   }
 
@@ -128,7 +131,7 @@ public class BaseRepository<T> {
   @SneakyThrows
   private Optional<T> queryForObject(Map<String,?> params, String query) {
       try {
-        Optional<String> json = jdbcClient.sql(query)
+        Optional<String> json = jdbcClient().sql(query)
                 .params(params)
                 .query(String.class)
                 .optional();
@@ -157,7 +160,7 @@ public class BaseRepository<T> {
   @SneakyThrows
   private <S> List<S> queryForList(String query, String domainName, Class<S> clazz) {
       try {
-        List<String> jsonList = jdbcClient.sql(query)
+        List<String> jsonList = jdbcClient().sql(query)
                 .param("domainName", domainName)
                 .query(String.class)
                 .list();
@@ -218,7 +221,7 @@ public class BaseRepository<T> {
    * @param jsonResultsLocation : location of JSON file(s)
    */
   public void storeResults(String jsonResultsLocation) {
-      jdbcClient.sql(String.format("""
+      jdbcClient().sql(String.format("""
       copy (
         select
           *,
@@ -257,11 +260,15 @@ public class BaseRepository<T> {
     // we need to acquire a lock to prevent another thread from setting a different jsonLocation
     // before we start the copyStatement
     lock.lock();
+    JdbcClient jdbcClient = jdbcClientFactory.jdbcClient();
+    String stmt = "set variable jsonLocation = '" + jsonLocation + "'";
     try {
-      jdbcClient.sql("set variable jsonLocation = ?")
-              .param(jsonLocation)
+      jdbcClient
+              .sql(stmt)
               .update();
-      jdbcClient.sql(copyStatement).update();
+      jdbcClient
+              .sql(copyStatement)
+              .update();
       logger.info("copying {} as parquet to {} is done", cte, destination);
     } finally {
       lock.unlock();

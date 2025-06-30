@@ -17,8 +17,8 @@ public class TlsRepository extends BaseRepository<TlsCrawlResult> {
   private final String baseLocation;
 
   @SneakyThrows
-  public TlsRepository(JdbcClient jdbcClient, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/tls") String baseLocation) {
-    super(jdbcClient, objectMapper, baseLocation, TlsCrawlResult.class);
+  public TlsRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/tls") String baseLocation) {
+    super(jdbcClientFactory, objectMapper, baseLocation, TlsCrawlResult.class);
     this.baseLocation = baseLocation;
   }
 

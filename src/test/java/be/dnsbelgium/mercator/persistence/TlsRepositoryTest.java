@@ -35,7 +35,7 @@ class TlsRepositoryTest {
 
   @Test
   public void constructor() {
-    new TlsRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), "s3://dc3-eu-west-1-dev-mercator-data/tls");
+    new TlsRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), "s3://dc3-eu-west-1-dev-mercator-data/tls");
 
   }
 
@@ -78,7 +78,7 @@ class TlsRepositoryTest {
   }
 
   private TlsRepository makeRepository() {
-    return new TlsRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), baseLocation.toString());
+    return new TlsRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), baseLocation.toString());
   }
 
   private String saveToJson(List<TlsCrawlResult> crawlResults, String fileName) throws IOException {

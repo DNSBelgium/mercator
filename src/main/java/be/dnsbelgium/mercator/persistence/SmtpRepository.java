@@ -18,8 +18,8 @@ public class SmtpRepository extends BaseRepository<SmtpVisit> {
     private final String baseLocation;
 
     @SneakyThrows
-    public SmtpRepository(JdbcClient jdbcClient, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/smtp") String baseLocation) {
-        super(jdbcClient, objectMapper, baseLocation, SmtpVisit.class);
+    public SmtpRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/smtp") String baseLocation) {
+        super(jdbcClientFactory, objectMapper, baseLocation, SmtpVisit.class);
         this.baseLocation = baseLocation;
     }
 

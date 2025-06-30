@@ -40,7 +40,7 @@ class SmtpRepositoryTest {
   }
 
   private SmtpRepository makeRepository(String location) {
-    return new SmtpRepository(TestUtils.jdbcClient(), TestUtils.jsonReader(), location);
+    return new SmtpRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), location);
   }
 
   @Test
