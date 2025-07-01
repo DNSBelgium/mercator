@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+  <title>Mercator | Details</title>
+</head>
+
+<body>
+
+<main class="container-fluid" layout:fragment="content">
+  <h2 th:if="${smtpVisitResult == null}">
+    No SMTP crawl results found for visit-id <strong th:text="${visitId}"></strong>
+  </h2>
+  <div class="container-fluid" th:if="${smtpVisitResult != null}">
+    <header>
+      <h4>SMTP crawl results for: <strong th:text="${smtpVisitResult.domainName}"></strong></h4>
+    </header>
+    <table>
+      <tbody>
+      <tr>
+        <th>Visit Id</th>
+        <td th:text="${smtpVisitResult.visitId}"></td>
+      </tr>
+      <tr>
+        <th>Crawl started</th>
+        <td th:text="${@dateTimeUtil.format(smtpVisitResult.crawlStarted)}"></td>
+      </tr>
+      <tr>
+        <th>Crawl finished</th>
+        <td th:text="${@dateTimeUtil.format(smtpVisitResult.crawlFinished)}"></td>
+      </tr>
+      <tr>
+        <th># conversations</th>
+        <td th:text="${smtpVisitResult.numConversations}"></td>
+      </tr>
+      <tr>
+        <th>Crawl status</th>
+        <td th:text="${smtpVisitResult.crawlStatus}"></td>
+      </tr>
+      </tbody>
+    </table>
+    <p th:if="${smtpVisitResult.getHosts() == null or #lists.isEmpty(smtpVisitResult.getHosts())}">No hosts</p>
+    <p>Hosts</p>
+    <div th:each="host : ${smtpVisitResult.getHosts()}">
+      <table>
+        <tbody>
+        <tr>
+          <th>From MX</th>
+          <td th:text="${host.fromMx} "></td>
+        </tr>
+        <tr>
+          <th>Host name</th>
+          <td th:text="${host.hostName}"></td>
+        </tr>
+        <tr>
+          <th>Priority</th>
+          <td th:text="${host.priority}"></td>
+        </tr>
+        </tbody>
+      </table>
+      <div th:if="${host.conversations != null}">
+        <div th:each="conversation : ${host.conversations}">
+        <details>
+          <summary>Click to show conversation with <span th:text="${conversation.ip}"></span></summary>
+          <table th:if="${conversation != null}">
+            <tbody>
+            <tr>
+              <th>IP</th>
+              <td th:text="${conversation.ip}"></td>
+            </tr>
+            <tr>
+              <th>ASN</th>
+              <td th:text="${conversation.asn}"></td>
+            </tr>
+            <tr>
+              <th>Country</th>
+              <td th:text="${conversation.country}"></td>
+            </tr>
+            <tr>
+              <th>ASN organisation</th>
+              <td th:text="${conversation.asnOrganisation}"></td>
+            </tr>
+            <tr>
+              <th>Banner</th>
+              <td th:text="${conversation.banner}"></td>
+            </tr>
+            <tr>
+              <th>Connect OK</th>
+              <td th:text="${conversation.connectOK} ? 'Yes' : 'No'"></td>
+            </tr>
+            <tr>
+              <th>Connect reply code</th>
+              <td th:text="${conversation.connectReplyCode}"></td>
+            </tr>
+            <tr th:replace="~{fragments/general :: listDisplay('Supported extensions', ${conversation.getSupportedExtensions()}, 4)}"></tr>
+            <tr>
+              <th>IP version</th>
+              <td th:text="${conversation.ipVersion}"></td>
+            </tr>
+            <tr>
+              <th>START_TLS OK</th>
+              <td th:text="${conversation.startTlsOk} ? 'Yes' : 'No'"></td>
+            </tr>
+            <tr>
+              <th>START_TLS reply code</th>
+              <td th:text="${conversation.startTlsReplyCode}"></td>
+            </tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error message', ${conversation.getErrorMessage()}, 200)}"></tr>
+            <tr th:replace="~{fragments/general :: textDisplay('Error', ${conversation.getError()}, 200)}"></tr>
+            <tr>
+              <th>Connection time</th>
+              <td th:text="${conversation.connectionTimeMs} + ' ms'"></td>
+            </tr>
+            <tr>
+              <th>Software</th>
+              <td th:text="${conversation.software}"></td>
+            </tr>
+            <tr>
+              <th>Software version</th>
+              <td th:text="${conversation.softwareVersion}"></td>
+            </tr>
+            <tr>
+              <th>Crawl started</th>
+              <td th:text="${@dateTimeUtil.format(conversation.crawlStarted)}"></td>
+            </tr>
+            <tr>
+              <th>Crawl finished</th>
+              <td th:text="${@dateTimeUtil.format(conversation.crawlFinished)}"></td>
+            </tr>
+            </tbody>
+          </table>
+        </details>
+        </div>
+      </div>
+        <p th:if="${host.getConversations() == null or #lists.isEmpty(host.getConversations())}">No conversations</p>
+    </div>
+  </div>
+</main>
+</body>
+</html>

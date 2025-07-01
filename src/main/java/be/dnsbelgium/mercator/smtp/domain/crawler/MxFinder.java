@@ -26,17 +26,17 @@ public class MxFinder {
 
   @Autowired
   public MxFinder(
-      @Value("${smtp.crawler.recursive.resolver.hostName:8.8.8.8}") String recursiveResolver,
       @Value("${smtp.crawler.recursive.resolver.retries:2}") int retries,
       @Value("${smtp.crawler.recursive.resolver.timeOut.ms:2500}") int timeOutMs,
       @Value("${smtp.crawler.recursive.resolver.tcp.by.default:false}") boolean tcp
-  )
-      throws UnknownHostException {
-    logger.info("Initializing MxFinder with recursiveResolver hostname={} retries={} timeOut={}ms tcp={}",
-        recursiveResolver, retries, timeOutMs, tcp);
-
-    var simple = new SimpleResolver(recursiveResolver);
-    resolver = new ExtendedResolver(new Resolver[]{simple});
+  ) {
+    logger.info("Initializing MxFinder with resolver.retries={} resolver.timeOut={}ms resolver.tcp={}",
+         retries, timeOutMs, tcp);
+    resolver = new ExtendedResolver();
+    logger.info("ExtendedResolver consists of {} resolvers", resolver.getResolvers().length);
+    for (Resolver r: resolver.getResolvers()) {
+      logger.info("ExtendedResolver uses = {}", r);
+    }
     resolver.setRetries(retries);
     resolver.setTimeout(Duration.ofMillis(timeOutMs));
     resolver.setTCP(tcp);
@@ -58,7 +58,7 @@ public class MxFinder {
     int rcode = lookup.getResult();
     logger.debug("MX lookup for {} => rcode = {} = {}", domainName, rcode, Rcode.string(rcode));
     if (rcode == Rcode.NXDOMAIN) {
-      logger.warn("Domain {} does not exist: {}", domainName, lookup.getErrorString());
+      logger.info("Domain {} does not exist: {}", domainName, lookup.getErrorString());
       // We do not return NO_MX_RECORDS_FOUND in this case since the domain does not exist => there is no point to search for address records
       // In the context of crawling the domain name is thus invalid (it does not exist according to DNS)
       // => there is no point to search for address records

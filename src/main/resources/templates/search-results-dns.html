@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Search Results</title>
+</head>
+
+<body>
+<main>
+    <div layout:fragment="content">
+        <h2 th:if="${visitIds == null or visitIds.isEmpty()}">
+            No DNS crawls found for <span th:text="${domainName}"></span>
+        </h2>
+        <div th:if="${visitIds != null and not visitIds.isEmpty()}">
+            <h1>Search results</h1>
+            <table class="overflow-auto">
+                <thead>
+                <tr>
+                    <td>Visit Id</td>
+                    <td>Timestamp</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="visit : ${visitIds}">
+                    <td>
+                        <a th:href="@{/search/dns/id(visitId=${visit.getVisitId()})}" th:text="${visit.getVisitId()}"></a>
+                    </td>
+                    <td th:text="${@dateTimeUtil.format(visit.getTimestamp())}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

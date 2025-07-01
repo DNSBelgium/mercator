@@ -5,12 +5,19 @@ import be.dnsbelgium.mercator.vat.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PreDestroy;
 import okhttp3.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.commons.io.output.NullOutputStream;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -49,18 +56,18 @@ public class PageFetcher {
     Dns dns = new ConfigurableDns(SupportedIpVersion.V4_ONLY);
 
     this.client = new OkHttpClient.Builder()
-        .connectTimeout(config.getConnectTimeOut())
-        .writeTimeout(config.getWriteTimeOut())
-        .readTimeout(config.getReadTimeOut())
-        .callTimeout(config.getCallTimeOut())
-        .cache(cache)
-        .dns(dns)
-        .followRedirects(true)
-        .followSslRedirects(true)
-        .retryOnConnectionFailure(true)
-        .minWebSocketMessageToCompress(1024)
-        .connectionSpecs(List.of(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
-        .build();
+            .connectTimeout(config.getConnectTimeOut())
+            .writeTimeout(config.getWriteTimeOut())
+            .readTimeout(config.getReadTimeOut())
+            .callTimeout(config.getCallTimeOut())
+            .cache(cache)
+            .dns(dns)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .retryOnConnectionFailure(true)
+            .minWebSocketMessageToCompress(1024)
+            .connectionSpecs(List.of(ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT))
+            .build();
     setupMetrics();
   }
 
@@ -157,30 +164,86 @@ public class PageFetcher {
     }
   }
 
+  /**
+   * Processes the response body by:
+   * - Reading up to a configured maximum number of bytes into memory.
+   * - Truncating the body if it exceeds the limit.
+   * - Estimating total content length; sets to -1 if it exceeds a hard limit.
+   *
+   * @param responseBody the HTTP response body
+   * @param builder the PageBuilder to populate
+   * @param config configuration containing max content length
+   * @throws IOException if an I/O error occurs
+   */
+  public static void handleBody(ResponseBody responseBody, Page.PageBuilder builder, PageFetcherConfig config) throws IOException {
+
+    int maxInMemoryLength = (int) config.getMaxContentLength().toBytes();
+    int maxTotalLength = (int) config.getContentLengthDetectionLimit().toBytes();
+
+    long contentLength;
+    String body;
+
+    try (InputStream is = responseBody.byteStream();
+         ByteArrayOutputStream os = new ByteArrayOutputStream(maxInMemoryLength)) {
+
+      // Read up to maxInMemoryLength into memory
+      BoundedInputStream limitedIn = BoundedInputStream.builder()
+          .setInputStream(is)
+          .setMaxCount(maxInMemoryLength)
+          .get();
+
+      long bytesRead = IOUtils.copyLarge(limitedIn, os);
+
+      // Continue reading (without storing) to check total size
+      BoundedInputStream fullReadCheck = BoundedInputStream.builder()
+          .setInputStream(is)
+          .setCount(bytesRead)
+          .setMaxCount(maxTotalLength)
+          .get();
+
+      long extraBytes = IOUtils.copyLarge(fullReadCheck, NullOutputStream.INSTANCE);
+
+      contentLength = bytesRead + extraBytes;
+      if (contentLength == maxTotalLength) {
+        contentLength = -1;
+      }
+      body = os.toString(StandardCharsets.UTF_8);
+
+      builder.responseBody(body)
+          .contentLength(contentLength);
+    }
+  }
+
   public Page fetch(HttpUrl url) throws IOException {
+
+    Page.PageBuilder builder = Page.builder();
 
     Instant started = Instant.now();
     String cacheControl = "max-stale=" + config.getCacheMaxStale().toSeconds();
     Request request = new Request.Builder()
-        .url(url)
-        .header("Cache-Control", cacheControl)
-        .header("User-Agent", config.getUserAgent())
-        .build();
+            .url(url)
+            .header("Cache-Control", cacheControl)
+            .header("User-Agent", config.getUserAgent())
+            .build();
 
     logger.debug("request = {}", request);
 
     try (Response response = client.newCall(request).execute()) {
+
       if (logger.isDebugEnabled()) {
         debug(response);
       }
+
       Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
       Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
+
+      builder.visitStarted(sentRequest);
+      builder.visitFinished(receivedResponse);
+
       Duration duration = Duration.between(sentRequest, receivedResponse);
       logger.debug("Receiving response took {}", duration);
       meterRegistry.timer(MetricName.TIMER_PAGE_RESPONSE_RECEIVED).record(duration);
 
-      long millis = response.receivedResponseAtMillis() - response.sentRequestAtMillis();
-      logger.debug("millis = {}", millis);
 
       try (ResponseBody responseBody = response.body()) {
         if (responseBody == null) {
@@ -188,6 +251,7 @@ public class PageFetcher {
           meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
           return Page.failed(url, sentRequest, receivedResponse);
         }
+
         MediaType contentType = responseBody.contentType();
         if (!isSupported(contentType)) {
           logger.debug("Skipping content since type = {}", contentType);
@@ -195,14 +259,9 @@ public class PageFetcher {
               "content-type", contentType != null ? contentType.toString() : null).increment();
           return Page.CONTENT_TYPE_NOT_SUPPORTED;
         }
-        long contentLength = responseBody.contentLength();
-        if (contentLength > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} => contentLength {} exceeds max content length of {}", url, responseBody.contentLength(),
-              config.getMaxContentLength().toBytes());
-          meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
-          return Page.PAGE_TOO_BIG;
-        }
-        String body = responseBody.string();
+
+        handleBody(responseBody, builder, config);
+
         Duration fetchDuration = Duration.between(started, Instant.now());
         meterRegistry.timer(MetricName.TIMER_PAGE_BODY_FETCHED).record(fetchDuration);
         meterRegistry.counter(MetricName.COUNTER_PAGES_FETCHED).increment();
@@ -210,21 +269,14 @@ public class PageFetcher {
           logger.debug("Requested {} but received response for {}", url, response.request().url());
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
-        if (body.length() > config.getMaxContentLength().toBytes()) {
-          logger.debug("url={} already fetched but skipped since length {} exceeds max content length of {}", url,
-              body.length(), config.getMaxContentLength().toBytes());
-          meterRegistry.counter(MetricName.COUNTER_PAGES_TOO_BIG).increment();
-          return Page.PAGE_TOO_BIG;
-        }
 
-        Map<String, String> headers = new HashMap<>();
-        for (String name : response.headers().names()) {
-          headers.put(name, response.header(name));
-        }
-
-        return new Page(
-            response.request().url(),
-            sentRequest, receivedResponse, response.code(), body, responseBody.contentLength(), contentType, headers);
+        return builder
+            .url(url)
+            .finalUrl(response.request().url())
+            .statusCode(response.code())
+            .headers(getHeaders(response))
+            .mediaType(responseBody.contentType())
+            .build();
       }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
@@ -233,20 +285,29 @@ public class PageFetcher {
     }
   }
 
-  protected boolean isSupported(MediaType contentType) {
+  @NotNull
+  private static Map<String, List<String>> getHeaders(Response response) {
+    Map<String, List<String>> headers = new HashMap<>();
+    for (String name : response.headers().names()) {
+      headers.put(name.toLowerCase(), response.headers(name));
+    }
+    return headers;
+  }
+
+  protected static boolean isSupported(MediaType contentType) {
     logger.debug("contentType = {}", contentType);
     if (contentType == null) {
       return true;
     }
     logger.debug("contentType: type={} subtype={} charset={}", contentType.type(), contentType.subtype(),
-        contentType.charset());
+            contentType.charset());
     if (contentType.equals(APPLICATION_JSON)) {
       return true;
     }
     return !contentType.type().equals("image") &&
-        !contentType.type().equals("audio") &&
-        !contentType.type().equals("video") &&
-        !contentType.type().equals("application");
+            !contentType.type().equals("audio") &&
+            !contentType.type().equals("video") &&
+            !contentType.type().equals("application");
   }
 
   public void debug(Response response) {

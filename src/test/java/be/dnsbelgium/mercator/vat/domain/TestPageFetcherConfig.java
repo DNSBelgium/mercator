@@ -17,7 +17,8 @@ public class TestPageFetcherConfig {
       Duration.ofSeconds(5),
       Duration.ofSeconds(8),
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:87.0) Gecko/20100101 Firefox/87.0",
-      DataSize.of(100, DataUnit.KILOBYTES)
+      DataSize.of(100, DataUnit.KILOBYTES),
+      DataSize.of(200, DataUnit.KILOBYTES)
     );
   }
 }

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Details</title>
+</head>
+
+<body>
+
+<main class="container-fluid" layout:fragment="content">
+    <h2 th:if="${webCrawlResult == null}">
+        <span th:if="${visitId != null}">No web crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+        <span th:if="${visitId == null && domainName != null}">No web crawl results found for <strong th:text="${domainName}"></strong></span>
+        <span th:if="${visitId == null && domainName == null}">No web crawl results found matching your input</span>
+    </h2>
+    <div class="container-fluid" th:if="${webCrawlResult != null}">
+        <header>
+            <h4>Web crawl results for: <strong th:text="${webCrawlResult.domainName}"></strong></h4>
+        </header>
+        <table>
+            <tbody>
+            <tr>
+                <th>Visit id</th>
+                <td th:text="${webCrawlResult.visitId}"></td>
+            </tr>
+            <tr>
+                <th style="width: 30em">Crawl started</th>
+                <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlStarted)}"></td>
+            </tr>
+            <tr>
+                <th>Crawl finished</th>
+                <td th:text="${@dateTimeUtil.format(webCrawlResult.crawlFinished)}"></td>
+            </tr>
+            <tr>
+                <th>Start URL</th>
+                <td th:if="${webCrawlResult.visitedUrls != null and !webCrawlResult.visitedUrls.isEmpty()}"
+                    th:text="${webCrawlResult.visitedUrls[0]}"></td>
+                <td th:if="${webCrawlResult.visitedUrls == null or webCrawlResult.visitedUrls.isEmpty()}">No URLs found</td>
+            </tr>
+            <tr>
+                <th>Matching URL</th>
+                <td th:text="${webCrawlResult.matchingUrl}"></td>
+
+            </tr>
+            <tr>
+                <th>VAT values</th>
+                <td>
+                    <span th:if="${#lists.isEmpty(webCrawlResult.getVatValues())}">No VAT Values found</span>
+                    <details th:if="${!#lists.isEmpty(webCrawlResult.getVatValues())}">
+                        <summary>Click to show VAT values</summary>
+                        <ul>
+                            <li th:each="vatValue : ${webCrawlResult.getVatValues()}">
+                                <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
+                                   th:text="'BE' + ${#strings.substring(vatValue, 2)}"
+                                   target="_blank"></a>
+                            </li>
+                        </ul>
+                    </details>
+                </td>
+            </tr>
+            <tr>
+                <th>Number of visited URL's</th>
+                <td th:text="${webCrawlResult.visitedUrls != null ? webCrawlResult.visitedUrls.size() : 0}"></td>
+            </tr>
+            <tr th:replace="~{fragments/general :: listDisplay('Visited URL\'s', ${webCrawlResult.getVisitedUrls()}, 4)}"></tr>
+            <tr>
+                <th>Page visits</th>
+                <td th:if="${webCrawlResult.pageVisits == null or webCrawlResult.pageVisits.isEmpty()}">None
+                </td>
+                <td>
+                    <details th:if="${webCrawlResult.pageVisits != null and !webCrawlResult.pageVisits.isEmpty()}">
+                        <summary>Click to show page visits</summary>
+                        <div th:each="pageVisit, iterStat : ${webCrawlResult.getPageVisits()}">
+                            <h4>Page visit for url <span th:text="${pageVisit.url}"></span></h4>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>Path</th>
+                                    <td th:text="${pageVisit.path}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Final URL</th>
+                                    <td th:text="${pageVisit.finalUrl}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Crawl started</th>
+                                    <td th:text="${@dateTimeUtil.format(pageVisit.crawlStarted)}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Crawl finished</th>
+                                    <td th:text="${@dateTimeUtil.format(pageVisit.crawlFinished)}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Status code</th>
+                                    <td th:text="${pageVisit.statusCode}"></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        HTTP response body
+                                    </td>
+                                    <td>
+                                        <script>
+                                            function renderRawHtml(html) {
+                                                const newWindow = window.open();
+                                                newWindow.document.title = 'raw html'
+                                                const pre = newWindow.document.createElement("pre");
+                                                pre.textContent = html;
+                                                newWindow.document.body.appendChild(pre);
+                                            }
+
+                                            function openHtmlInNewTab(htmlContent) {
+                                                const newWindow = window.open();
+                                                newWindow.document.write(htmlContent);
+                                                newWindow.document.close();
+                                            }
+                                        </script>
+                                        <button th:data-html="${pageVisit.getResponseBody()}"
+                                                onclick="renderRawHtml(this.getAttribute('data-html'))">Go to raw html
+                                        </button>
+                                        <button th:data-html="${pageVisit.getResponseBody()}"
+                                                onclick="openHtmlInNewTab(this.getAttribute('data-html'))">View in
+                                            browser
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>URL</th>
+                                    <td th:text="${pageVisit.linkText}"></td>
+                                </tr>
+                                <tr>
+                                    <td>VAT values</td>
+                                    <td>
+                                        <span th:if="${pageVisit.getVatValues() == null or pageVisit.getVatValues().isEmpty()}">None</span>
+                                        <details
+                                                th:if="${pageVisit.getVatValues() != null and !pageVisit.getVatValues().isEmpty()}">
+                                            <summary>Click to show VAT values</summary>
+                                            <ul>
+                                                <li th:each="vatValue : ${pageVisit.getVatValues()}">
+                                                    <a th:href="'https://kbopub.economie.fgov.be/kbopub/zoeknummerform.html?nummer=' + ${#strings.substring(vatValue, 2)}"
+                                                       th:text="'BE' + ${#strings.substring(vatValue, 2)}"
+                                                       target="_blank"></a>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    </td>
+                                </tr>
+                                <tr th:replace="~{fragments/general :: mapDisplay('headers', ${pageVisit.getHeaders()}, 1)}"></tr>
+                                <tr>
+                                    <td>Content length</td>
+                                    <td th:text="${pageVisit.getContentLength()}"></td>
+                                </tr>
+                                <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${pageVisit.getDetectedTechnologies()}, 4)}">
+                                </tr>
+                                <tr>
+                                    <td>HTML features</td>
+                                    <td th:with="features=${pageVisit.htmlFeatures}">
+                                        <span th:if="${features == null}">None</span>
+                                        <table th:if="${features != nulll}">
+                                          <tbody>
+                                          <tr>
+                                              <td>Title</td>
+                                              <td th:text="${features.title}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Meta text</td>
+                                              <td th:text="${features.meta_text}"></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: textDisplay('Features body text', ${features.body_text}, 200)}"></tr>
+                                          <tr>
+                                              <td># images</td>
+                                              <td th:text="${features.nb_imgs}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># internal links</td>
+                                              <td th:text="${features.nb_links_int}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># internal links</td>
+                                              <td th:text="${features.nb_links_ext}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># email links</td>
+                                              <td th:text="${features.nb_links_email}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># telephone links</td>
+                                              <td th:text="${features.nb_links_tel}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># inputs of type txt</td>
+                                              <td th:text="${features.nb_input_txt}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># buttons</td>
+                                              <td th:text="${features.nb_button}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># meta descriptions</td>
+                                              <td th:text="${features.nb_meta_desc}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># meta keywords</td>
+                                              <td th:text="${features.nb_meta_keyw}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># numerical strings</td>
+                                              <td th:text="${features.nb_numerical_strings}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># tags</td>
+                                              <td th:text="${features.nb_tags}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># words</td>
+                                              <td th:text="${features.nb_words}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># letters</td>
+                                              <td th:text="${features.nb_letters}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Facebook links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_facebook_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_facebook_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Facebook links', ${features.facebook_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>Twitter links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_twitter_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_twitter_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Twitter links', ${features.twitter_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>LinkedIn links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_linkedin_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_linkedin_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('LinkedIn links', ${features.linkedin_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>YouTube links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_youtube_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_youtube_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Youtube links', ${features.youtube_links}, 4)}"></tr>
+                                          <tr>
+                                              <td>Vimeo links (shallow/deep)</td>
+                                              <td><span th:text="${features.nb_vimeo_shallow_links}"></span> / <span
+                                                      th:text="${features.nb_vimeo_deep_links}"></span></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('Vimeo links', ${features.vimeo_links}, 4)}"></tr>
+                                          <tr>
+                                              <td># number of currency names</td>
+                                              <td th:text="${features.nb_currency_names}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># distinct currencies</td>
+                                              <td th:text="${features.nb_distinct_currencies}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distance between title and domainName in initial url</td>
+                                              <td th:text="${features.distance_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distance between title and domainName in final url</td>
+                                              <td th:text="${features.distance_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Longest subsequence between title and domainName in initial url</td>
+                                              <td th:text="${features.longest_subsequence_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Longest subsequence between title and domainName in final url</td>
+                                              <td th:text="${features.longest_subsequence_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Fraction between title and domainName in initial url</td>
+                                              <td th:text="${features.fraction_words_title_initial_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Fraction subsequence between title and domainName in final url</td>
+                                              <td th:text="${features.fraction_words_title_final_dn}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Distinct words in title</td>
+                                              <td th:text="${features.nb_distinct_words_in_title}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td># distinct hosts in url's</td>
+                                              <td th:text="${features.nb_distinct_hosts_in_urls}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Language</td>
+                                              <td th:text="${features.body_text_language}"></td>
+                                          </tr>
+                                          <tr>
+                                              <td>Language 2</td>
+                                              <td th:text="${features.body_text_language_2}"></td>
+                                          </tr>
+                                          <tr th:replace="~{fragments/general :: listDisplay('External hosts', ${features.external_hosts}, 4)}"></tr>
+                                          </tbody>
+                                      </table>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+
+</body>
+</html>

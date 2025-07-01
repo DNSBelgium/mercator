@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.tls.domain;
 
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.BlacklistEntry;
 import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.BlacklistEntryRepository;
 import inet.ipaddr.HostName;
 import inet.ipaddr.IPAddress;
@@ -36,11 +35,6 @@ public class BlackList {
   }
 
   private static final Logger logger = getLogger(BlackList.class);
-
-  public boolean isBlacklisted(String ip) {
-    IPAddressString addressString = new IPAddressString(ip);
-    return isBlacklisted(addressString.getAddress());
-  }
 
   public boolean isBlacklisted(IPAddress ipAddress) {
     boolean blacklisted = false;

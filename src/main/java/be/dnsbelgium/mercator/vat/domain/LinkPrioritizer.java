@@ -100,7 +100,7 @@ public class LinkPrioritizer {
     linkTextWeights.put("disclaimer", 0.7200);
     linkTextWeights.put("voorwaarden", 0.7200);
 
-    // TODO get more link texts
+    // TODO: get more link texts
   }
 
 }

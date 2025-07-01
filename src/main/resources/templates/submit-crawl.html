@@ -10,20 +10,75 @@
 
 <body >
 
+<div class="sticky_hero  pico-background-sand-50 container-fluid"  >
+
+    <nav class="container-fluid">
+
+        <ul >
+            <li >
+                <h2 class="pico-color-sand-650">
+
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Mercator.jpg/174px-Mercator.jpg"
+                         alt="Portrait of Gerardus Mercator"
+                         width="30px"
+                         style="padding-top: 0"
+                         class="mercator-portrait"
+                    />
+                    <svg class="mercator-icon"
+                         width="32px" height="32px" stroke-width="1.5" viewBox="0 0 24 24" fill="none"
+                         xmlns="http://www.w3.org/2000/svg" color="#413030">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                              stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                        <path d="M2.5 12.5L8 14.5L7 18L8 21"
+                              stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                        <path d="M17 20.5L16.5 18L14 17V13.5L17 12.5L21.5 13"
+                              stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                        <path d="M19 5.5L18.5 7L15 7.5V10.5L17.5 9.5H19.5L21.5 10.5"
+                              stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                        <path d="M2.5 10.5L5 8.5L7.5 8L9.5 5L8.5 3"
+                              stroke="#413030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        </path>
+                    </svg>
+                    Mercator
+                </h2>
+            </li>
+        </ul>
+
+        <ul>
+            <li><a  href="/search">Search</a></li>
+            <li><a  href="/submit_crawl" >Submit work</a></li>
+            <li><a  href="/status" >Status</a></li>
+            <li><a  href="/settings" >Settings</a></li>
+            <li></li>
+        </ul>
+
+    </nav>
+
+    <form role="search">
+        <input type="search" name="search"
+               aria-label="Enter a domain name to search for visits"
+               placeholder="Enter a domain name to search for visits"
+        >
+        <input type="submit" value="Search" class="search">
+    </form>
+
+</div>
+
 <div class="xgrid">
 
-    <main class="container">
+    <main class="container-fluid">
 
         <div layout:fragment="content">
 
             <h1>Submit a crawl</h1>
             <p>
                 Use the form below to submit a visit request to the work queue.
-            </p>
-            <p>
-                You can also use the ingestion folder to submit a larger set of visit requests.
-                See the <a href="https://github.com/DNSBelgium/mercator/blob/main/README.MD">README.MD</a> for more details.
-
+                Use the ingestion folder (TODO: or the upload form)
+                to submit a larger set of visit requests.
             </p>
 
             <form action="/submit_crawl" method="POST">

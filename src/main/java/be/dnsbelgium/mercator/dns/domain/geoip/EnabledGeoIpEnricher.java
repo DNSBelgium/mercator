@@ -1,15 +1,12 @@
 package be.dnsbelgium.mercator.dns.domain.geoip;
 
 import be.dnsbelgium.mercator.dns.metrics.MetricName;
-import be.dnsbelgium.mercator.dns.persistence.ResponseGeoIp;
+import be.dnsbelgium.mercator.dns.dto.ResponseGeoIp;
 import be.dnsbelgium.mercator.geoip.GeoIPService;
 import io.micrometer.core.annotation.Timed;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Component;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;

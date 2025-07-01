@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.MercatorApplication;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
 // This test is slow (and brittle since it relies on external state)
-@EnabledIfEnvironmentVariable(named = "SMTP_TEST_ENABLED", matches = "True")
+@EnabledIfEnvironmentVariable(named = "SMTP_INTEGRATION_TEST_ENABLED", matches = "true")
 @SpringBootTest(classes = { MercatorApplication.class } )
 @ActiveProfiles("test")
 class SmtpAnalyzerIntegrationTest {
@@ -34,15 +34,15 @@ class SmtpAnalyzerIntegrationTest {
     assertThat(result).isNotNull();
     assertThat(result.getCrawlStatus()).isEqualTo(CrawlStatus.OK);
     assertThat(result.getDomainName()).isEqualTo("dnsbelgium.be");
-    assertThat(result.getTimestamp()).isNotNull();
+    assertThat(result.getCrawlStarted()).isNotNull();
     List<SmtpHost> hosts = result.getHosts();
     assertThat(hosts.size()).isGreaterThan(0);
-    assertThat(hosts.get(0).getConversation().getConnectReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getConversation().getStartTlsReplyCode()).isEqualTo(220);
-    assertThat(hosts.get(0).getConversation().getConnectionTimeMs()).isGreaterThan(1);
-    assertThat(hosts.get(0).getConversation().isConnectOK()).isTrue();
-    assertThat(hosts.get(0).getConversation().isStartTlsOk()).isTrue();
-    assertThat(hosts.get(0).getConversation().getErrorMessage()).isNull();
+    assertThat(hosts.getFirst().getConversations().getFirst().getConnectReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversations().getFirst().getStartTlsReplyCode()).isEqualTo(220);
+    assertThat(hosts.getFirst().getConversations().getFirst().getConnectionTimeMs()).isGreaterThan(1);
+    assertThat(hosts.getFirst().getConversations().getFirst().isConnectOK()).isTrue();
+    assertThat(hosts.getFirst().getConversations().getFirst().isStartTlsOk()).isTrue();
+    assertThat(hosts.getFirst().getConversations().getFirst().getErrorMessage()).isNull();
   }
 
 }

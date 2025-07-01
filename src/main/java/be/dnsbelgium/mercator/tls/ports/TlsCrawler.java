@@ -1,78 +1,56 @@
 package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.tls.crawler.persistence.entities.FullScanEntity;
-import be.dnsbelgium.mercator.tls.crawler.persistence.repositories.TlsRepository;
-import be.dnsbelgium.mercator.tls.domain.*;
 import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.visits.CrawlerModule;
+import be.dnsbelgium.mercator.tls.domain.*;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.PostConstruct;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static be.dnsbelgium.mercator.tls.metrics.MetricName.COUNTER_VISITS_COMPLETED;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
+public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
   private final FullScanCache fullScanCache;
   private final TlsScanner tlsScanner;
-  private final TlsRepository tlsRepository;
   private final BlackList blackList;
   private final MeterRegistry meterRegistry;
 
   private static final Logger logger = getLogger(TlsCrawler.class);
 
-  @Value("${tls.scanner.destination.port:443}") private int destinationPort;
-  @Value("${tls.crawler.visit.apex:true}")      private boolean visitApex;
-  @Value("${tls.crawler.visit.www:true}")       private boolean visitWww;
-  @Value("${tls.crawler.allow.noop:false}")     private boolean allowNoop;
+  @Value("${tls.scanner.destination.port:443}")
+  private int destinationPort;
+  @Value("${tls.crawler.prefixes:,www.}")
+  private Set<String> prefixes;
 
   @Autowired
   public TlsCrawler(
-          TlsScanner tlsScanner,
-          FullScanCache fullScanCache,
-          TlsRepository tlsRepository,
-          BlackList blackList, MeterRegistry meterRegistry) {
-      this.fullScanCache = fullScanCache;
-      this.tlsScanner = tlsScanner;
-      this.tlsRepository = tlsRepository;
-      this.blackList = blackList;
-      this.meterRegistry = meterRegistry;
+      TlsScanner tlsScanner,
+      FullScanCache fullScanCache,
+      BlackList blackList, MeterRegistry meterRegistry) {
+    this.fullScanCache = fullScanCache;
+    this.tlsScanner = tlsScanner;
+    this.blackList = blackList;
+    this.meterRegistry = meterRegistry;
   }
 
-  @PostConstruct
-  public void checkConfig() {
-    logger.info("visitApex = tls.crawler.visit.apex = {}", visitApex);
-    logger.info("visitWww  = tls.crawler.visit.www  = {}", visitWww);
-    if (!visitApex && !visitWww) {
-      logger.error("visitApex == visitWww == false => The TLS crawler will basically do nothing !!");
-      if (!allowNoop) {
-        logger.error("The TLS crawler will basically do nothing !!");
-        logger.error("Set tls.crawler.allow.noop=false if this is really what you want.");
-        throw new RuntimeException("visitApex == visitWww == allowNoop = false. \n" +
-            "Set tls.crawler.allow.noop=false if this is really what you want");
-      }
-    }
-  }
-
-  public void addToCache(TlsCrawlResult tlsCrawlResult) {
-    fullScanCache.add(Instant.now(), tlsCrawlResult.getFullScanEntity());
+  public void addToCache(TlsVisit tlsVisit) {
+    fullScanCache.add(Instant.now(), tlsVisit.getFullScanEntity());
   }
 
   @Scheduled(fixedRate = 15, initialDelay = 15, timeUnit = TimeUnit.MINUTES)
@@ -85,11 +63,14 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
   /**
    * Either visit the domain name or get the result from the cache.
    * Does NOT save anything in the database
+   *
    * @param visitRequest the domain name to visit
    * @return the results of scanning the domain name
    */
-  public TlsCrawlResult visit(String hostName, VisitRequest visitRequest) {
+  public TlsVisit visit(VisitRequest visitRequest, String prefix) {
     logger.info("Crawling {}", visitRequest);
+    Instant start = Instant.now();
+    String hostName = prefix + visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
 
     if (!address.isUnresolved()) {
@@ -98,12 +79,29 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
       if (resultFromCache.isPresent()) {
         logger.debug("Found matching result in the cache. Now get certificates for {}", hostName);
         TlsProtocolVersion version = TlsProtocolVersion.of(resultFromCache.get().getHighestVersionSupported());
-        SingleVersionScan singleVersionScan = (version != null) ? tlsScanner.scan(version, hostName) : null;
-        return TlsCrawlResult.fromCache(hostName, visitRequest, resultFromCache.get(), singleVersionScan);
+        if (version == null) {
+          version = TlsProtocolVersion.TLS_1_0;
+        }
+        SingleVersionScan singleVersionScan = tlsScanner.scan(version, hostName);
+        if (singleVersionScan == null) {
+          logger.warn("singleVersionScan is null for hostName={} version={} resultFromCache.get()={}", hostName, version, resultFromCache.get());
+        }
+        return TlsVisit.fromCache(
+                hostName,
+                start,
+                Instant.now(),
+                resultFromCache.get(),
+                singleVersionScan);
       }
     }
     FullScan fullScan = scanIfNotBlacklisted(address);
-    return TlsCrawlResult.fromScan(hostName, visitRequest, fullScan);
+    TlsVisit tlsVisit = TlsVisit.fromScan(
+            hostName,
+            start,
+            Instant.now(),
+            fullScan);
+    addToCache(tlsVisit);
+    return tlsVisit;
   }
 
   private FullScan scanIfNotBlacklisted(InetSocketAddress address) {
@@ -115,63 +113,19 @@ public class TlsCrawler implements CrawlerModule<TlsCrawlResult> {
 
 
   @Override
-  public List<TlsCrawlResult> collectData(VisitRequest visitRequest) {
-    List<TlsCrawlResult> results = new ArrayList<>();
+  public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
     try {
       Threads.TLS.incrementAndGet();
-      if (visitApex) {
-        String hostName = visitRequest.getDomainName();
-        TlsCrawlResult tlsCrawlResult = visit(hostName, visitRequest);
-        results.add(tlsCrawlResult);
-      }
-      if (visitWww) {
-        String hostName = "www." + visitRequest.getDomainName();
-        TlsCrawlResult tlsCrawlResult = visit(hostName, visitRequest);
-        results.add(tlsCrawlResult);
-      }
-      meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
+      Instant crawlStarted = Instant.now();
+      List<TlsVisit> visits = prefixes.stream().map(prefix -> this.visit(visitRequest, prefix)).toList();
+      Instant crawlFinished= Instant.now();
+      return new TlsCrawlResult(
+          visitRequest.getVisitId(),
+          visitRequest.getDomainName(),
+          visits, crawlStarted, crawlFinished); 
     } finally {
+      meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
       Threads.TLS.decrementAndGet();
     }
-    return results;
-  }
-
-  @Override
-  public void save(List<?> collectedData) {
-    collectedData.forEach(this::save);
-  }
-
-  public void save(Object item) {
-    if (item instanceof TlsCrawlResult visit) {
-      saveItem(visit);
-    } else {
-      logger.error("Cannot save item of type: {}", item.getClass().getName());
-    }
-  }
-
-
-  @Override
-  public void saveItem(TlsCrawlResult tlsCrawlResult) {
-    tlsRepository.persist(tlsCrawlResult);
-  }
-
-  @Override
-  public void afterSave(List<?> collectedData) {
-    for (Object object : collectedData) {
-      if (object instanceof TlsCrawlResult tlsCrawlResult) {
-        addToCache(tlsCrawlResult);
-      }
-    }
-  }
-
-  @Override
-  public List<TlsCrawlResult> find(String visitId) {
-    // TODO
-    throw new NotImplementedException("TODO");
-  }
-
-  @Override
-  public void createTables() {
-    tlsRepository.createTablesTls();
   }
 }

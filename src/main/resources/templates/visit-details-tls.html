@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+  <title>Mercator | Details</title>
+</head>
+
+<body>
+
+<main class="container-fluid" layout:fragment="content">
+  <h2 th:if="${tlsCrawlResults == null or tlsCrawlResults.visits.isEmpty()}">
+
+    <span th:if="${domainName != null}">                   No TLS crawl results found for <strong th:text="${domainName}"></strong></span>
+    <span th:if="${domainName == null && visitId != null}">No TLS crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+    <span th:if="${domainName == null && visitId == null}">No TLS crawl results found.</span>
+
+  </h2>
+  <div th:if="${!#lists.isEmpty(tlsCrawlResults?.visits)}">
+    <header>
+      <h1>TLS crawl results for: <strong th:text="${tlsCrawlResults.domainName}"></strong></h1>
+      <p th:text="${tlsCrawlResults.visitId}"></p>
+    </header>
+    <div class="container-fluid" th:each="result : ${tlsCrawlResults?.visits}">
+      <h2 th:text="${result.hostName}"></h2>
+      <table>
+        <tbody>
+        <tr>
+          <th>Crawl started</th>
+          <td th:text="${@dateTimeUtil.format(result.crawlStarted)}"></td>
+        </tr>
+        <tr>
+          <th>Crawl finished</th>
+          <td th:text="${@dateTimeUtil.format(result.crawlFinished)}"></td>
+        </tr>
+        <tr>
+          <th>Host name matches certificate</th>
+          <td th:text="${result.hostNameMatchesCertificate} ? 'Yes' : 'No'"></td>
+        </tr>
+        <tr>
+          <th>Scan started</th>
+          <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlStarted)}"></td>
+        </tr>
+        <tr>
+          <th>Scan finished</th>
+          <td th:text="${@dateTimeUtil.format(result.getFullScanEntity().crawlFinished)}"></td>
+        </tr>
+        <tr>
+          <th>Scanned ip</th>
+          <td th:text="${result.getFullScanEntity().ip}"></td>
+        </tr>
+        <tr>
+          <th>Scan server name</th>
+          <td th:text="${result.getFullScanEntity().serverName}"></td>
+        </tr>
+        <tr>
+          <th>Connect OK</th>
+          <td th:text="${result.getFullScanEntity().connectOk} ? 'Yes' : 'No'"></td>
+        </tr>
+        <tr>
+          <th>Certificate too soon</th>
+          <td th:text="${result.certificateTooSoon} ? 'Yes' : 'No'"></td>
+        </tr>
+        <tr>
+          <th>Leaf certificate</th>
+          <td th:text="${result?.certificateChainFingerprints != null and result.certificateChainFingerprints.size() > 0 ? result.certificateChainFingerprints[0] : 'No Fingerprint'}"></td>
+        </tr>
+        <tr th:replace="~{fragments/general :: listDisplay('Certificate chain', ${result.certificateChainFingerprints}, 4)}"></tr>
+        </tbody>
+      </table>
+      <h3>Certificate chain</h3>
+      <div th:if="${result.certificateChain != null and !result.certificateChain.isEmpty()}">
+        <div th:each="cert : ${result.certificateChain}">
+          <details>
+            <summary><h4 th:text="${cert.subject}"></h4></summary>
+            <table>
+              <tbody>
+              <tr><th>Version</th><td th:text="${cert.version}"></td></tr>
+              <tr><th>Serial Number</th><td th:text="${cert.serialNumberHex}"></td></tr>
+              <tr><th>Public Key Schema</th><td th:text="${#strings.replace(cert.publicKeySchema, 'PublicKey', '')}"></td></tr>
+              <tr><th>Public Key Length</th><td th:text="${cert.publicKeyLength}"></td></tr>
+              <tr><th>Not Before</th><td th:text="${@dateTimeUtil.format(cert.notBefore)}"></td></tr>
+              <tr><th>Not After</th><td th:text="${@dateTimeUtil.format(cert.notAfter)}"></td></tr>
+              <tr><th>Issuer</th><td th:text="${cert.issuer}"></td></tr>
+              <tr><th>Subject</th><td th:text="${cert.subject}"></td></tr>
+              <tr><th>Signature Hash Algorithm</th><td th:text="${cert.signatureHashAlgorithm}"></td></tr>
+              <tr><th>SHA-256 Fingerprint</th><td th:text="${cert.sha256Fingerprint}"></td></tr>
+              <tr><th>Subject Alternative Names</th>
+                <td>
+                  <ul>
+                    <li th:each="san : ${cert.subjectAlternativeNames}" th:text="${san}"></li>
+                  </ul>
+                </td>
+              </tr>
+              <tr><th>Signature Hash Algorithm</th><td th:text="${cert.signatureHashAlgorithm}"></td></tr>
+              </tbody>
+            </table>
+          </details>
+        </div>
+      </div>
+      <div th:if="${result.certificateChain == null or result.certificateChain.isEmpty()}">
+        <p>No certificates available.</p>
+      </div>
+      <h3>Protocols</h3>
+      <table>
+        <thead>
+        <tr>
+          <th>Protocol</th>
+          <th>Supported</th>
+          <th>Selected cipher</th>
+          <th>Error</th>
+          <th>Duration</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>SSL 2.0</td>
+          <td th:text="${result.fullScanEntity.supportSsl_2_0} ? 'Yes' : 'No'"></td>
+          <td></td>
+          <td th:text="${result.fullScanEntity.errorSsl_2_0}"></td>
+          <td style="text-align: right;" th:text="${result.fullScanEntity.millis_ssl_2_0}"></td>
+        </tr>
+        <tr>
+          <td>SSL 3.0</td>
+          <td th:text="${result.fullScanEntity.supportSsl_3_0} ? 'Yes' : 'No'"></td>
+          <td th:text="${result.fullScanEntity.selectedCipherSsl_3_0}"></td>
+          <td th:text="${result.fullScanEntity.errorSsl_3_0}"></td>
+          <td style="text-align: right;" th:text="${result.fullScanEntity.millis_ssl_3_0}"></td>
+        </tr>
+        <tr>
+          <td>TLS 1.0</td>
+          <td th:text="${result.fullScanEntity.supportTls_1_0} ? 'Yes' : 'No'"></td>
+          <td th:text="${result.fullScanEntity.selectedCipherTls_1_0}"></td>
+          <td th:text="${result.fullScanEntity.errorTls_1_0}"></td>
+          <td style="text-align: right;" th:text="${result.fullScanEntity.millis_tls_1_0}"></td>
+        </tr>
+        <tr>
+          <td>TLS 1.1</td>
+          <td th:text="${result.fullScanEntity.supportTls_1_1} ? 'Yes' : 'No'"></td>
+          <td th:text="${result.fullScanEntity.selectedCipherTls_1_1}"></td>
+          <td th:text="${result.fullScanEntity.errorTls_1_1}"></td>
+          <td style="text-align: right;" th:text="${result.fullScanEntity.millis_tls_1_1}"></td>
+        </tr>
+      <tr>
+        <td>TLS 1.2</td>
+        <td th:text="${result.fullScanEntity.supportTls_1_2} ? 'Yes' : 'No'"></td>
+        <td th:text="${result.fullScanEntity.selectedCipherTls_1_2}"></td>
+        <td th:text="${result.fullScanEntity.errorTls_1_2}"></td>
+        <td style="text-align: right;" th:text="${result.fullScanEntity.millis_tls_1_2}"></td>
+      </tr>
+      <tr>
+        <td>TLS 1.3</td>
+        <td th:text="${result.fullScanEntity.supportTls_1_3} ? 'Yes' : 'No'"></td>
+        <td th:text="${result.fullScanEntity.selectedCipherTls_1_3}"></td>
+        <td th:text="${result.fullScanEntity.errorTls_1_3}"></td>
+        <td style="text-align: right;" th:text="${result.fullScanEntity.millis_tls_1_3}"></td>
+      </tr>
+      <tr>
+        <td><strong>Total duration</strong></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="text-align: right;" th:text="${result.fullScanEntity.totalDurationInMs}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+</main>
+
+</body>
+</html>

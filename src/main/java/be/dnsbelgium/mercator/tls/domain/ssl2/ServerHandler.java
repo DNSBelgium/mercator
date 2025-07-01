@@ -5,6 +5,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.util.List;
 
@@ -16,8 +17,18 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
-    logger.debug("received msg: {}", msg);
+    MDC.put("domainName", ctx.channel().attr(SSL2Client.DOMAIN_NAME).get());
+    MDC.put("visitId", ctx.channel().attr(SSL2Client.VISIT_ID).get());
+    try {
+      doChannelRead(ctx, msg);
+    } finally {
+      MDC.remove("domainName");
+      MDC.remove("visitId");
+    }
+  }
 
+  public void doChannelRead(ChannelHandlerContext ctx, Object msg) {
+    logger.debug("received msg: {}", msg);
     if (msg instanceof ClientHello clientHello) {
       logger.debug("clientHello = {}", clientHello);
 

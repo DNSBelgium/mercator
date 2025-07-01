@@ -5,6 +5,7 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
     <logger name="be.dnsbelgium.mercator" level="INFO"/>
+    <logger name="be.dnsbelgium.mercator.smtp.domain.crawler.BlockingSmtpIpAnalyzer" level="DEBUG"/>
 
     <root level="WARN">
         <appender-ref ref="CONSOLE" />

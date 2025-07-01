@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+
+<head>
+    <title>Mercator | Details</title>
+    <!-- css for fragment -->
+    <style>
+        td.data {
+            max-width: 300px;
+        }
+
+        td.data > div > div > span.data-copy-btn:hover {
+            cursor: pointer;
+            color: #e3f5ff;
+        }
+    </style>
+</head>
+
+<body>
+<main class="container-fluid" layout:fragment="content">
+    <script>
+        function copyToClipboard(element) {
+            const recordData = element.closest('.data').getAttribute('data');
+            navigator.clipboard.writeText(recordData)
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+        }
+    </script>
+    <h2 th:if="${dnsCrawlResult == null or dnsCrawlResult.requests == null}">
+
+        <span th:if="${domainName != null}">                   No DNS crawl results found for <strong th:text="${domainName}"></strong></span>
+        <span th:if="${domainName == null && visitId != null}">No DNS crawl results found for visit-id <strong th:text="${visitId}"></strong></span>
+        <span th:if="${domainName == null && visitId == null}">No DNS crawl results found.</span>
+
+    </h2>
+    <div class="container-fluid" th:if="${dnsCrawlResult != null}">
+        <header>
+            <h4>DNS crawl results for: <strong th:text="${dnsCrawlResult.domainName}"></strong></h4>
+        </header>
+        <p>Crawled at: <span th:text="${@dateTimeUtil.format(dnsCrawlResult.getCrawlStarted())}"></span></p>
+        <table>
+            <thead>
+            <tr>
+                <th>Prefix</th>
+                <th>Result</th>
+                <th>Record Type</th>
+                <th>TTL</th>
+                <th>Record Data</th>
+                <th>Country</th>
+                <th>ASN</th>
+                <th>ASN Organisation</th>
+                <th>IP</th>
+                <th>IP Version</th>
+            </tr>
+            </thead>
+            <tbody>
+            <th:block th:each="request : ${dnsCrawlResult.requests}">
+                <!-- combine request data with first response data  -->
+                <tr>
+                    <td th:text="${request.prefix}"></td>
+                    <td th:text="${#strings.isEmpty(request.problem) ? 'Successful (0)' : request.problem}"></td>
+                    <td th:text="${request.recordType}"></td>
+                    <td th:if="${! #lists.isEmpty(request.responses)}" th:text="${request.responses[0].ttl}"></td>
+                    <th:block th:if="${request.responses != null
+                         and ! #lists.isEmpty(request.responses)
+                         and request.responses[0] != null
+                         and request.responses[0].recordData != null}">
+                        <td th:replace="~{fragments/general :: td-with-copy-data-button(${request.responses[0].recordData})}"></td>
+                    </th:block>
+                    <td th:if="${#lists.isEmpty(request.responses)}"></td>
+                    <!-- combine response data with first geoip data -->
+                    <td th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        th:text="${request.responses[0].responseGeoIps[0].country}"></td>
+                    <td th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        th:text="${request.responses[0].responseGeoIps[0].asn}"></td>
+                    <td th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        th:text="${request.responses[0].responseGeoIps[0].asnOrganisation}"></td>
+                    <th:block th:if="${request.responses != null
+                        and ! #lists.isEmpty(request.responses)
+                        and request.responses[0].responseGeoIps != null
+                        and ! #lists.isEmpty(request.responses[0].responseGeoIps)
+                        and request.responses[0].responseGeoIps[0].ip != null}">
+                        <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${request.responses[0].responseGeoIps[0].ip})}"></th:block>
+                    </th:block>
+                    <td th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        th:text="${request.responses[0].responseGeoIps[0].ipVersion}"></td>
+
+                    <td th:if="${#lists.isEmpty(request.responses)}" colspan="7"></td>
+                    <td th:if="${! #lists.isEmpty(request.responses) and #lists.isEmpty(request.responses[0].responseGeoIps)}"
+                        colspan="5"></td>
+                </tr>
+
+                <!-- remaining geoips -->
+                <th:block
+                        th:if="${! #lists.isEmpty(request.responses) and ! #lists.isEmpty(request.responses[0].responseGeoIps) and #lists.size(request.responses[0].responseGeoIps) > 1}">
+                    <tr th:each="geoip, geoipStat : ${request.responses[0].responseGeoIps}" th:if="${!geoipStat.first}">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td th:text="${geoip.country}"></td>
+                        <td th:text="${geoip.asn}"></td>
+                        <td th:text="${geoip.asnOrganisation}"></td>
+                        <td th:if="${! #lists.isEmpty(request.responses)}"
+                            th:replace="~{fragments/general :: td-with-copy-data-button(${geoip.ip})}">
+                        </td>
+                        <td th:text="${geoip.ipVersion}"></td>
+                    </tr>
+                </th:block>
+
+                <!-- remaining responses -->
+                <th:block th:each="response, responseStat : ${request.responses}" th:if="${!responseStat.first}">
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td th:text="${response.ttl}"></td>
+                        <th:block th:if="${request.responses != null
+                        and response.recordData != null}">
+                            <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${response.recordData})}"></th:block>
+                        </th:block>
+                        <td th:if="${#lists.isEmpty(request.responses)}"></td>
+                        <!-- combine response data with first geoip data -->
+                        <td th:if="${! #lists.isEmpty(response.responseGeoIps)}"
+                            th:text="${response.responseGeoIps[0].country}"></td>
+                        <td th:if="${! #lists.isEmpty(response.responseGeoIps)}"
+                            th:text="${response.responseGeoIps[0].asn}"></td>
+                        <td th:if="${! #lists.isEmpty(response.responseGeoIps)}"
+                            th:text="${response.responseGeoIps[0].asnOrganisation}"></td>
+                        <th:block th:if="${response.responseGeoIps != null
+                            and ! #lists.isEmpty(response.responseGeoIps)
+                            and response.responseGeoIps[0].ip != null}">
+                            <th:block th:replace="~{fragments/general :: td-with-copy-data-button(${response.responseGeoIps[0].ip})}"></th:block>
+                        </th:block>
+                        <td th:if="${! #lists.isEmpty(response.responseGeoIps)}"
+                            th:text="${response.responseGeoIps[0].ipVersion}"></td>
+
+                        <td th:if="${#lists.isEmpty(response.responseGeoIps)}" colspan="5"></td>
+                    </tr>
+
+                    <!-- remaining geoips-->
+                    <tr th:each="geoip, geoipStat : ${response.responseGeoIps}" th:if="${!geoipStat.first}">
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td th:text="${geoip.country}"></td>
+                        <td th:text="${geoip.asn}"></td>
+                        <td th:text="${geoip.asnOrganisation}"></td>
+                        <td th:replace="~{fragments/general :: td-with-copy-data-button(${geoip.ip})}"></td>
+                        <td th:text="${geoip.ipVersion}"></td>
+                    </tr>
+                </th:block>
+            </th:block>
+            </tbody>
+        </table>
+        <p>List of Requests</p>
+        <table>
+            <tr>
+                <td>
+                    <details th:if="${dnsCrawlResult.requests != null and !dnsCrawlResult.requests.isEmpty()}">
+                        <summary>Click to show requests</summary>
+                        <div th:each="request, iterStat : ${dnsCrawlResult.getRequests()}">
+                            <h4>Request #[[${iterStat.count}]]</h4>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th>Domain Name</th>
+                                    <td th:text="${request.domainName}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Prefix</th>
+                                    <td th:text="${request.prefix}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Record Type</th>
+                                    <td th:text="${request.recordType}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Rcode</th>
+                                    <td th:text="${request.rcode}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Crawl started</th>
+                                    <td th:text="${@dateTimeUtil.format(request.crawlStarted)}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Crawl finished</th>
+                                    <td th:text="${@dateTimeUtil.format(request.crawlFinished)}"></td>
+                                </tr>
+                                <tr>
+                                    <th>OK</th>
+                                    <td th:text="${request.ok}"></td>
+                                </tr>
+                                <tr>
+                                    <th>Problem</th>
+                                    <td th:text="${request.problem}"></td>
+                                </tr>
+                                <tr>
+                                    <th># responses</th>
+                                    <td th:text="${request.numOfResponses}"></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

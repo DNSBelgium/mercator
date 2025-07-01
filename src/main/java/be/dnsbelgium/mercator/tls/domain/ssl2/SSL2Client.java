@@ -7,7 +7,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
+import org.slf4j.MDC;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;
@@ -24,6 +26,9 @@ public class SSL2Client {
   private final ClientHelloEncoder clientHelloEncoder;
 
   private final List<SSL2CipherSuite> cipherSuites;
+
+  public final static AttributeKey<String> DOMAIN_NAME = AttributeKey.newInstance("domainName");
+  public final static AttributeKey<String> VISIT_ID = AttributeKey.newInstance("visitId");
 
   public static SSL2Client withAllKnownCiphers() {
     return new SSL2Client(SSL2CipherSuite.validCiphers());
@@ -67,6 +72,9 @@ public class SSL2Client {
       b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 2000);
 
       IdleStateHandler idleHandler = new IdleStateHandler(5, 5, 0);
+
+      b.attr(DOMAIN_NAME, MDC.get("domainName"));
+      b.attr(VISIT_ID, MDC.get("visitId"));
 
       b.handler(new ChannelInitializer<SocketChannel>() {
         @SuppressWarnings("NullableProblems")

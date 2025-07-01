@@ -2,12 +2,11 @@ package be.dnsbelgium.mercator.smtp;
 
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.smtp.dto.Error;
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.TestUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.xbill.DNS.DClass;
 import org.xbill.DNS.MXRecord;
@@ -16,6 +15,7 @@ import org.xbill.DNS.TextParseException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -57,34 +57,31 @@ public class SmtpTestUtils {
     }
 
     public static SmtpVisit visit() {
-        SmtpHost host1 = host(RandomStringUtils.randomAscii(8), null);
-        SmtpHost host2 = host(RandomStringUtils.randomAscii(8), null);
+        SmtpHost host1 = host();
+        SmtpHost host2 = host();
         SmtpVisit visit = SmtpVisit.builder()
           .visitId(VisitIdGenerator.generate())
           //.hosts(List.of(host1, host2))
           .domainName("example.com")
           .crawlStatus(CrawlStatus.OK)
-          .timestamp(TestUtils.now())
-          .numConversations(2)
+          .crawlStarted(TestUtils.now())
           .build();
         visit.add(host1);
         visit.add(host2);
         return visit;
     }
 
-    public static SmtpHost host(String id, String conversationId) {
+    public static SmtpHost host() {
         return SmtpHost.builder()
-            .id(id)
             .hostName("smtp1.example.org")
-            .conversation(conversation(conversationId))
+            .conversations(List.of(conversation()))
             .fromMx(true)
             .priority(10)
             .build();
     }
 
-    public static SmtpConversation conversation(String id) {
+    public static SmtpConversation conversation() {
         return SmtpConversation.builder()
-            .id(id)
             .ip("127.0.0.1")
             .asn(14506L)
             .asnOrganisation("Acme Corp.")
@@ -98,7 +95,7 @@ public class SmtpTestUtils {
             .startTlsReplyCode(230)
             .software("ACME SMTP")
             .softwareVersion("0.never")
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .supportedExtensions(Set.of("SMTPUTF8", "SIZE 157286400"))
             .errorMessage("Connection timed out")
             .error(Error.TIME_OUT)
@@ -108,7 +105,6 @@ public class SmtpTestUtils {
     public static SmtpVisit smtpVisitWithBinaryData() {
         var visitId = SmtpVisit.generateVisitId();
         var conversation = SmtpConversation.builder()
-            .id(null)
             .ip("1.2.3.4")
             .connectReplyCode(220)
             .ipVersion(4)
@@ -118,17 +114,16 @@ public class SmtpTestUtils {
             .country("Jamaica \u0000")
             .asnOrganisation("Happy \u0000 Green grass")
             .asn(654L)
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .build();
         SmtpHost host = SmtpHost.builder()
-            .id(RandomStringUtils.randomAlphanumeric(10))
             .hostName("smtp1.example.com")
-            .conversation(conversation)
+            .conversations(Collections.singletonList(conversation))
             .build();
         return SmtpVisit.builder()
             .visitId(visitId)
             .domainName("dnsbelgium.be")
-            .timestamp(TestUtils.now())
+            .crawlStarted(TestUtils.now())
             .hosts(List.of(host))
             .build();
     }

@@ -1,12 +1,14 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import lombok.Getter;
+import lombok.ToString;
 import org.xbill.DNS.MXRecord;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@ToString
 public class MxLookupResult {
 
   private final List<MXRecord> mxRecords = new ArrayList<>();

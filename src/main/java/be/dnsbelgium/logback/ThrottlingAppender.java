@@ -91,7 +91,7 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
       //show_tables("was buffering but now awake for %s", event);
       awake(event);
     } else {
-      // TODO make threshold configurable
+      // TODO: make threshold configurable
       if (event.getLevel().levelInt >= Level.ERROR_INT) {
         //show_tables("was buffering but now emitting all buffered events and %s", event);
         emitBuffer();

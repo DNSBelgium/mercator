@@ -3,15 +3,9 @@ package be.dnsbelgium.mercator.vat;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebCrawlResult;
-import be.dnsbelgium.mercator.vat.crawler.persistence.WebRepository;
-import be.dnsbelgium.mercator.vat.domain.Link;
-import be.dnsbelgium.mercator.vat.domain.Page;
-import be.dnsbelgium.mercator.vat.domain.SiteVisit;
-import be.dnsbelgium.mercator.vat.domain.VatScraper;
 import be.dnsbelgium.mercator.metrics.Threads;
-import be.dnsbelgium.mercator.visits.CrawlerModule;
+import be.dnsbelgium.mercator.vat.domain.*;
+import be.dnsbelgium.mercator.vat.wappalyzer.TechnologyAnalyzer;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.Setter;
@@ -22,23 +16,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static be.dnsbelgium.mercator.vat.metrics.MetricName.COUNTER_WEB_CRAWLS_DONE;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Service
-public class WebCrawler implements CrawlerModule<WebCrawlResult> {
+public class WebCrawler {
 
     private static final Logger logger = getLogger(WebCrawler.class);
 
     private final VatScraper vatScraper;
     private final MeterRegistry meterRegistry;
     private final HtmlFeatureExtractor htmlFeatureExtractor;
-    private final WebRepository webRepository;
+    private final TechnologyAnalyzer technologyAnalyzer;
 
     @Setter
     @Value("${vat.crawler.max.visits.per.domain:10}")
@@ -57,12 +49,11 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
     private boolean persistBodyText = false;
 
     @Autowired
-    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor,
-            WebRepository webRepository) {
+    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, TechnologyAnalyzer technologyAnalyzer) {
         this.vatScraper = vatScraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
-        this.webRepository = webRepository;
+        this.technologyAnalyzer = technologyAnalyzer;
     }
 
     @PostConstruct
@@ -100,8 +91,7 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
         SiteVisit siteVisit = vatScraper.visit(url, maxVisitsPerDomain);
         logger.debug("siteVisit = {}", siteVisit);
 
-        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(),
-                siteVisit.getVatValues());
+        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
         return siteVisit;
     }
 
@@ -114,7 +104,6 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
         WebCrawlResult crawlResult = WebCrawlResult.builder()
                 .visitId(visitRequest.getVisitId())
                 .domainName(visitRequest.getDomainName())
-                .startUrl(siteVisit.getBaseURL().toString())
                 .crawlStarted(siteVisit.getStarted())
                 .crawlFinished(siteVisit.getFinished())
                 .vatValues(siteVisit.getVatValues())
@@ -126,84 +115,95 @@ public class WebCrawler implements CrawlerModule<WebCrawlResult> {
         return crawlResult;
     }
 
+    private HtmlFeatures findFeatures(VisitRequest visitRequest, Page page) {
+        var html = page.getDocument().html();
+        logger.debug("findFeatures for url = {}", page.getUrl());
+        return htmlFeatureExtractor.extractFromHtml(
+            html,
+            page.getUrl().url().toExternalForm(),
+            visitRequest.getDomainName()
+        );
+    }
+
     private List<HtmlFeatures> findFeatures(VisitRequest visitRequest, SiteVisit siteVisit) {
         Threads.FEATURE_EXTRACTION.incrementAndGet();
+        long start = System.currentTimeMillis();
         try {
-            logger.info("siteVisit = {}", siteVisit);
+            logger.debug("findFeatures for siteVisit = {}", siteVisit);
             List<HtmlFeatures> featuresList = new ArrayList<>();
             for (Page page : siteVisit.getVisitedPages().values()) {
-                var html = page.getDocument().html();
-                logger.info("page.url = {}", page.getUrl());
-                var features = htmlFeatureExtractor.extractFromHtml(
-                        html,
-                        page.getUrl().url().toExternalForm(),
-                        visitRequest.getDomainName());
-                features.visitId = visitRequest.getVisitId();
-                features.crawlTimestamp = Instant.now();
-                features.domainName = visitRequest.getDomainName();
+                HtmlFeatures features = findFeatures(visitRequest, page);
                 featuresList.add(features);
             }
             return featuresList;
         } finally {
             Threads.FEATURE_EXTRACTION.decrementAndGet();
+            long millis = System.currentTimeMillis() - start;
+            logger.info("findFeatures took {} millis", millis);
         }
     }
 
-    @Override
-    public List<WebCrawlResult> collectData(VisitRequest visitRequest) {
+    public PageVisit findSecurityTxt(VisitRequest visitRequest) {
+        String domainName = visitRequest.getDomainName();
+        logger.debug("Finding security.txt for {}", domainName);
+        String url1 = "https://www.%s/.well-known/security.txt".formatted(domainName);
+        String url2 = "https://%s/.well-known/security.txt".formatted(domainName);
+        return find(url1, url2, visitRequest);
+    }
+
+    public PageVisit findRobotsTxt(VisitRequest visitRequest) {
+        String domainName = visitRequest.getDomainName();
+        logger.debug("Finding robots.txt for {}", domainName);
+        String url1 = "https://www.%s/robots.txt".formatted(domainName);
+        String url2 = "https://%s/robots.txt".formatted(domainName);
+        return find(url1, url2, visitRequest);
+    }
+
+    public PageVisit find(String url1, String url2, VisitRequest visitRequest) {
+        Page page1 = vatScraper.fetchAndParse(HttpUrl.parse(url1));
+        if (page1 != null && page1.getStatusCode() == 200) {
+            return page1.asPageVisit(visitRequest);
+        }
+        Page page2 = vatScraper.fetchAndParse(HttpUrl.parse(url2));
+        if (page2 != null && page2.getStatusCode() == 200) {
+            return page2.asPageVisit(visitRequest);
+        }
+        if (page1 != null) {
+            return page1.asPageVisit(visitRequest);
+        }
+        return null;
+    }
+
+    public WebCrawlResult crawl(VisitRequest visitRequest) {
         SiteVisit siteVisit = this.visit(visitRequest);
         WebCrawlResult webCrawlResult = this.convert(visitRequest, siteVisit);
         meterRegistry.counter(COUNTER_WEB_CRAWLS_DONE).increment();
-        List<HtmlFeatures> featuresList = findFeatures(visitRequest, siteVisit);
-        webCrawlResult.setHtmlFeatures(featuresList);
+
         List<PageVisit> pageVisits = new ArrayList<>();
+        logger.info(siteVisit.getBaseURL().toString());
         for (Map.Entry<Link, Page> linkPageEntry : siteVisit.getVisitedPages().entrySet()) {
             Page page = linkPageEntry.getValue();
-            boolean includeBodyText = false;
-            PageVisit pageVisit = page.asPageVisit(visitRequest, includeBodyText);
+            PageVisit pageVisit = page.asPageVisit(visitRequest);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
+            Set<String> detectedTechnologies = technologyAnalyzer.analyze(page);
+            pageVisit.setDetectedTechnologies(detectedTechnologies);
+            pageVisit.setHtmlFeatures(findFeatures(visitRequest, page));
             pageVisits.add(pageVisit);
         }
+
+        PageVisit robotsTxtVisit = findRobotsTxt(visitRequest);
+
+        if (robotsTxtVisit != null) {
+            pageVisits.add(robotsTxtVisit);
+        }
+
+        PageVisit securityTxtVisit = findSecurityTxt(visitRequest);
+        if (securityTxtVisit != null) {
+            pageVisits.add(securityTxtVisit);
+        }
         webCrawlResult.setPageVisits(pageVisits);
-        return List.of(webCrawlResult);
+        webCrawlResult.setCrawlFinished(Instant.now());
+        return webCrawlResult;
     }
 
-    @Override
-    public void save(List<?> collectedData) {
-        collectedData.forEach(this::saveObject);
-    }
-
-    public void saveObject(Object object) {
-        if (object instanceof WebCrawlResult webCrawlResult) {
-            saveItem(webCrawlResult);
-        } else {
-            logger.error("Cannot save {}", object);
-        }
-    }
-
-    @Override
-    public void saveItem(WebCrawlResult webCrawlResult) {
-        webRepository.saveWebVisit(webCrawlResult);
-        logger.debug("Persisting the {} page visits for {}",
-                webCrawlResult.getPageVisits().size(), webCrawlResult.getStartUrl());
-        webRepository.savePageVisits(webCrawlResult.getPageVisits());
-        for (HtmlFeatures htmlFeatures : webCrawlResult.getHtmlFeatures()) {
-            webRepository.save(htmlFeatures);
-        }
-    }
-
-    @Override
-    public void afterSave(List<?> collectedData) {
-        // nothing to do
-    }
-
-    @Override
-    public List<WebCrawlResult> find(String visitId) {
-        return webRepository.findWebCrawlResult(visitId);
-    }
-
-    @Override
-    public void createTables() {
-        webRepository.createTables();
-    }
 }

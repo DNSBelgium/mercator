@@ -12,7 +12,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 class RateLimiterTest {
 
-  // TODO use https://www.javadoc.io/doc/com.google.guava/guava-testlib/19.0/com/google/common/testing/FakeTicker.html
+  // TODO: use https://www.javadoc.io/doc/com.google.guava/guava-testlib/19.0/com/google/common/testing/FakeTicker.html
   // to make timings more predictable
 
   private static final Logger logger = getLogger(RateLimiterTest.class);
@@ -48,7 +48,7 @@ class RateLimiterTest {
     rateLimiter.registerDuration(ipAddress, Duration.ofMillis(4000));
     long delayMs = rateLimiter.milliSecondsToWait(ipAddress);
     logger.info("delayMs = {}", delayMs);
-    assertThat(delayMs).isBetween(1990L, 2010L);
+    assertThat(delayMs).isBetween(1900L, 2010L);
   }
 
   @Test

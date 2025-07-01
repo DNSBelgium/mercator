@@ -1,0 +1,90 @@
+<th:block th:fragment="td-with-copy-data-button(data)">
+    <td class="data" th:attr="data=${data}">
+        <div class="data-container">
+            <div class="data-content">
+                <span class="data-copy-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2a6485"
+                         class="copy-btn"
+                         viewBox="0 0 16 16" onclick="copyToClipboard(this)">
+                        <path fill-rule="evenodd"
+                              d="M10 1.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-1Zm-5 0A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5v1A1.5 1.5 0 0 1 9.5 4h-3A1.5 1.5 0 0 1 5 2.5v-1Zm-2 0h1v1A2.5 2.5 0 0 0 6.5 5h3A2.5 2.5 0 0 0 12 2.5v-1h1a2 2 0 0 1 2 2V14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3.5a2 2 0 0 1 2-2Z"/>
+                    </svg>
+                </span>
+                <span th:text="${data}"></span>
+            </div>
+        </div>
+    </td>
+</th:block>
+
+<th:block th:fragment="listDisplay(label, items, maxElements)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${items == null or #lists.isEmpty(items)}">None</span>
+
+            <ul th:if="${items != null and !#lists.isEmpty(items) and #lists.size(items) <= maxElements}">
+                <li th:each="item : ${items}">
+                    <p th:text="${item}"></p>
+                </li>
+            </ul>
+
+            <details th:if="${items != null and #lists.size(items) > maxElements}">
+                <summary>
+                    Click to show <span th:text="${#lists.size(items)}"></span> <span th:text="${label.toLowerCase()}"></span>
+                </summary>
+                <ul>
+                    <li th:each="item : ${items}">
+                        <p th:text="${item}"></p>
+                    </li>
+                </ul>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
+<th:block th:fragment="mapDisplay(label, items, maxElements)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${items == null or #maps.isEmpty(items)}">None</span>
+
+            <ul th:if="${items != null and !#maps.isEmpty(items) and #maps.size(items) <= maxElements}">
+                <li th:each="item : ${items}">
+                    <p th:text="${item}"></p>
+                </li>
+            </ul>
+
+            <details th:if="${items != null and #maps.size(items) > maxElements}">
+                <summary>
+                    Click to show <span th:text="${#maps.size(items)}"></span> <span th:text="${label}"></span>
+                </summary>
+
+                <ul>
+                    <li th:each="item : ${items}">
+                        <p th:text="${item}"></p>
+                    </li>
+                </ul>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
+
+<th:block th:fragment="textDisplay(label, text, maxChars)">
+    <tr>
+        <td th:text="${label}">[Label]</td>
+        <td>
+            <span th:if="${text == null or #strings.isEmpty(text)}">None</span>
+
+            <span th:if="${text != null and #strings.length(text) <= maxChars}"
+                  th:utext="${#strings.replace(text, '\n', '<br/>')}"></span>
+
+            <details th:if="${text != null and #strings.length(text) > maxChars}">
+                <summary>Click to show</summary>
+                <p th:utext="${#strings.replace(text, '\n', '<br/>')}"></p>
+            </details>
+        </td>
+    </tr>
+</th:block>
+
+

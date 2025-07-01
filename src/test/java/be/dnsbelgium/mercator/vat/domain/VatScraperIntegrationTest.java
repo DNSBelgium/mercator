@@ -1,7 +1,6 @@
 package be.dnsbelgium.mercator.vat.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
@@ -27,7 +26,7 @@ public class VatScraperIntegrationTest {
    */
 
   private VatScraper vatScraper;
-  private static final Logger logger = getLogger(VatScraperTest.class);
+  private static final Logger logger = getLogger(VatScraperIntegrationTest.class);
   private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
   @BeforeEach
@@ -86,7 +85,7 @@ public class VatScraperIntegrationTest {
       if (body.contains("\u0000")) {
         logger.info("body of {} contains 0x00", page.getUrl());
       }
-      PageVisit pageVisit = page.asPageVisit(request, false);
+      PageVisit pageVisit = page.asPageVisit(request);
       logger.info("pageVisit = {}", pageVisit);
     }
   }
@@ -105,7 +104,7 @@ public class VatScraperIntegrationTest {
     Set<Link> links = siteVisit.getVisitedPages().keySet();
     for (Link link : links) {
       Page page = siteVisit.getVisitedPages().get(link);
-      PageVisit pageVisit = page.asPageVisit(request, true);
+      PageVisit pageVisit = page.asPageVisit(request);
       logger.info("pageVisit url.length= {}", pageVisit.getUrl().length());
     }
     memoryStats();

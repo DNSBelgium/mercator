@@ -24,7 +24,6 @@ public class Threads {
   public static final AtomicInteger FEATURE_EXTRACTION = new AtomicInteger(0);
   public static final AtomicInteger SAVE = new AtomicInteger(0);
   public static final AtomicInteger POST_SAVE = new AtomicInteger(0);
-  public static final AtomicInteger TECHNOLOGY_ANALYZER = new AtomicInteger(0);
 
   private static final Logger logger = LoggerFactory.getLogger(Threads.class);
 
@@ -41,7 +40,6 @@ public class Threads {
     meterRegistry.gauge("threads.feature.extraction", FEATURE_EXTRACTION);
     meterRegistry.gauge("threads.save", SAVE);
     meterRegistry.gauge("threads.post.save", POST_SAVE);
-    meterRegistry.gauge("threads.technology.analyzer", TECHNOLOGY_ANALYZER);
   }
 
   public static String logInfo() {
@@ -54,8 +52,7 @@ public class Threads {
     int featureExtraction = FEATURE_EXTRACTION.get();
     int database = SAVE.get();
     int postSave = POST_SAVE.get();
-    int technologyAnalyzer = TECHNOLOGY_ANALYZER.get();
-    int tracked = smtp + dns + web + tls + featureExtraction + database + postSave + technologyAnalyzer;
+    int tracked = smtp + dns + web + tls + featureExtraction + database + postSave;
     int processMessage = Threads.PROCESS_MESSAGE.get();
     if (tracked > activeThreads) {
       logger.error("trackedThreads={} > activeThreads={} which is weird!",  tracked, activeThreads);
@@ -67,13 +64,12 @@ public class Threads {
     double pct_featureExtraction = featureExtraction / (double) tracked;
     double pct_database = database / (double) tracked;
     double pct_postSave = postSave / (double) tracked;
-    double pct_technologyAnalyzer = technologyAnalyzer / (double) tracked; 
     logger.info("active:{}, tracked:{}", activeThreads, tracked);
-    logger.info("percentages: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}",
-            pct_smtp, pct_dns, pct_web, pct_tls, pct_featureExtraction, pct_database, pct_postSave, pct_technologyAnalyzer
+    logger.info("percentages: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}",
+            pct_smtp, pct_dns, pct_web, pct_tls, pct_featureExtraction, pct_database, pct_postSave
     );
-    logger.info("Absolute numbers: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}, technologyAnalyzer: {}",
-            smtp, dns, web, tls, featureExtraction, database, postSave, technologyAnalyzer 
+    logger.info("Absolute numbers: smtp: {}, dns: {}, web: {} tls: {}, features: {}, database: {}, postSave: {}",
+            smtp, dns, web, tls, featureExtraction, database, postSave
     );
     logger.info("process message: {}", processMessage);
 
@@ -81,7 +77,9 @@ public class Threads {
         "<p>Active: " + activeThreads + "</p>" +
         "<p>Tracked: " + tracked +"</p>" +
         "<p>process message: " + processMessage +"</p>" +
-        "<p>Numbers    : smtp=" + smtp + " dns=" + dns + " web=" + web + " tls=" + tls + " features=" + featureExtraction + " database=" + database + " postSave=" + postSave + " technologyAnalyzer=" + technologyAnalyzer + "</p>" + 
-        "<p>Percentages: smtp=" + pct_smtp + " dns=" + pct_dns + " web=" + pct_web + " tls=" + pct_tls + " features=" + pct_featureExtraction + " database=" + pct_database + " postSave=" + pct_postSave + " technologyAnalyzer=" + pct_technologyAnalyzer + "</p>";
+        "<p>Numbers    : smtp=" + smtp + " dns=" + dns + " web=" + web + " tls=" + tls + " features=" + featureExtraction + " database=" + database + " postSave=" + postSave + "</p>" +
+        "<p>Percentages: smtp=" + pct_smtp + " dns=" + pct_dns + " web=" + pct_web + " tls=" + pct_tls + " features=" + pct_featureExtraction + " database=" + pct_database + " postSave=" + pct_postSave + "</p>";
   }
+
+
 }

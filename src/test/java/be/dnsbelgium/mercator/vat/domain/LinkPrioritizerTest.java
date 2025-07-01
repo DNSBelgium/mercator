@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@SuppressWarnings("HttpUrlsUsage")
 class LinkPrioritizerTest {
 
   private static final Logger logger = getLogger(LinkPrioritizerTest.class);

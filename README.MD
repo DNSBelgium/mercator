@@ -1,114 +1,148 @@
-# Mercator [![Run unit tests](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml/badge.svg)](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml) [![Check vulnerabilities](https://github.com/DNSBelgium/mercator/actions/workflows/snyk.yml/badge.svg)](https://github.com/DNSBelgium/mercator/actions/workflows/snyk.yml)
+[![Run unit tests](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml/badge.svg)](https://github.com/DNSBelgium/mercator/actions/workflows/junit-report.yml)
 
-> [!WARNING]  
-> This codebase is for Mercator v2 (also named Monocator because of its single container) and is still under development. Checkout the `v1.0` branch for the older and more stable codebase.
+[![Check vulnerabilities](https://github.com/DNSBelgium/mercator/actions/workflows/snyk.yml/badge.svg)](https://github.com/DNSBelgium/mercator/actions/workflows/snyk.yml)
 
 # Intro
 
-Mercator 2 is a crawler based on [Mercator](https://github.com/DNSBelgium/mercator/tree/v1.0), but it has only one design goal: **ease of use**
+Mercator is a crawler with one major design goal: **ease of use**
 
-# Getting started
+# Features
 
-## stand-alone
+* Zero required dependencies (no Postgres needed, no Kubernetes, no Kafka, no nothing)
+* Can be run as a single docker image
+* Crawl results are saved in parquet files, using [duckdb](https://duckdb.org/)
+* Can optionally save the parquet files on Amazon S3
+* Multi-platform docker images published to docker hub (x86 and aarch64) => also works an Apple Silicon machines
 
-First, create a folder where Mercator can write its output:
+# Running Mercator (using docker)
 
-```bash
-export MERCATOR_DATA_DIR=~/mercator_data
-mkdir -p ${MERCATOR_DATA_DIR} 
+Mercator can be run in two modes:
+* batch: in this mode, Mercator will process an input file with domain names and exit when done
+* UI: in this mode, Mercator will provide a web interface to consult the crawl results obtained by running mercator in batch mode.
+
+## Running Mercator in batch mode  
+
+To run Mercator in batch mode, you need the following
+* a folder where Mercator can write the crawl results
+* a csv file with domain names: each line should contain an uuid and a domain name, separated by a comma
+* optionally: a file with your custom settings
+* optionally: a MaxMind license key for GEO IP enrichment 
+* a working docker environment
+
+### For example:
+
+Create the output folder:
+```shell
+cd $(mktemp -d)
+mkdir -p data
 ```
 
-Now start Mercator in a container:
-
-```bash
-docker run --rm  -e SMTP_ENABLED=false -v ${MERCATOR_DATA_DIR}:/root/mercator -p 8082:8082 ghcr.io/dnsbelgium/mercator:latest
+Create the csv file:
+```shell 
+echo -n "$(uuidgen),dnsbelgium.be\n$(uuidgen),abc.be\n" > input.csv
 ```
 
-You can omit '-e SMTP_ENABLED=false' if you want to contact SMTP servers (but please know that it often takes a long time).
+Create a file with your custom settings:
+```shell
+cat <<EOF > env
+SPRING_PROFILES_ACTIVE=batch
 
-Every 20 seconds, Mercator will search for work by reading all CSV and parquet files in the ${MERCATOR_DATA_DIR}/work/ directory.
+# set to true if you have a MaxMind license key
+CRAWLER_DNS_GEOIP_ENABLED=false
+MAXMIND_LICENSE_KEY=replace_with_your_key_if_you_have_one
 
-So feed it some work by copying a CSV file in that folder
-```
-export DATA_URL="https://raw.githubusercontent.com/DNSBelgium/mercator/refs/heads/main/sample_data/visit_requests.csv"
-curl -JL -o ${MERCATOR_DATA_DIR}/work/visit_requests.csv $DATA_URL   
-```
+# We disable SMTP crawling for now since it is blocked on many networks 
+JOB_SMTP_ENABLED=false
 
-Now browse to http://localhost:8082/status to see the progress.
-
-When all visits are done, you can stop the container.
-
-See below for details on using the generated output.
-
-## With docker compose
-
-```bash
-git clone git@github.com:DNSBelgium/mercator.git
-cd mercator/observability
-./start-all.sh
+EOF
 ```
 
-The [start-all.sh](./observability/start-all.sh) script will start three containers:
-* Mercator: you can check its Web interface at http://localhost:8082
-* Prometheus: to collect metrics from Mercator
-* Grafana: to visualize the metrics, see http://localhost:3000
+Now run Mercator:
 
-The Mercator container should have mounted a directory [mercator_data](./mercator_data) where you can find the crawled data.  
-Every 20 seconds, Mercator will search for work by reading all CSV and parquet files in the mercator_data/work/ directory. 
+```shell
+docker pull dnsbelgium/mercator:batch2
 
-So let's go back to the terminal to give Mercator something to do:
-```
-cp ../sample_data/visit_requests.csv ../mercator_data/work/  
+docker run --env-file env -v $(pwd)/data:/root/mercator/data -v $(pwd)/input.csv:/root/mercator/input.csv --rm dnsbelgium/mercator:batch2
 ```
 
-That [csv file](./sample_data/visit_requests.csv) contains a thousand .be domains extracted from the Tranco list.
+When Mercator is finished, you can consult the resulting parquet files.
 
-Now browse to http://localhost:8082/status to see the progress.
-   
-When all visits are done, you can stop the containers like this:
+## Consulting the crawl results:
 
-```
-docker compose stop 
-```
+The crawl results are saved in parquet files and can be consulted with any tool that supports parquet: pandas, Polars, Apache Spark, Apache Trino, Amazon Athena, DuckDB, ...
 
-The result of the crawling is stored in parquet files in ../mercator/visits/exported/*/*.parquet.
-
-You could use for example [duckdb](https://duckdb.org/#quickinstall) to read the data:
-
-```
-duckdb -c "select domain_name, title, twitter_links  from '../mercator_data/visits/exported/*/html_features.parquet' limit 10"  
+```shell
+find data -type f 
 ```
 
-```
-duckdb -c "select domain_name, url, status_code from '../mercator_data/visits/exported/*/web_page_visit.parquet' limit 10"
+Consulting the crawl results with DuckDB:
+```shell
+# install duckdb
+curl https://install.duckdb.org | sh
+
+cat <<EOF > web.sql
+.mode markdown
+
+with page_visits as (
+  select domain_name, unnest(page_visits) as page_visit
+  from read_parquet('data/web/**/*.parquet')
+  ),
+  web_data as (
+     select domain_name, page_visit.html_features as html_features, page_visit
+     from page_visits
+  )
+select domain_name, page_visit.url, page_visit.detected_technologies, page_visit.html_features.title, page_visit.html_features.facebook_links
+   -- , page_visit.* , html_features.*
+from web_data
+EOF
+
+duckdb < web.sql
 ```
 
-```
-duckdb -c "select ip, server_name, support_tls_1_3, support_ssl_3_0  from 'mercator_data/visits/exported/*/tls_full_scan.parquet'"
+The output should look like this:
+
+| domain_name   | url                                                | detected_technologies                                                                                     | title                                       | facebook_links                              |
+|---------------|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------------------------------------------|---------------------------------------------|
+| dnsbelgium.be | http://www.dnsbelgium.be/                          | [Imperva, Google Tag Manager, HSTS, PWA, Google Font API, Cookiebot, Open Graph]                          | Registry for .be, .brussels and .vlaanderen | \[\]                                        |
+| dnsbelgium.be | https://www.dnsbelgium.be/en                       | [Imperva, Google Tag Manager, HSTS, PWA, Element UI, Google Font API, Cookiebot, Open Graph]              | Registry for .be, .brussels and .vlaanderen | \[ 'https://www.facebook.com/DNSBelgium' \] |
+| dnsbelgium.be | https://www.dnsbelgium.be/en/contact               | [Google Maps, Imperva, Google Tag Manager, HSTS, PWA, Element UI, Google Font API, Cookiebot, Open Graph] | Contact                                     | \[ 'https://www.facebook.com/DNSBelgium' \] |
+| dnsbelgium.be | https://www.dnsbelgium.be/robots.txt               | []                                                                                                        | NULL                                        | NULL                                        |
+| dnsbelgium.be | https://www.dnsbelgium.be/.well-known/security.txt | []                                                                                                        | NULL                                        | NULL                                        |
+| abc.be        | http://www.abc.be/                                 | [Nginx, jQuery, jsDelivr, PHP, Bootstrap, jQuery Migrate, Joomla, Google Font API]                        | Home                                        | \[\]                                        |
+| abc.be        | http://www.abc.be/en/contact-english.html          | [Nginx, jQuery, jsDelivr, PHP, Bootstrap, jQuery Migrate, Joomla, Google Font API]                        | Contact us                                  | \[\]                                        |
+| abc.be        | https://www.abc.be/robots.txt                      | []                                                                                                        | NULL                                        | NULL                                        |
+| abc.be        | https://www.abc.be/.well-known/security.txt        | []                                                                                                        | NULL                                        | NULL                                        |
+
+
+We have limited the query above to a few fields of the web module. Mercator collects way more data than this. Uncomment the line starting with -- to see all columns collected by the web module.
+
+## Running the Mercator Web User interface
+
+To consult the crawl results in the browser, you should run Mercator in WEB mode:
+
+Optional: create a file with your custom settings
+```shell
+cat <<EOF > web_mode
+ # add any custom settings here
+EOF
 ```
 
-But there are many tools and libraries that support reading parquet files.
-          
-### Clean up
-
-To destroy the containers:
-```bash
-docker compose down 
+Start the container:
+```shell
+docker run docker run --name mercator-web --detach --env-file web_mode -v $(pwd)/data:/root/mercator/data -p 8082:8082 --rm dnsbelgium/mercator:batch2
 ```
-      
-# Compared to version 1
 
-Important differences compared to previous version of Mercator 
-  
-* Zero required dependencies to deploy it.
-* Can be run as a single docker image 
-* No longer requires a PhD in Kubernetes in order to deploy it ;-)
-* Heck, it doesn't even need Kubernetes at all.
-* Does not require any AWS services (but can optionally save its output on Amazon S3). 
-* Uses an embedded [duckdb](https://duckdb.org/) database and writes its output as parquet files
-* Uses an embedded ActiveMQ to distribute the work over multiple threads
-* Only one Javascript dependency: [htmx](https://htmx.org/)
-* Multi-platform docker images published to docker hub (x86 and aarch64) so it also works an Apple Silicon machines
+You can now visit http://localhost:8082/ in the browser and look up one of the crawl results, for example http://localhost:8082/search/web/latest?domainName=dnsbelgium.be
+Which should look like this:
+
+![web crawl result](docs/web_crawl_dnsbelgium.be.png)
+
+
+Stop the container:
+```shell
+docker stop mercator-web
+```
+
 
 # Compiling & running locally 
 
@@ -116,8 +150,8 @@ Important differences compared to previous version of Mercator
 
 ```bash
 curl -s "https://get.sdkman.io" | bash
-sdk install java 21.0.5-tem
-sdk install maven 3.9.9 
+sdk install java 23.0.2-tem
+sdk install maven 3.9.10 
 ```
 
 ## Compiling
@@ -125,7 +159,7 @@ sdk install maven 3.9.9
 ```
 mvn package
 ```
-Will compile the sources and run all (enabled) tests. To run the tests, you need a Docker environment.
+=> This will compile the sources, run all (enabled) tests and check for vulnerabilities. To run the tests, you need a Docker environment.
 
 To run without tests and vulnerability scanning, use:
 ```bash
@@ -153,17 +187,35 @@ java -jar -Dspring.active.profiles=local  target/mercator-*-SNAPSHOT.jar
 
 >[!NOTE]
 > You need to run `mvn package` first.
+> 
 
-## Java 23 & Lombok
+## Running duckdb commands
 
-Since Lombok is [not yet compatible](https://github.com/projectlombok/lombok/issues/3722) with JDK 23, we *compile* the sources with Java 21.
-Once compiled, it is possible to *run* the application with Java 23.
+Sometimes you want to set up some duckdb stuff before you run Mercator batch or frontend.
+E.g. create a persistent secret or install extensions.
+
+You can do this by running the application with `duckdb` as first argument
+
+```shell
+# build the application
+mvn clean package -DskipTests -Dsnyk.skip=true\n
+
+# run sql script from file
+#java -jar $(find target -name '*.jar') duckdb < install.sql
+
+# run ad hoc queries
+echo "select 'bar' as foo" | java -jar $(find target -name '*.jar') duckdb
+# install extensions
+echo "install aws; install httpfs;" | java -jar $(find target -name '*.jar') duckdb
+# create s3 secret
+echo "create or replace persistent secret (type s3, provider credential_chain)" | java -jar $(find target -name '*.jar') duckdb
+```
 
 # Running with docker compose
 
-Build container image:
+Build container image and publish to local docker daemon:
 ```
-mvn jib:dockerBuild
+mvn -D jib.to.image=dnsbelgium/mercator jib:dockerBuild
 ```
 
 * Store a username in ~/.env.grafana-username
@@ -172,13 +224,26 @@ mvn jib:dockerBuild
 ```
 cd ./observability
 docker-compose up --renew-anon-volumes --remove-orphans -d
-docker compose logs monocator 
+docker compose logs mercator 
 ```
 
 The Mercator UI should be available at http://localhost:8082
 
 Metrics are available on http://localhost:3000 
-                 
+
+
+# Running mercator GUI
+
+```shell
+docker run \
+  -v $(pwd)/data:/root/mercator/data \
+  -p 8082:8082 \
+  --rm \
+  dnsbelgium/mercator:batch2
+  
+open http://localhost:8082
+```
+
 # Instructions for running it in production
 
 Will follow soon.

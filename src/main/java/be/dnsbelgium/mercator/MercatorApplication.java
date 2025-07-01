@@ -1,78 +1,75 @@
 package be.dnsbelgium.mercator;
 
-import be.dnsbelgium.mercator.persistence.DuckDataSource;
-import be.dnsbelgium.mercator.persistence.Repository;
-import be.dnsbelgium.mercator.scheduling.Scheduler;
-import be.dnsbelgium.mercator.scheduling.WorkQueue;
-import jakarta.jms.ConnectionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import be.dnsbelgium.mercator.tls.domain.TlsScanner;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.SneakyThrows;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.context.annotation.Bean;
-import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-import org.springframework.jms.config.JmsListenerContainerFactory;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.sql.*;
+
 
 @ConfigurationPropertiesScan
 @SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
 exclude = {
+        BatchAutoConfiguration.class,
         DataSourceAutoConfiguration.class,
-        DataSourceTransactionManagerAutoConfiguration.class,
 })
+@EnableBatchProcessing
 public class MercatorApplication {
 
-  @Value("${jms.concurrency:10}")
-  private String jmsConcurrency;
+  // if we do this early enough, we don't have to set a system property when starting the JVM
+  // (-Djava.security.properties=/path/to/custom/security.properties)
+  static {
+    TlsScanner.allowOldAlgorithms();
+  }
 
-  private static final Logger logger = LoggerFactory.getLogger(MercatorApplication.class);
+  @SneakyThrows
+  public static void runDuck(String query) {
+    try (Connection conn = DriverManager.getConnection("jdbc:duckdb:");
+         Statement stmt = conn.createStatement()) {
+      //noinspection SqlSourceToSinkFlow
+      if (!stmt.execute(query)) {
+        return;
+      }
+      ResultSet rs = stmt.getResultSet();
+      ObjectMapper mapper = new ObjectMapper();
+      ResultSetMetaData meta = rs.getMetaData();
+      int cols = meta.getColumnCount();
 
-  public static void main(String[] args) {
+      while (rs.next()) {
+        ObjectNode row = mapper.createObjectNode();
+        for (int i = 1; i <= cols; i++) {
+          row.putPOJO(meta.getColumnLabel(i), rs.getObject(i));
+        }
+        System.out.println(row.toString());
+      }
+
+    }
+  }
+
+
+  public static void main(String[] args) throws IOException {
+    if (args.length > 0 && "duckdb".equals(args[0])) {
+      if (args.length > 1) {
+        runDuck(args[1]);
+      } else {
+        String query = new String(System.in.readAllBytes());
+        runDuck(query);
+      }
+      System.exit(0);
+    }
+    System.out.println("CWD = " + Path.of("").toAbsolutePath());
     SpringApplication.run(MercatorApplication.class, args);
   }
 
-//  @Bean
-//  @ConditionalOnProperty(value = "use.sqs", havingValue = "false")
-//  public Scheduler scheduler(DuckDataSource dataSource, JmsTemplate jmsTemplate, Repository repository) {
-//    return new Scheduler(dataSource, jmsTemplate, repository);
-//  }
 
-  @Bean
-  @ConditionalOnProperty(value = "use.sqs", havingValue = "false")
-  public Scheduler scheduler(DuckDataSource dataSource, WorkQueue workQueue, Repository repository) {
-    return new Scheduler(dataSource, workQueue, repository);
-  }
-
-
-  @Bean // Serialize message content to json using TextMessage
-  //@ConditionalOnProperty(value = "use.sqs", havingValue = "false")
-  public MessageConverter jacksonJmsMessageConverter() {
-    MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-    converter.setTargetType(MessageType.TEXT);
-    converter.setTypeIdPropertyName("_type");
-    return converter;
-  }
-
-  @Bean
-  public JmsListenerContainerFactory<?> myFactory(
-          @Qualifier("jmsConnectionFactory") ConnectionFactory connectionFactory,
-          DefaultJmsListenerContainerFactoryConfigurer configurer) {
-    DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-    // This provides all auto-configured defaults to this factory, including the message converter
-    configurer.configure(factory, connectionFactory);
-    // You could still override some settings if necessary.
-    logger.info("jmsConcurrency: {}", jmsConcurrency);
-    factory.setConcurrency(jmsConcurrency);
-    return factory;
-  }
 
 }

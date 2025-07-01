@@ -3,7 +3,6 @@ package be.dnsbelgium.mercator.vat.domain;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.test.TestUtils;
-import be.dnsbelgium.mercator.vat.crawler.persistence.PageVisit;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import org.apache.commons.lang3.StringUtils;
@@ -98,32 +97,18 @@ class PageTest {
   }
 
   @Test
-  public void asPageVisitWithoutBodyText() {
-    VisitRequest visitRequest = new VisitRequest("abc.be");
-    Page page = makePageFrom("<html><body><h1>Hello world</h1></body></html>");
-    PageVisit pageVisit = page.asPageVisit(visitRequest, false);
-    logger.info("pageVisit = {}", pageVisit);
-    assertThat(pageVisit.getVisitId()).isEqualTo(visitRequest.getVisitId());
-    assertThat(pageVisit.getDomainName()).isEqualTo("abc.be");
-    assertThat(pageVisit.getCrawlStarted()).isEqualTo(page.getVisitStarted());
-    assertThat(pageVisit.getCrawlFinished()).isEqualTo(page.getVisitFinished());
-    assertThat(pageVisit.getStatusCode()).isEqualTo(page.getStatusCode());
-    assertThat(pageVisit.getBodyText()).isNull();
-  }
-
-  @Test
-  public void asPageVisitWithBodyText() {
+  public void asPageVisit() {
     var visitId = VisitIdGenerator.generate();
     VisitRequest visitRequest = new VisitRequest(visitId, "abc.be");
-    Page page = makePageFrom("<html><body><h1>Hello world</h1></body></html)");
-    PageVisit pageVisit = page.asPageVisit(visitRequest, true);
+    String responseBody = "<html><body><h1>Hello world</h1></body></html>";
+    Page page = makePageFrom(responseBody);
+    PageVisit pageVisit = page.asPageVisit(visitRequest);
     logger.info("pageVisit = {}", pageVisit);
-    assertThat(pageVisit.getVisitId()).isEqualTo(visitRequest.getVisitId());
-    assertThat(pageVisit.getDomainName()).isEqualTo("abc.be");
+    assertThat(pageVisit.getUrl()).isEqualTo(page.getUrl().toString());
     assertThat(pageVisit.getCrawlStarted()).isEqualTo(page.getVisitStarted());
     assertThat(pageVisit.getCrawlFinished()).isEqualTo(page.getVisitFinished());
     assertThat(pageVisit.getStatusCode()).isEqualTo(page.getStatusCode());
-    assertThat(pageVisit.getBodyText()).isEqualTo("Hello world");
+    assertThat(pageVisit.getResponseBody()).isEqualTo(responseBody);
   }
 
   @Test
@@ -146,21 +131,20 @@ class PageTest {
   public void skipBinaryData() {
     Page page = makePageFrom("This is binary data with a null \u0000 byte");
     VisitRequest visitRequest = new VisitRequest("test.be");
-    PageVisit pageVisit = page.asPageVisit(visitRequest, true);
-    logger.info("pageVisit = {}", pageVisit.getBodyText());
-    assertThat(pageVisit.getBodyText()).isEqualTo("[did not save binary data]");
+    PageVisit pageVisit = page.asPageVisit(visitRequest);
+    logger.info("pageVisit.getResponseBody = {}", pageVisit.getResponseBody());
+    assertThat(pageVisit.getResponseBody()).isNull();
   }
 
   @Test
   public void ignoreInvalidLinks() {
-    String validLink = "http://café-" + StringUtils.repeat("a", 25) + ".be";
+    String validLink   = "http://café-" + StringUtils.repeat("a", 25) + ".be";
     String invalidLink = "http://café-" + StringUtils.repeat("a", 256) + ".be";
     String html = String.format(
         "<html><body>" +
             "<a href='%s'>valid link</a>" +
             "<a href='%s'>invalid link</a>" +
-            "</body></html>",
-        validLink, invalidLink);
+        "</body></html>", validLink, invalidLink);
     logger.info("html = {}", html);
     Page page = makePageFrom(html);
     logger.info("page.getLinks() = {}", page.getLinks());

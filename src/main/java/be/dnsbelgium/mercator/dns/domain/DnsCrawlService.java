@@ -1,23 +1,25 @@
 package be.dnsbelgium.mercator.dns.domain;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.dns.dto.*;
+import be.dnsbelgium.mercator.dns.metrics.MetricName;
 import be.dnsbelgium.mercator.idn.IdnException;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
-import be.dnsbelgium.mercator.dns.dto.DnsRequest;
-import be.dnsbelgium.mercator.dns.dto.RRecord;
-import be.dnsbelgium.mercator.dns.dto.RecordType;
-import be.dnsbelgium.mercator.dns.persistence.Request;
-import be.dnsbelgium.mercator.dns.persistence.Response;
 import be.dnsbelgium.mercator.metrics.Threads;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Name;
 import org.xbill.DNS.TextParseException;
 
 import java.net.IDN;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,16 +27,19 @@ import java.util.Set;
 import static be.dnsbelgium.mercator.dns.dto.RecordType.A;
 
 @Component
-public class DnsCrawlService {
+public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResult> {
+
   private static final Logger logger = LoggerFactory.getLogger(DnsCrawlService.class);
   private final DnsResolver resolver;
   private final Enricher enricher;
   private final DnsCrawlerConfigurationProperties dnsCrawlerConfig;
-
-  public DnsCrawlService(DnsResolver resolver, Enricher enricher, DnsCrawlerConfigurationProperties dnsCrawlerConfig) {
+  private final MeterRegistry meterRegistry;
+  
+  public DnsCrawlService(DnsResolver resolver, Enricher enricher, DnsCrawlerConfigurationProperties dnsCrawlerConfig, MeterRegistry meterRegistry) {
     this.resolver = resolver;
     this.enricher = enricher;
     this.dnsCrawlerConfig = dnsCrawlerConfig;
+    this.meterRegistry = meterRegistry;
   }
 
   public DnsCrawlResult visit(VisitRequest visitRequest) {
@@ -42,18 +47,28 @@ public class DnsCrawlService {
     try {
       return retrieveDnsRecords(visitRequest);
     } finally {
+      meterRegistry.counter(MetricName.COUNTER_VISITS_COMPLETED).increment();
       Threads.DNS.decrementAndGet();
     }
   }
 
+  @Override
+  public DnsCrawlResult process(@NonNull VisitRequest request) throws Exception {
+    return visit(request);
+  }
+
+
   public DnsCrawlResult retrieveDnsRecords(VisitRequest visitRequest) {
     String a_label, u_label;
+    DnsCrawlResult.DnsCrawlResultBuilder builder = DnsCrawlResult.builder().domainName(visitRequest.getDomainName())
+        .visitId(visitRequest.getVisitId())
+        .crawlStarted(Instant.now());
     try {
       a_label = visitRequest.a_label();
       u_label = visitRequest.u_label();
     } catch (IdnException e) {
       logger.error("VisitRequest contains invalid domain name [{}] => skipping this request", visitRequest.getDomainName());
-      return DnsCrawlResult.invalidDomainName();
+      return builder.status(CrawlStatus.INVALID_DOMAIN_NAME).build();
     }
     if (u_label.equals(a_label)) {
       logger.info("retrieveDnsRecords for {}", u_label);
@@ -62,7 +77,7 @@ public class DnsCrawlService {
     }
     Name domainName = parseDomainName(a_label);
     if (domainName == Name.empty) {
-      return DnsCrawlResult.invalidDomainName();
+      return builder.status(CrawlStatus.INVALID_DOMAIN_NAME).build();
     }
     logger.debug("retrieveDnsRecords for [{}]", domainName);
 
@@ -82,7 +97,7 @@ public class DnsCrawlService {
 
     if (rcode == Lookup.HOST_NOT_FOUND) {
       logger.debug("Initial request had rcode = {} != 0 => skip other lookups for {}", rcode, domainName);
-      return DnsCrawlResult.nxdomain(requests);
+      return builder.status(CrawlStatus.NXDOMAIN).requests(requests).build();
     }
 
     if (rcode == Lookup.UNRECOVERABLE || rcode == Lookup.TRY_AGAIN) {
@@ -108,24 +123,25 @@ public class DnsCrawlService {
       }
     }
     enricher.enrichResponses(requests);
-    return DnsCrawlResult.of(requests);
+    return builder.crawlFinished(Instant.now()).requests(requests).build();
   }
 
   public Request buildEntity(VisitRequest visitRequest, DnsRequest dnsRequest) {
     Request request = Request.builder()
-            .visitId(visitRequest.getVisitId())
-            .domainName(visitRequest.u_label())
-            .prefix(dnsRequest.prefix())
-            .recordType(dnsRequest.recordType())
-            .rcode(dnsRequest.rcode())
-            .ok(dnsRequest.isOk())
-            .problem(dnsRequest.humanReadableProblem())
-            .build();
-    for (RRecord record: dnsRequest.records()) {
+        .crawlStarted(dnsRequest.requestSent())
+        .crawlFinished(dnsRequest.answersReceived())
+        .domainName(visitRequest.u_label())
+        .prefix(dnsRequest.prefix())
+        .recordType(dnsRequest.recordType())
+        .rcode(dnsRequest.rcode())
+        .ok(dnsRequest.isOk())
+        .problem(dnsRequest.humanReadableProblem())
+        .build();
+    for (RRecord record : dnsRequest.records()) {
       Response response = Response.builder()
-              .recordData(record.getData())
-              .ttl(record.getTtl())
-              .build();
+          .recordData(record.getData())
+          .ttl(record.getTtl())
+          .build();
       request.getResponses().add(response);
     }
     return request;

@@ -1,0 +1,74 @@
+services:
+
+  mercator-web:
+    image: dnsbelgium/mercator:batch2
+    volumes:
+      - ./data:/root/mercator/data
+    ports:
+      - '8082:8082'
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 3s
+
+  mercator-batch:
+    image: dnsbelgium/mercator:batch2
+    volumes:
+      - ./data:/root/mercator/data
+      - ./input.csv:/root/mercator/input.csv
+    environment:
+      - SPRING_PROFILES_ACTIVE=batch
+      - CRAWLER_DNS_GEOIP_ENABLED=false
+      - JOB_SMTP_ENABLED=false
+    ports:
+      - '8090:8082'
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 3s
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning/:/etc/grafana/provisioning
+    depends_on:
+      prometheus:
+        condition: service_started
+    environment:
+      - GF_SECURITY_ADMIN_USER__FILE=/run/secrets/grafana-admin-username
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana-admin-password
+    secrets:
+      - grafana-admin-username
+      - grafana-admin-password
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  grafana-storage:
+  prom_data:
+secrets:
+  grafana-admin-username:
+    file: ~/.env.grafana-username
+  grafana-admin-password:
+    file: ~/.env.grafana-password

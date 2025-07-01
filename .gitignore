@@ -32,9 +32,3 @@ build/
 ### VS Code ###
 .vscode/
 .env
-
-### virtual env ###
-venv/
-.venv
-venv
-/venv

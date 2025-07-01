@@ -1,6 +1,6 @@
 apiVersion: 1
 providers:
-  - name: Mono
+  - name: Mercator
     folder: ''
     type: file
     disableDeletion: false

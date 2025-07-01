@@ -10,7 +10,6 @@ import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
@@ -165,27 +164,6 @@ class PageFetcherTest {
     assertThat(page.getDocument().text()).contains("\"User-Agent\": \"Mozilla/5.0 ");
   }
 
-  @Test
-  @Disabled
-  @DisplayName("https://www.dnsbelgium.com/")
-  public void https_dnsbelgium_dot_com() throws IOException {
-
-    // fetching "https://www.dnsbelgium.com/"
-    // The code below works in IntelliJ IDEA
-    // => it logs "Failed to fetch https://www.dnsbelgium.com/ because of Received fatal alert: unrecognized_name"
-
-    // But test fails on Jenkins:  Failed to connect to www.dnsbelgium.com/2a02:e980:53:0:0:0:0:8b:443
-    // Suppressed: javax.net.ssl.SSLHandshakeException: Received fatal alert: unrecognized_name
-    // perhaps because Jenkins doesn't do IPv6 ?
-    // or rather because certificate doesn't match?
-    // curl says: error:14004458:SSL routines:CONNECT_CR_SRVR_HELLO:tlsv1 unrecognized name
-
-    // fetch will fail because of Received fatal alert: unrecognized_name
-    Page page = pageFetcher.fetch(HttpUrl.get("https://www.dnsbelgium.com/"));
-    logger.info("page = {}", page);
-    assertThat(page.getStatusCode()).isEqualTo(0);
-  }
-
 
   @Test
   @DisplayName("http://www.dnsbelgium.com/")
@@ -211,9 +189,8 @@ class PageFetcherTest {
       testFetcher.clearCache();
       Page page = testFetcher.fetch(baseUrl);
       logger.info("page = {}", page);
-      assertThat(page).isEqualTo(Page.PAGE_TOO_BIG);
+      assertEquals(TestPageFetcherConfig.testConfig().getMaxContentLength().toBytes(), page.getResponseBody().length());
     }
   }
-
 
 }

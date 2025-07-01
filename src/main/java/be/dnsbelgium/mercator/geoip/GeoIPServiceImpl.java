@@ -189,12 +189,12 @@ public class GeoIPServiceImpl implements GeoIPService {
 
         if (response.getCode() == HttpStatus.SC_OK) {
 
-          return  DateUtils.parseDate(response.getFirstHeader("last-modified").getValue());
+          return  DateUtils.parseDate(response.getFirstHeader("last-modified").getValue(), "EEE, dd MMM yyyy HH:mm:ss zzz");
         }
       }
     } catch (Exception e) {
         //noinspection StringConcatenationArgumentToLogCall
-        log.error("Error executing HTTP HEAD request" + e);
+        log.error("Error executing HTTP HEAD request " + e);
     }
 
     return null;

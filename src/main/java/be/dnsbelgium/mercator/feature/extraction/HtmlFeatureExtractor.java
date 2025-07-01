@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
 import static be.dnsbelgium.mercator.feature.extraction.MercatorLanguageDetector.LanguageSelection;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -60,14 +61,14 @@ public class HtmlFeatureExtractor {
 
   private final static int MAX_LENGTH_HTMLSTRUCT = 2000;
 
-  public HtmlFeatureExtractor(MeterRegistry meterRegistry) {
+  public HtmlFeatureExtractor(MeterRegistry meterRegistry, boolean languageDetectionEnabled) {
     this.meterRegistry = meterRegistry;
     this.maxBodyTextLength = 20_000;
     this.maxMetaTextLength =  1_000;
     this.maxTitleLength    =  2_000;
     this.maxExternalHosts  =  2_000;
     this.maxLinksSocial    =  10;
-    this.languageDetectionEnabled = true;
+    this.languageDetectionEnabled = languageDetectionEnabled;
   }
 
   @Autowired
@@ -93,7 +94,6 @@ public class HtmlFeatureExtractor {
     InputStream inputStream = new ByteArrayInputStream(rawHtml.getBytes(StandardCharsets.UTF_8));
     HtmlFeatures htmlFeatures = extractFromHtml(inputStream, url, domainName);
     htmlFeatures.html_length = rawHtml.length();
-    htmlFeatures.url = url;
     return htmlFeatures;
   }
 
@@ -142,7 +142,7 @@ public class HtmlFeatureExtractor {
    * @param url The URL where the HTML was retrieved from, to resolve relative links against.
    * @return the extracted html features
    */
-  public HtmlFeatures extractFromHtml(InputStream inputStream, String charsetName, String url, String dn) {
+  public HtmlFeatures extractFromHtml(InputStream inputStream, String charsetName, String url, String domainName) {
     HtmlFeatures features = new HtmlFeatures();
     Document document = parse(inputStream, charsetName, url);
     if (document == null) {
@@ -191,16 +191,12 @@ public class HtmlFeatureExtractor {
       features.meta_text_truncated = true;
     }
 
-    //the number of strings that look like numbers (see regex at top for explanation)
-    Matcher numericMatcher = numeric_pattern.matcher(document.text());
-    features.nb_numerical_strings = (int) numericMatcher.results().count();
-
     features.nb_tags = document.getAllElements().size();
 
     features.htmlstruct = tagMapper.compress(document);
     if (features.htmlstruct.length() > MAX_LENGTH_HTMLSTRUCT) {
-      logger.info("length of htmlstruct = {} exceeds {} => truncating",
-          MAX_LENGTH_HTMLSTRUCT, features.htmlstruct.length());
+      logger.info("domainName={} length of htmlstruct = {} exceeds {} => truncating",
+              domainName, features.htmlstruct.length(), MAX_LENGTH_HTMLSTRUCT);
       features.htmlstruct = StringUtils.abbreviate(features.htmlstruct, MAX_LENGTH_HTMLSTRUCT);
     }
     String bodyText = document.text();
@@ -215,7 +211,7 @@ public class HtmlFeatureExtractor {
     features.nb_currency_names = currencies.getNbOccurrences();
     features.nb_distinct_currencies = currencies.getNbDistinct();
 
-    computeSimilarities(features, document, url, dn);
+    computeSimilarities(features, document, url, domainName);
 
     processBodyText(features, bodyText);
     return features;
@@ -390,6 +386,12 @@ public class HtmlFeatureExtractor {
       features.body_text = bodyText;
       features.body_text_truncated = false;
     }
+    features.body_text = removeIncompleteSurrogates(features.body_text);
+    // We do this after abbreviating the body text since the regex match can take a very long time otherwise
+    // (like 10 minutes for one page)
+    // the number of strings that look like numbers (see regex at top for explanation)
+    Matcher numericMatcher = numeric_pattern.matcher(features.body_text);
+    features.nb_numerical_strings = (int) numericMatcher.results().count();
   }
 
   private void processLinks(Document document, HtmlFeatures features) {
@@ -436,7 +438,7 @@ public class HtmlFeatureExtractor {
     if (maxExternalHosts > 0 && features.external_hosts.size() > maxExternalHosts) {
       features.external_hosts = features.external_hosts.subList(0, maxExternalHosts);
     }
-    logger.debug("domainName={} => externalHosts = {}", features.domainName, externalHosts);
+    logger.debug("externalHosts = {}", externalHosts);
   }
 
   public LinkType getLinkType(String url, String baseUri) {

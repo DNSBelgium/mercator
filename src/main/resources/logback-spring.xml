@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <include resource="org/springframework/boot/logging/logback/structured-file-appender.xml" />
+
+    <appender name="ThrottledConsole" class="be.dnsbelgium.logback.ThrottlingAppender">
+        <bufferSize>50</bufferSize>
+        <maxMessagesToEmitAfterStartUp>50000</maxMessagesToEmitAfterStartUp>
+        <maxMessagesToEmitAfterWakeUp>2000</maxMessagesToEmitAfterWakeUp>
+        <!-- wake up every 2 minutes -->
+        <maxSleepMillis>120000</maxSleepMillis>
+        <appender-ref ref="CONSOLE" />
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="ThrottledConsole" />
+    </root>
+
+</configuration>

@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class SmtpConversationCache {
     Instant notBefore = Instant.now().minus(duration);
     logger.info("Evicting entries that older than {}, so after {}", duration, notBefore);
     int entriesBefore = cache.size();
-    cache.entrySet().removeIf(e -> e.getValue().getTimestamp().isBefore(notBefore));
+    cache.entrySet().removeIf(e -> e.getValue().getCrawlStarted().isBefore(notBefore));
     int entriesAfter = cache.size();
     logger.info("Eviction done. before cache had {} entries, now it has {} entries", entriesBefore, entriesAfter);
   }

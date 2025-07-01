@@ -3,7 +3,6 @@ package be.dnsbelgium.mercator.feature.extraction.persistence;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -13,13 +12,6 @@ import java.util.StringJoiner;
 @EqualsAndHashCode
 @Builder
 public class HtmlFeatures {
-
-  public String visitId;
-  public Instant crawlTimestamp;
-
-  public String domainName;
-
-  public String url;
 
   // using public fields and the same names as the python code did
   public int nb_imgs;
@@ -95,9 +87,7 @@ public class HtmlFeatures {
   @Override
   public String toString() {
     return new StringJoiner(", \n", HtmlFeatures.class.getSimpleName() + "[", "]")
-        .add("domainName=" + domainName)
         .add("external_hosts=" + external_hosts)
-        .add("crawlTimestamp=" + crawlTimestamp)
         .add("nb_imgs=" + nb_imgs)
         .add("nb_links_int=" + nb_links_int)
         .add("nb_links_ext=" + nb_links_ext)

@@ -3,13 +3,13 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 import be.dnsbelgium.mercator.smtp.TxLogger;
 import be.dnsbelgium.mercator.smtp.dto.Error;
 import be.dnsbelgium.mercator.smtp.metrics.MetricName;
-import be.dnsbelgium.mercator.smtp.persistence.entities.CrawlStatus;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpConversation;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpHost;
-import be.dnsbelgium.mercator.smtp.persistence.entities.SmtpVisit;
-import io.micrometer.core.annotation.Timed;
+import be.dnsbelgium.mercator.smtp.dto.CrawlStatus;
+import be.dnsbelgium.mercator.smtp.dto.SmtpConversation;
+import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +20,14 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.smtp.metrics.MetricName.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
- * Analyzes the SMTP servers for a given domain, by retrieving all MX records
+ * Analyzes the SMTP servers for a given domain by retrieving all MX records
  * and talking with all corresponding SMTP servers
  */
 @Component
@@ -62,20 +64,11 @@ public class SmtpAnalyzer {
     logger.info("skipIPv4={} skipIPv6={}, maxHostsToContact={}", skipIPv4, skipIPv6, maxHostsToContact);
   }
 
-  // Basically the same as visit (except for the timer around doCrawl)
-  // only used in tests ?
-  public SmtpVisit analyze(String domainName) throws Exception {
+  @SneakyThrows
+  public SmtpVisit analyze(String domainName) {
     TxLogger.log(getClass(), "analyze");
     SmtpVisit result = meterRegistry.timer(MetricName.TIMER_SMTP_ANALYSIS).recordCallable(() -> doCrawl(domainName));
-    meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
-    return result;
-  }
-
-  @Timed
-  public SmtpVisit visit(String domainName) {
-    TxLogger.log(getClass(), "analyze");
-    SmtpVisit result = doCrawl(domainName);
-    meterRegistry.counter(MetricName.SMTP_DOMAINS_DONE).increment();
+    meterRegistry.counter(SMTP_DOMAINS_DONE).increment();
     return result;
   }
 
@@ -84,25 +77,29 @@ public class SmtpAnalyzer {
     logger.debug("Starting SMTP crawl for domainName={}", domainName);
     SmtpVisit result = new SmtpVisit();
     result.setDomainName(domainName);
-    result.setTimestamp(Instant.now());
+    result.setCrawlStarted(Instant.now());
     MxLookupResult mxLookupResult = mxFinder.findMxRecordsFor(domainName);
     switch (mxLookupResult.getStatus()) {
       case INVALID_HOSTNAME -> {
         result.setCrawlStatus(CrawlStatus.INVALID_HOSTNAME);
+        result.setCrawlFinished(Instant.now());
         meterRegistry.counter(MetricName.COUNTER_INVALID_HOSTNAME).increment();
         return result;
       }
       case QUERY_FAILED -> {
         result.setCrawlStatus(CrawlStatus.NETWORK_ERROR);
+        result.setCrawlFinished(Instant.now());
         meterRegistry.counter(MetricName.COUNTER_NETWORK_ERROR).increment();
         return result;
       }
       case NO_MX_RECORDS_FOUND -> {
         visitAddressRecords(result);
+        result.setCrawlFinished(Instant.now());
         return result;
       }
       case OK -> {
         visitMxRecords(result, mxLookupResult);
+        result.setCrawlFinished(Instant.now());
         return result;
       }
       default -> throw new RuntimeException("Unknown MxLookupResult Status");
@@ -111,7 +108,7 @@ public class SmtpAnalyzer {
 
   private void visitAddressRecords(SmtpVisit visit) {
     // CNAME-s are followed when resolving hostnames to addresses
-    // It seems that CNAME's are also followed hen looking up MX records
+    // It seems that CNAME's are also followed when looking up MX records
     //
     //    https://tools.ietf.org/html/rfc5321#section-5.1
     //
@@ -146,9 +143,8 @@ public class SmtpAnalyzer {
   }
 
   private void setStatus(SmtpVisit visit) {
-    if (visit.getHosts().stream().anyMatch(host -> host
-        .getConversation()
-        .getError() == null)) {
+    if (visit.getHosts().stream().anyMatch(host ->
+        host.getConversations().stream().anyMatch(c -> c.getError() == null))) {
       visit.setCrawlStatus(CrawlStatus.OK);
     } else {
       visit.setCrawlStatus(CrawlStatus.NO_REACHABLE_SMTP_SERVERS);
@@ -156,29 +152,31 @@ public class SmtpAnalyzer {
   }
 
   private void visitHostname(SmtpVisit visit, String hostName, int priority, boolean fromMx) {
+    if (visit.getHosts().size() >= maxHostsToContact) {
+      logger.info("domainName: {} => we have already contacted {} hosts => stopping now", visit.getDomainName(),  visit.getHosts().size());
+      var hostNames = visit.getHosts().stream().map(SmtpHost::getHostName).toList();
+      logger.info("domainName: {} hosts contacted: {}", visit.getDomainName(), hostNames);
+      return;
+    }
     List<InetAddress> addresses = mxFinder.findIpAddresses(hostName);
     if (addresses.isEmpty()) {
       logger.debug("No addresses found for hostName {}", hostName);
       return;
     }
     logger.debug("We found {} addresses for hostName {}", addresses.size(), hostName);
+    SmtpHost host = new SmtpHost();
+    host.setHostName(hostName);
+    host.setPriority(priority);
+    host.setFromMx(fromMx);
+    List<SmtpConversation> conversations = new ArrayList<>();
     for (InetAddress address : addresses) {
-      if (visit.getHosts().size() >= maxHostsToContact) {
-        logger.info("visit: We have already contacted {} hosts => stopping now", visit.getHosts().size());
-        break;
-      }
+
       SmtpConversation smtpConversation = findInCacheOrCrawl(address);
       smtpConversation.clean();
-      SmtpHost host = new SmtpHost();
-      host.setHostName(hostName);
-      host.setPriority(priority);
-      host.setConversation(smtpConversation);
-      host.setFromMx(fromMx);
-      if (!fromMx) {
-        host.setHostName(smtpConversation.getIp());
-      }
-      visit.add(host);
+      conversations.add(smtpConversation);
     }
+    host.setConversations(conversations);
+    visit.add(host);
   }
 
   private SmtpConversation findInCacheOrCrawl(InetAddress address) {
@@ -202,10 +200,13 @@ public class SmtpAnalyzer {
     SmtpConversation cachedConversation = conversationCache.get(ip);
     if (cachedConversation != null) {
       logger.debug("Found conversation in the cache: {}", cachedConversation);
+      meterRegistry.counter(COUNTER_CACHE_HITS).increment();
       return cachedConversation;
     } else {
       logger.debug("Not found in the cache: {}", ip);
+      meterRegistry.counter(COUNTER_CACHE_MISSES).increment();
       SmtpConversation conversation = smtpIpAnalyzer.crawl(address);
+      conversation.setCrawlFinished(Instant.now());
       logger.debug("done crawling ip {}", address);
       return conversation;
     }
@@ -213,11 +214,12 @@ public class SmtpAnalyzer {
   }
 
   private SmtpConversation skip(InetAddress address, String message) {
-    meterRegistry.counter(MetricName.COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
+    meterRegistry.counter(COUNTER_ADDRESSES_SKIPPED, Tags.of("reason", message)).increment();
     logger.debug("{} : {}", message, address);
     SmtpConversation conversation = new SmtpConversation(address);
     conversation.setErrorMessage(message);
     conversation.setError(Error.SKIPPED);
+    conversation.setCrawlFinished(Instant.now());
     return conversation;
   }
 

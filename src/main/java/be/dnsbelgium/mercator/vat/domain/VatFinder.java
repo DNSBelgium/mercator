@@ -43,7 +43,7 @@ public class VatFinder {
           ")(?![0-9])";  // only matches the above when it is not followed by a digit
 
   /*
-    // TODO add regex for NL and FR ??
+    // TODO: add regex for NL and FR ??
     // String NL_VAT_REGEX =  "(?i)((NL)?0([. -])?[0-9]{3}([. -])?[0-9]{3}([. -])?[0-9]{3})B[0-9]{2}";
 
     https://ondernemersplein.kvk.nl/btw-identificatienummer-opzoeken-controleren-en-vermelden/

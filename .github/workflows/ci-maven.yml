@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - main
-  schedule:
-    - cron: '30 5 * * *'
+      - batch2
+#  schedule:
+#    - cron: '30 5 * * *'
 
 permissions:
   contents: read
@@ -29,10 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 23
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '23'
           distribution: 'temurin'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
@@ -47,39 +48,32 @@ jobs:
           name: Package
           path: staging
 
-#      - name: Publish Test Report
-#        if: success() || failure()
-#        uses: ScaCap/action-surefire-report@v1.8.0
-
-#      - uses: dorny/test-reporter@v1.9.1
-#        if: success() || failure()
-#        with:
-#          name: Junit Test Report
-#          path: 'target/surefire-reports/*.xml'
-#          reporter: java-junit
-#          fail-on-error: true
-#
       - name: Set short git commit SHA
         id: vars
         run: |
-          calculatedSha=$(git rev-parse --short ${{ github.sha }})
-          echo "COMMIT_SHORT_SHA=$calculatedSha" >> $GITHUB_ENV
+          COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          TAGS="$COMMIT_SHORT_SHA"
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "DEFAULT_TAG=latest" >> $GITHUB_ENV
+          else
+            echo "DEFAULT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish container image to GitHub Container registry
-        id: publish
-        env:
-          REGISTRY: ${{ env.REGISTRY }}
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
+#      - name: Log in to the Container registry
+#        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+#        with:
+#          registry: ${{ env.REGISTRY }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Publish container image to GitHub Container registry
+#        id: publish
+#        env:
+#          REGISTRY: ${{ env.REGISTRY }}
+#          DOCKER_USERNAME: ${{ github.actor }}
+#          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+#        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
@@ -95,4 +89,4 @@ jobs:
           REGISTRY: ${{ secrets.DOCKERHUB_REGISTRY }}
           DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=latest,${{ env.COMMIT_SHORT_SHA }}
+        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
