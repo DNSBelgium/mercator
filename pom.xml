@@ -341,10 +341,11 @@
             <version>3.4.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>2.8.2</version>
+            <version>3.2.1</version>
         </dependency>
 
         <dependency>
@@ -521,6 +522,10 @@
                         <volumes>
                             <volume>/root/mercator/</volume>
                         </volumes>
+                        <jvmFlags>
+                            <!-- To avoid warning about Netty, see https://netty.io/wiki/java-24-and-sun.misc.unsafe.html -->
+                            <jvmFlag>--sun-misc-unsafe-memory-access=allow</jvmFlag>
+                        </jvmFlags>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
                         </environment>
