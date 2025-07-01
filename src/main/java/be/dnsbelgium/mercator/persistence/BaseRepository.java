@@ -45,14 +45,13 @@ public class BaseRepository<T> {
     this.baseLocation = createDestination(baseLocation);
     this.type = type;
     this.jdbcClientFactory = jdbcClientFactory;
-    testAccessToBaseLocation();
   }
 
   private JdbcClient jdbcClient() {
     return jdbcClientFactory.jdbcClient();
   }
 
-  public void testAccessToBaseLocation() {
+  protected void testAccessToBaseLocation() {
     String sql = "select domain_name from read_parquet('%s/**/*.parquet') limit 1".formatted(baseLocation);
     logger.info("sql = {}", sql);
     try {

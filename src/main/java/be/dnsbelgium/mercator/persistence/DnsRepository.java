@@ -17,9 +17,15 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
     private final String baseLocation;
 
     @SneakyThrows
-    public DnsRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper, @Value("${mercator.data.location:mercator/data/}/dns") String baseLocation) {
+    public DnsRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper,
+                         @Value("${mercator.data.location:mercator/data/}/dns") String baseLocation,
+                         @Value("${test.access.to.data.location:false}") boolean testAccessToDataLocation) {
         super(jdbcClientFactory, objectMapper, baseLocation, DnsCrawlResult.class);
         this.baseLocation = baseLocation;
+        logger.info("testAccessToDataLocation = {}", testAccessToDataLocation);
+        if (testAccessToDataLocation) {
+          testAccessToBaseLocation();
+        }
     }
 
     @Override

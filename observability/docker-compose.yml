@@ -1,11 +1,29 @@
 services:
 
-  monocator:
-    image: ghcr.io/dnsbelgium/mercator:latest
+  mercator-web:
+    image: dnsbelgium/mercator:batch2
     volumes:
-      - ./mono:/root/monocator
+      - ./data:/root/mercator/data
     ports:
       - '8082:8082'
+    healthcheck:
+      test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
+      interval: 2s
+      timeout: 2s
+      retries: 15
+      start_period: 3s
+
+  mercator-batch:
+    image: dnsbelgium/mercator:batch2
+    volumes:
+      - ./data:/root/mercator/data
+      - ./input.csv:/root/mercator/input.csv
+    environment:
+      - SPRING_PROFILES_ACTIVE=batch
+      - CRAWLER_DNS_GEOIP_ENABLED=false
+      - JOB_SMTP_ENABLED=false
+    ports:
+      - '8090:8082'
     healthcheck:
       test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
       interval: 2s
