@@ -36,7 +36,7 @@ public class VisitRequestFieldSetMapper implements FieldSetMapper<VisitRequest> 
     }
 
     long numberOfDots = request.a_label().chars().filter(ch -> ch == '.').count();
-    if (numberOfDots != 1) {
+    if (numberOfDots < 1) {
       logger.error("Invalid domainName, expected 2nd level domain: {}", request.getDomainName());
       throw new BindException(fieldSet, "domainName");
     }
