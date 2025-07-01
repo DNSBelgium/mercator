@@ -112,7 +112,7 @@ public class TxtFinderIntegrationTest {
 
     private List<String> getTop(int limit) {
         List<String> domainNames = jdbcClient
-                .sql("select domain_name from 'tranco_be.parquet' order by tranco_rank limit ?")
+                .sql("select domain_name from 'src/test/resources/test-data/tranco_be.parquet' order by tranco_rank limit ?")
                 .param(limit)
                 .query(String.class)
                 .list();
