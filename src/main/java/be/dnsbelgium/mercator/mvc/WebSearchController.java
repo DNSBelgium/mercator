@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.WebRepository;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
+import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;

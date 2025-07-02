@@ -4,7 +4,7 @@ import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.test.ObjectMother;
-import be.dnsbelgium.mercator.vat.domain.WebCrawlResult;
+import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
