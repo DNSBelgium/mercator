@@ -1,7 +1,7 @@
 services:
 
   mercator-web:
-    image: dnsbelgium/mercator:batch2
+    image: dnsbelgium/mercator
     volumes:
       - ./data:/root/mercator/data
     ports:
@@ -14,7 +14,7 @@ services:
       start_period: 3s
 
   mercator-batch:
-    image: dnsbelgium/mercator:batch2
+    image: dnsbelgium/mercator
     volumes:
       - ./data:/root/mercator/data
       - ./input.csv:/root/mercator/input.csv

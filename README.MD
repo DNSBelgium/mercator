@@ -60,7 +60,7 @@ EOF
 Now run Mercator:
 
 ```shell
-docker pull dnsbelgium/mercator:batch2
+docker pull dnsbelgium/mercator
 
 docker run --env-file env -v $(pwd)/data:/root/mercator/data -v $(pwd)/input.csv:/root/mercator/input.csv --rm dnsbelgium/mercator
 ```
@@ -239,7 +239,7 @@ docker run \
   -v $(pwd)/data:/root/mercator/data \
   -p 8082:8082 \
   --rm \
-  dnsbelgium/mercator:batch2
+  dnsbelgium/mercator
   
 open http://localhost:8082
 ```
