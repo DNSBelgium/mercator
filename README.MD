@@ -62,7 +62,7 @@ Now run Mercator:
 ```shell
 docker pull dnsbelgium/mercator:batch2
 
-docker run --env-file env -v $(pwd)/data:/root/mercator/data -v $(pwd)/input.csv:/root/mercator/input.csv --rm dnsbelgium/mercator:batch2
+docker run --env-file env -v $(pwd)/data:/root/mercator/data -v $(pwd)/input.csv:/root/mercator/input.csv --rm dnsbelgium/mercator
 ```
 
 When Mercator is finished, you can consult the resulting parquet files.
@@ -129,7 +129,7 @@ EOF
 
 Start the container:
 ```shell
-docker run docker run --name mercator-web --detach --env-file web_mode -v $(pwd)/data:/root/mercator/data -p 8082:8082 --rm dnsbelgium/mercator:batch2
+docker run docker run --name mercator-web --detach --env-file web_mode -v $(pwd)/data:/root/mercator/data -p 8082:8082 --rm dnsbelgium/mercator
 ```
 
 You can now visit http://localhost:8082/ in the browser and look up one of the crawl results, for example http://localhost:8082/search/web/latest?domainName=dnsbelgium.be
