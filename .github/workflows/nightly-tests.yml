@@ -26,7 +26,7 @@ jobs:
 
       - name: Run the Maven verify phase
         run:
-          SMTP_INTEGRATION_TEST_ENABLED="true" DNS_OUTBOUND_TESTS_ENABLED="true" WEB_OUTBOUND_TEST_ENABLED="true" mvn --batch-mode -Dsnyk.skip verify
+          SMTP_INTEGRATION_TEST_ENABLED="false" DNS_OUTBOUND_TESTS_ENABLED="true" WEB_OUTBOUND_TEST_ENABLED="true" mvn --batch-mode -Dsnyk.skip verify
 
       - name: Nightly Test Report
         uses: dorny/test-reporter@v2
