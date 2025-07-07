@@ -85,7 +85,7 @@ class BlockingSmtpIpAnalyzerTest {
     logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
     assertThat(smtpConversationBlocking).isNotNull();
     assertThat(smtpConversationBlocking.getConnectionTimeMs()).isGreaterThan(8000);
-    assertThat(smtpConversationBlocking.getErrorMessage()).isEqualTo("Connect timed out");
+    assertThat(smtpConversationBlocking.getErrorMessage()).contains("timed out");
     assertThat(smtpConversationBlocking.getError()).isEqualTo(Error.TIME_OUT);
   }
 

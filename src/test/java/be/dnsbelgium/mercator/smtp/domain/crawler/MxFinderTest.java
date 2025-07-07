@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
+import org.xbill.DNS.ResolverConfig;
 
 import java.net.UnknownHostException;
 
@@ -57,12 +58,28 @@ class MxFinderTest {
     @Test
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void servfail() {
-        MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
-        logger.info("result = {}", result);
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.QUERY_FAILED);
-        assertThat(result.getMxRecords()).isNotNull();
-        assertThat(result.getMxRecords().size()).isEqualTo(0);
+        String propBefore = System.getProperty("dns.server");
+        logger.info("propBefore = {}", propBefore);
+        // This test fails on GitHub when we don't explicitly set a dns.server (since it uses 127.0.0.53:53 which does not seem to do DNSSEC validation)
+        // use a DNSSEC validating resolver
+        System.setProperty("dns.server", "8.8.8.8");
+        try {
+            ResolverConfig.refresh();
+            MxFinder mxFinder = new MxFinder(2, 500, true);
+            MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
+            logger.info("result = {}", result);
+            assertThat(result).isNotNull();
+            assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.QUERY_FAILED);
+            assertThat(result.getMxRecords()).isNotNull();
+            assertThat(result.getMxRecords().size()).isEqualTo(0);
+        } finally {
+            if (propBefore == null) {
+                System.clearProperty("dns.server");
+            } else {
+                System.setProperty("dns.server", propBefore);
+            }
+            ResolverConfig.refresh();
+        }
     }
 
     @Test
