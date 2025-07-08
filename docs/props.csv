@@ -1,0 +1,60 @@
+prop,description,Data_type,default_value
+mercator.input.file,Path to CSV file used by Mercator when running in in batch mode.,File path,$HOME/mercator/input.csv
+mercator.json.location,Path to directory where Mercator (in barch mode) will write intermediate data in JSON format.,Directory path,$HOME/mercator/json
+mercator.shutdown-wait-seconds,Number of seconds that Mercator (in batch mode) will wait before exiting.,Integer,0
+web.ui.datetime.pattern,Format used to display timestamps in the Web UI,String,yyyy-MM-dd HH:mm:ss z
+web.ui.timezone,Timezone used to display timestamps in the UI,String,Europe/Brussels
+crawler.dns.geoIP.enabled,Whether IP addresses should be enriched using MaxMind GeoIP,Boolean,false
+web.chunkSize,The number of domains that should be processed together by the web crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25. then the work will be done by only 2 threads.,Integer,1000
+web.corePoolSize,The initial number of threads used by the web crawler. See also web.chunkSize,Integer,100
+web.maxPoolSize,The maximun number of threads used by the web crawler.,Integer,100
+smtp.chunkSize,The number of domains that should be processed together by the SMTP crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25,Integer,1000
+smtp.corePoolSize,The initial number of threads used by the SMTP crawler. See also smtp.chunkSize,Integer,1000
+smtp.maxPoolSize,The maximun number of threads used by the SMTP crawler.,Integer,1000
+smtp.crawler.recursive.resolver.retries,The number of retries done by the SMTP crawler when resolving MX records,Integer,2
+smtp.crawler.recursive.resolver.timeOut.ms,The time out in milliseconds applied by the SMTP crawler when resolving MX records,Integer,2500
+smtp.crawler.recursive.resolver.tcp.by.default,Whether the SMTP crawler should use TCP by default when resolving MX records,Boolean,false
+smtp.crawler.skip.ipv4,Whether the SMTP crawler should skip contacting SMTP servers over IPv4,Boolean,false
+smtp.crawler.skip.ipv6,Whether the SMTP crawler should skip contacting SMTP servers over IPv6; useful when Mercator is running on a system that does not support IPv6.,Boolean,false
+smtp.crawler.max.hosts.to.contact,The maximum number of hosts that the SMTP server should try to contact per visit request (sort of denial of service mitigation),Integer,15
+dns.chunkSize,The number of domains that should be processed as one chunk (by the same thread) by the DNS crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25,Integer,1000
+dns.corePoolSize,The initial number of threads used by the DNS crawler. See also dns.chunkSize,Integer,1000
+dns.maxPoolSize,The maximun number of threads used by the DNS crawler.,Integer,1000
+dns.throttleLimit,The maximum number of concurrent tasklet executions allowed for the DNS crawler,Integer,200
+tls.chunkSize,The number of domains that should be processed as one chunk (by the same thread) by the TLS crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25. Then the work will be done by only 2 threads.,Integer,1000
+tls.corePoolSize,The initial number of threads used by the TLS crawler. See also dns.chunkSize,Integer,1000
+tls.maxPoolSize,The maximun number of threads used by the TLS crawler.,Integer,1000
+tls.throttleLimit,The maximum number of concurrent tasklet executions allowed for the TLS crawler,Integer,200
+full.scan.cache.enabled,Whether the TLS crawler should cache results per IP address.,Boolean,true
+full.scan.cache.minimum.entries.per.ip,The minimum number of actual TLS scans to do per IP before using a cache entry instead of another scan.,Integer,10
+full.scan.cache.required.ratio,Some IP addresses host many websites and often these websites have identical TLS configuration. We cache the crawled TLS config per IP to reduce the number of needed TLS handshakes. The TLS crawler will only use a cached result when the ratio of domain names (on a given IP address) having identical TLS config is equal or higher than this setting.,Double,0.9
+rate.limiter.max.cache.size,The maximum number of TLS results to keep in the cache,Integer,20000
+rate.limiter.delay.factor,The TLS crawler applies rate limiting based on https://heritrix.readthedocs.io/en/latest/configuring-jobs.html#politeness,Double,0.9
+rate.limiter.min.delay,The minimum number of milliseconds to apply by the rate limiter of the TLS crawler,Integer,10
+rate.limiter.max.delay,The maximum number of milliseconds to apply by the rate limiter of the TLS crawler (between two requests to the same IP),Integer,500
+tls.scanner.ipv6.enabled,Whether the TLS crawler should attempt to contact IPv6 addresses,Boolean,false
+tls.scanner.verbose,Whether the TLS crawler should be verbose in its logging,Boolean,false
+tls.scanner.connect.timeout.milliSeconds,The maximum number of milliseconds the TLS crawler will wait when trying to set up a TCP connection.,Integer,3000
+tls.scanner.read.timeout.milliSeconds,The maximum number of milliseconds the TLS crawler will wait when waiting for a response.,Integer,3000
+tls.scanner.destination.port,The TCP destination port used by the TLS scanner,Integer,443
+tls.crawler.prefixes,The TLS scanner can contact one or more hostnames per domain name: based on a list of prefixes prepended to the domain name. By default it will contact the domain name itself and www.+domainname,List of String,www,
+resolver.hostname,The hostname of the recursive resolver to be used by the DNS crawler. When not set it will use the DNS resolvers of the system.,Hostname or IP,empty
+resolver.port,The port used by the DNS crawler to contact the recursive resolver,Integer,53
+resolver.tcp,Whether the DNS crawler should use TCP by default for DNS queries,Boolean,true
+resolver.timeout.seconds,The timeout in seconds applied by the DNS crawler (for DNS queries),Integer,10
+feature.extraction.body.text.maxLength,The text extracted for from the HTML will be truncated to this length before being saved.,Integer,20000
+feature.extraction.meta.text.maxLength,The meta text (extracted from the meta elements in the HTML) will be truncated to tgis length before being saved,Integer,20000
+feature.extraction.title.text.maxLength,The text (extracted from the header element in the HTML) will be truncated to this length before being saved.,Integer,2000
+feature.extraction.max.external.hosts,The list of external hosts found in the HTML will be truncated to this length before being saved.,Integer,2000
+feature.extraction.max.links.social,For each social media platform the list of URL's will be truncated to this length before being saved.,Integer,10
+feature.extraction.languageDetection.enabled,Whether the web crawler should do language detection on each visited HTML page.,Boolean,true
+mercator.data.location,Path to the directory where Mercator will write its output (in parquet format).,Directory path,$HOME/mercator/data
+test.access.to.data.location,Whether Mercator should test (at startup) if it has access to its data location.,Boolean,false
+duckdb.create.s3.secret,Whether Mercator should create an S3 secret before accessing its data.,Boolean,false
+duckdb.log.s3.secrets,Whether Mercator should log the S3 secrets known by duckdb.,Boolean,false
+crawler.smtp.virtual.threads,Whether the SMTP crawler should use virtual threads.,Boolean,false
+web.crawler.max.visits.per.domain,The maximum number of pages that should be visited by the web crawler per visit request.,Integer,10
+web.crawler.persist.page.visits,Property currently has no effect.,Boolean,true
+web.crawler.persist.first.page.visit,Property currently has no effect.,Boolean,true
+web.crawler.persist.body.text,Property currently has no effect.,Boolean,true
+mercator.base.dir,Main directory used by Mercator. Used in other properties: mercator.data.location and mercator.json.location,Directory path,$HOME/mercator

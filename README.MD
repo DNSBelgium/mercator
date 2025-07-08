@@ -23,7 +23,7 @@ Mercator can be run in two modes:
 ## Running Mercator in batch mode  
 
 To run Mercator in batch mode, you need the following
-* a folder where Mercator can write the crawl results
+* a (mounted) folder where Mercator can write the crawl results
 * a csv file with domain names: each line should contain an uuid and a domain name, separated by a comma
 * optionally: a file with your custom settings
 * optionally: a MaxMind license key for GEO IP enrichment 
@@ -31,10 +31,9 @@ To run Mercator in batch mode, you need the following
 
 ### For example:
 
-Create the output folder:
+Create a new folder and make it your working directory:
 ```shell
 cd $(mktemp -d)
-mkdir -p data
 ```
 
 Create the csv file:
@@ -62,10 +61,10 @@ Now run Mercator:
 ```shell
 docker pull dnsbelgium/mercator
 
-docker run --env-file env -v $(pwd)/data:/root/mercator/data -v $(pwd)/input.csv:/root/mercator/input.csv --rm dnsbelgium/mercator
+docker run --env-file env -v $(pwd):/root/mercator --rm dnsbelgium/mercator
 ```
 
-When Mercator is finished, you can consult the resulting parquet files.
+Mercator will a `json` and a `data` directory inside the mounted folder. When Mercator is finished, you can consult the resulting parquet files.
 
 ## Consulting the crawl results:
 
@@ -129,7 +128,12 @@ EOF
 
 Start the container:
 ```shell
-docker run docker run --name mercator-web --detach --env-file web_mode -v $(pwd)/data:/root/mercator/data -p 8082:8082 --rm dnsbelgium/mercator
+docker run docker run --env-file web_mode -v $(pwd):/root/mercator -p 8082:8082 dnsbelgium/mercator
+```
+
+Or to start the container in the background (and give it a name):
+```shell
+docker run docker run --name mercator-web --detach --env-file web_mode -v $(pwd):/root/mercator -p 8082:8082 --rm dnsbelgium/mercator
 ```
 
 You can now visit http://localhost:8082/ in the browser and look up one of the crawl results, for example http://localhost:8082/search/web/latest?domainName=dnsbelgium.be
@@ -143,6 +147,42 @@ Stop the container:
 docker stop mercator-web
 ```
 
+# Settings
+
+The behaviour of Mercator can be tweaked by setting various properties.
+Mercator uses [https://docs.spring.io/spring-boot/reference/features/external-config.html](https://docs.spring.io/spring-boot/reference/features/external-config.html)
+which means you can change properties in several ways. 
+To easiest way is probably to set environment variables when starting the Mercator container.
+
+See [docs/mercator_settings.MD](docs/mercator_settings.MD) for an overview of all configurable properties with their goal, data type and default value.
+
+# Logging
+
+## File output
+
+By default, Mercator writes logging events to disk in JSON format to this file: ${HOME}/mercator/mercator.log.json
+More specifically, it uses Graylog Extended Log Format (GELF).
+The log file will be rotated (and compressed) when it reaches 10MB. A maximum of 7 rotated files will be kept.
+
+You can consult the JSON file(s) with your favorite tool. 
+For example, with duckdb:
+
+```sql 
+select to_timestamp(timestamp) as ts, _level_name, short_message 
+from read_json('mercator.log.json*', union_by_name=true)
+order by ts
+```
+You can control the defaults with these properties:
+* LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE
+* LOGBACK_ROLLINGPOLICY_MAX_HISTORY
+* LOGBACK_ROLLINGPOLICY_FILE_NAME_PATTERN
+
+For more details, see the [Spring Boot documentation](https://docs.spring.io/spring-boot/reference/features/logging.html#features.logging.file-rotation)
+
+## Console output
+
+Mercator also writes log events to the console, but this output is throttled for performance reasons. 
+See [src/main/resources/logback-spring.xml](src/main/resources/logback-spring.xml)
 
 # Compiling & running locally 
 
@@ -236,36 +276,27 @@ Metrics are available on http://localhost:3000
 
 ```shell
 docker run \
-  -v $(pwd)/data:/root/mercator/data \
+  -v $(pwd):/root/mercator \
   -p 8082:8082 \
   --rm \
   dnsbelgium/mercator
   
 open http://localhost:8082
 ```
-
-# Instructions for running it in production
-
-Will follow soon.
-
 # Features
   
 Mercator will do the following info for each submitted domain name
 * Fetch a configurable set of DNS resource records (SOA, A, AAAA, NS, MX, TXT, CAA, HTTPS, SVCB, DS, DNSKEY, CDNSKEY, CDS, ...)
 * Fetch one or more html pages
+* Searches for (Belgian) VAT numbers
 * Extract features from all collected html pages
 * Record conversations with all configured SMTP servers
 * Check the TLS versions (and cipher suites) supported on port 443
-* Find work by scanning a configurable folder for parquet files with domain names
-
 Other features:
-* Publish metrics for Prometheus
+* Basic Web UI to consult the crawl results
+* Publishes metrics for Prometheus
 * docker-compose file to start Prometheus & [Grafana](http://localhost:3000)  
   * with custom Grafana dashboards with the most important metrics
 
-## Planned
-* export output files to S3
-* optionally receive work via SQS
-
-## In progress
-* show fetched data in web ui
+# Planned features
+* support for finding non-Belgian VAT numbers on the visited websites 

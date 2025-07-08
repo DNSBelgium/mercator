@@ -33,7 +33,7 @@ public class WebCrawler {
     private final TechnologyAnalyzer technologyAnalyzer;
 
     @Setter
-    @Value("${vat.crawler.max.visits.per.domain:10}")
+    @Value("${web.crawler.max.visits.per.domain:10}")
     private int maxVisitsPerDomain = 10;
 
     @Setter
