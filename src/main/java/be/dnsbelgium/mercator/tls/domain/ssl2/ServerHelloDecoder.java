@@ -76,7 +76,7 @@ public class ServerHelloDecoder extends ByteToMessageDecoder {
       int msgType = in.readByte();
       logger.info("msgType = {}", msgType);
       if (msgType != ServerHelloEncoder.SERVER_HELLO_MESSAGE_TYPE) {
-        logger.error("Incoming message is not a ServerHello! msgType = {}", msgType);
+        logger.debug("Incoming message is not a ServerHello! msgType = {}", msgType);
         throw new CodecException("Incoming message is not a ServerHello! msgType=" + msgType);
       }
       boolean sessionIdHit = in.readBoolean();
