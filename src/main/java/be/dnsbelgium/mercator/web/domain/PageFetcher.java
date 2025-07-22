@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.web.domain.ConfigurableDns.SupportedIpVersion;
 import be.dnsbelgium.mercator.web.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PreDestroy;
+import lombok.SneakyThrows;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
@@ -12,7 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +48,7 @@ public class PageFetcher {
 
   private static final Logger logger = getLogger(PageFetcher.class);
 
+  @SneakyThrows
   public PageFetcher(MeterRegistry meterRegistry, PageFetcherConfig config) {
     logger.info("config = {}", config);
     this.config = config;
@@ -55,7 +61,30 @@ public class PageFetcher {
     // as long as K8s pods aren't configured for v6, we support v4 only
     Dns dns = new ConfigurableDns(SupportedIpVersion.V4_ONLY);
 
+    TrustManager[] trustAllCerts = new TrustManager[]{
+        new X509TrustManager() {
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+            }
+
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+            }
+
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[]{};
+            }
+        }
+    };
+
+    SSLContext sslContext = SSLContext.getInstance("SSL");
+    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+
     this.client = new OkHttpClient.Builder()
+            .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0])
+            .hostnameVerifier((hostname, session) -> true)
             .connectTimeout(config.getConnectTimeOut())
             .writeTimeout(config.getWriteTimeOut())
             .readTimeout(config.getReadTimeOut())
@@ -228,14 +257,13 @@ public class PageFetcher {
 
     logger.debug("request = {}", request);
 
+    Instant sentRequest = Instant.now();
     try (Response response = client.newCall(request).execute()) {
 
+      Instant receivedResponse = Instant.now();
       if (logger.isDebugEnabled()) {
         debug(response);
       }
-
-      Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
-      Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
 
       builder.visitStarted(sentRequest);
       builder.visitFinished(receivedResponse);
