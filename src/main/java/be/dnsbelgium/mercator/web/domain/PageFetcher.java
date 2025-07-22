@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -51,7 +49,7 @@ public class PageFetcher {
   private static final Logger logger = getLogger(PageFetcher.class);
 
   @SneakyThrows
-  public PageFetcher(MeterRegistry meterRegistry, PageFetcherConfig config) throws NoSuchAlgorithmException, KeyManagementException {
+  public PageFetcher(MeterRegistry meterRegistry, PageFetcherConfig config) {
     logger.info("config = {}", config);
     this.config = config;
     this.meterRegistry = meterRegistry;
