@@ -260,7 +260,7 @@ public class Page {
   public PageVisit asPageVisit(VisitRequest visitRequest) {
     return new PageVisit(
             url != null ? StringUtils.abbreviate(url.toString(), 255) : null,
-            finalUrl != null ? StringUtils.abbreviate(url.toString(), 255) : null,
+            finalUrl != null ? StringUtils.abbreviate(finalUrl.toString(), 255) : null,
             url != null ? StringUtils.abbreviate(url.encodedPath(), 255) : null,
             visitStarted,
             visitFinished,
