@@ -111,7 +111,7 @@ class PageFetcherTest {
     String url = "https://assets.dnsbelgium.be/attachment/Wijziging-gemachtigde-DomainGuard-nl_0.pdf";
     Page page = pageFetcher.fetch(HttpUrl.get(url));
     logger.info("page = {}", page);
-    assertThat(page).isEqualTo(Page.CONTENT_TYPE_NOT_SUPPORTED);
+    assertThat(page.getStatusCode()).isEqualTo(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode());
   }
 
   @Test
@@ -120,7 +120,7 @@ class PageFetcherTest {
     HttpUrl url = HttpUrl.get("http://httpbin.org/image/png");
     Page page = pageFetcher.fetch(url);
     logger.info("page = {}", page);
-    assertThat(page).isEqualTo(Page.CONTENT_TYPE_NOT_SUPPORTED);
+    assertThat(page.getStatusCode()).isEqualTo(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode());
   }
 
   @Test
@@ -129,7 +129,7 @@ class PageFetcherTest {
     HttpUrl url = HttpUrl.get("http://httpbin.org/image/svg");
     Page page = pageFetcher.fetch(url);
     logger.info("page = {}", page);
-    assertThat(page).isEqualTo(Page.CONTENT_TYPE_NOT_SUPPORTED);
+    assertThat(page.getStatusCode()).isEqualTo(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode());
   }
 
   @Test
@@ -138,7 +138,7 @@ class PageFetcherTest {
     HttpUrl url = HttpUrl.get("http://httpbin.org/image/webp");
     Page page = pageFetcher.fetch(url);
     logger.info("page = {}", page);
-    assertThat(page).isEqualTo(Page.CONTENT_TYPE_NOT_SUPPORTED);
+    assertThat(page.getStatusCode()).isEqualTo(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode());
   }
 
   @Test
@@ -150,7 +150,7 @@ class PageFetcherTest {
     double before = counter.count();
     Page page = pageFetcher.fetch(url);
     logger.info("page = {}", page);
-    assertThat(page).isEqualTo(Page.CONTENT_TYPE_NOT_SUPPORTED);
+    assertThat(page.getStatusCode()).isEqualTo(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode());
     assertThat(counter.count()).isEqualTo(before + 1);
   }
 
