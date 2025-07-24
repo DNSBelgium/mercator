@@ -4,6 +4,8 @@ import be.dnsbelgium.mercator.tls.domain.TlsScanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,6 +14,8 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.nio.file.Path;
 import java.sql.*;
 
@@ -30,6 +34,8 @@ public class MercatorApplication {
   static {
     TlsScanner.allowOldAlgorithms();
   }
+
+  private static final Logger logger = LoggerFactory.getLogger(MercatorApplication.class);
 
   @SneakyThrows
   public static void runDuck(String query) {
@@ -55,8 +61,22 @@ public class MercatorApplication {
     }
   }
 
+  public static void printMemoryLimits() {
+    int mb = 1024 * 1024;
+    MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+    long xmx = memoryBean.getHeapMemoryUsage().getMax() / mb;
+    long xms = memoryBean.getHeapMemoryUsage().getInit() / mb;
+    logger.info("Initial Memory (-Xms) = {} MB", xms);
+    logger.info("Maximum Memory (-Xmx) = {} MB", xmx);
+    logger.info("Use environment variable JAVA_TOOL_OPTIONS to adjust.");
+    logger.info("For example:");
+    logger.info("  docker run -e JAVA_TOOL_OPTIONS=\"-Xmx10G\" --rm  dnsbelgium/mercator");
+  }
+
+
 
   public static void main(String[] args) throws IOException {
+    printMemoryLimits();
     if (args.length > 0 && "duckdb".equals(args[0])) {
       if (args.length > 1) {
         runDuck(args[1]);
@@ -66,7 +86,7 @@ public class MercatorApplication {
       }
       System.exit(0);
     }
-    System.out.println("CWD = " + Path.of("").toAbsolutePath());
+    logger.info("CWD = {}", Path.of("").toAbsolutePath());
     SpringApplication.run(MercatorApplication.class, args);
   }
 

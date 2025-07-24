@@ -227,7 +227,7 @@
         <dependency>
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
-            <version>1.3.1.0</version>
+            <version>1.3.2.0</version>
         </dependency>
 
         <dependency>
@@ -525,6 +525,7 @@
                         <jvmFlags>
                             <!-- To avoid warning about Netty, see https://netty.io/wiki/java-24-and-sun.misc.unsafe.html -->
                             <jvmFlag>--sun-misc-unsafe-memory-access=allow</jvmFlag>
+                            <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
                         </jvmFlags>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
