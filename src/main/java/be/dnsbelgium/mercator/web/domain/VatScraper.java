@@ -139,8 +139,6 @@ public class VatScraper {
   public Page fetchAndParse(HttpUrl url) {
     try {
       return pageFetcher.fetch(url);
-    } catch (InterruptedIOException e) {
-      return Page.PAGE_TIME_OUT;
     } catch (Exception e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
       return null;

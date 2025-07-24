@@ -176,7 +176,7 @@ class VatScraperTest {
       mockWebServer.start();
       baseUrl = mockWebServer.url("/");
       Page page1 = testVatScraper.fetchAndParse(baseUrl);
-      assertThat(page1).isEqualTo(Page.PAGE_TIME_OUT);
+      assertThat(page1.getStatusCode()).isEqualTo(Page.SpecialPageStatus.TIME_OUT.getCode());
       testFetcher.clearCache();
       Page page2 = testVatScraper.fetchAndParse(baseUrl);
       logger.info("page = {}", page2);

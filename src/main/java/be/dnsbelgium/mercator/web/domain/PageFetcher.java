@@ -21,6 +21,7 @@ import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -247,6 +248,8 @@ public class PageFetcher {
 
     Page.PageBuilder builder = Page.builder();
 
+    builder.url(url).visitStarted(Instant.now());
+
     Instant started = Instant.now();
     String cacheControl = "max-stale=" + config.getCacheMaxStale().toSeconds();
     Request request = new Request.Builder()
@@ -259,14 +262,16 @@ public class PageFetcher {
 
     try (Response response = client.newCall(request).execute()) {
 
+      builder.finalUrl(response.request().url())
+             .statusCode(response.code())
+             .headers(getHeaders(response));
       if (logger.isDebugEnabled()) {
         debug(response);
       }
 
       Instant sentRequest = Instant.ofEpochMilli(response.sentRequestAtMillis());
-      Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
-
       builder.visitStarted(sentRequest);
+      Instant receivedResponse = Instant.ofEpochMilli(response.receivedResponseAtMillis());
       builder.visitFinished(receivedResponse);
 
       Duration duration = Duration.between(sentRequest, receivedResponse);
@@ -278,15 +283,18 @@ public class PageFetcher {
         if (responseBody == null) {
           logger.error("response.body == null for url={}", url);
           meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
-          return Page.failed(url, sentRequest, receivedResponse);
+          return builder.statusCode(Page.SpecialPageStatus.COULD_NOT_FETCH_BODY.getCode())
+              .build();
         }
 
         MediaType contentType = responseBody.contentType();
+        builder.mediaType(contentType);
         if (!isSupported(contentType)) {
           logger.debug("Skipping content since type = {}", contentType);
           meterRegistry.counter(MetricName.COUNTER_PAGES_CONTENT_TYPE_NOT_SUPPORTED,
               "content-type", contentType != null ? contentType.toString() : null).increment();
-          return Page.CONTENT_TYPE_NOT_SUPPORTED;
+          return builder.statusCode(Page.SpecialPageStatus.CONTENT_TYPE_NOT_SUPPORTED.getCode())
+              .build();
         }
 
         handleBody(responseBody, builder, config);
@@ -299,18 +307,14 @@ public class PageFetcher {
         }
         logger.debug("Fetching {} => {} took {}", url, response.request().url(), fetchDuration);
 
-        return builder
-            .url(url)
-            .finalUrl(response.request().url())
-            .statusCode(response.code())
-            .headers(getHeaders(response))
-            .mediaType(responseBody.contentType())
-            .build();
+        return builder.build();
       }
     } catch (SSLHandshakeException | ConnectException e) {
       logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
       meterRegistry.counter(MetricName.COUNTER_PAGES_FAILED).increment();
-      return Page.failed(request.url(), started, Instant.now());
+      return builder.statusCode(Page.SpecialPageStatus.SSL_HANDSHAKE_FAILED.getCode()).visitFinished(Instant.now()).build();
+    } catch (InterruptedIOException ie) {
+      return builder.statusCode(Page.SpecialPageStatus.TIME_OUT.getCode()).visitFinished(Instant.now()).build();
     }
   }
 

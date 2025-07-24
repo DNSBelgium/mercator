@@ -26,9 +26,24 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Getter
 public class Page {
 
-  public static Page PAGE_TIME_OUT = new Page();
-  public static Page PAGE_TOO_BIG = new Page();
-  public static Page CONTENT_TYPE_NOT_SUPPORTED = new Page();
+  public enum SpecialPageStatus {
+    TIME_OUT(-1),
+    TOO_BIG(-2),
+    CONTENT_TYPE_NOT_SUPPORTED(-3), 
+    SSL_HANDSHAKE_FAILED(-4), 
+    COULD_NOT_FETCH_BODY(-5);
+
+    private final int code;
+
+    SpecialPageStatus(int code) {
+      this.code = code;
+    }
+
+    public int getCode() {
+      return code;
+    }
+  }
+
 
   // the URL we retrieved, might be different from the URL we requested (because
   // we follow redirects)
@@ -77,12 +92,22 @@ public class Page {
     this.visitStarted = visitStarted;
     this.visitFinished = visitFinished;
     this.statusCode = statusCode;
-    this.responseBody = responseBody == null ? "" : responseBody;
+    this.responseBody = responseBody;
     this.contentLength = contentLength;
     this.mediaType = mediaType;
     this.headers = mergeHeaders(headers);
+    parseDocument();
+    processCookies(this.headers.get("set-cookie"));
+    processCookies(this.headers.get("cookie"));
+  }
 
-    this.document = Jsoup.parse(this.responseBody, url == null? "" : finalUrl.toString());
+  private void parseDocument() {
+    if (this.responseBody == null) {
+      return;
+    } 
+
+    String baseUri = finalUrl != null ? finalUrl.toString() : (url != null ? url.toString() : "");
+    this.document = Jsoup.parse(this.responseBody, baseUri);
 
     Elements scripts = document.select("script");
     for (Element script : scripts) {
@@ -99,10 +124,8 @@ public class Page {
       metaMap.putIfAbsent(metaName, new LinkedList<>());
       metaMap.get(metaName).add(metaContent);
     }
-
-    processCookies(this.headers.get("set-cookie"));
-    processCookies(this.headers.get("cookie"));
   }
+
 
   private static Map<String, List<String>> mergeHeaders(Map<String, List<String>> headers) {
     if (headers == null) {
@@ -238,15 +261,6 @@ public class Page {
 
   @Override
   public String toString() {
-    if (this == PAGE_TIME_OUT) {
-      return "Page.PAGE_TIME_OUT";
-    }
-    if (this == PAGE_TOO_BIG) {
-      return "Page.PAGE_TOO_BIG";
-    }
-    if (this == CONTENT_TYPE_NOT_SUPPORTED) {
-      return "Page.CONTENT_TYPE_NOT_SUPPORTED";
-    }
     return new StringJoiner(", ", Page.class.getSimpleName() + "[", "]")
             .add("url=" + url)
             .add("visitFinished=" + visitFinished)
