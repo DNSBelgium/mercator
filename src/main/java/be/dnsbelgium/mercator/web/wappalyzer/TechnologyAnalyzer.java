@@ -30,6 +30,9 @@ public class TechnologyAnalyzer {
     }
 
     public Set<String> analyze(Page page) {
+        if (page.getDocument() == null) {
+            return Set.of();
+        }
         return analyzePageTimer.record(
                 () ->
                 jappalyzer

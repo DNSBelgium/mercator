@@ -89,6 +89,7 @@ public class VatScraper {
     if (page.getDocument() == null) {
       logger.debug("Page {} has no document", url);
       siteVisit.markVisited(link);
+      siteVisit.add(link, page);
       return;
     }
     findVAT(page);

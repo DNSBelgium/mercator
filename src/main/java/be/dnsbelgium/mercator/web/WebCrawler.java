@@ -116,6 +116,10 @@ public class WebCrawler {
     }
 
     private HtmlFeatures findFeatures(VisitRequest visitRequest, Page page) {
+        if (page.getDocument() == null) {
+            logger.debug("Page {} has no document, cannot extract features", page.getUrl());
+            return null;
+        }
         Threads.FEATURE_EXTRACTION.incrementAndGet();
         long start = System.currentTimeMillis();
         try {
