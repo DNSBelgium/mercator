@@ -68,7 +68,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
    * @return the results of scanning the domain name
    */
   public TlsVisit visit(VisitRequest visitRequest, String prefix) {
-    logger.info("Crawling {}", visitRequest);
+    logger.info("Crawling {} with prefix=[{}]", visitRequest, prefix);
     Instant start = Instant.now();
     String hostName = prefix + visitRequest.getDomainName();
     InetSocketAddress address = new InetSocketAddress(hostName, destinationPort);
