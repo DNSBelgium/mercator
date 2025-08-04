@@ -3,7 +3,7 @@ name: Build & publish to docker hub
 on:
   push:
     branches:
-      - main
+      - persistent_queue
 #  schedule:
 #    - cron: '30 5 * * *'
 
@@ -88,4 +88,4 @@ jobs:
           REGISTRY: ${{ secrets.DOCKERHUB_REGISTRY }}
           DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PAT }}
-        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
+        run: mvn --batch-mode clean compile jib:build -D jib.to.tags="persistent_queue"

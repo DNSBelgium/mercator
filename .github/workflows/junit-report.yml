@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - persistent_queue
 #  schedule:
 #    - cron: '30 5 * * *'
 
