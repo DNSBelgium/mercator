@@ -80,6 +80,7 @@ public class TlsJobConfig {
   }
 
   @Bean
+  @StepScope
   public JsonItemWriter<TlsCrawlResult> tlsItemWriter(
           BatchConfig batchConfig, TlsRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);

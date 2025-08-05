@@ -76,7 +76,6 @@ public class MercatorApplication {
 
 
   public static void main(String[] args) throws IOException {
-    printMemoryLimits();
     if (args.length > 0 && "duckdb".equals(args[0])) {
       if (args.length > 1) {
         runDuck(args[1]);
@@ -86,7 +85,9 @@ public class MercatorApplication {
       }
       System.exit(0);
     }
+    printMemoryLimits();
     logger.info("CWD = {}", Path.of("").toAbsolutePath());
+    logger.info("persistent_queue: true");
     SpringApplication.run(MercatorApplication.class, args);
   }
 

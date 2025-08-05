@@ -45,6 +45,7 @@ public class JsonItemWriter<T> implements ItemWriter<T> , ItemStream {
   public void write(Chunk<? extends T> chunk) throws Exception {
     setMDC();
     try {
+      Files.createDirectories(outputDirectory);
       Path output = outputDirectory.resolve(UUID.randomUUID() + ".json");
       objectMapper.writeValue(output.toFile(), chunk.iterator());
       logger.debug("Written {} items to {}", chunk.size(), output);

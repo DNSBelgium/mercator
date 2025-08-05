@@ -78,6 +78,7 @@ public class DnsJobConfig {
   }
 
   @Bean
+  @StepScope
   public JsonItemWriter<DnsCrawlResult> dnsItemWriter(
           BatchConfig batchConfig, DnsRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);

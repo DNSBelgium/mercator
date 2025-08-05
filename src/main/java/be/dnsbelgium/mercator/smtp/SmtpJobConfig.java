@@ -61,6 +61,7 @@ public class SmtpJobConfig {
   }
 
   @Bean
+  @StepScope
   public JsonItemWriter<SmtpVisit> smtpItemWriter(
           BatchConfig batchConfig, SmtpRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);

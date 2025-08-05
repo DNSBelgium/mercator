@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.SimpleJobRunner;
 import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.schedule.JobScheduler;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,13 +21,11 @@ public class HomeController {
 
    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-   private final SimpleJobRunner simpleJobRunner;
-   private final JobScheduler jobScheduler;
+  private final JobScheduler jobScheduler;
    private final ObjectWriter objectWriter;
 
-  public HomeController(SimpleJobRunner simpleJobRunner, JobScheduler jobScheduler) {
-     this.simpleJobRunner = simpleJobRunner;
-     this.jobScheduler = jobScheduler;
+  public HomeController(JobScheduler jobScheduler) {
+    this.jobScheduler = jobScheduler;
      ObjectMapper objectMapper = new ObjectMapper();
      objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
    }
@@ -36,18 +33,6 @@ public class HomeController {
     @GetMapping
     public String index() {
         return "index";
-    }
-
-    @GetMapping("/start_job")
-    public String start_job() {
-      logger.info("Starting job ...");
-      try {
-        simpleJobRunner.run();
-        logger.info("job launched");
-      } catch (Exception e) {
-        logger.error("Error launching job", e);
-      }
-      return "redirect:/";
     }
 
     @GetMapping("/error")

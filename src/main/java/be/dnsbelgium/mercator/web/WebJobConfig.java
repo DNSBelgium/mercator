@@ -72,6 +72,7 @@ public class WebJobConfig {
   }
 
   @Bean
+  @StepScope
   public JsonItemWriter<WebCrawlResult> webItemWriter(
           BatchConfig batchConfig, WebRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);

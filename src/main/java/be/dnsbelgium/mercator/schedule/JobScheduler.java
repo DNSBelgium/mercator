@@ -13,12 +13,14 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -189,11 +191,18 @@ public class JobScheduler {
         logger.info("simpleJobRunner.run() is done for batchId = {}", batchId);
         copyToDone(batchId);
         deleteFromQueue(batchId);
+        cleanUpAfterBatch();
         logger.info("startBatch is done for batchId = {}", batchId);
       } catch (Exception e) {
         logger.error("Failed to run simpleJobRunner", e);
       }
     }
+  }
+
+  private void cleanUpAfterBatch() {
+    Path outputPath = Paths.get(batchConfig.getOutputDirectory());
+    boolean ok = FileSystemUtils.deleteRecursively(outputPath.toFile());
+    logger.info("cleanUpAfterBatch: path={} ok = {}", outputPath, ok);
   }
 
   /**
