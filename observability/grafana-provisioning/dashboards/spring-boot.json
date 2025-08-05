@@ -2892,8 +2892,8 @@
       },
       {
         "current": {
-          "text": "mercator-batch:8082",
-          "value": "mercator-batch:8082"
+          "text": "mercator:8082",
+          "value": "mercator:8082"
         },
         "datasource": {
           "type": "prometheus",

@@ -1,9 +1,14 @@
 services:
 
-  mercator-web:
-    image: dnsbelgium/mercator
+  mercator:
+    image: dnsbelgium/mercator:persistent_queue
+    container_name: mercator
     volumes:
-      - ./data:/root/mercator/data
+      - ~/mercator:/root/mercator
+    environment:
+      - CRAWLER_DNS_GEOIP_ENABLED=false
+      - JOB_SMTP_ENABLED=false
+    env_file: batch.env
     ports:
       - '8082:8082'
     healthcheck:
@@ -12,24 +17,9 @@ services:
       timeout: 2s
       retries: 15
       start_period: 3s
-
-  mercator-batch:
-    image: dnsbelgium/mercator
-    volumes:
-      - ./data:/root/mercator/data
-      - ./input.csv:/root/mercator/input.csv
-    environment:
-      - SPRING_PROFILES_ACTIVE=batch
-      - CRAWLER_DNS_GEOIP_ENABLED=false
-      - JOB_SMTP_ENABLED=false
-    ports:
-      - '8090:8082'
-    healthcheck:
-      test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
-      interval: 2s
-      timeout: 2s
-      retries: 15
-      start_period: 3s
+    cpus: "7.5"
+    mem_reservation: "10gb"
+    mem_limit: "12gb"
 
   prometheus:
     image: prom/prometheus:v2.55.0
@@ -47,6 +37,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    container_name: grafana
     ports:
       - '3000:3000'
     volumes:
