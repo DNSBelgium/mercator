@@ -7,6 +7,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -74,9 +75,10 @@ public class WebJobConfig {
   @Bean
   @StepScope
   public JsonItemWriter<WebCrawlResult> webItemWriter(
+          MeterRegistry meterRegistry,
           BatchConfig batchConfig, WebRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, WebCrawlResult.class);
+    return new JsonItemWriter<>(meterRegistry, repository, objectMapper, outputDirectory, WebCrawlResult.class);
   }
 
   @Bean(name = JOB_NAME + "Job")

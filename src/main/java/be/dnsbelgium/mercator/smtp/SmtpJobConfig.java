@@ -7,6 +7,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -63,9 +64,10 @@ public class SmtpJobConfig {
   @Bean
   @StepScope
   public JsonItemWriter<SmtpVisit> smtpItemWriter(
+          MeterRegistry meterRegistry,
           BatchConfig batchConfig, SmtpRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, SmtpVisit.class);
+    return new JsonItemWriter<>(meterRegistry, repository, objectMapper, outputDirectory, SmtpVisit.class);
   }
 
   @Bean

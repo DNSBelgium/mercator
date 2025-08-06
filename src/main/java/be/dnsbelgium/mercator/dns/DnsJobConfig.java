@@ -8,6 +8,7 @@ import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.persistence.DnsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -80,9 +81,10 @@ public class DnsJobConfig {
   @Bean
   @StepScope
   public JsonItemWriter<DnsCrawlResult> dnsItemWriter(
+          MeterRegistry meterRegistry,
           BatchConfig batchConfig, DnsRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, DnsCrawlResult.class);
+    return new JsonItemWriter<>(meterRegistry, repository, objectMapper, outputDirectory, DnsCrawlResult.class);
   }
 
   @Bean(name = "dnsJob")

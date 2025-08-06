@@ -9,6 +9,7 @@ import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
@@ -82,9 +83,10 @@ public class TlsJobConfig {
   @Bean
   @StepScope
   public JsonItemWriter<TlsCrawlResult> tlsItemWriter(
+          MeterRegistry meterRegistry,
           BatchConfig batchConfig, TlsRepository repository, ObjectMapper objectMapper) {
     Path outputDirectory = batchConfig.outputDirectoryFor(JOB_NAME);
-    return new JsonItemWriter<>(repository, objectMapper, outputDirectory, TlsCrawlResult.class);
+    return new JsonItemWriter<>(meterRegistry, repository, objectMapper, outputDirectory, TlsCrawlResult.class);
   }
 
   @Bean(name = "tlsJob")

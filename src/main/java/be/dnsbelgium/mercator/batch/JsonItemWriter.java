@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.persistence.BaseRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,13 +33,14 @@ public class JsonItemWriter<T> implements ItemWriter<T> , ItemStream {
 
 
   @SneakyThrows
-  public JsonItemWriter(BaseRepository<T> repository, ObjectMapper objectMapper, Path outputDirectory, Class<T> clazz) {
+  public JsonItemWriter(MeterRegistry meterRegistry, BaseRepository<T> repository, ObjectMapper objectMapper, Path outputDirectory, Class<T> clazz) {
     this.name = clazz.getSimpleName();
     this.repository = repository;
     this.objectMapper = objectMapper;
     this.outputDirectory = outputDirectory;
     logger.info("outputDirectory = {} clazz={}", outputDirectory, clazz);
     Files.createDirectories(outputDirectory);
+    meterRegistry.gauge("jsonItemWriter.writeCount." + clazz.getSimpleName(), writeCount);
   }
 
   @Override
