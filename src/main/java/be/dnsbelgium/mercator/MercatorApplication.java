@@ -3,6 +3,8 @@ package be.dnsbelgium.mercator;
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.config.MeterFilter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,9 +90,17 @@ public class MercatorApplication {
     printMemoryLimits();
     logger.info("CWD = {}", Path.of("").toAbsolutePath());
     logger.info("persistent_queue: true");
+    workAroundBatchMetricsBug();
     SpringApplication.run(MercatorApplication.class, args);
+
   }
 
-
+  public static void workAroundBatchMetricsBug() {
+      logger.warn("workAroundBatchMetricsBug");
+      // Spring Batch has a minor bug that generates a warning at start-up.
+      // see https://github.com/spring-projects/spring-batch/issues/4753
+      // This snippet avoids the warning.
+      Metrics.globalRegistry.config().meterFilter(MeterFilter.denyNameStartsWith("spring.batch.job.active"));
+  }
 
 }
