@@ -177,7 +177,7 @@ public class JobScheduler {
      logger.info("maxBatchSize = {}", maxBatchSize);
   }
 
-  @Scheduled(fixedDelay = 20, timeUnit = TimeUnit.SECONDS)
+  @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
   public void startBatch() {
     String batchId = UlidCreator.getUlid().toString();
     logger.info("startBatch: check if there is work in the queue");
