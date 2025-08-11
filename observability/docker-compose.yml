@@ -5,21 +5,19 @@ services:
     container_name: mercator
     volumes:
       - ~/mercator:/root/mercator
-    environment:
-      - CRAWLER_DNS_GEOIP_ENABLED=false
-      - JOB_SMTP_ENABLED=false
-    env_file: batch.env
+    env_file: mercator.env
     ports:
       - '8082:8082'
     healthcheck:
       test: "rm -f health && wget -q localhost:8082/actuator/health && grep UP health > /dev/null"
-      interval: 2s
-      timeout: 2s
+      interval: 30s
+      timeout: 20s
       retries: 15
-      start_period: 3s
+      start_period: 20s
     cpus: "7.5"
     mem_reservation: "10gb"
     mem_limit: "12gb"
+    restart: always
 
   prometheus:
     image: prom/prometheus:v2.55.0
