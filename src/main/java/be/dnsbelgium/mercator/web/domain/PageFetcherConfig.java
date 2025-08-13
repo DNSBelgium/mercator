@@ -120,6 +120,7 @@ public class PageFetcherConfig {
   @Override
   public String toString() {
     return new StringJoiner(", ", PageFetcherConfig.class.getSimpleName() + "[", "]")
+        .add("userAgent=" + userAgent)
         .add("cacheDirectory=" + cacheDirectory)
         .add("cacheSize=" + cacheSize.toMegabytes() + "MB")
         .add("cacheMaxStale=" + cacheMaxStale)
