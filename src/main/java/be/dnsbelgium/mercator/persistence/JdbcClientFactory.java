@@ -29,7 +29,9 @@ public class JdbcClientFactory {
     DataSource dataSource = new SingleConnectionDataSource(url, true);
     logger.info("created dataSource with url='{}'", url);
     JdbcClient jdbcClient = JdbcClient.create(dataSource);
-    logSecrets(jdbcClient);
+    if (logSecrets) {
+      logSecrets(jdbcClient);
+    }
     if (createS3Secret) {
       createSecret(dataSource);
     }
