@@ -17,7 +17,6 @@ with typed as (
                                     final_url VARCHAR,
                                     link_text VARCHAR,
                                     path VARCHAR,
-                                    response_body VARCHAR,
                                     headers MAP(VARCHAR, VARCHAR[]),
                                     content_length INTEGER,
                                     vat_values VARCHAR[],

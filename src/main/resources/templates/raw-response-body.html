@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Mercator | Raw response body</title>
+</head>
+
+<body>
+
+<h1 th:if="${responseBody}">Raw response body</h1>
+
+<div th:if="${responseBody} == null">
+    No response body found for Visit Id <span th:text="${visitId}"></span> and URL <span th:text="${finalUrl}"/>.
+</div>
+
+<pre th:text="${responseBody}">
+
+</pre>
+
+</body>
+
+</html>

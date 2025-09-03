@@ -32,17 +32,23 @@ class WebRepositoryTest {
 
   private final ObjectMother objectMother = new ObjectMother();
 
-  private final WebRepository repository = makeRepository(baseLocation.toString());
+  private WebRepository makeRepository() {
+    String webLocation = baseLocation.resolve("web").toString();
+    String responseBodyLocation = baseLocation.resolve("response_body").toString();
+    return makeRepository(webLocation, responseBodyLocation);
+  }
 
-  private WebRepository makeRepository(String baseLocation) {
-    return new WebRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), baseLocation);
+  private WebRepository makeRepository(String loc1, String loc2) {
+    return new WebRepository(TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), loc1, loc2);
   }
 
 
   @Test
   @EnabledIfEnvironmentVariable(named = "S3_TEST_ENABLED", matches = "true")
   public void toS3Parquet() throws IOException {
-    WebRepository s3WebRepository = makeRepository(System.getProperty("mercator_s3_base_path"));
+    String webLocation = System.getProperty("mercator_s3_base_path") + "/web";
+    String responseBodyLocation = System.getProperty("mercator_s3_base_path") + "/response_body";
+    WebRepository s3WebRepository = makeRepository(webLocation, responseBodyLocation);
     logger.info("tempDir = {}", baseLocation);
     Files.createDirectories(baseLocation);
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
@@ -75,7 +81,7 @@ class WebRepositoryTest {
     WebCrawlResult webCrawlResult1 = objectMother.webCrawlResult1();
     WebCrawlResult webCrawlResult2 = objectMother.webCrawlResult2();
 
-    WebRepository repository = makeRepository(baseLocation.toString());
+    WebRepository repository = makeRepository();
 
     logger.info("webCrawlResult1 = {}", webCrawlResult1);
     logger.info("webCrawlResult2 = {}", webCrawlResult2);
@@ -97,8 +103,16 @@ class WebRepositoryTest {
     assertThat(webCrawlResults.size()).isEqualTo(1);
     assertThat(webCrawlResults.getFirst())
             .usingRecursiveComparison()
+            .ignoringFields("pageVisits.responseBody")
             .isEqualTo(webCrawlResult1);
-  }
 
+    // assert that responseBody was written to parquet files
+    String finalUrl = webCrawlResult1.getPageVisits().getFirst().getFinalUrl();
+
+    Optional<String> responseBody = repository.getResponseBody(webCrawlResult1.year(), webCrawlResult1.month(), webCrawlResult1.getVisitId(), finalUrl);
+    logger.info("responseBody = {}", responseBody);
+    assertThat(responseBody).isPresent();
+    responseBody.ifPresent(s -> assertThat(s).isEqualTo(webCrawlResult1.getPageVisits().getFirst().getResponseBody()));
+  }
 
 }

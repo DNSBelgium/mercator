@@ -26,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Getter
 public class Page {
 
+  @Getter
   public enum SpecialPageStatus {
     TIME_OUT(-1),
     TOO_BIG(-2),
@@ -39,9 +40,6 @@ public class Page {
       this.code = code;
     }
 
-    public int getCode() {
-      return code;
-    }
   }
 
 
@@ -154,15 +152,8 @@ public class Page {
   }
 
   private void addCookie(String name, String value) {
-    this.cookies.computeIfAbsent(name, k -> new LinkedList<>());
+    this.cookies.computeIfAbsent(name, _ -> new LinkedList<>());
     this.cookies.get(name).add(value);
-  }
-
-  private Page() {
-    this.url = null;
-    this.finalUrl = null;
-    this.visitStarted = Instant.now();
-    this.visitFinished = Instant.now();
   }
 
   private Page(HttpUrl url, Instant visitStarted, Instant visitFinished) {
@@ -271,6 +262,8 @@ public class Page {
             .toString();
   }
 
+  // visitRequest parameter is currently not needed
+  @SuppressWarnings("unused")
   public PageVisit asPageVisit(VisitRequest visitRequest) {
     return new PageVisit(
             url != null ? StringUtils.abbreviate(url.toString(), 255) : null,

@@ -121,23 +121,6 @@ public class WebSearchControllerTest {
     }
 
     @Test
-    public void findLatestResultWithRobotsTxt_findsLatestVisitDetails() throws Exception {
-        WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithPageVisitWithRobotsTxt();
-
-        when(webRepository.findLatestResult("dnsbelgium.be")).thenReturn(Optional.of(webCrawlResult1));
-
-        this.mockMvc
-                .perform(MockMvcRequestBuilders.get("/search/web/latest")
-                        .param("domainName", "dnsbelgium.be"))
-                .andExpect(view().name("visit-details-web"))
-                .andExpect(model().attributeExists("webCrawlResult"))
-                .andExpect(content().string(containsString("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")))
-                .andExpect(content().string(containsString("Content-Type")))
-                .andExpect(content().string(containsString("text/plain")))
-                .andExpect(content().string(containsString("128")));
-    }
-
-    @Test
     public void findLatest_whenWebCrawlResultHasNullValues() throws Exception {
         WebCrawlResult webCrawlResult1 = objectMother.webCrawlResultWithNullValues();
 

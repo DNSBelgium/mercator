@@ -98,32 +98,23 @@
                                     <td th:text="${pageVisit.statusCode}"></td>
                                 </tr>
                                 <tr>
+                                    <td>Content length</td>
+                                    <td th:text="${pageVisit.getContentLength()}"></td>
+                                </tr>
+                                <tr>
                                     <td>
-                                        HTTP response body
+                                        Response body
                                     </td>
                                     <td>
-                                        <script>
-                                            function renderRawHtml(html) {
-                                                const newWindow = window.open();
-                                                newWindow.document.title = 'raw html'
-                                                const pre = newWindow.document.createElement("pre");
-                                                pre.textContent = html;
-                                                newWindow.document.body.appendChild(pre);
-                                            }
-
-                                            function openHtmlInNewTab(htmlContent) {
-                                                const newWindow = window.open();
-                                                newWindow.document.write(htmlContent);
-                                                newWindow.document.close();
-                                            }
-                                        </script>
-                                        <button th:data-html="${pageVisit.getResponseBody()}"
-                                                onclick="renderRawHtml(this.getAttribute('data-html'))">Go to raw html
-                                        </button>
-                                        <button th:data-html="${pageVisit.getResponseBody()}"
-                                                onclick="openHtmlInNewTab(this.getAttribute('data-html'))">View in
-                                            browser
-                                        </button>
+                                        <a th:href="@{/search/web/response-body(visitId=${webCrawlResult.getVisitId()},finalUrl=${pageVisit.getFinalUrl()},year=${year},month=${month})}" target="_blank">
+                                            Render response body
+                                        </a>
+                                        <br>
+                                        <a th:href="@{/search/web/response-body-raw(visitId=${webCrawlResult.getVisitId()},finalUrl=${pageVisit.getFinalUrl()},year=${year},month=${month})}" target="_blank">
+                                            Show raw html
+                                        </a>
+                                        <br>
+                                        <small>Links will open a new tab</small>
                                     </td>
                                 </tr>
                                 <tr>
@@ -148,10 +139,6 @@
                                     </td>
                                 </tr>
                                 <tr th:replace="~{fragments/general :: mapDisplay('headers', ${pageVisit.getHeaders()}, 1)}"></tr>
-                                <tr>
-                                    <td>Content length</td>
-                                    <td th:text="${pageVisit.getContentLength()}"></td>
-                                </tr>
                                 <tr th:replace="~{fragments/general :: listDisplay('Detected technologies', ${pageVisit.getDetectedTechnologies()}, 4)}">
                                 </tr>
                                 <tr>

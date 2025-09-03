@@ -32,7 +32,7 @@ public class BaseRepository<T> {
 
   private final Class<T> type;
 
-  private final JdbcClientFactory jdbcClientFactory;
+  protected final JdbcClientFactory jdbcClientFactory;
   private final Lock lock = new ReentrantLock();
 
   @SneakyThrows
