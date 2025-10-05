@@ -28,5 +28,5 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
           cache: maven
 
-#      - name: Run snyk
-#        run: SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} mvn --batch-mode snyk:test
+      - name: Run snyk
+        run: SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} mvn --batch-mode snyk:test
