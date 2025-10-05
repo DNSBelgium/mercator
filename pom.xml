@@ -101,6 +101,12 @@
         </dependency>
         
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.19</version>
+        </dependency>
+        
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
             <version>2.10.1</version>
@@ -510,8 +516,7 @@
                     </to>
                     <from>
                         <image>
-                    <!--    eclipse-temurin:23.0.1_11-jre-ubi9-minimal@sha256:f2521f4f7cf25f1259e5db99cda2a6a676f44c68cc452cd1cc0bbeb3f72c06f8 -->
-                            eclipse-temurin:24.0.1_9-jdk-ubi9-minimal@sha256:88d5eac4f36d7eac63ee2ee835441469f9c76a8e5bedb5fc5b27a86698685a0c
+                            eclipse-temurin:24.0.2_12-jdk-ubi10-minimal@sha256:51d69419f1f8f9a8c0685cdd6901a6bc3db670a53126967bb25c1e6641e9f523
                         </image>
                         <platforms>
                             <platform>
