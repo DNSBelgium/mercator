@@ -31,6 +31,7 @@
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
         <baseImage>eclipse-temurin:23.0.1_11-jre-ubi9-minimal@sha256:f2521f4f7cf25f1259e5db99cda2a6a676f44c68cc452cd1cc0bbeb3f72c06f8</baseImage>
+        <netty.version>4.1.127.Final</netty.version>
     </properties>
 
     <dependencies>
@@ -261,7 +262,7 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -274,14 +275,14 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-common</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-codec -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -293,19 +294,19 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-resolver</artifactId>
-            <version>4.1.118.Final</version>
+            <version>${netty.version}</version>
         </dependency>
 
         <dependency>
