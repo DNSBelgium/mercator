@@ -1,4 +1,4 @@
-name: trivy
+name: trivy vulnerability scan
 on:
   push:
     branches:
@@ -30,3 +30,10 @@ jobs:
         with:
           input: target/jib-image.tar
           severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
