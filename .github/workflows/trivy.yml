@@ -1,0 +1,23 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate tarball from image
+        run: |
+          mvn -D jib.from.platforms=linux/amd64  -D jib.to.image=dnsbelgium/mercator jib:buildTar
+
+      - name: Run Trivy vulnerability scanner in tarball mode
+        uses: aquasecurity/trivy-action@0.33.0
+        with:
+          input: target/jib-image.tar
+          severity: 'CRITICAL,HIGH'
