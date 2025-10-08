@@ -515,7 +515,7 @@
                     </to>
                     <from>
                         <image>
-                            eclipse-temurin:25_36-jdk-noble@sha256:d71f43034f94df8fbf8254f93a1973f4ba0392af3416ce61a536ba7cd00113cb
+                            eclipse-temurin:25-jdk-ubi10-minimal@sha256:edbb6547e261f4b8a83a4ec41ab1fa007074051407f8786a992e77169cfc014e
                         </image>
                         <platforms>
                             <platform>
