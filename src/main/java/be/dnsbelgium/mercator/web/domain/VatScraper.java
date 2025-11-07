@@ -120,7 +120,7 @@ public class VatScraper {
     if (!validVatValues.isEmpty()) {
       if (validVatValues.size() > 20) {
         // sometimes binary files or text files have many matches
-        logger.warn("Found more than 20 valid VAT values. Probably not reliable => not saving VAT value");
+        // logger.warn("Found more than 20 valid VAT values. Probably not reliable => not saving VAT value");
       } else {
         logger.info("{} => valid VAT values {}", page.getUrl(), validVatValues);
         page.setVatValues(validVatValues);
