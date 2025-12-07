@@ -160,7 +160,7 @@ public class Certificate {
         }
       }
     } catch (CertificateParsingException e) {
-      logger.error("Could not parse SAN's from certificate {} because of {}", x509Certificate, e.getMessage());
+      // logger.error("Could not parse SAN's from certificate {} because of {}", x509Certificate, e.getMessage());
       throw e;
     }
     return subjectAlternativeNames;

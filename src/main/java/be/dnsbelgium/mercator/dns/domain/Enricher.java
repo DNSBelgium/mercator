@@ -52,8 +52,8 @@ public class Enricher {
           result.add(enriched);
       }
     } catch (UnknownHostException e) {
-      // TODO: should we log this? Does this also happen when hostname is valid but does not exist?
-      logger.warn("hostName or IP found in rdata is invalid: {}", host_or_ip);
+      // Don't log (or debug log): NS records sometimes have hostnames that do not resolve.
+      // logger.debug("hostName or IP found in rdata is invalid: {}", host_or_ip);
     }
     return result;
   }
