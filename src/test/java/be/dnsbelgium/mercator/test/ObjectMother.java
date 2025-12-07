@@ -47,6 +47,7 @@ public class ObjectMother {
     return PageVisit.builder()
         .responseBody("<h1>I am a page </h1>")
         .url("https://www.dnsbelgium.be/")
+        .finalUrl("https://www.dnsbelgium.be/nl")
         .statusCode(200)
         .crawlStarted(started)
         .crawlStarted(started.plusMillis(312))

@@ -96,11 +96,10 @@ public class MercatorApplication {
   }
 
   public static void workAroundBatchMetricsBug() {
-      logger.warn("workAroundBatchMetricsBug");
-      // Spring Batch has a minor bug that generates a warning at start-up.
-      // see https://github.com/spring-projects/spring-batch/issues/4753
-      // This snippet avoids the warning.
-      Metrics.globalRegistry.config().meterFilter(MeterFilter.denyNameStartsWith("spring.batch.job.active"));
+    // Spring Batch has a minor bug that generates a warning at start-up.
+    // see https://github.com/spring-projects/spring-batch/issues/4753
+    // This snippet avoids the warning.
+    Metrics.globalRegistry.config().meterFilter(MeterFilter.denyNameStartsWith("spring.batch.job.active"));
   }
 
 }

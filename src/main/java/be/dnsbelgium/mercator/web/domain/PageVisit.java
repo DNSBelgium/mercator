@@ -64,7 +64,7 @@ public class PageVisit {
     this.crawlStarted = crawlStarted;
     this.crawlFinished = crawlFinished;
     this.statusCode = statusCode;
-    this.responseBody = cleanUp(responseBody, 20_000);
+    this.responseBody = cleanUp(responseBody, 300_000);
     this.vatValues = vatValues;
     // 90% of the .be websites have a html length below 281.187 bytes
     // 61k .be websites have (on the landing page) a html document over 500.000 bytes

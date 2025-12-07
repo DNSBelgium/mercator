@@ -1,10 +1,14 @@
 package be.dnsbelgium.mercator.web.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
+
+import static java.time.ZoneOffset.UTC;
 
 @Getter
 @Setter
@@ -32,4 +36,23 @@ public class WebCrawlResult {
     domainName = StringUtils.abbreviate(domainName, 255);
     matchingUrl = StringUtils.abbreviate(matchingUrl, 255);
   }
+
+  @JsonIgnore
+  public int year() {
+    if (crawlStarted != null) {
+      ZonedDateTime dateTime = crawlStarted.atZone(UTC);
+      return dateTime.getYear();
+    }
+    return 0;
+  }
+
+  @JsonIgnore
+  public int month() {
+    if (crawlStarted != null) {
+      ZonedDateTime dateTime = crawlStarted.atZone(UTC);
+      return dateTime.getMonthValue();
+    }
+    return 0;
+  }
+
 }
