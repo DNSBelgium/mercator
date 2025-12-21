@@ -9,6 +9,7 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -177,7 +178,7 @@ public class JobScheduler {
      logger.info("maxBatchSize = {}", maxBatchSize);
   }
 
-  @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.SECONDS)
+  @Scheduled(fixedDelayString = "${mercator.batchScheduler.delay:5s}")
   public void startBatch() {
     String batchId = UlidCreator.getUlid().toString();
     logger.info("startBatch: check if there is work in the queue");

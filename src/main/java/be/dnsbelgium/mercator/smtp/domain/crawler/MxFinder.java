@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.smtp.domain.crawler;
 
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,15 +25,26 @@ public class MxFinder {
   private final ExtendedResolver resolver;
   private static final Logger logger = getLogger(MxFinder.class);
 
+
+  @SneakyThrows
   @Autowired
   public MxFinder(
       @Value("${smtp.crawler.recursive.resolver.retries:2}") int retries,
       @Value("${smtp.crawler.recursive.resolver.timeOut.ms:2500}") int timeOutMs,
-      @Value("${smtp.crawler.recursive.resolver.tcp.by.default:false}") boolean tcp
+      @Value("${smtp.crawler.recursive.resolver.tcp.by.default:false}") boolean tcp,
+      @Value("${resolver.hostname:#{null}}") String hostName,
+      @Value("${resolver.port:53}") int port
   ) {
-    logger.info("Initializing MxFinder with resolver.retries={} resolver.timeOut={}ms resolver.tcp={}",
-         retries, timeOutMs, tcp);
-    resolver = new ExtendedResolver();
+    logger.info("Initializing MxFinder with resolver.retries={} resolver.timeOut={}ms resolver.tcp={}", retries, timeOutMs, tcp);
+    if (hostName != null) {
+      logger.info("Using resolver.hostname={}", hostName);
+      SimpleResolver simpleResolver = new SimpleResolver(hostName);
+      simpleResolver.setPort(port);
+      resolver = new ExtendedResolver(List.of(simpleResolver));
+    }  else {
+      // let dnsjava pick the resolvers
+      resolver = new ExtendedResolver();
+    }
     logger.info("ExtendedResolver consists of {} resolvers", resolver.getResolvers().length);
     for (Resolver r: resolver.getResolvers()) {
       logger.info("ExtendedResolver uses = {}", r);

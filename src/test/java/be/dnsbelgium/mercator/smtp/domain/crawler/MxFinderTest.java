@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
-import org.xbill.DNS.ResolverConfig;
+import org.xbill.DNS.*;
 
 import java.net.UnknownHostException;
 
@@ -20,8 +20,23 @@ class MxFinderTest {
 
     @BeforeEach
     public void init() throws UnknownHostException {
-        mxFinder = new MxFinder(2, 500, true);
+        mxFinder = new MxFinder(2, 500, true, null, 53);
     }
+
+    @Test
+    public void testResolverConfig() throws TextParseException {
+        System.out.println(ResolverConfig.getCurrentConfig().servers());
+        var resolver = new ExtendedResolver();
+        logger.info("ExtendedResolver consists of {} resolvers", resolver.getResolvers().length);
+        for (Resolver r: resolver.getResolvers()) {
+            logger.info("ExtendedResolver uses = {}", r);
+        }
+        Lookup lookup = new Lookup(Name.fromString("abc.be"), Type.MX);
+        lookup.setResolver(resolver);
+        var records = lookup.run();
+        logger.info("records = {}", (Object) records);
+    }
+
 
     @Test
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
@@ -65,7 +80,7 @@ class MxFinderTest {
         System.setProperty("dns.server", "8.8.8.8");
         try {
             ResolverConfig.refresh();
-            MxFinder mxFinder = new MxFinder(2, 500, true);
+            MxFinder mxFinder = new MxFinder(2, 500, true, null, 53);
             MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
             logger.info("result = {}", result);
             assertThat(result).isNotNull();

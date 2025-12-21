@@ -7,6 +7,7 @@ import be.dnsbelgium.mercator.dns.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +51,23 @@ public class DnsResolver {
     Lookup.getDefaultCache(DClass.IN).setMaxCache(0);
     Lookup.getDefaultCache(DClass.IN).setMaxNCache(0);
     Lookup.getDefaultCache(DClass.IN).setMaxEntries(0);
+  }
+
+  @PostConstruct
+  public void init() {
+    logger.info("resolver hostName = {}", hostName);
+    logger.info("resolver port = {}", port);
+    logger.info("resolver tcp = {}", tcp);
+    logger.info("resolver timeoutSeconds = {}", timeoutSeconds);
+    Resolver resolver = createResolver();
+    logger.info("resolver = {}", resolver);
+    try {
+      var req = lookup("@", Name.fromString("google.com."), RecordType.A);
+      logger.info("Resolving google.com => req.rcode = {}", req.rcode());
+      logger.info("Resolving google.com => req.records = {}", req.records());
+    } catch (TextParseException e) {
+      logger.error("Failed to resolve google.com", e);
+    }
   }
 
   public DnsRequest lookup(String prefix, Name name, RecordType recordType) {
@@ -114,6 +132,8 @@ public class DnsResolver {
   private Lookup initLookup(Name name, RecordType recordType) {
     int value = Type.value(recordType.toString());
     Lookup lookup = new Lookup(name, value);
+    // TODO: check if performance suffers from creating a new Resolver for every lookup
+    // I encountered a ConcurrentModificationException when trying to reuse the same resolver
     lookup.setResolver(createResolver());
     return lookup;
   }
