@@ -33,3 +33,5 @@ build/
 .vscode/
 .env
 /local_files/
+/src/main/resources/application-scaleway.properties
+
