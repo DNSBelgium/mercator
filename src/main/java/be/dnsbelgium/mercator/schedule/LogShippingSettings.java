@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class LogShippingSettings {
 
   private boolean enabled = false;
-  private String glob_pattern;
+  private String glob_pattern = "/mercator/mercator.log.json.*";
   private int maxFailures = -1;
   private String interval = "60s";
 
@@ -22,7 +22,7 @@ public class LogShippingSettings {
 
   @Data
   public static class S3 {
-    private String bucketName;
+    private String bucketName = "logs";
     private String accessKey;
     private String secretKey;
     private String endpoint;
