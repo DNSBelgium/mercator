@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.web.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -17,6 +18,7 @@ import static java.time.ZoneOffset.UTC;
 @NoArgsConstructor
 @ToString(exclude = {"pageVisits"})
 @EqualsAndHashCode
+@JsonIgnoreProperties(value = { "tld" })
 public class WebCrawlResult {
 
   private String visitId;

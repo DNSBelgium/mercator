@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.test.TestUtils;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ class BaseRepositoryTest {
   /**
    * Sample class to store and find
    */
+  @JsonIgnoreProperties(value = { "tld" })
   public static class BaseItem {
     public Instant crawlStarted;
     public String visitId;
