@@ -264,12 +264,21 @@ public class BaseRepository<T> {
     String stmt = "set variable jsonLocation = '" + jsonLocation + "'";
     try {
       jdbcClient
-              .sql(stmt)
-              .update();
+          .sql(stmt)
+          .update();
+
       jdbcClient
-              .sql(copyStatement)
-              .update();
+          .sql(copyStatement)
+          .update();
+
       logger.info("copying {} as parquet to {} is done", cte, destination);
+    } catch (Exception e) {
+      logger.error("Error in copyToParquet", e);
+      logger.error("Failed to copy {} as parquet to {}: {}", cte, destination, e.getMessage());
+      logger.error("jsonLocation = {}", jsonLocation);
+      logger.error("copyStatement = {}", copyStatement);
+      throw e;
+
     } finally {
       lock.unlock();
     }
