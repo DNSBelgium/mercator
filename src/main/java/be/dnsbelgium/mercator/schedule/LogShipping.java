@@ -169,8 +169,28 @@ public class LogShipping {
       copy (
           with
           log_events AS (
-                  select * replace(to_timestamp(timestamp) as timestamp)
-                  from read_json('{glob_pattern}', union_by_name=true)
+                  select
+                    to_timestamp(timestamp) as ts,
+                    _process_pid            as pid,
+                    _process_thread_name    as thread,
+                    _level_name             as level_name,
+                    _log_logger             as logger,
+                    _error_type             as error_type,
+                    _error_stack_trace      as stack_trace,
+                    _error_message          as error_message,
+                    *
+                    exclude (
+                        timestamp,
+                        _process_pid,
+                        _process_thread_name,
+                        _level_name,
+                        _log_logger,
+                        _error_message,
+                        _error_type,
+                        _error_stack_trace,
+                        version
+                    )
+                  from read_json('{glob_pattern}', union_by_name=true, ignore_errors=true, filename=true)
           ),
           log_events_2  as (
               select year(timestamp) as year, month(timestamp) as month, day(timestamp) as day, *

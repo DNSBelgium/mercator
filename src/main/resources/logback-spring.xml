@@ -6,8 +6,17 @@
 
     <include resource="org/springframework/boot/logging/logback/structured-file-appender.xml" />
 
+    <appender name="ThrottledFileAppender" class="be.dnsbelgium.logback.ThrottlingAppender">
+        <bufferSize>5000</bufferSize>
+        <maxMessagesToEmitAfterStartUp>50000</maxMessagesToEmitAfterStartUp>
+        <maxMessagesToEmitAfterWakeUp>2000</maxMessagesToEmitAfterWakeUp>
+        <!-- wake up every 2 minutes -->
+        <maxSleepMillis>120000</maxSleepMillis>
+        <appender-ref ref="FILE" />
+    </appender>
+
     <appender name="ThrottledConsole" class="be.dnsbelgium.logback.ThrottlingAppender">
-        <bufferSize>50</bufferSize>
+        <bufferSize>5000</bufferSize>
         <maxMessagesToEmitAfterStartUp>50000</maxMessagesToEmitAfterStartUp>
         <maxMessagesToEmitAfterWakeUp>2000</maxMessagesToEmitAfterWakeUp>
         <!-- wake up every 2 minutes -->
@@ -16,7 +25,7 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="FILE" />
+        <appender-ref ref="ThrottledFileAppender" />
         <appender-ref ref="ThrottledConsole" />
     </root>
 

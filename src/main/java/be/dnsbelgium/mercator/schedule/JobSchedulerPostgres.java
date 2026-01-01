@@ -45,7 +45,45 @@ public class JobSchedulerPostgres {
     this.batchConfig = batchConfig;
     DuckDataSource duckDataSource = DuckDataSource.memory();
     this.jdbcClient = JdbcClient.create(duckDataSource);
+    logConfig();
+    checkConfig();
+  }
 
+  public void logConfig() {
+    logger.info("batchConfig = {}", batchConfig);
+    logger.info("maxBatchSize = {}", maxBatchSize);
+    logEnvironmentVariable("PGHOST");
+    logEnvironmentVariable("PGPORT");
+    logEnvironmentVariable("PGDATABASE");
+    logEnvironmentVariable("PGUSER");
+    logEnvironmentVariable("PGPASSWORD");
+  }
+
+  private void checkConfig() {
+    assertEnvVariable("PGHOST");
+    assertEnvVariable("PGDATABASE");
+    assertEnvVariable("PGUSER");
+    assertEnvVariable("PGPASSWORD");
+  }
+
+  private void assertEnvVariable(String name) {
+    String value = System.getenv(name);
+    if (value == null) {
+      throw new IllegalStateException("Environment variable [" + name + "] is not set. Either set the PG env variables or disable Spring profile postgres-queue");
+    }
+  }
+
+  private void logEnvironmentVariable(String name) {
+    String value = System.getenv(name);
+    if (value != null) {
+      if (name.toUpperCase().contains("PASS")) {
+        logger.info("Environment variable {} is set", name);
+      } else {
+        logger.info("Environment variable {} is set to '{}'", name, value);
+      }
+    } else {
+      logger.info("Environment variable {} is not set", name);
+    }
   }
 
   @SuppressWarnings("SameParameterValue")
@@ -80,24 +118,9 @@ public class JobSchedulerPostgres {
     }
   }
 
-  @SuppressWarnings("SpellCheckingInspection")
   private void attachPostgres() {
-    assertEnvVariable("PGHOST");
-    assertEnvVariable("PGDATABASE");
-    assertEnvVariable("PGUSER");
-    assertEnvVariable("PGPASSWORD");
     jdbcClient.sql(ATTACH_POSTGRES).update();
     logger.info("Postgres database attached");
-  }
-
-  private void assertEnvVariable(String name) {
-    boolean set = System.getenv(name) != null;
-    if (set) {
-      logger.info("Environment variable {} is set", name);
-    } else {
-      throw new IllegalStateException("Environment variable [" + name + "] is not set");
-    }
-
   }
 
   private int createBatch(String batchId) {
@@ -114,8 +137,8 @@ public class JobSchedulerPostgres {
                   limit :maxBatchSize
               );
     """;
-    logger.info("createBatch = \n {}", createBatch);
-    logger.info("maxBatchSize = {}", maxBatchSize);
+    logger.debug("createBatch = \n {}", createBatch);
+    logger.debug("maxBatchSize = {}", maxBatchSize);
     Instant start = Instant.now();
     int rowCount = jdbcClient
         .sql(createBatch)
@@ -133,15 +156,21 @@ public class JobSchedulerPostgres {
     // For now, we copy the visits of this batch to input.csv
     // because that is where the Spring Batch jobs expect it to be.
     // In a later version, we could adapt the jobs to read from the queue table.
-    String exportToCsv = Strings.CS.replace("""
+
+    String copy = """
         copy (
               select visit_id, domain_name
               from postgres_db.queue
               where batch_id = :batchId
               )
         to '/tmp/inputFile' (format csv, header false)
-        """, "/tmp/input.csv", batchConfig.getInputFile()
+        """;
+    logger.info("batchConfig.getInputFile(): {}", batchConfig.getInputFile());
+
+    String exportToCsv = Strings.CS.replace(copy,
+        "/tmp/inputFile", batchConfig.getInputFile()
     );
+
     int rows = jdbcClient
         .sql(exportToCsv)
         .param("batchId", batchId)
