@@ -208,4 +208,25 @@ public class JobSchedulerPostgres {
     logger.info("cleanUpAfterBatch: outputDirectory={} ok = {}", outputDirectory, ok);
   }
 
+  /**
+   * We regularly reset batches that did not finish on time to make sure the visits get processed.
+   * This could lead to duplicate visits when the time to process a batch is longer than the expiry interval.
+   * TODO: we could add a counter to the queue table and give up after X attempts.
+   */
+  @Scheduled(fixedDelay = 60, timeUnit = TimeUnit.MINUTES)
+  public void resetExpiredBatches() {
+    logger.info("resetExpiredBatches: starting");
+    String reset = """
+        update postgres_db.queue
+        set reserved_at = null, batch_id = null
+        where reserved_at < current_localtimestamp() - interval '4 hours'
+    """;
+    int rows = jdbcClient.sql(reset).update();
+    logger.info("resetExpiredBatches: updated {} rows", rows);
+    if (rows > 0) {
+      logger.warn("resetExpiredBatches: updated {} rows, some batches may have been reset", rows);
+    }
+  }
+
+
 }
