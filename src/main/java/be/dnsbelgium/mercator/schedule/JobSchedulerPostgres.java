@@ -181,8 +181,8 @@ public class JobSchedulerPostgres {
   private void copyToDone(String batchId) {
     String copyToDone = """
           insert into postgres_db.done(
-                 visit_id, domain_name, priority, batch_id, reserved_at, finished_at, date_created, last_updated)
-          select visit_id, domain_name, priority, batch_id, reserved_at, now(), now(), now()
+                 visit_id, monthly_crawl_id, domain_name, priority, batch_id, reserved_at, finished_at, date_created, last_updated)
+          select visit_id, monthly_crawl_id, domain_name, priority, batch_id, reserved_at, now(), now(), now()
           from postgres_db.queue
           where batch_id = :batchId
           """;

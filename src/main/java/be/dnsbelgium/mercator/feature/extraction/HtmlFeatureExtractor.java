@@ -195,7 +195,7 @@ public class HtmlFeatureExtractor {
 
     features.htmlstruct = tagMapper.compress(document);
     if (features.htmlstruct.length() > MAX_LENGTH_HTMLSTRUCT) {
-      logger.info("domainName={} length of htmlstruct = {} exceeds {} => truncating",
+      logger.debug("domainName={} length of htmlstruct = {} exceeds {} => truncating",
               domainName, features.htmlstruct.length(), MAX_LENGTH_HTMLSTRUCT);
       features.htmlstruct = StringUtils.abbreviate(features.htmlstruct, MAX_LENGTH_HTMLSTRUCT);
     }
