@@ -539,6 +539,8 @@
                             <!-- To avoid warning about Netty, see https://netty.io/wiki/java-24-and-sun.misc.unsafe.html -->
                             <jvmFlag>--sun-misc-unsafe-memory-access=allow</jvmFlag>
                             <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                           <!-- To avoid warning about duckdb: java.lang.System::load has been called by org.duckdb.DuckDBNative -->
+                            <jvmFlag>--enable-native-access=ALL-UNNAMED</jvmFlag>
                         </jvmFlags>
                         <environment>
                             <SPRING_PROFILES_ACTIVE>docker</SPRING_PROFILES_ACTIVE>
