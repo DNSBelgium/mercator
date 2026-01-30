@@ -45,6 +45,14 @@ public class WebCrawler {
     private boolean persistFirstPageVisit = false;
 
     @Setter
+    @Value("${web.crawler.prefix_domainname_with_www:true}")
+    private boolean prefixWithWWW = true;
+
+    @Setter
+    @Value("${web.crawler.start_with_https:false}")
+    private boolean startWithHttps = false;
+
+    @Setter
     @Value("${web.crawler.persist.body.text:false}")
     private boolean persistBodyText = false;
 
@@ -62,6 +70,8 @@ public class WebCrawler {
         logger.info("persistPageVisits={}", persistPageVisits);
         logger.info("persistBodyText={}", persistBodyText);
         logger.info("persistFirstPageVisit={}", persistFirstPageVisit);
+        logger.info("startWithHttps={}", startWithHttps);
+        logger.info("prefixWithWWW={}", prefixWithWWW);
     }
 
     public SiteVisit visit(VisitRequest visitRequest) {
@@ -77,7 +87,10 @@ public class WebCrawler {
         String fqdn = visitRequest.getDomainName();
         logger.debug("Searching VAT info for domainName={} and visitId={}", fqdn, visitRequest.getVisitId());
 
-        String startURL = "http://www." + fqdn;
+        @SuppressWarnings("HttpUrlsUsage")
+        String schema = (startWithHttps) ? "https://" : "http://";
+        String hostName = (prefixWithWWW) ? "www." + fqdn : fqdn;
+        String startURL = schema + hostName;
 
         HttpUrl url = HttpUrl.parse(startURL);
 
@@ -91,7 +104,7 @@ public class WebCrawler {
         SiteVisit siteVisit = vatScraper.visit(url, maxVisitsPerDomain);
         logger.debug("siteVisit = {}", siteVisit);
 
-        logger.info("visitId={} domain={} web={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
+        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
         return siteVisit;
     }
 
