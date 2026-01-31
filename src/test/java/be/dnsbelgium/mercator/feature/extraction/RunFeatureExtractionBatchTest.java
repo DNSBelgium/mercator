@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ public class RunFeatureExtractionBatchTest {
   // This takes 48 seconds for 4.333 rows.
 
   @Test
+  @Disabled
   public void runBatch() {
     logger.info("Running batch...");
     DuckDataSource dataSource = DuckDataSource.memory();
