@@ -133,7 +133,7 @@ public class JobSchedulerPostgres {
                   select visit_id
                   from postgres_db.queue
                   where batch_id is null and reserved_at is null
-                  order by priority
+                  order by priority, date_created, monthly_crawl_id
                   limit :maxBatchSize
               );
     """;
