@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.13</version>
+        <version>3.5.14</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -31,8 +31,6 @@
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
         <netty.version>4.1.127.Final</netty.version>
-        <!-- CVE-2026-40477 / CVE-2026-40478: SSTI fixed in 3.1.4.RELEASE; remove once Spring Boot bundles it -->
-        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version>
     </properties>
 
     <dependencies>
