@@ -1,14 +1,15 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.batch.BatchBeans;
+import be.dnsbelgium.mercator.common.DateTimeFormatterUtil;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -21,9 +22,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ComponentScan(basePackages = "be.dnsbelgium.mercator.mvc")
+@WebMvcTest(SmtpSearchController.class)
+@Import({BatchBeans.class, DateTimeFormatterUtil.class})
 public class SmtpSearchControllerTest {
 
     @MockitoBean

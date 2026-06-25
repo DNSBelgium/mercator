@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.mvc;
 
+import be.dnsbelgium.mercator.batch.BatchBeans;
+import be.dnsbelgium.mercator.common.DateTimeFormatterUtil;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
 import be.dnsbelgium.mercator.persistence.WebRepository;
@@ -7,9 +9,8 @@ import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -23,9 +24,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@ComponentScan(basePackages = "be.dnsbelgium.mercator.mvc")
+@WebMvcTest(WebSearchController.class)
+@Import({BatchBeans.class, DateTimeFormatterUtil.class})
 public class WebSearchControllerTest {
 
     @MockitoBean
