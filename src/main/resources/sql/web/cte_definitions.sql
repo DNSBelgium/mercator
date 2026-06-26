@@ -1,6 +1,6 @@
 with typed as (
     select *
-    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/web/*.json', maximum_object_size=2_000_000_000),
+    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/web/*.json'), maximum_object_size=1_000_000_000,
                    columns={
                        visit_id: 'VARCHAR',
                        domain_name: 'VARCHAR',
