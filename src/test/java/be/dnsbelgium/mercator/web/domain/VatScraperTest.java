@@ -27,6 +27,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@SuppressWarnings("SpellCheckingInspection")
 class VatScraperTest {
 
   private VatScraper vatScraper;
@@ -55,7 +56,7 @@ class VatScraperTest {
     );
     wireMockRule.start();
     PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
-    LinkPrioritizer linkPrioritizer = new LinkPrioritizer();
+    VatLinkPrioritizer linkPrioritizer = new VatLinkPrioritizer();
     VatFinder vatFinder = new VatFinder();
     vatScraper = new VatScraper(meterRegistry, pageFetcher, vatFinder, linkPrioritizer);
   }
@@ -69,7 +70,7 @@ class VatScraperTest {
     double sitesWithVatBefore = sitesWithVat.count();
     SiteVisit visit = vatScraper.visit(urlFor("/"), 1);
     List<String> vatValues = visit.getVatValues();
-    logger.info("vat = {}", vatValues);
+    logger.info("vatFoundOnFirstPage = {}", vatValues);
     assertThat(vatValues).containsExactly("BE0542703815");
     assertThat(visit.getNumberOfVisitedPages()).isEqualTo(1);
     assertThat(pagesFetched.count()).isEqualTo(pagesFetchedBefore + 1);
@@ -85,7 +86,7 @@ class VatScraperTest {
     // VAT not on first page and depth too small to visit other pages
     SiteVisit visit = vatScraper.visit(urlFor("/complex/index"), 1);
     List<String> vatValues = visit.getVatValues();
-    logger.info("vat = {}", vatValues);
+    logger.info("noVatOnFirstPage = {}", vatValues);
     assertThat(vatValues).isEmpty();
     assertThat(visit.getNumberOfVisitedPages()).isEqualTo(1);
     assertThat(sitesWithoutVat.count()).isEqualTo(sitesWithoutVatBefore + 1);
@@ -96,7 +97,7 @@ class VatScraperTest {
   void vatFoundOnSecondPage() {
     SiteVisit visit = vatScraper.visit(urlFor("/complex/index"), 3);
     List<String> vatValues = visit.getVatValues();
-    logger.info("vat = {}", vatValues);
+    logger.info("vatFoundOnSecondPage = {}", vatValues);
     // VAT not on first page and depth large enough to find it on second page
     assertThat(vatValues).containsExactly("BE0542703815");
     assertThat(visit.getNumberOfVisitedPages()).isGreaterThan(1);
@@ -107,7 +108,7 @@ class VatScraperTest {
     // VAT not found because of wrong format
     SiteVisit visit = vatScraper.visit(urlFor("/wrong/wrong-format"), 2);
     List<String> vatValues = visit.getVatValues();
-    logger.info("vat = {}", vatValues);
+    logger.info("wrongFormat vat = {}", vatValues);
     // VAT not on first page and depth large enough to find it on second page
     assertThat(vatValues).isEmpty();
     assertThat(visit.getNumberOfVisitedPages()).isEqualTo(1);
@@ -145,17 +146,14 @@ class VatScraperTest {
     //String BIG_BODY = StringUtils.repeat("abcdefghjiklmnopqrst", 10_000_000);
     PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
     testFetcher.clearCache();
-    VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new LinkPrioritizer());
-
-    //baseUrl = mockWebServer.url("/");
-
+    VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new VatLinkPrioritizer());
     HttpUrl baseUrl = urlFor("/");
 
     Page page1 = testVatScraper.fetchAndParse(baseUrl);
     assertThat(page1).isEqualTo(null);
     testFetcher.clearCache();
     Page page2 = testVatScraper.fetchAndParse(baseUrl);
-    logger.info("page = {}", page2);
+    logger.info("fetchPageAndParseTestWithErrors page = {}", page2);
     assertThat(page2.getStatusCode()).isEqualTo(200);
     assertThat(page2.getResponseBody()).isEqualTo("test");
   }
@@ -170,7 +168,7 @@ class VatScraperTest {
         .setChunkedBody(BIG_BODY, 100);
       PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
       testFetcher.clearCache();
-      VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new LinkPrioritizer());
+      VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new VatLinkPrioritizer());
       mockWebServer.enqueue(response);
       mockWebServer.enqueue(new MockResponse().setBody("test"));
       mockWebServer.start();

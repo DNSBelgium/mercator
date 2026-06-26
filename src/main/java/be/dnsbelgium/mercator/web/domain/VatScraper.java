@@ -6,105 +6,59 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Service
-public class VatScraper {
+public class VatScraper extends AbstractScraper {
 
-  private final PageFetcher pageFetcher;
-  private final VatFinder vatFinder;
-  private final LinkPrioritizer linkPrioritizer;
-  private final MeterRegistry meterRegistry;
+private final VatFinder vatFinder;
 
   private static final Logger logger = getLogger(VatScraper.class);
 
   @Autowired
-  public VatScraper(MeterRegistry meterRegistry, PageFetcher pageFetcher, VatFinder vatFinder, LinkPrioritizer linkPrioritizer) {
-    this.pageFetcher = pageFetcher;
+  public VatScraper(MeterRegistry meterRegistry, PageFetcher pageFetcher, VatFinder vatFinder, VatLinkPrioritizer linkPrioritizer) {
+    super(meterRegistry, pageFetcher, linkPrioritizer);
     this.vatFinder = vatFinder;
-    this.linkPrioritizer = linkPrioritizer;
-    this.meterRegistry = meterRegistry;
   }
 
-  public SiteVisit visit(HttpUrl url, int maxVisits) {
-    SiteVisit siteVisit = new SiteVisit(url);
-    logger.debug("Analyze landing page {}", url);
+  @Override
+  public boolean goalReached(SiteVisit siteVisit) {
+    return siteVisit.isVatFound();
+  }
 
-    Link startingLink = new Link(url, "");
-
-    // this will either find a VAT or add inner links to the queue
-    visit(siteVisit, startingLink);
-
-    if (!siteVisit.isVatFound()) {
-      logger.debug("No VAT found on landing page => crawling inner links");
-      while (true) {
-        Optional<PrioritizedLink> next = siteVisit.getHighestPriorityLink();
-        if (next.isEmpty()) {
-          logger.debug("No more links to follow for {} => done", url);
-          break;
-        }
-        if (siteVisit.getNumberOfVisitedLinks() >= maxVisits) {
-          logger.debug("reached max number of page visits per site for {} => done", url);
-          break;
-        }
-        if (siteVisit.isVatFound()) {
-          logger.debug("Found VAT {} for {} after {} visits => done", siteVisit.getVatValues(), url, siteVisit.getNumberOfVisitedPages());
-          break;
-        }
-        logger.debug("Visiting {} for {}", next.get(), url);
-        visit(siteVisit, next.get());
-      }
+  @Override
+  public void findMoreLinksToVisit(Page page, Link link, SiteVisit siteVisit) {
+    Set<Link> innerLinks = page.getInnerLinks();
+    for (Link innerLink : innerLinks) {
+      PrioritizedLink prioritizedLink = linkPrioritizer.prioritize(siteVisit, page, innerLink);
+      siteVisit.addLinkToVisit(prioritizedLink);
     }
+  }
+
+  @Override
+  public void logGoalReached(HttpUrl url, SiteVisit siteVisit) {
+    logger.debug("Found VAT {} for {} after {} visits => done", siteVisit.getVatValues(), url, siteVisit.getNumberOfVisitedPages());
+  }
+
+  @Override
+  public void logResult(HttpUrl url, SiteVisit siteVisit) {
+    logger.debug("Finished scraping for {} => vatFound = {}.", url, siteVisit.isVatFound());
+  }
+
+  @Override
+  public void updateMetrics(SiteVisit siteVisit) {
     if (siteVisit.isVatFound()) {
       meterRegistry.counter(MetricName.COUNTER_SITES_WITH_VAT).increment();
     } else {
       meterRegistry.counter(MetricName.COUNTER_SITES_WITHOUT_VAT).increment();
     }
-    logger.debug("Finished scraping for {} => vatFound = {}.", url, siteVisit.isVatFound());
-    siteVisit.setFinished(Instant.now());
-    return siteVisit;
   }
 
-  private void visit(SiteVisit siteVisit, Link link)  {
-    HttpUrl url = link.getUrl();
-
-    if (siteVisit.alreadyVisited(url)) {
-      logger.debug("we already visited {}", url);
-      return;
-    }
-    Page page = fetchAndParse(url);
-    if (page == null) {
-      logger.debug("No content found on {}", url);
-      siteVisit.markVisited(link);
-      return;
-    }
-    if (page.getDocument() == null) {
-      logger.debug("Page {} has no document", url);
-      siteVisit.markVisited(link);
-      siteVisit.add(link, page);
-      return;
-    }
-    findVAT(page);
-    siteVisit.markVisited(link);
-    siteVisit.add(link, page);
-
-    if (!page.isVatFound()) {
-      Set<Link> innerLinks = page.getInnerLinks();
-      for (Link innerLink : innerLinks) {
-        PrioritizedLink prioritizedLink = linkPrioritizer.prioritize(innerLink);
-        siteVisit.addLinkToVisit(prioritizedLink);
-      }
-    }
-  }
-
-  private void findVAT(Page page) {
+  @Override
+  protected void updateGoal(Page page) {
     Element body = page.getDocument().body();
       //noinspection ConstantValue
       if (body == null) {
@@ -118,13 +72,13 @@ public class VatScraper {
     logger.debug("{} => Found {} valid VAT values", page.getUrl(), validVatValues.size());
 
     if (!validVatValues.isEmpty()) {
-      if (validVatValues.size() > 20) {
-        // sometimes binary files or text files have many matches
-        // logger.warn("Found more than 20 valid VAT values. Probably not reliable => not saving VAT value");
-      } else {
-        logger.info("{} => valid VAT values {}", page.getUrl(), validVatValues);
-        page.setVatValues(validVatValues);
-      }
+        if (validVatValues.size() <= 20) {
+          logger.info("{} => valid VAT values {}", page.getUrl(), validVatValues);
+          page.setVatValues(validVatValues);
+        } else {
+          // sometimes binary files or text files have many matches
+          logger.debug("Found more than 20 valid VAT values. Probably not reliable => not saving VAT value");
+        }
     } else {
       logger.debug("No valid VAT values found");
       // let's show_tables log VAT values with wrong checksum
@@ -135,15 +89,5 @@ public class VatScraper {
       }
     }
   }
-
-  public Page fetchAndParse(HttpUrl url) {
-    try {
-      return pageFetcher.fetch(url);
-    } catch (Exception e) {
-      logger.debug("Failed to fetch {} because of {}", url, e.getMessage());
-      return null;
-    }
-  }
-
 
 }
