@@ -1,6 +1,6 @@
 with typed as (
 from read_json(
-    coalesce(getvariable('jsonLocation'), '~/mercator/json/tls/*.json'),
+    coalesce(getvariable('jsonLocation'), '~/mercator/json/tls/*.json', maximum_object_size=2_000_000_000),
     columns = {
     visit_id: 'VARCHAR',
     domain_name: 'VARCHAR',
