@@ -6,14 +6,12 @@ import okhttp3.HttpUrl;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Service
 public class VatScraper extends AbstractScraper {
 
 private final VatFinder vatFinder;

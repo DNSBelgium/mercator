@@ -27,7 +27,7 @@ public class WebCrawler {
 
     private static final Logger logger = getLogger(WebCrawler.class);
 
-    private final VatScraper vatScraper;
+    private final AbstractScraper scraper;
     private final MeterRegistry meterRegistry;
     private final HtmlFeatureExtractor htmlFeatureExtractor;
     private final TechnologyAnalyzer technologyAnalyzer;
@@ -49,8 +49,8 @@ public class WebCrawler {
     private boolean persistBodyText = false;
 
     @Autowired
-    public WebCrawler(VatScraper vatScraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, TechnologyAnalyzer technologyAnalyzer) {
-        this.vatScraper = vatScraper;
+    public WebCrawler(AbstractScraper scraper, MeterRegistry meterRegistry, HtmlFeatureExtractor htmlFeatureExtractor, TechnologyAnalyzer technologyAnalyzer) {
+        this.scraper = scraper;
         this.meterRegistry = meterRegistry;
         this.htmlFeatureExtractor = htmlFeatureExtractor;
         this.technologyAnalyzer = technologyAnalyzer;
@@ -88,10 +88,10 @@ public class WebCrawler {
             throw new RuntimeException(message);
         }
 
-        SiteVisit siteVisit = vatScraper.visit(url, maxVisitsPerDomain);
+        SiteVisit siteVisit = scraper.visit(url, maxVisitsPerDomain);
         logger.debug("siteVisit = {}", siteVisit);
 
-        logger.info("visitId={} domain={} web={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
+        logger.info("visitId={} domain={} vat={}", visitRequest.getVisitId(), visitRequest.getDomainName(), siteVisit.getVatValues());
         return siteVisit;
     }
 
@@ -154,11 +154,11 @@ public class WebCrawler {
     }
 
     public PageVisit find(String url1, String url2, VisitRequest visitRequest) {
-        Page page1 = vatScraper.fetchAndParse(HttpUrl.parse(url1));
+        Page page1 = scraper.fetchAndParse(HttpUrl.parse(url1));
         if (page1 != null && page1.getStatusCode() == 200) {
             return page1.asPageVisit(visitRequest);
         }
-        Page page2 = vatScraper.fetchAndParse(HttpUrl.parse(url2));
+        Page page2 = scraper.fetchAndParse(HttpUrl.parse(url2));
         if (page2 != null && page2.getStatusCode() == 200) {
             return page2.asPageVisit(visitRequest);
         }

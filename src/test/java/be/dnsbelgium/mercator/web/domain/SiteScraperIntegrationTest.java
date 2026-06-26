@@ -28,7 +28,7 @@ public class SiteScraperIntegrationTest {
     public void init() {
         PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
         LinkPrioritizer linkPrioritizer = new ExternalLinkPrioritizer();
-        siteScraper = new SiteScraper(pageFetcher, linkPrioritizer, meterRegistry);
+        siteScraper = new SiteScraper(meterRegistry, pageFetcher, linkPrioritizer);
     }
 
     private SiteVisit scrapeForReal(String link) {

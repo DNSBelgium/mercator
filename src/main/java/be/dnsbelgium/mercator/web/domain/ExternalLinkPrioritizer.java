@@ -1,7 +1,10 @@
 package be.dnsbelgium.mercator.web.domain;
 
+import org.springframework.stereotype.Component;
+
 import static be.dnsbelgium.mercator.web.domain.Page.getSecondLevelDomainName;
 
+@Component
 public class ExternalLinkPrioritizer implements LinkPrioritizer {
 
 

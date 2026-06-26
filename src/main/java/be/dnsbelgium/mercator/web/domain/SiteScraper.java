@@ -13,7 +13,7 @@ public class SiteScraper extends AbstractScraper {
 
     private static final Logger logger = getLogger(SiteScraper.class);
 
-    public SiteScraper(PageFetcher pageFetcher, LinkPrioritizer linkPrioritizer, MeterRegistry meterRegistry) {
+    public SiteScraper(MeterRegistry meterRegistry, PageFetcher pageFetcher, LinkPrioritizer linkPrioritizer) {
         super(meterRegistry, pageFetcher, linkPrioritizer);
     }
 
