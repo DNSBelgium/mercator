@@ -2,7 +2,7 @@ name: trivy vulnerability scan
 on:
   push:
     branches:
-      - main
+      - persistent_queue
   pull_request:
   workflow_dispatch:
 
