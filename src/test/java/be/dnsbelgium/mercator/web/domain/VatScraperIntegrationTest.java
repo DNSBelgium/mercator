@@ -32,7 +32,7 @@ public class VatScraperIntegrationTest {
   @BeforeEach
   public void init() {
     PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
-    LinkPrioritizer linkPrioritizer = new LinkPrioritizer();
+    VatLinkPrioritizer linkPrioritizer = new VatLinkPrioritizer();
     linkPrioritizer.init();
     VatFinder vatFinder = new VatFinder();
     vatScraper = new VatScraper(meterRegistry, pageFetcher, vatFinder, linkPrioritizer);

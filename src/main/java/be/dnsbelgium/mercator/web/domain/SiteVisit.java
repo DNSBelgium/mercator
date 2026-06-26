@@ -15,6 +15,9 @@ public class SiteVisit {
   // the URL where the visit started
   private final HttpUrl baseURL;
 
+  // The URL where we initially landed after visiting baseURL
+  private HttpUrl landingURL;
+
   // where we arrived after fetching the baseURL
   private HttpUrl finalUrl;
 
