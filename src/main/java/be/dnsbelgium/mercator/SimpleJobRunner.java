@@ -7,6 +7,8 @@ import org.springframework.batch.core.*;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,9 +30,10 @@ public class SimpleJobRunner {
     this.jobs = jobs;
   }
 
-  public void run() throws Exception {
+  public List<JobExecution> run() throws Exception {
     logger.info("SimpleJobRunner.run() started");
     logger.info("we will run these jobs: {}", jobs.keySet());
+    List<JobExecution> jobExecutions = new ArrayList<>();
 
     jobs.forEach((name, job) -> {
       try {
@@ -46,7 +49,8 @@ public class SimpleJobRunner {
                 .toJobParameters();
 
         logger.info("Starting job {} with these parameters: {}", name, params);
-        jobLauncher.run(job, params);
+        JobExecution jobExecution = jobLauncher.run(job, params);
+        jobExecutions.add(jobExecution);
 
       } catch (Exception e) {
         logger.atError()
@@ -57,6 +61,7 @@ public class SimpleJobRunner {
       }
     });
     logger.info("All batch jobs executed");
+    return jobExecutions;
   }
 
 

@@ -6,10 +6,12 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import com.github.f4b6a3.ulid.UlidCreator;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,8 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -29,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.lang3.StringUtils.replace;
 
 @Component
 public class JobScheduler {
@@ -46,6 +49,7 @@ public class JobScheduler {
   private final JdbcClient jdbcClient;
   private static final Logger logger = LoggerFactory.getLogger(JobScheduler.class);
 
+  @SuppressWarnings("SpellCheckingInspection")
   public JobScheduler(SimpleJobRunner simpleJobRunner,
                       @Value("${mercator.database.file:mercator.db}") String databaseFile, BatchConfig batchConfig) {
     this.simpleJobRunner = simpleJobRunner;
@@ -188,11 +192,21 @@ public class JobScheduler {
     } else {
       try {
         exportToCsv(batchId);
-        simpleJobRunner.run();
+        List<JobExecution> jobExecutions = simpleJobRunner.run();
+        boolean allCompleted = true;
+        for (JobExecution jobExecution : jobExecutions) {
+          logger.info("startBatch: jobExecution.exitStatus = {}", jobExecution.getExitStatus());
+          if (jobExecution.getExitStatus().equals(ExitStatus.COMPLETED)) {
+            logger.info("startBatch: jobExecution completed successfully");
+          } else {
+            logger.warn("startBatch: jobExecution did NOT complete successfully");
+            allCompleted = false;
+          }
+        }
         logger.info("simpleJobRunner.run() is done for batchId = {}", batchId);
         copyToDone(batchId);
         deleteFromQueue(batchId);
-        cleanUpAfterBatch();
+        cleanUpAfterBatch(allCompleted);
         logger.info("startBatch is done for batchId = {}", batchId);
       } catch (Exception e) {
         logger.error("Failed to run simpleJobRunner", e);
@@ -200,10 +214,25 @@ public class JobScheduler {
     }
   }
 
-  private void cleanUpAfterBatch() {
+  private void cleanUpAfterBatch(boolean allCompleted) {
     Path outputPath = Paths.get(batchConfig.getOutputDirectory());
-    boolean ok = FileSystemUtils.deleteRecursively(outputPath.toFile());
-    logger.info("cleanUpAfterBatch: path={} ok = {}", outputPath, ok);
+    if (allCompleted) {
+      boolean ok = FileSystemUtils.deleteRecursively(outputPath.toFile());
+      logger.info("cleanUpAfterBatch: deleteRecursively path={} ok={}", outputPath, ok);
+    } else {
+      logger.info("cleanUpAfterBatch: allCompleted=false => rename {}", outputPath);
+      try {
+        if (Files.exists(outputPath)) {
+          // Rename the folder with a timestamp suffix
+          long timestamp = Instant.now().toEpochMilli();
+          Path renamedPath = outputPath.resolveSibling(outputPath.getFileName() + "-" + timestamp);
+          Files.move(outputPath, renamedPath, StandardCopyOption.REPLACE_EXISTING);
+          logger.info("cleanUpAfterBatch: renamed path={} to {}", outputPath, renamedPath);
+        }
+      } catch (IOException e) {
+        logger.error("cleanUpAfterBatch: failed to rename path={}", outputPath, e);
+      }
+    }
   }
 
   /**
@@ -244,7 +273,7 @@ public class JobScheduler {
     // For now, we copy the visits of this batch to input.csv
     // because that is where the Spring Batch jobs expect it to be.
     // In a later version, we could adapt the jobs to read from the queue table.
-    String exportToCsv = replace("""
+    String exportToCsv = Strings.CS.replace("""
               copy (
                     select visit_id, domain_name
                     from queue
