@@ -12,4 +12,14 @@ ignore:
         reason: No upgrade or patch available yet
         expires: 2026-12-31T00:00:00.000Z
         created: 2026-06-25T09:55:32.742Z
+  SNYK-JAVA-ORGHDRHISTOGRAM-17821182
+    - '*':
+        reason: No upgrade or patch available yet, low severity
+        expires: 2026-12-31T00:00:00.000Z
+        created: 2026-07-11T09:55:32.742Z
+  SNYK-JAVA-ORGHDRHISTOGRAM-17821183
+    - '*':
+        reason: No upgrade or patch available yet, low severity
+        expires: 2026-12-31T00:00:00.000Z
+        created: 2026-07-11T09:55:32.742Z
 patch: {}
