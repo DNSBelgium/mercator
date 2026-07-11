@@ -76,7 +76,7 @@ public class TlsJobConfig {
             .resource(resource)
             .delimited()
             .names("visitId", "domainName")
-            .fieldSetMapper(new VisitRequestFieldSetMapper())
+            .targetType(VisitRequest.class)
             .build();
   }
 
