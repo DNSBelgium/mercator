@@ -22,5 +22,9 @@ ignore:
         reason: No upgrade or patch available yet, low severity
         expires: 2026-12-31T00:00:00.000Z
         created: 2026-07-12T09:55:32.742Z
-
+  SNYK-JAVA-ORGAPACHELOGGINGLOG4J-17954276:
+    - '*':
+        reason: No upgrade or patch available yet
+        expires: 2026-12-31T00:00:00.000Z
+        created: 2026-07-12T20:10:32.742Z
 patch: {}
