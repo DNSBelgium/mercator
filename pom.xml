@@ -227,18 +227,12 @@
             <version>33.2.1-jre</version>
         </dependency>
 
-        <!-- org.apache.poi.util.ReplacingInputStream is used in HtmlFeatureExtractor -->
-        <!-- TODO: maybe we should just copy that class-->
+
+        <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>5.2.2</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
         </dependency>
 
         <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
