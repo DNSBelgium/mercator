@@ -7,7 +7,7 @@ import be.dnsbelgium.mercator.feature.extraction.persistence.HtmlFeatures;
 import be.dnsbelgium.mercator.feature.extraction.socialmedia.SocialMediaLinkAnalyser;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.util.ReplacingInputStream;
+import org.apache.commons.lang3.Strings;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -476,13 +476,13 @@ public class HtmlFeatureExtractor {
       return LinkType.UNKNOWN;
     }
     // check if they point to the same host, and allow a www prefix on either side
-    if (StringUtils.equals(baseHost, host)) {
+    if (Strings.CS.equals(baseHost, host)) {
       return LinkType.INTERNAL;
     }
-    if (StringUtils.equals(baseHost, "www." + host)) {
+    if (Strings.CS.equals(baseHost, "www." + host)) {
       return LinkType.INTERNAL;
     }
-    if (StringUtils.equals("www." + baseHost, host)) {
+    if (Strings.CS.equals("www." + baseHost, host)) {
       return LinkType.INTERNAL;
     }
     if (absUrl.startsWith("http")) {
@@ -515,7 +515,7 @@ public class HtmlFeatureExtractor {
    * Try to detect from the most common languages (all European languages + Arabic, Persian, Japanese, Chinese) and
    * stores the result in body_text_languages
    * Try to detect from all the spoken languages and stores the result in body_text_language_2
-   * This strategy allows to detect less common languages as well
+   * This strategy allows detecting less common languages as well
    * <p>
    * If the language could not be determined, an empty string "" is stored
    *
