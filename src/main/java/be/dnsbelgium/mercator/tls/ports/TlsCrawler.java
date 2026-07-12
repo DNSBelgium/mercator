@@ -5,10 +5,9 @@ import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.tls.domain.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -113,7 +112,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
 
   @Override
-  public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
+  public TlsCrawlResult process(VisitRequest visitRequest) throws Exception {
     try {
       Threads.TLS.incrementAndGet();
       Instant crawlStarted = Instant.now();

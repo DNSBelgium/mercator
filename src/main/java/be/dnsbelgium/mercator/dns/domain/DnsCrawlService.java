@@ -9,10 +9,10 @@ import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
 import be.dnsbelgium.mercator.metrics.Threads;
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.lang.NonNull;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Name;
@@ -81,7 +81,7 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
     }
     logger.debug("retrieveDnsRecords for [{}]", domainName);
 
-    // First perform a lookup for A records
+    // First, perform a lookup for A records
     DnsRequest initialDnsRequest = resolver.lookup("@", domainName, A);
     int rcode = initialDnsRequest.rcode();
     if (rcode == Lookup.UNRECOVERABLE || rcode == Lookup.TRY_AGAIN) {
@@ -101,10 +101,10 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
     }
 
     if (rcode == Lookup.UNRECOVERABLE || rcode == Lookup.TRY_AGAIN) {
-      // If initialDnsRequest is not ok then we save the failed request to the DB, so we know it has been requested.
+      // If initialDnsRequest is not ok, then we save the failed request to the DB, so we know it has been requested.
       logger.debug("Initial request had rcode = {} != 0 => skip other lookups for {}", rcode, domainName);
     } else {
-      // Now lookup all configure record types per prefix
+      // Now lookup all configured record types per prefix
       Set<String> prefixes = dnsCrawlerConfig.getSubdomains().keySet();
       for (String prefix : prefixes.stream().sorted().toList()) {
         List<RecordType> recordTypesToCrawl = dnsCrawlerConfig.getSubdomains().get(prefix);

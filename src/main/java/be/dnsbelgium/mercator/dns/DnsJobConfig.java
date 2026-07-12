@@ -10,25 +10,24 @@ import be.dnsbelgium.mercator.persistence.DnsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.infrastructure.item.ItemReader;
+import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
+import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.nio.file.Path;
 
@@ -47,12 +46,9 @@ public class DnsJobConfig {
   @Value("${dns.maxPoolSize:1000}")
   private int maxPoolSize;
 
-  @Value("${dns.throttleLimit:200}")
-  private int throttleLimit;
-
   @Bean
   @Qualifier(JOB_NAME)
-  public TaskExecutor dnsTaskExecutor() {
+  public AsyncTaskExecutor dnsTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
@@ -87,9 +83,8 @@ public class DnsJobConfig {
   @Bean(name = "dnsJob")
   @ConditionalOnProperty(name = "job.dns.enabled", havingValue = "true")
   public Job dnsJob(JobRepository jobRepository,
-                    PlatformTransactionManager transactionManager,
                     ItemReader<VisitRequest> dnsItemReader,
-                    TaskExecutor dnsTaskExecutor,
+                    AsyncTaskExecutor dnsTaskExecutor,
                     DnsCrawlService dnsCrawler,
                     ItemWriter<DnsCrawlResult> itemWriter) {
     logger.info("creating dnsJob");
@@ -97,12 +92,11 @@ public class DnsJobConfig {
     DelegatingItemProcessor<DnsCrawlResult> itemProcessor = new DelegatingItemProcessor<>(dnsCrawler);
 
     // throttleLimit method is deprecated but alternative is not well documented
-    @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
-            .<VisitRequest, DnsCrawlResult>chunk(chunkSize, transactionManager)
+            .<VisitRequest, DnsCrawlResult>chunk(chunkSize)
             .reader(dnsItemReader)
             .taskExecutor(dnsTaskExecutor)
-            .throttleLimit(throttleLimit)
+            //.throttleLimit(throttleLimit)  method was removed. See https://github.com/spring-projects/spring-batch/wiki/Spring-Batch-6.0-Migration-Guide
             .processor(itemProcessor)
             .writer(itemWriter)
             .build();

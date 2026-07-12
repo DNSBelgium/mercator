@@ -2,9 +2,8 @@ package be.dnsbelgium.mercator.batch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobExecutionListener;
-import org.springframework.lang.NonNull;
+import org.springframework.batch.core.job.JobExecution;
+import org.springframework.batch.core.listener.JobExecutionListener;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,22 +19,18 @@ public class JobListener implements JobExecutionListener {
   }
 
   @Override
-  public void beforeJob(@NonNull JobExecution jobExecution) {
+  public void beforeJob(JobExecution jobExecution) {
     logger.info("beforeJob: jobName={}, instance={}", jobName, jobExecution.getJobInstance());
   }
 
   @Override
-  public void afterJob(@NonNull JobExecution jobExecution) {
+  public void afterJob(JobExecution jobExecution) {
     logger.info("afterJob: jobName={}, instance={}", jobName, jobExecution.getJobInstance());
 
     jobExecution.getAllFailureExceptions().forEach(e -> logger.error("Failure while executing job {}", jobName, e));
 
-    jobExecution.getStepExecutions().forEach(step -> {
-      step.getFailureExceptions().forEach(e -> {
-        logger.error("Failure(s) in step {} : {}", step.getStepName(), e.getMessage(), e);
-      });
-
-    });
+    jobExecution.getStepExecutions().forEach(step -> step.getFailureExceptions().forEach(
+        e -> logger.error("Failure(s) in step {} : {}", step.getStepName(), e.getMessage(), e)));
 
     latch.countDown();
   }

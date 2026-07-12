@@ -3,13 +3,12 @@ package be.dnsbelgium.mercator.batch;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.jackson.JsonComponentModule;
-import org.springframework.boot.jackson.JsonMixinModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -37,9 +36,9 @@ public class JsonConfiguration {
     }
   }
 
-  public class CustomInstantDeserializer extends JsonDeserializer<Instant> {
+  public static class CustomInstantDeserializer extends JsonDeserializer<Instant> {
     // always deserialize with flexible fraction because duckdb does not always add a fraction
-    private static DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
         .appendPattern("yyyy-MM-dd HH:mm:ss")
         .optionalStart()
         .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
@@ -54,15 +53,16 @@ public class JsonConfiguration {
 
   @Bean
   @Primary
-  public ObjectMapper objectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper()
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .registerModule(new SimpleModule().addSerializer(Instant.class, new CustomInstantSerializer()).addDeserializer(Instant.class, new CustomInstantDeserializer()))
-        .registerModule(new Jdk8Module())
-        .registerModule(new JsonMixinModule())
-        .registerModule(new ParameterNamesModule())
-        .registerModule(new JsonComponentModule());
-    logger.info("objectMapper.getPropertyNamingStrategy = {}", objectMapper.getPropertyNamingStrategy());
-    return objectMapper;
+  public JsonMapper mapper() {
+    logger.debug("Creating a JsonMapper");
+    return JsonMapper.builder()
+        .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .addModule(new SimpleModule().addSerializer(Instant.class, new CustomInstantSerializer()).addDeserializer(Instant.class, new CustomInstantDeserializer()))
+        .addModule(new Jdk8Module())
+        .addModule(new ParameterNamesModule())
+        .build();
   }
+
+
+
 }
