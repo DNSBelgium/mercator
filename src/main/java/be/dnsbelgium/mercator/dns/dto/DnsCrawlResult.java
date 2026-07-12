@@ -22,7 +22,13 @@ public class DnsCrawlResult {
     private final String visitId;
 
     @Builder
-    public DnsCrawlResult(List<Request> requests, CrawlStatus status, String domainName, Instant crawlStarted, Instant crawlFinished, String visitId) {
+    public DnsCrawlResult(
+            List<Request> requests,
+            CrawlStatus status,
+            String domainName,
+            Instant crawlStarted,
+            Instant crawlFinished,
+            String visitId) {
         this.requests = requests != null ? requests : Collections.emptyList();
         this.status = status;
         this.domainName = domainName;

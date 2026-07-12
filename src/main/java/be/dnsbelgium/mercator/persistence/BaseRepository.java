@@ -10,7 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -126,7 +125,6 @@ public class BaseRepository<T> {
     return queryForObject(Map.of("visit_id", visitId), query);
   }
 
-  @NonNull
   @SneakyThrows
   private Optional<T> queryForObject(Map<String,?> params, String query) {
       try {

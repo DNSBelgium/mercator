@@ -10,16 +10,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.support.ResourcelessJobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.*;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
+import org.springframework.batch.infrastructure.item.*;
+import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
+import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -84,7 +83,6 @@ public class WebJobConfig {
   @Bean(name = JOB_NAME + "Job")
   @ConditionalOnProperty(name = "job.web.enabled", havingValue = "true")
   public Job webJob(ResourcelessJobRepository jobRepository,
-                    ResourcelessTransactionManager transactionManager,
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
                     JsonItemWriter<WebCrawlResult> webItemWriter,
@@ -93,14 +91,12 @@ public class WebJobConfig {
 
     var itemProcessor = new DelegatingItemProcessor<>(processor);
 
-    @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
-            .<VisitRequest, WebCrawlResult>chunk(chunkSize, transactionManager)
+            .<VisitRequest, WebCrawlResult>chunk(chunkSize)
             .reader(itemReader)
             .processor(itemProcessor)
             .writer(webItemWriter)
             .taskExecutor(taskExecutor)
-            .throttleLimit(maxPoolSize - 10)
             .build();
 
     return new JobBuilder(JOB_NAME, jobRepository)
