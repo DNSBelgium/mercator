@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.batch.autoconfigure.BatchAutoConfiguration;
+import org.springframework.boot.batch.autoconfigure.BatchJobLauncherAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.IOException;
@@ -25,9 +26,10 @@ import java.sql.*;
 @SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
 exclude = {
         BatchAutoConfiguration.class,
+        BatchJobLauncherAutoConfiguration.class
 })
 @EnableBatchProcessing
-public class MercatorApplication {
+public final class MercatorApplication {
 
   // if we do this early enough, we don't have to set a system property when starting the JVM
   // (-Djava.security.properties=/path/to/custom/security.properties)
