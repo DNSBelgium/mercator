@@ -82,7 +82,7 @@
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>3.2.0</version>
+            <version>3.2.1</version>
             <scope>compile</scope>
         </dependency>
 
@@ -93,7 +93,15 @@
             <version>2.22.1</version>
             <scope>compile</scope>
         </dependency>
-        
+
+        <!-- Force patched jackson-databind version used by jackson-module-parameter-names -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.22.1</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- to enable writing java.time.Instant values to JSON files -->
 
         <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8 -->
