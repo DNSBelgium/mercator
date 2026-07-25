@@ -262,6 +262,9 @@ public class BaseRepository<T> {
     String stmt = "set variable jsonLocation = '" + jsonLocation + "'";
     try {
       jdbcClient
+          .sql("set threads = 1")
+          .update();
+      jdbcClient
           .sql(stmt)
           .update();
 
