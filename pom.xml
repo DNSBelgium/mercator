@@ -30,7 +30,7 @@
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
-        <netty.version>4.1.135.Final</netty.version>
+        <netty.version>4.1.136.Final</netty.version>
     </properties>
 
     <dependencies>
