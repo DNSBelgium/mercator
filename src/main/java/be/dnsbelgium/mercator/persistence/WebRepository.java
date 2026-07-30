@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

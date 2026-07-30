@@ -2,9 +2,9 @@ package be.dnsbelgium.mercator.test;
 
 import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import be.dnsbelgium.mercator.persistence.JdbcClientFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Clock;
 import java.time.Duration;

@@ -2,9 +2,8 @@ package be.dnsbelgium.mercator.mvc;
 
 import be.dnsbelgium.mercator.metrics.Threads;
 import be.dnsbelgium.mercator.schedule.JobScheduler;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -77,7 +76,7 @@ public class HomeController {
 
   @GetMapping("/stats")
   @ResponseBody
-  public String stats() throws JsonProcessingException {
+  public String stats() {
     // This method is very convenient to test the state after uploading a file (eg. with curl)
     // TODO: should we create a REST controller?
     Map<String, Object> stats = jobScheduler.stats();

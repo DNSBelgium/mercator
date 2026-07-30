@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.persistence;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -137,7 +137,7 @@ public class BaseRepository<T> {
             T result = objectMapper.readValue(json.get(), this.type);
             logger.debug("Found: \n{}", result);
             return Optional.of(result);
-          } catch (JsonMappingException e) {
+          } catch (DatabindException e) {
             logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
             throw e;
           }

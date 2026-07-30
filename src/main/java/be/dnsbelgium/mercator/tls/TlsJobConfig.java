@@ -7,7 +7,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

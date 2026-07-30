@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.batch;
 
 import be.dnsbelgium.mercator.persistence.BaseRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;

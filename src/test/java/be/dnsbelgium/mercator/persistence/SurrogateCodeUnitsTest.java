@@ -1,10 +1,10 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.test.TestUtils;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonpCharacterEscapes;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.core.json.JsonWriteFeature;
+import tools.jackson.core.util.JsonpCharacterEscapes;
+import tools.jackson.databind.ObjectReader;
+import tools.jackson.databind.ObjectWriter;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -48,8 +48,8 @@ public class SurrogateCodeUnitsTest {
     File file1 = writeAsJson("person.json", person);
 
     // Jackson can read it
-    ObjectReader reader = TestUtils.jsonReader().reader();
-    Person fromFile = reader.readValue(file1, Person.class);
+    ObjectReader reader = TestUtils.jsonReader().readerFor(Person.class);
+    Person fromFile = reader.readValue(file1);
     logger.info("fromFile = {}", fromFile);
     assertThat(fromFile.name).isEqualTo(person.name);
 
@@ -72,7 +72,7 @@ public class SurrogateCodeUnitsTest {
     File file = new File(tempDir, fileName);
     ObjectWriter writer = TestUtils.jsonWriter()
              // these features do not solve our issue
-            .with(JsonGenerator.Feature.COMBINE_UNICODE_SURROGATES_IN_UTF8)
+            .with(JsonWriteFeature.COMBINE_UNICODE_SURROGATES_IN_UTF8)
             .with(new JsonpCharacterEscapes());
     writer.writeValue(file, person);
     return file;
