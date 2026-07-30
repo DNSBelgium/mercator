@@ -90,10 +90,18 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
-            <version>2.22.5</version>
+            <version>2.22.1</version>
             <scope>compile</scope>
         </dependency>
-        
+
+        <!-- Force patched jackson-databind version used by jackson-module-parameter-names -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.22.1</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- to enable writing java.time.Instant values to JSON files -->
 
         <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8 -->
@@ -143,7 +151,6 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <version>1.84</version>
         </dependency>
-
 
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
         <dependency>
