@@ -39,19 +39,6 @@ public class HomeController {
         return "error";
     }
 
-    @GetMapping("/test-htmx")
-    public String test_htmx() {
-        return "test-htmx";
-    }
-
-
-    @GetMapping("/hello_htmx")
-    @ResponseBody
-    public String hello_htmx() {
-      return Threads.logInfo();
-    }
-
-
 
     @GetMapping("/submit_crawl")
     public String submitCrawlForm(Model model) {
