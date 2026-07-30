@@ -78,13 +78,22 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Jackson 3.x (version managed by the Spring Boot BOM).
+        <!-- Jackson 3.x (version managed by the Spring Boot BOM = 3.1.4 = vulnerable ).
              The parameter-names and jdk8 datatype modules are merged into jackson-databind
              in Jackson 3.x and auto-registered, so no separate dependencies are needed. -->
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>3.1.5</version>
         </dependency>
+
+    <!--  maxmind still uses old jackson version (with vulnerabilities) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.21.5</version>
+        </dependency>
+        
 
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webmvc-test -->
         <dependency>
@@ -152,26 +161,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator</artifactId>
-            <version>0.52</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>htmx.org</artifactId>
-            <version>2.0.10</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.github.wimdeblauwe/htmx-spring-boot -->
-        <!-- https://github.com/wimdeblauwe/htmx-spring-boot?tab=readme-ov-file#spring-boot-compatibility -->
-        <dependency>
-            <groupId>io.github.wimdeblauwe</groupId>
-            <artifactId>htmx-spring-boot-thymeleaf</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.17.1</version>
@@ -192,7 +181,7 @@
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
-            <version>4.2.0</version>
+            <version>5.2.0</version>
         </dependency>
 
         <!-- Used in GeoIPServiceImpl  -->
