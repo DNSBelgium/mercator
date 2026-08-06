@@ -223,6 +223,43 @@ class DnsCrawlServiceTest {
     verify(enricher).enrichResponses(any());
   }
 
+  @Test
+  void retrieve_CDNSKEY_records_for_apex() throws TextParseException {
+    Name dnsbelgium = Name.fromString("dnsbelgium.be");
+    when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
+            "@", List.of(A, DNSKEY, CDNSKEY, CDS)
+    )));
+    String cdnskeyRdata = "257 3 13 mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxILfDLUT0rAK9iUzy1L53eKGQ==";
+    String dnskeyRdata  = "257 3 13 GojIhhXUN/u4v54ZQqGSnyhWJwaubCvTmeexv7bR6edbkrSqQpF64cYbtw==";
+    String cdsRdata     = "2371 13 2 f1e184c0e1d615d20933cfb9b8f24f6f0aec99ec1de9d9d15ef7e9f6e1e5c5f0";
+    expectResponses("@", A,       dnsbelgium, IP1);
+    expectResponses("@", DNSKEY,  dnsbelgium, dnskeyRdata);
+    expectResponses("@", CDNSKEY, dnsbelgium, cdnskeyRdata);
+    expectResponses("@", CDS,     dnsbelgium, cdsRdata);
+
+    VisitRequest visitRequest = make("dnsbelgium.be");
+    DnsCrawlResult dnsCrawlResult = dnsCrawlService.retrieveDnsRecords(visitRequest);
+    List<Request> requests = dnsCrawlResult.getRequests();
+    for (Request request : requests) {
+      logRequest(request);
+    }
+    assertThat(requests).hasSize(4);
+
+    Request cdnskeyRequest = requests.stream()
+            .filter(r -> r.getRecordType() == CDNSKEY)
+            .findFirst()
+            .orElseThrow();
+    assertThat(cdnskeyRequest.getPrefix()).isEqualTo("@");
+    assertThat(cdnskeyRequest.isOk()).isTrue();
+    assertThat(cdnskeyRequest.getProblem()).isNull();
+    assertThat(cdnskeyRequest.getNumOfResponses()).isEqualTo(1);
+    assertThat(cdnskeyRequest.getResponses().get(0).getRecordData()).isEqualTo(cdnskeyRdata);
+    assertThat(cdnskeyRequest.getResponses().get(0).getTtl()).isEqualTo(TTL);
+
+    verify(dnsResolver).lookup("@", dnsbelgium, CDNSKEY);
+    verify(enricher).enrichResponses(any());
+  }
+
   private void expectResponses(String prefix, RecordType recordType, Name name, String... rdata) {
     List<RRecord> records = new ArrayList<>();
     for (String data : rdata) {
