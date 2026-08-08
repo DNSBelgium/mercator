@@ -4,7 +4,7 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;

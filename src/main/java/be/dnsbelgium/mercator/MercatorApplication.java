@@ -1,8 +1,8 @@
 package be.dnsbelgium.mercator;
 
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.config.MeterFilter;
 import lombok.SneakyThrows;
@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.batch.autoconfigure.BatchAutoConfiguration;
+import org.springframework.boot.batch.autoconfigure.BatchJobLauncherAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ import java.sql.*;
 @SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
 exclude = {
         BatchAutoConfiguration.class,
-        DataSourceAutoConfiguration.class,
+        BatchJobLauncherAutoConfiguration.class
 })
 @EnableBatchProcessing
 public class MercatorApplication {

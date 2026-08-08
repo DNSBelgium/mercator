@@ -16,12 +16,20 @@ public class TlsCrawlResult {
 
   private final Instant crawlStarted;
 
+  private final Instant crawlFinished;
+
   private final List<TlsVisit> visits;
 
-  public TlsCrawlResult(String visitId, String domainName, List<TlsVisit> visits, Instant crawlStarted, Instant crawlFinished) {
+  public TlsCrawlResult(
+          String visitId,
+          String domainName,
+          List<TlsVisit> visits,
+          Instant crawlStarted,
+          Instant crawlFinished) {
     this.visitId = visitId;
     this.domainName = domainName;
     this.visits = visits;
     this.crawlStarted = crawlStarted;
+    this.crawlFinished = crawlFinished;
   }
 }

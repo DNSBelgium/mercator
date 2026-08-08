@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.persistence;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -10,7 +10,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.net.URI;
@@ -126,7 +125,6 @@ public class BaseRepository<T> {
     return queryForObject(Map.of("visit_id", visitId), query);
   }
 
-  @NonNull
   @SneakyThrows
   private Optional<T> queryForObject(Map<String,?> params, String query) {
       try {
@@ -139,7 +137,7 @@ public class BaseRepository<T> {
             T result = objectMapper.readValue(json.get(), this.type);
             logger.debug("Found: \n{}", result);
             return Optional.of(result);
-          } catch (JsonMappingException e) {
+          } catch (DatabindException e) {
             logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
             throw e;
           }
@@ -263,6 +261,9 @@ public class BaseRepository<T> {
     JdbcClient jdbcClient = jdbcClientFactory.jdbcClient();
     String stmt = "set variable jsonLocation = '" + jsonLocation + "'";
     try {
+      jdbcClient
+          .sql("set threads = 1")
+          .update();
       jdbcClient
           .sql(stmt)
           .update();

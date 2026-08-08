@@ -4,33 +4,31 @@ import be.dnsbelgium.mercator.batch.BatchConfig;
 import be.dnsbelgium.mercator.batch.DelegatingItemProcessor;
 import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.common.VisitRequestFieldSetMapper;
 import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
 import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.Job;
+import org.springframework.batch.core.step.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.infrastructure.item.ItemReader;
+import org.springframework.batch.infrastructure.item.ItemWriter;
+import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
+import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.task.TaskExecutor;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.nio.file.Path;
 
@@ -43,9 +41,6 @@ public class TlsJobConfig {
   @Value("${tls.chunkSize:1000}")
   private int chunkSize;
 
-  @Value("${tls.throttleLimit:200}")
-  private int throttleLimit;
-
   @Value("${tls.corePoolSize:1000}")
   private int corePoolSize;
 
@@ -55,7 +50,7 @@ public class TlsJobConfig {
 
   @Bean
   @Qualifier(JOB_NAME)
-  public TaskExecutor tlsTaskExecutor() {
+  public AsyncTaskExecutor tlsTaskExecutor() {
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
@@ -92,24 +87,18 @@ public class TlsJobConfig {
   @Bean(name = "tlsJob")
   @ConditionalOnProperty(name = "job.tls.enabled", havingValue = "true")
   public Job tlsJob(JobRepository jobRepository,
-                    PlatformTransactionManager transactionManager,
                     ItemReader<VisitRequest> tlsItemReader,
-                    TaskExecutor tlsTaskExecutor,
+                    AsyncTaskExecutor tlsTaskExecutor,
                     TlsCrawler tlsCrawler,
                     ItemWriter<TlsCrawlResult> itemWriter) {
     logger.info("creating tlsJob");
 
     var itemProcessor = new DelegatingItemProcessor<>(tlsCrawler);
 
-    // throttleLimit method is deprecated but alternative is not well documented
-    @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
-            .<VisitRequest, TlsCrawlResult>chunk(chunkSize, transactionManager)
+            .<VisitRequest, TlsCrawlResult>chunk(chunkSize)
             .reader(tlsItemReader)
             .taskExecutor(tlsTaskExecutor)
-            .throttleLimit(throttleLimit)
-//            .faultTolerant()
-//            .skip(FlatFileParseException.class)
             .processor(itemProcessor)
             .writer(itemWriter)
             .build();

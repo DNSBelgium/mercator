@@ -8,7 +8,7 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
