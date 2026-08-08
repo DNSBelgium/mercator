@@ -1,9 +1,9 @@
 package be.dnsbelgium.mercator.web.wappalyzer.jappalyzer;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class TechnologyBuilder {
         if (object.has("pricing")) {
             ArrayNode pricing = (ArrayNode) object.get("pricing");
             for (JsonNode node : pricing) {
-                technology.addPricing(node.asString());
+                technology.addPricing(node.asText());
             }
         }
 
@@ -84,25 +84,25 @@ public class TechnologyBuilder {
 
         if (object.has("headers")) {
             ObjectNode headersObject = (ObjectNode) object.get("headers");
-            headersObject.properties().forEach(entry -> {
+            headersObject.fields().forEachRemaining(entry -> {
                 String header = entry.getKey();
-                String headerPattern = entry.getValue().asString();
+                String headerPattern = entry.getValue().asText();
                 technology.addHeaderTemplate(header, headerPattern);
             });
         }
 
         if (object.has("cookies")) {
             ObjectNode cookiesObject = (ObjectNode) object.get("cookies");
-            cookiesObject.properties().forEach(entry -> {
+            cookiesObject.fields().forEachRemaining(entry -> {
                 String cookie = entry.getKey();
-                String cookiePattern = entry.getValue().asString();
+                String cookiePattern = entry.getValue().asText();
                 technology.addCookieTemplate(cookie, cookiePattern);
             });
         }
 
         if (object.has("meta")) {
             ObjectNode metaObject = (ObjectNode) object.get("meta");
-            metaObject.properties().forEach(entry -> {
+            metaObject.fields().forEachRemaining(entry -> {
                 String key = entry.getKey();
                 List<String> patterns = readValuesFromObject(entry.getValue());
                 for (String pattern : patterns) {
@@ -115,18 +115,18 @@ public class TechnologyBuilder {
 
     private List<DomPattern> readDOMPatterns(JsonNode object) {
         List<DomPattern> templates = new LinkedList<>();
-        if (object.isString()) {
-            templates.add(new DomPattern(meterRegistry, object.asString()));
+        if (object.isTextual()) {
+            templates.add(new DomPattern(meterRegistry, object.asText()));
         } else if (object.isArray()) {
             ArrayNode array = (ArrayNode) object;
             for (JsonNode item : array) {
-                if (item.isString()) {
-                    templates.add(new DomPattern(meterRegistry, item.asString()));
+                if (item.isTextual()) {
+                    templates.add(new DomPattern(meterRegistry, item.asText()));
                 }
             }
         } else if (object.isObject()) {
             ObjectNode jsonObject = (ObjectNode) object;
-            jsonObject.properties().forEach(entry -> {
+            jsonObject.fields().forEachRemaining(entry -> {
                 String selector = entry.getKey();
                 ObjectNode selectorParams = (ObjectNode) entry.getValue();
 
@@ -138,26 +138,26 @@ public class TechnologyBuilder {
                 if (selectorParams.has("attributes")) {
                     ObjectNode attributesObject = (ObjectNode) selectorParams.get("attributes");
                     attributesObject
-                            .properties()
-                            .forEach(attrEntry ->
-                                    attributesMap.put(attrEntry.getKey(), attrEntry.getValue().asString()));
+                            .fields()
+                            .forEachRemaining(attrEntry ->
+                                    attributesMap.put(attrEntry.getKey(), attrEntry.getValue().asText()));
                 }
 
                 if (selectorParams.has("properties")) {
                     ObjectNode propertiesObject = (ObjectNode) selectorParams.get("properties");
                     propertiesObject
-                            .properties()
-                            .forEach(propEntry
-                                    -> propertiesMap.put(propEntry.getKey(), propEntry.getValue().asString())
+                            .fields()
+                            .forEachRemaining(propEntry
+                                    -> propertiesMap.put(propEntry.getKey(), propEntry.getValue().asText())
                             );
                 }
 
                 if (selectorParams.has("text")) {
-                    text = selectorParams.get("text").asString();
+                    text = selectorParams.get("text").asText();
                 }
 
                 if (selectorParams.has("exists")) {
-                    exists = selectorParams.get("exists").asString();
+                    exists = selectorParams.get("exists").asText();
                 }
 
                 templates.add(new DomPattern(meterRegistry, selector, attributesMap, propertiesMap, text, exists));
@@ -171,23 +171,22 @@ public class TechnologyBuilder {
         return category.orElse(null);
     }
 
-    @SuppressWarnings("SameParameterValue")
     private static boolean readBooleanOrFalse(String key, JsonNode object) {
         return object.has(key) && object.get(key).isBoolean() && object.get(key).asBoolean();
     }
 
     private static String readStringOrEmpty(String key, JsonNode object) {
-        return object.has(key) && object.get(key).isString() ? object.get(key).asString() : "";
+        return object.has(key) && object.get(key).isTextual() ? object.get(key).asText() : "";
     }
 
     private static List<String> readValuesFromObject(JsonNode jsonObject) {
         List<String> patterns = new LinkedList<>();
         if (jsonObject.isArray()) {
             for (JsonNode arrayItem : jsonObject) {
-                patterns.add(arrayItem.asString());
+                patterns.add(arrayItem.asText());
             }
-        } else if (jsonObject.isString()) {
-            patterns.add(jsonObject.asString());
+        } else if (jsonObject.isTextual()) {
+            patterns.add(jsonObject.asText());
         }
         return patterns;
     }

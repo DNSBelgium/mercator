@@ -6,28 +6,29 @@ import be.dnsbelgium.mercator.batch.JsonItemWriter;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.step.Step;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.infrastructure.item.ItemReader;
-import org.springframework.batch.infrastructure.item.file.FlatFileItemReader;
-import org.springframework.batch.infrastructure.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.nio.file.Path;
 
@@ -71,7 +72,7 @@ public class SmtpJobConfig {
 
   @Bean
   @Qualifier(JOB_NAME)
-  public AsyncTaskExecutor smtpTaskExecutor(SmtpCrawlerConfiguration configuration) {
+  public TaskExecutor smtpTaskExecutor(SmtpCrawlerConfiguration configuration) {
     if (configuration.virtualThreads) {
       logger.info("using a VirtualThreadTaskExecutor");
       return new VirtualThreadTaskExecutor(JOB_NAME + "-virtual");
@@ -88,20 +89,24 @@ public class SmtpJobConfig {
   @Bean(name = "smtpJob")
   @ConditionalOnProperty(name = "job.smtp.enabled", havingValue = "true")
   public Job smtpJob(JobRepository jobRepository,
+                     PlatformTransactionManager transactionManager,
                      ItemReader<VisitRequest> smtpItemReader,
                      SmtpCrawler smtpCrawler,
                      JsonItemWriter<SmtpVisit> itemWriter,
-                     @Qualifier(JOB_NAME) AsyncTaskExecutor taskExecutor) {
+                     @Qualifier(JOB_NAME) TaskExecutor taskExecutor) {
 
     logger.info("creating smtpJob with JOB_NAME={}", JOB_NAME);
     DelegatingItemProcessor<SmtpVisit> itemProcessor = new DelegatingItemProcessor<>(smtpCrawler);
 
+    // throttleLimit is deprecated but the suggested alternative is not very clear ...
+    @SuppressWarnings("removal")
     Step step = new StepBuilder(JOB_NAME, jobRepository)
-            .<VisitRequest, SmtpVisit>chunk(chunkSize)
+            .<VisitRequest, SmtpVisit>chunk(chunkSize, transactionManager)
             .reader(smtpItemReader)
             .processor(itemProcessor)
             .writer(itemWriter)
             .taskExecutor(taskExecutor)
+            .throttleLimit(maxPoolSize - 10)
             .build();
 
     return new JobBuilder(JOB_NAME, jobRepository)

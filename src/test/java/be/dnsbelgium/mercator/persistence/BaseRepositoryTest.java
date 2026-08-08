@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.test.TestUtils;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

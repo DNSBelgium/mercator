@@ -7,7 +7,6 @@ import be.dnsbelgium.mercator.smtp.metrics.MetricName;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import apache.commons.net.smtp.SMTPReply;
 import apache.commons.net.smtp.SMTPSClient;
@@ -169,8 +168,8 @@ public class BlockingSmtpIpAnalyzer implements SmtpIpAnalyzer {
   private Set<String> extractExtensions(String[] replyStrings) {
     List<String> extensions = List.of(replyStrings);
     return extensions.stream()
-            .map(s -> Strings.CS.removeStart(s, "250-"))
-            .map(s -> Strings.CS.removeStart(s, "250 "))
+            .map(s -> StringUtils.removeStart(s, "250-"))
+            .map(s -> StringUtils.removeStart(s, "250 "))
             .map(StringUtils::trim)
             .collect(Collectors.toSet());
   }

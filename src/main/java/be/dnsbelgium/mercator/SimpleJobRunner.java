@@ -4,11 +4,6 @@ import be.dnsbelgium.mercator.batch.BatchConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
-
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.job.JobExecution;
-import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.stereotype.Component;
 
@@ -23,14 +18,13 @@ public class SimpleJobRunner {
   // TODO: combine this class with JobRunner
 
   private final BatchConfig batchConfig;
-  @SuppressWarnings("removal")
   private final JobLauncher jobLauncher;
   private final Map<String, Job> jobs;
   private static final Logger logger = LoggerFactory.getLogger(SimpleJobRunner.class);
 
   // for some reason IntelliJ does not find the JobLauncher bean
   @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-  public SimpleJobRunner(BatchConfig batchConfig, @SuppressWarnings("removal") JobLauncher jobLauncher, Map<String, Job> jobs) {
+  public SimpleJobRunner(BatchConfig batchConfig, JobLauncher jobLauncher, Map<String, Job> jobs) {
     this.batchConfig = batchConfig;
     this.jobLauncher = jobLauncher;
     this.jobs = jobs;

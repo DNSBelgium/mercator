@@ -2,10 +2,12 @@ package be.dnsbelgium.mercator.test;
 
 import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import be.dnsbelgium.mercator.persistence.JdbcClientFactory;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.ObjectWriter;
-import tools.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
+import javax.sql.DataSource;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,11 +17,10 @@ public class TestUtils {
   // a clock that ticks only once per microsecond
   private static final Clock microsecondClock = Clock.tick(Clock.systemUTC(), Duration.ofNanos(1000));
 
-  private final static JsonMapper mapper;
-
+  private final static ObjectMapper objectMapper;
   static {
     JsonConfiguration configuration = new JsonConfiguration();
-    mapper = configuration.mapper();
+    objectMapper =  configuration.objectMapper();
   }
 
   /**
@@ -43,11 +44,11 @@ public class TestUtils {
    * @return an ObjectWriter to be used in tests
    */
   public static ObjectWriter jsonWriter() {
-    return mapper.writerWithDefaultPrettyPrinter();
+    return objectMapper.writerWithDefaultPrettyPrinter();
   }
 
   public static ObjectMapper jsonReader() {
-    return mapper;
+    return objectMapper;
   }
 
   public static JdbcClientFactory jdbcClientFactory() {

@@ -1,14 +1,12 @@
 package be.dnsbelgium.mercator.persistence;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
 
 @Setter
 @Getter
-@NoArgsConstructor
 public class SearchVisitIdResultItem {
   private String visitId;
   private Instant timestamp;

@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.0</version>
+        <version>3.5.16</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -30,7 +30,7 @@
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
-        <netty.version>4.1.136.Final</netty.version>
+        <netty.version>4.1.135.Final</netty.version>
     </properties>
 
     <dependencies>
@@ -78,28 +78,28 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Jackson 3.x (version managed by the Spring Boot BOM = 3.1.4 = vulnerable ).
-             The parameter-names and jdk8 datatype modules are merged into jackson-databind
-             in Jackson 3.x and auto-registered, so no separate dependencies are needed. -->
+        <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>3.1.5</version>
+            <version>3.1.4</version>
+            <scope>compile</scope>
         </dependency>
 
-    <!--  maxmind still uses old jackson version (with vulnerabilities) -->
+        <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.21.5</version>
+            <version>2.22.0</version>
+            <scope>compile</scope>
         </dependency>
-        
 
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webmvc-test -->
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
+        <!-- to enable writing java.time.Instant values to JSON files -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webmvc-test</artifactId>
-            <scope>test</scope>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.22.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
@@ -135,6 +135,7 @@
             <version>1.84</version>
         </dependency>
 
+
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -161,6 +162,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>webjars-locator</artifactId>
+            <version>0.52</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>htmx.org</artifactId>
+            <version>2.0.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.github.wimdeblauwe/htmx-spring-boot -->
+        <!-- https://github.com/wimdeblauwe/htmx-spring-boot?tab=readme-ov-file#spring-boot-compatibility -->
+        <dependency>
+            <groupId>io.github.wimdeblauwe</groupId>
+            <artifactId>htmx-spring-boot-thymeleaf</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.17.1</version>
@@ -181,7 +202,7 @@
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
-            <version>5.2.0</version>
+            <version>4.2.0</version>
         </dependency>
 
         <!-- Used in GeoIPServiceImpl  -->
@@ -206,12 +227,18 @@
             <version>33.2.1-jre</version>
         </dependency>
 
-
-        <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
+        <!-- org.apache.poi.util.ReplacingInputStream is used in HtmlFeatureExtractor -->
+        <!-- TODO: maybe we should just copy that class-->
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
@@ -238,12 +265,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.6.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents.core5</groupId>
-            <artifactId>httpcore5-h2</artifactId>
             <version>5.4.3</version>
         </dependency>
 
@@ -421,7 +442,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.21.4</version>
+            <version>1.20.6</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

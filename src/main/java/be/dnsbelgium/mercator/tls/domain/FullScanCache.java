@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,7 +122,7 @@ public class FullScanCache {
         entry.serverNames.add(fullScanEntity.getServerName());
         String summary = fullScanEntity.summary();
         String majoritySummary = entry.majority.summary();
-        if (Strings.CS.equals(summary, majoritySummary)) {
+        if (StringUtils.equals(summary, majoritySummary)) {
           // new FullScanEntity matches with the majority
           entry.resultsInMajority++;
           entry.totalFullScanEntities++;

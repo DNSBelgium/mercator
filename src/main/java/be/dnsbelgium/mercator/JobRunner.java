@@ -6,10 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.job.AbstractJob;
-import org.springframework.batch.core.job.Job;
-import org.springframework.batch.core.job.JobExecution;
-import org.springframework.batch.core.job.parameters.JobParameters;
-import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -26,14 +22,13 @@ public class JobRunner implements CommandLineRunner {
 
   private final ApplicationContext context;
   private final BatchConfig batchConfig;
-  @SuppressWarnings("removal")
   private final JobLauncher jobLauncher;
   private final Map<String, Job> jobs;
   private static final Logger logger = LoggerFactory.getLogger(JobRunner.class);
   
 
   // for some reason IntelliJ does not find the JobLauncher bean
-  @SuppressWarnings({"SpringJavaInjectionPointsAutowiringInspection", "removal"})
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
   public JobRunner(JobLauncher jobLauncher, Map<String, Job> jobs, ApplicationContext context, BatchConfig batchConfig) {
     logger.info("Batch application initialized with {}", batchConfig);
     this.context = context;

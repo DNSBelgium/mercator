@@ -4,7 +4,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.batch.infrastructure.item.ItemProcessor;
+import org.springframework.batch.item.ItemProcessor;
 
 public class DelegatingItemProcessor <T> implements ItemProcessor<VisitRequest, T> {
 

@@ -1,9 +1,8 @@
 package be.dnsbelgium.mercator.web.wappalyzer.jappalyzer;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,7 @@ public class DataLoader {
 
     private Map<Integer, Group> createGroupsMap(JsonNode groupsJSON) {
         Map<Integer, Group> idGroupMap = new HashMap<>();
-        groupsJSON.properties().forEach(entry -> {
+        groupsJSON.fields().forEachRemaining(entry -> {
             int id = Integer.parseInt(entry.getKey());
             JsonNode groupObject = entry.getValue();
             idGroupMap.put(id, new Group(id, groupObject.get("name").asText()));
@@ -70,7 +69,7 @@ public class DataLoader {
         try {
             String categoriesContent = readFileContentFromResource("categories.json");
             JsonNode categoriesJSON = objectMapper.readTree(categoriesContent);
-            categoriesJSON.properties().forEach(entry -> {
+            categoriesJSON.fields().forEachRemaining(entry -> {
                 JsonNode categoryJson = entry.getValue();
                 categories.add(extractCategory(categoryJson, entry.getKey(), idGroupMap));
             });
@@ -138,12 +137,12 @@ public class DataLoader {
         JsonNode fileJSON;
         try {
             fileJSON = objectMapper.readTree(technologiesString);
-        } catch (JacksonException e) {
+        } catch (IOException e) {
             logger.error("Failed to load '{}': {}", technologiesString, e.getMessage());
             return technologies;
         }
         TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories, meterRegistry);
-        fileJSON.properties().forEach(entry -> {
+        fileJSON.fields().forEachRemaining(entry -> {
             JsonNode object = entry.getValue();
             try {
                 Technology technology = technologyBuilder.fromJSON(entry.getKey(), object);
