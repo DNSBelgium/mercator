@@ -83,6 +83,32 @@ class DnsResolverTest {
     assertThat(request.humanReadableProblem()).isEqualTo("host not found");
   }
 
+  @Test
+  public void lookup_apex_CDNSKEY() throws TextParseException {
+    // dnsbelgium.be does not publish CDNSKEY/CDS records (they are only published temporarily
+    // during a DNSSEC key rollover, see RFC 8078/7344), so we use cloudflare.com, which
+    // consistently publishes CDNSKEY, CDS and DNSKEY records, to test this record type against real DNS.
+    DnsRequest request = atLeastOneRecordFoundOfType("cloudflare.com", "@", RecordType.CDNSKEY);
+    for (RRecord record : request.records()) {
+      // format: flags protocol algorithm public-key
+      assertThat(record.getData()).matches("\\d+ \\d+ \\d+ .+");
+    }
+  }
+
+  @Test
+  public void lookup_apex_CDS() throws TextParseException {
+    DnsRequest request = atLeastOneRecordFoundOfType("cloudflare.com", "@", RecordType.CDS);
+    for (RRecord record : request.records()) {
+      // format: key-tag algorithm digest-type digest
+      assertThat(record.getData()).matches("\\d+ \\d+ \\d+ [0-9A-Fa-f]+");
+    }
+  }
+
+  @Test
+  public void lookup_apex_DNSKEY() throws TextParseException {
+    atLeastOneRecordFoundOfType("cloudflare.com", "@", RecordType.DNSKEY);
+  }
+
   private void assertRecordContainsValidIp(RRecord record) {
     String rdata = record.getData();
     assertThat(IPAddress.isValid(rdata))
@@ -91,8 +117,12 @@ class DnsResolverTest {
   }
 
   private DnsRequest atLeastOneRecordFoundOfType(String prefix, RecordType recordType) throws TextParseException {
-    Name dnsbelgium = Name.fromString("dnsbelgium.be");
-    DnsRequest request = dnsResolver.lookup(prefix, dnsbelgium, recordType);
+    return atLeastOneRecordFoundOfType("dnsbelgium.be", prefix, recordType);
+  }
+
+  private DnsRequest atLeastOneRecordFoundOfType(String domainName, String prefix, RecordType recordType) throws TextParseException {
+    Name name = Name.fromString(domainName);
+    DnsRequest request = dnsResolver.lookup(prefix, name, recordType);
     logger.info("request = {}", request);
     assertThat(request.rcode()).isEqualTo(0);
     assertThat(request.recordType()).isEqualTo(recordType);

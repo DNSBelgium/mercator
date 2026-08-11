@@ -225,19 +225,23 @@ class DnsCrawlServiceTest {
 
   @Test
   void retrieve_CDNSKEY_records_for_apex() throws TextParseException {
-    Name dnsbelgium = Name.fromString("dnsbelgium.be");
+    // dnsbelgium.be does not publish CDNSKEY/CDS records: those are only published temporarily
+    // during a DNSSEC key rollover (RFC 8078/7344). cloudflare.com does consistently publish them,
+    // so we use its actual rdata here (captured via `dig CDNSKEY/CDS/DNSKEY cloudflare.com`)
+    // to keep this mocked test realistic.
+    Name cloudflare = Name.fromString("cloudflare.com");
     when(dnsCrawlerConfig.getSubdomains()).thenReturn(new HashMap<>(Map.of(
             "@", List.of(A, DNSKEY, CDNSKEY, CDS)
     )));
     String cdnskeyRdata = "257 3 13 mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxILfDLUT0rAK9iUzy1L53eKGQ==";
-    String dnskeyRdata  = "257 3 13 GojIhhXUN/u4v54ZQqGSnyhWJwaubCvTmeexv7bR6edbkrSqQpF64cYbtw==";
-    String cdsRdata     = "2371 13 2 f1e184c0e1d615d20933cfb9b8f24f6f0aec99ec1de9d9d15ef7e9f6e1e5c5f0";
-    expectResponses("@", A,       dnsbelgium, IP1);
-    expectResponses("@", DNSKEY,  dnsbelgium, dnskeyRdata);
-    expectResponses("@", CDNSKEY, dnsbelgium, cdnskeyRdata);
-    expectResponses("@", CDS,     dnsbelgium, cdsRdata);
+    String dnskeyRdata  = "256 3 13 oJMRESz5E4gYzS/q6XDrvU1qMPYIjCWzJaOau8XNEZeqCYKD5ar0IRd8KqXXFJkqmVfRvMGPmM1x8fGAa2XhSA==";
+    String cdsRdata     = "2371 13 2 32996839A6D808AFE3EB4A795A0E6A7A39A76FC52FF228B22B76F6D63826F2B9";
+    expectResponses("@", A,       cloudflare, IP1);
+    expectResponses("@", DNSKEY,  cloudflare, dnskeyRdata);
+    expectResponses("@", CDNSKEY, cloudflare, cdnskeyRdata);
+    expectResponses("@", CDS,     cloudflare, cdsRdata);
 
-    VisitRequest visitRequest = make("dnsbelgium.be");
+    VisitRequest visitRequest = make("cloudflare.com");
     DnsCrawlResult dnsCrawlResult = dnsCrawlService.retrieveDnsRecords(visitRequest);
     List<Request> requests = dnsCrawlResult.getRequests();
     for (Request request : requests) {
@@ -256,7 +260,7 @@ class DnsCrawlServiceTest {
     assertThat(cdnskeyRequest.getResponses().get(0).getRecordData()).isEqualTo(cdnskeyRdata);
     assertThat(cdnskeyRequest.getResponses().get(0).getTtl()).isEqualTo(TTL);
 
-    verify(dnsResolver).lookup("@", dnsbelgium, CDNSKEY);
+    verify(dnsResolver).lookup("@", cloudflare, CDNSKEY);
     verify(enricher).enrichResponses(any());
   }
 
