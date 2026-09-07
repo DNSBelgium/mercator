@@ -31,7 +31,21 @@
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
         <netty.version>4.1.137.Final</netty.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
+
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -50,6 +64,28 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
         </dependency>
+
+        <!-- This will automagically find the DuckDB JDBC driver in the classpath and register it with the DriverManager. -->
+        <!-- No need to create a DuckDataSource class ... -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- Postgres driver for the stateful work queue (postgres-queue profile) and tests -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
 
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
         <dependency>
@@ -78,26 +114,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>3.2.2</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-parameter-names -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-parameter-names</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Force patched jackson-databind version used by jackson-module-parameter-names -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
             <version>2.22.2</version>
             <scope>compile</scope>
         </dependency>
@@ -178,26 +198,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator</artifactId>
-            <version>0.52</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>htmx.org</artifactId>
-            <version>2.0.10</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.github.wimdeblauwe/htmx-spring-boot -->
-        <!-- https://github.com/wimdeblauwe/htmx-spring-boot?tab=readme-ov-file#spring-boot-compatibility -->
-        <dependency>
-            <groupId>io.github.wimdeblauwe</groupId>
-            <artifactId>htmx-spring-boot-thymeleaf</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
             <version>1.17.1</version>
@@ -215,10 +215,12 @@
             <version>1.23.2</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/com.maxmind.geoip2/geoip2 -->
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
-            <version>4.2.0</version>
+            <version>5.2.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Used in GeoIPServiceImpl  -->

@@ -6,12 +6,14 @@ import okhttp3.HttpUrl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 
 import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+@EnabledIfEnvironmentVariable(named = "INTEGRATION_TESTS_ENABLED", matches = "true")
 public class SiteScraperIntegrationTest {
 
    /*

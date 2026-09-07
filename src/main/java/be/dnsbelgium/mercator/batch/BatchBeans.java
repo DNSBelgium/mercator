@@ -3,9 +3,7 @@ package be.dnsbelgium.mercator.batch;
 import org.springframework.batch.core.repository.support.ResourcelessJobRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import javax.sql.DataSource;
 
 @Configuration
 public class BatchBeans {
@@ -21,9 +19,9 @@ public class BatchBeans {
   //  and
   // https://github.com/spring-projects/spring-batch/issues/4718
 
-  @Bean
-  public DataSource dataSource() {
-    String url = "jdbc:duckdb:";
-    return new SingleConnectionDataSource(url, true);
-  }
+//  @Bean
+//  public DataSource dataSource() {
+//    String url = "jdbc:duckdb:";
+//    return new SingleConnectionDataSource(url, true);
+//  }
 }
