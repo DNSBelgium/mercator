@@ -3,6 +3,7 @@ package be.dnsbelgium.mercator.pipeline.dns;
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.module.VisitRequestModule;
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
@@ -10,6 +11,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
 import be.dnsbelgium.mercator.common.VisitRequest;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -21,7 +23,7 @@ public class DnsPipeline extends VisitRequestModule<DnsCrawlResult> {
     private final DnsCrawlService dnsCrawlService;
 
     public DnsPipeline(JdbcClient jdbcClient,
-                       ObjectMapper objectMapper,
+                       @Qualifier(PipelineJacksonConfig.PIPELINE_OBJECT_MAPPER) ObjectMapper objectMapper,
                        PipelineExecutors executors,
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,

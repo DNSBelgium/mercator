@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.smtp;
 
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.module.VisitRequestModule;
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
@@ -10,6 +11,7 @@ import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.smtp.SmtpCrawler;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -21,7 +23,7 @@ public class SmtpPipeline extends VisitRequestModule<SmtpVisit> {
     private final SmtpCrawler smtpCrawler;
 
     public SmtpPipeline(JdbcClient jdbcClient,
-                        ObjectMapper objectMapper,
+                        @Qualifier(PipelineJacksonConfig.PIPELINE_OBJECT_MAPPER) ObjectMapper objectMapper,
                         PipelineExecutors executors,
                         PipelineProperties properties,
                         MeterRegistry meterRegistry,
