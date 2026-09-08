@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.service;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
+
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

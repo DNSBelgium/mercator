@@ -2,10 +2,11 @@ package be.dnsbelgium.mercator.tls.ports;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.tls.domain.*;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
-import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -126,5 +127,11 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
       meterRegistry.counter(COUNTER_VISITS_COMPLETED).increment();
       Threads.TLS.decrementAndGet();
     }
+  }
+
+  @SneakyThrows
+  @Override
+  public TlsCrawlResult processItem(VisitRequest item) {
+    return process(item);
   }
 }

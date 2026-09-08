@@ -502,6 +502,12 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
+                    <!-- See htttps://github.com/projectlombok/lombok/issues/3852 -->
+                    <!-- The issue is Closed but not really fixed ...  -->
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-J--enable-native-access=ALL-UNNAMED</arg>
+                    </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
@@ -536,7 +542,8 @@
                     <!-- To hide ugly warning about a dynamically loaded java agent -->
                     <!-- See https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html -->
                     <!--suppress MavenModelInspection -->
-                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <!--Enable native access for the test JVM so DuckDB's JNI load doesn't warn.  -->
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} --enable-native-access=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 

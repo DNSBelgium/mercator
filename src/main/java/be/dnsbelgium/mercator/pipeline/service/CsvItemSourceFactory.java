@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.service;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
+
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.queue.DatabaseItemSourceFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;

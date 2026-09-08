@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.queue;
 
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
-import be.dnsbelgium.mercator.pipeline.service.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

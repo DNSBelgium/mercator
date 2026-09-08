@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.pipeline.module;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.*;

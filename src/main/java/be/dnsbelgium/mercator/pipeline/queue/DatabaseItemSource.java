@@ -2,7 +2,7 @@ package be.dnsbelgium.mercator.pipeline.queue;
 
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
-import be.dnsbelgium.mercator.pipeline.service.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -40,6 +40,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * work, sleeps — so this source never sleeps between polls ({@link #sleepBetweenPolls()} is
  * {@code false}).
  */
+@SuppressWarnings("SqlResolve")
 @Slf4j
 public class DatabaseItemSource implements ItemSource<VisitRequest> {
 

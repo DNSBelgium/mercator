@@ -1,55 +1,50 @@
-package be.dnsbelgium.mercator.pipeline.web;
+package be.dnsbelgium.mercator.pipeline.tls;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.module.VisitRequestModule;
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
-import be.dnsbelgium.mercator.common.VisitRequest;
-import be.dnsbelgium.mercator.web.WebProcessor;
-import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
+import be.dnsbelgium.mercator.tls.domain.TlsCrawlResult;
+import be.dnsbelgium.mercator.tls.ports.TlsCrawler;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.SneakyThrows;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
-/**
- * Web crawling module: reads {@link VisitRequest}s from CSV (or the Postgres work queue
- * under the {@code postgres-queue} profile), crawls each with {@link WebProcessor}, and
- * writes {@link WebCrawlResult}s as JSON-then-Parquet.
- */
 @Component
-public class WebPipeline extends VisitRequestModule<WebCrawlResult> {
+public class TlsPipeline extends VisitRequestModule<TlsCrawlResult> {
 
-    private final WebProcessor webProcessor;
+    private final TlsCrawler tlsCrawler;
 
-    public WebPipeline(JdbcClient jdbcClient,
+    public TlsPipeline(JdbcClient jdbcClient,
                        ObjectMapper objectMapper,
                        PipelineExecutors executors,
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,
-                       WebProcessor webProcessor,
+                       TlsCrawler tlsCrawler,
                        ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
         super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
-        this.webProcessor = webProcessor;
+        this.tlsCrawler = tlsCrawler;
     }
 
+
+    @SneakyThrows
+    @Override
+    protected ItemProcessor<VisitRequest, TlsCrawlResult> processor() {
+        return tlsCrawler;
+    }
+
+    @Override
+    protected Class<TlsCrawlResult> outputType() {
+        return TlsCrawlResult.class;
+    }
 
     @Override
     public String name() {
-        return "web";
+        return "tls";
     }
-
-    @Override
-    protected ItemProcessor<VisitRequest, be.dnsbelgium.mercator.web.domain.WebCrawlResult> processor() {
-        return webProcessor;
-    }
-
-    @Override
-    protected Class<be.dnsbelgium.mercator.web.domain.WebCrawlResult> outputType() {
-        return be.dnsbelgium.mercator.web.domain.WebCrawlResult.class;
-    }
-
-
 }

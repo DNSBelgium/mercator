@@ -1,5 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.service;
 
+import be.dnsbelgium.mercator.common.VisitRequest;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.simple.JdbcClient;
 

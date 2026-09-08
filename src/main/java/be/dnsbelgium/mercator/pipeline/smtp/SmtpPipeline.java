@@ -6,7 +6,9 @@ import be.dnsbelgium.mercator.pipeline.module.VisitRequestModule;
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
-import be.dnsbelgium.mercator.pipeline.service.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.smtp.SmtpCrawler;
+import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -14,19 +16,19 @@ import tools.jackson.databind.ObjectMapper;
 
 /** SMTP crawling module — mirrors {@code WebPipeline} to prove the abstraction. */
 @Component
-public class SmtpPipeline extends VisitRequestModule<SmtpResult> {
+public class SmtpPipeline extends VisitRequestModule<SmtpVisit> {
 
-    private final SmtpProcessor smtpProcessor;
+    private final SmtpCrawler smtpCrawler;
 
     public SmtpPipeline(JdbcClient jdbcClient,
                         ObjectMapper objectMapper,
                         PipelineExecutors executors,
                         PipelineProperties properties,
                         MeterRegistry meterRegistry,
-                        SmtpProcessor smtpProcessor,
+                        SmtpCrawler smtpCrawler,
                         ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
         super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
-        this.smtpProcessor = smtpProcessor;
+        this.smtpCrawler = smtpCrawler;
     }
 
     @Override
@@ -35,12 +37,12 @@ public class SmtpPipeline extends VisitRequestModule<SmtpResult> {
     }
 
     @Override
-    protected ItemProcessor<VisitRequest, SmtpResult> processor() {
-        return smtpProcessor;
+    protected ItemProcessor<VisitRequest, SmtpVisit> processor() {
+        return smtpCrawler::process;
     }
 
     @Override
-    protected Class<SmtpResult> outputType() {
-        return SmtpResult.class;
+    protected Class<SmtpVisit> outputType() {
+        return SmtpVisit.class;
     }
 }

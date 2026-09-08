@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * Both statements run in one transaction ({@code queueTransactionManager}) so a crash rolls
  * back cleanly; already-dispatched visits are skipped, so re-runs create no duplicates.
  */
+@SuppressWarnings("SqlResolve")
 @Slf4j
 @Component
 @Profile("postgres-queue")
@@ -60,7 +61,6 @@ public class CrawlTaskDispatcher {
      * Runs the fan-out. Scheduled at {@code pipeline.queue.dispatch-interval}; also callable
      * directly (e.g. in tests). No-op when there are no undispatched visits.
      */
-    @SuppressWarnings("SpringTransactionalComponentInspection")
     @Scheduled(fixedDelayString = "${pipeline.queue.dispatch-interval}")
     @Transactional("queueTransactionManager")
     public void dispatch() {

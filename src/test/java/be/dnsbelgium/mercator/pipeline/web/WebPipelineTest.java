@@ -1,11 +1,18 @@
 package be.dnsbelgium.mercator.pipeline.web;
 
+import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.CsvItemSourceFactory;
+import be.dnsbelgium.mercator.web.WebCrawler;
+import be.dnsbelgium.mercator.web.WebProcessor;
+import be.dnsbelgium.mercator.web.domain.*;
+import be.dnsbelgium.mercator.web.wappalyzer.TechnologyAnalyzer;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.jupiter.api.Disabled;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.ObjectMapper;
@@ -22,7 +29,7 @@ import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("SqlNoDataSourceInspection")
-@Disabled // until Jackson stuff is fixed
+//@Disabled // until Jackson stuff is fixed
 class WebPipelineTest {
 
     private final ObjectMapper objectMapper = JsonMapper.builder().build();
@@ -33,7 +40,7 @@ class WebPipelineTest {
         Path csv = dir.resolve("input.csv");
         Files.writeString(csv, """
                 domain_name,visit_id
-                example0.be,v0
+                dnsbelgium.be,v0
                 example1.be,v1
                 example2.be,v2
                 example3.be,v3
@@ -58,9 +65,20 @@ class WebPipelineTest {
         // The default CSV-backed factory is the one Spring injects when no queue profile is active.
         CsvItemSourceFactory itemSourceFactory = new CsvItemSourceFactory(jdbcClient, properties);
 
+        MeterRegistry meterRegistry = new SimpleMeterRegistry();
+        PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
+        WebProcessor webProcessor = getWebProcessor(meterRegistry, pageFetcher);
+
         WebPipeline webPipeline =
-                new WebPipeline(jdbcClient, objectMapper, executors, properties,
-                        new SimpleMeterRegistry(), new WebProcessor(), itemSourceFactory);
+                new WebPipeline(
+                        jdbcClient,
+                        objectMapper,
+                        executors,
+                        properties,
+                        meterRegistry,
+                        webProcessor,
+                        itemSourceFactory
+                );
 
         // When the module runs to completion
         try {
@@ -77,5 +95,16 @@ class WebPipelineTest {
         assertThat(filesWithSuffix(webOut, ".json")).isEmpty();
         assertThat(filesWithSuffix(webOut, ".parquet")).isNotEmpty();
         assertThat(parquetRowCountInDir(jdbcClient, webOut)).isEqualTo(5);
+    }
+
+    private static @NonNull WebProcessor getWebProcessor(MeterRegistry meterRegistry, PageFetcher pageFetcher) {
+        VatFinder vatFinder = new VatFinder();
+        VatLinkPrioritizer prioritizer = new VatLinkPrioritizer();
+        VatScraper vatScraper = new VatScraper(meterRegistry, pageFetcher, vatFinder, prioritizer);
+        HtmlFeatureExtractor featureExtractor = new HtmlFeatureExtractor(meterRegistry,false);
+        TechnologyAnalyzer te = new TechnologyAnalyzer(meterRegistry);
+        WebCrawler webCrawler = new WebCrawler(vatScraper, meterRegistry, featureExtractor, te);
+
+        return new WebProcessor(webCrawler);
     }
 }

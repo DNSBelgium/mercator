@@ -1,12 +1,14 @@
 package be.dnsbelgium.mercator.pipeline.dns;
 
+import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
+import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.module.VisitRequestModule;
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
-import be.dnsbelgium.mercator.pipeline.service.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequest;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
@@ -14,19 +16,19 @@ import tools.jackson.databind.ObjectMapper;
 
 /** DNS crawling module — mirrors {@code WebPipeline} to prove the abstraction. */
 @Component
-public class DnsPipeline extends VisitRequestModule<DnsResult> {
+public class DnsPipeline extends VisitRequestModule<DnsCrawlResult> {
 
-    private final DnsProcessor dnsProcessor;
+    private final DnsCrawlService dnsCrawlService;
 
     public DnsPipeline(JdbcClient jdbcClient,
                        ObjectMapper objectMapper,
                        PipelineExecutors executors,
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,
-                       DnsProcessor dnsProcessor,
+                       DnsCrawlService dnsCrawlService,
                        ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
         super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
-        this.dnsProcessor = dnsProcessor;
+        this.dnsCrawlService = dnsCrawlService;
     }
 
     @Override
@@ -35,12 +37,12 @@ public class DnsPipeline extends VisitRequestModule<DnsResult> {
     }
 
     @Override
-    protected ItemProcessor<VisitRequest, DnsResult> processor() {
-        return dnsProcessor;
+    protected ItemProcessor<VisitRequest, DnsCrawlResult> processor() {
+        return dnsCrawlService;
     }
 
     @Override
-    protected Class<DnsResult> outputType() {
-        return DnsResult.class;
+    protected Class<DnsCrawlResult> outputType() {
+        return DnsCrawlResult.class;
     }
 }

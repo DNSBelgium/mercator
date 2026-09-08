@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.pipeline.queue;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
-import be.dnsbelgium.mercator.pipeline.service.VisitRequest;
+import be.dnsbelgium.mercator.common.VisitRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
