@@ -99,7 +99,7 @@ new approval. Therefore:
 ### Commands to allowlist once (for the human)
 Approving these exact strings covers the whole day-to-day loop:
 - `mvn -q clean compile`
-- `mvn -q test` (full build incl. Snyk)
+- `mvn clean test` (full build incl. Snyk)
 - `mvn test -l snyk-build.log` (full build, full Snyk report captured to a log file)
 - `mvn -q test -Dsnyk.skip` (fast test loop)
 - `mvn -q test -Dsnyk.skip -Dtest=...` (the `-Dtest=` value varies; the prefix is stable)
