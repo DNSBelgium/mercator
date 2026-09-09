@@ -29,7 +29,7 @@ exclude = {
         BatchJobLauncherAutoConfiguration.class
 })
 @EnableBatchProcessing
-public final class MercatorApplication {
+public class MercatorApplication {
 
   // if we do this early enough, we don't have to set a system property when starting the JVM
   // (-Djava.security.properties=/path/to/custom/security.properties)

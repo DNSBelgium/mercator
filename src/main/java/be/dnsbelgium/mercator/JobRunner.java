@@ -13,6 +13,7 @@ import org.springframework.batch.core.job.parameters.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Profile("batch")
+@ConditionalOnProperty(name = "mercator.batch.enabled", havingValue = "true")
 @Component
 public class JobRunner implements CommandLineRunner {
 
