@@ -1,7 +1,7 @@
 package be.dnsbelgium.mercator.web.domain;
 
 import be.dnsbelgium.mercator.web.metrics.MetricName;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -9,6 +9,7 @@ import okhttp3.HttpUrl;
 import mockwebserver3.MockResponse;
 import mockwebserver3.MockWebServer;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class VatScraperTest {
   private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
   private static final Logger logger = getLogger(VatScraperTest.class);
 
-  public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+  public WireMockServer wireMockRule = new WireMockServer(options().dynamicPort());
 
   @BeforeEach
   public void init() throws IOException {
@@ -59,6 +60,11 @@ class VatScraperTest {
     VatLinkPrioritizer linkPrioritizer = new VatLinkPrioritizer();
     VatFinder vatFinder = new VatFinder();
     vatScraper = new VatScraper(meterRegistry, pageFetcher, vatFinder, linkPrioritizer);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wireMockRule.stop();
   }
 
   @Test

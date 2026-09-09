@@ -5,7 +5,7 @@ import be.dnsbelgium.mercator.test.ResourceReader;
 import be.dnsbelgium.mercator.web.domain.Page;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Collection;

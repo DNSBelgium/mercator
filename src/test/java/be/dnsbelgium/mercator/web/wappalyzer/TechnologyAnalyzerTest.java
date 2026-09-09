@@ -3,23 +3,22 @@ package be.dnsbelgium.mercator.web.wappalyzer;
 import be.dnsbelgium.mercator.web.domain.Page;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TechnologyAnalyzerTest {
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private TechnologyAnalyzer technologyAnalyzer;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         technologyAnalyzer = new TechnologyAnalyzer(meterRegistry);
     }
@@ -37,12 +36,9 @@ public class TechnologyAnalyzerTest {
 
         Set<String> detectedTechnologies = technologyAnalyzer.analyze(pages);
 
-        assertNotNull(detectedTechnologies);
+        assertThat(detectedTechnologies).isNotNull();
         Set<String> expectedTechnologies = Set.of("WordPress", "Joomla", "MySQL", "PHP");
-        assertEquals(expectedTechnologies, detectedTechnologies);
-
-
-
+        assertThat(detectedTechnologies).isEqualTo(expectedTechnologies);
     }
 
 }

@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.web.wappalyzer.jappalyzer;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.List;

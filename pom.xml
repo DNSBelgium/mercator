@@ -420,15 +420,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit 4: previously pulled in transitively by okhttp3:mockwebserver (4.x).
-             okhttp 5's mockwebserver3 no longer bundles it, so declare it explicitly for
-             the JUnit-4 based tests (wappalyzer.* and WireMockRule in VatScraperTest). -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- https://osv.dev/vulnerability/GHSA-chfm-68vv-pvw5-->
         <!-- https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core -->
         <!-- Version overridden via <xmlunit2.version> (Boot default 2.11.0 is vulnerable). -->
