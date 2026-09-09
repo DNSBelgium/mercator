@@ -26,7 +26,7 @@
         </license>
     </licenses>
     <properties>
-        <java.version>23</java.version>
+        <java.version>25</java.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
@@ -417,7 +417,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
+            <version>1.18.46</version>
             <scope>provided</scope>
         </dependency>
 
@@ -506,7 +506,8 @@
                     <!-- The issue is Closed but not really fixed ...  -->
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J--enable-native-access=ALL-UNNAMED</arg>
+                        <arg>-J--enable-native-access=ALL-UNNAMED,io.netty.common
+                        </arg>
                     </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

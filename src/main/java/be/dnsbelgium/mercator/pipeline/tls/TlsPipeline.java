@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.tls;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.TlsRepository;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
@@ -28,8 +29,9 @@ public class TlsPipeline extends VisitRequestModule<TlsCrawlResult> {
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,
                        TlsCrawler tlsCrawler,
+                       TlsRepository repository,
                        ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
-        super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
+        super(jdbcClient, objectMapper, executors, properties, meterRegistry, repository, itemSourceFactory);
         this.tlsCrawler = tlsCrawler;
     }
 

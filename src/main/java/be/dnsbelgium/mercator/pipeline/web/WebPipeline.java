@@ -8,6 +8,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.web.WebProcessor;
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -32,8 +33,9 @@ public class WebPipeline extends VisitRequestModule<WebCrawlResult> {
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,
                        WebProcessor webProcessor,
+                       WebRepository repository,
                        ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
-        super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
+        super(jdbcClient, objectMapper, executors, properties, meterRegistry, repository, itemSourceFactory);
         this.webProcessor = webProcessor;
     }
 

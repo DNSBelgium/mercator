@@ -99,7 +99,7 @@ class BlockingSmtpIpAnalyzerTest {
     logger.info("smtpConversationBlocking = {}", smtpConversationBlocking);
     assertThat(smtpConversationBlocking).isNotNull();
     assertThat(smtpConversationBlocking.getConnectionTimeMs()).isLessThan(100);
-    assertThat(smtpConversationBlocking.getErrorMessage()).isEqualTo("Connection refused");
+    assertThat(smtpConversationBlocking.getErrorMessage()).contains("Connection refused");
     assertThat(smtpConversationBlocking.getError()).isEqualTo(Error.CONNECTION_ERROR);
   }
 

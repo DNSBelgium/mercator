@@ -29,6 +29,27 @@ public final class TestSupport {
         }
     }
 
+    /**
+     * Recursively collects every {@code *.json} file under {@code dir} (any depth). Returns an
+     * empty list when {@code dir} does not exist.
+     */
+    public static List<Path> jsonFilesRecursively(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return List.of();
+        }
+        try (var stream = Files.walk(dir)) {
+            return stream.filter(p -> p.toString().endsWith(".json")).toList();
+        }
+    }
+
+    /** Counts rows across every {@code *.parquet} file under {@code dir}, recursively (any depth). */
+    @SuppressWarnings("SqlSourceToSinkFlow")
+    public static long parquetRowCountRecursive(JdbcClient client, Path dir) {
+        return client.sql("SELECT count(*) FROM read_parquet('" + dir.toAbsolutePath() + "/**/*.parquet')")
+                .query(Long.class)
+                .single();
+    }
+
     /** Counts rows in a single Parquet file. */
     public static long parquetRowCount(JdbcClient client, Path parquetFile) {
         //noinspection SqlSourceToSinkFlow

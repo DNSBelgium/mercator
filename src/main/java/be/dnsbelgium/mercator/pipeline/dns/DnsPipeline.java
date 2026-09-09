@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.pipeline.dns;
 
 import be.dnsbelgium.mercator.dns.domain.DnsCrawlService;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
+import be.dnsbelgium.mercator.persistence.DnsRepository;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
@@ -28,8 +29,9 @@ public class DnsPipeline extends VisitRequestModule<DnsCrawlResult> {
                        PipelineProperties properties,
                        MeterRegistry meterRegistry,
                        DnsCrawlService dnsCrawlService,
+                       DnsRepository repository,
                        ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
-        super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
+        super(jdbcClient, objectMapper, executors, properties, meterRegistry, repository, itemSourceFactory);
         this.dnsCrawlService = dnsCrawlService;
     }
 

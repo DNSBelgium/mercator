@@ -8,6 +8,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemSourceFactory;
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.SmtpRepository;
 import be.dnsbelgium.mercator.smtp.SmtpCrawler;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,8 +29,9 @@ public class SmtpPipeline extends VisitRequestModule<SmtpVisit> {
                         PipelineProperties properties,
                         MeterRegistry meterRegistry,
                         SmtpCrawler smtpCrawler,
+                        SmtpRepository repository,
                         ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
-        super(jdbcClient, objectMapper, executors, properties, meterRegistry, itemSourceFactory);
+        super(jdbcClient, objectMapper, executors, properties, meterRegistry, repository, itemSourceFactory);
         this.smtpCrawler = smtpCrawler;
     }
 

@@ -1,9 +1,12 @@
 package be.dnsbelgium.mercator.pipeline.web;
 
 import be.dnsbelgium.mercator.feature.extraction.HtmlFeatureExtractor;
+import be.dnsbelgium.mercator.persistence.WebRepository;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.CsvItemSourceFactory;
+import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.web.WebCrawler;
 import be.dnsbelgium.mercator.web.WebProcessor;
 import be.dnsbelgium.mercator.web.domain.*;
@@ -15,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 //@Disabled // until Jackson stuff is fixed
 class WebPipelineTest {
 
-    private final ObjectMapper objectMapper = JsonMapper.builder().build();
+    // The pipeline must serialize with the snake_case + Instant mapper so the typed
+    // read_json(columns={...}) schema in storeResults populates every column correctly.
+    private final ObjectMapper objectMapper = new PipelineJacksonConfig().pipelineObjectMapper();
 
     @Test
     void runsWebModuleEndToEnd_csvToParquet(@TempDir Path dir) throws IOException {
@@ -68,6 +72,14 @@ class WebPipelineTest {
         PageFetcher pageFetcher = new PageFetcher(meterRegistry, PageFetcherConfig.defaultConfig());
         WebProcessor webProcessor = getWebProcessor(meterRegistry, pageFetcher);
 
+        // The repository decides the Parquet destination/layout (typed schema, year/month
+        // partitioning) exactly like the legacy batch writer. Point it at the temp dir.
+        Path webBase = dir.resolve("data").resolve("web");
+        Path responseBodyBase = dir.resolve("data").resolve("web_response_body");
+        WebRepository repository = new WebRepository(
+                TestUtils.jdbcClientFactory(), TestUtils.jsonReader(),
+                webBase.toString(), responseBodyBase.toString());
+
         WebPipeline webPipeline =
                 new WebPipeline(
                         jdbcClient,
@@ -76,6 +88,7 @@ class WebPipelineTest {
                         properties,
                         meterRegistry,
                         webProcessor,
+                        repository,
                         itemSourceFactory
                 );
 
@@ -88,12 +101,17 @@ class WebPipelineTest {
             watchdog.shutdownNow();
         }
 
-        // Then all 5 results are persisted as Parquet, with no JSON left behind
-        Path webOut = dir.resolve("out").resolve("web");
-        assertThat(webOut).isDirectory();
-        assertThat(filesWithSuffix(webOut, ".json")).isEmpty();
-        assertThat(filesWithSuffix(webOut, ".parquet")).isNotEmpty();
-        assertThat(parquetRowCountInDir(jdbcClient, webOut)).isEqualTo(5);
+        // Then all 5 results are persisted as Parquet in the repository base location,
+        // Hive-partitioned by year/month, with no transient JSON left behind.
+        Path transientJsonDir = dir.resolve("out").resolve("web");
+        assertThat(jsonFilesRecursively(transientJsonDir)).isEmpty();
+
+        assertThat(webBase).isDirectory();
+        assertThat(parquetRowCountRecursive(jdbcClient, webBase)).isEqualTo(5);
+
+        // The web module additionally produces the web_response_body dataset.
+        assertThat(responseBodyBase).isDirectory();
+        assertThat(parquetRowCountRecursive(jdbcClient, responseBodyBase)).isGreaterThan(0);
     }
 
     private static @NonNull WebProcessor getWebProcessor(MeterRegistry meterRegistry, PageFetcher pageFetcher) {

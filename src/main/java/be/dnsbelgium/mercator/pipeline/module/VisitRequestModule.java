@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.module;
 
 import be.dnsbelgium.mercator.common.VisitRequest;
+import be.dnsbelgium.mercator.persistence.BaseRepository;
 import be.dnsbelgium.mercator.pipeline.config.PipelineExecutors;
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import be.dnsbelgium.mercator.pipeline.service.*;
@@ -31,6 +32,13 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
     protected final MeterRegistry meterRegistry;
 
     /**
+     * The module's repository. Its {@code storeResults} is used as the {@link ParquetConverter}
+     * so that JSON batches are converted to Parquet exactly like the legacy batch writer
+     * (typed schema, {@code year}/{@code month} partitioning, repository base location).
+     */
+    protected final BaseRepository<O> repository;
+
+    /**
      * Injected source factory. Spring picks the CSV-backed factory by default, or the
      * {@code @Primary} Postgres factory when the {@code postgres-queue} profile is active.
      * The module itself stays agnostic of both.
@@ -42,12 +50,14 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
                                  PipelineExecutors executors,
                                  PipelineProperties properties,
                                  MeterRegistry meterRegistry,
+                                 BaseRepository<O> repository,
                                  ItemSourceFactory<ItemSource<VisitRequest>> itemSourceFactory) {
         this.jdbcClient = jdbcClient;
         this.objectMapper = objectMapper;
         this.executors = executors;
         this.properties = properties;
         this.meterRegistry = meterRegistry;
+        this.repository = repository;
         this.itemSourceFactory = itemSourceFactory;
     }
 
@@ -61,8 +71,10 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
     public long run() {
         ItemSource<VisitRequest> source = itemSourceFactory.create(name());
         Path outputDir = Path.of(properties.getOutputDirectory(), name());
+        // Delegate the JSON -> Parquet conversion to the module's repository.storeResults,
+        // reproducing the legacy batch writer's typed schema / partitioning / destination.
         ItemWriter<O> writer =
-                new JsonItemWriter<>(objectMapper, jdbcClient, outputDir, outputType(), properties.getBatchSize());
+                new JsonItemWriter<>(objectMapper, repository::storeResults, outputDir, outputType(), properties.getBatchSize());
 
         PipelineService<VisitRequest, O> pipeline =
                 new PipelineService<>(name(), source, processor(), writer, executors, properties, meterRegistry);
