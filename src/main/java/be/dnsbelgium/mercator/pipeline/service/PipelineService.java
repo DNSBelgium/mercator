@@ -128,6 +128,13 @@ public class PipelineService<InputType, OutputType> {
     /**
      * Producer stage. Drains the {@link ItemSource} and enqueues each item wrapped in a
      * {@link Signal.Payload}; appends a single {@link Signal.Poison} when the source is done.
+     *
+     * <p>The poison pill is enqueued from a {@code finally} block so it is delivered on
+     * <em>every</em> exit path — normal completion, an {@link ItemSource} failure (e.g. a
+     * missing/unreadable {@code input.csv}), or an interrupt. Without this, a producer that
+     * died before signaling end-of-input would leave the processors blocked forever on
+     * {@code inputQueue.take()}, which in turn keeps the writer blocked and hangs the whole
+     * pipeline.
      */
     private void produceData() {
         try {
@@ -142,11 +149,37 @@ public class PipelineService<InputType, OutputType> {
                     Thread.sleep(Duration.ofSeconds(10));
                 }
             }
-            inputQueue.put(Signal.poison());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } catch (RuntimeException e) {
+            // e.g. the source could not read its input (missing/invalid input.csv). Log and fall
+            // through to the finally block so consumers still receive the poison pill and stop.
+            log.error("Producer for pipeline '{}' failed while reading from source; "
+                    + "signalling consumers to stop.", name, e);
         } finally {
+            // Always signal end-of-input so consumers (and transitively the writer) can stop.
+            putPoison(inputQueue);
             source.close();
+        }
+    }
+
+    /**
+     * Enqueues a single {@link Signal.Poison} onto {@code queue}, retrying across interrupts so
+     * the shutdown signal is never lost. If the current thread was interrupted while waiting,
+     * the interrupt flag is restored once the pill has been enqueued.
+     */
+    private static <T> void putPoison(BlockingQueue<Signal<T>> queue) {
+        boolean interrupted = false;
+        while (true) {
+            try {
+                queue.put(Signal.poison());
+                break;
+            } catch (InterruptedException e) {
+                interrupted = true;
+            }
+        }
+        if (interrupted) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -267,6 +300,7 @@ public class PipelineService<InputType, OutputType> {
      * @throws InterruptedException if the calling thread is interrupted while waiting
      * @throws Exception any exception thrown by the task itself
      */
+    @SuppressWarnings("unused") // we still need to use this for the wappalyzer stuff
     <T> T runWithTimeout(Callable<T> task, Duration limit) throws Exception {
         Future<T> future = cpuPool.submit(() -> {
             // Timer starts HERE — when the worker actually begins the task.

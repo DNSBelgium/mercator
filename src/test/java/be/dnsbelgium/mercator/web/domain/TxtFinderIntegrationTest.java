@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.persistence.DuckDataSource;
 import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.web.WebCrawler;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -13,18 +14,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import static be.dnsbelgium.mercator.persistence.DuckDb.nop;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
+// The "test" profile keeps PipelineRunner (@Profile("!test"))
+// from kicking off a real crawl on startup.
+@ActiveProfiles("test")
 // These test make an internet connections, set the env var WEB_OUTBOUND_TEST_ENABLED to "True" to enable the tests
 // Running one individual test method in IntelliJ also seems to work (it seems to ignore the @EnabledIfEnvironmentVariable)
+@Disabled
 public class TxtFinderIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(TxtFinderIntegrationTest.class);
@@ -60,11 +67,10 @@ public class TxtFinderIntegrationTest {
         }
         save(pageVisits, "security_txt_top100.json");
         int count200 = jdbcClient
-                .sql("select count(1) from './target/test-outputs/security_txt_top100.json' where status_code = 200")
+                .sql(nop("select count(1) from './target/test-outputs/security_txt_top100.json' where status_code = 200"))
                 .query(Integer.class)
                 .single();
         logger.info("count200 = {}", count200);
-
     }
 
     @Test
@@ -94,7 +100,7 @@ public class TxtFinderIntegrationTest {
         }
         save(pageVisits, "robots_txt_top100.json");
         int count200 = jdbcClient
-                .sql("select count(1) from './target/test-outputs/robots_txt_top100.json' where status_code = 200")
+                .sql(nop("select count(1) from './target/test-outputs/robots_txt_top100.json' where status_code = 200"))
                 .query(Integer.class)
                 .single();
         logger.info("count200 = {}", count200);
@@ -112,6 +118,7 @@ public class TxtFinderIntegrationTest {
 
     private List<String> getTop(int limit) {
         List<String> domainNames = jdbcClient
+                //.sql(nop("select domain_name from 'src/test/resources/test-data/tranco_be.parquet' order by tranco_rank limit ?"))
                 .sql("select domain_name from 'src/test/resources/test-data/tranco_be.parquet' order by tranco_rank limit ?")
                 .param(limit)
                 .query(String.class)
