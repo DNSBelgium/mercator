@@ -268,7 +268,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <version>5.5.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-transport -->
@@ -398,11 +398,11 @@
         <!-- TEST dependencies  -->
         <!-- ================== -->
 
-        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
+        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver3 -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>mockwebserver</artifactId>
-            <version>4.12.0</version>
+            <artifactId>mockwebserver3</artifactId>
+            <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -417,6 +417,15 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit 4: previously pulled in transitively by okhttp3:mockwebserver (4.x).
+             okhttp 5's mockwebserver3 no longer bundles it, so declare it explicitly for
+             the JUnit-4 based tests (wappalyzer.* and WireMockRule in VatScraperTest). -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
 
