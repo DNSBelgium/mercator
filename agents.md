@@ -37,14 +37,17 @@ plugin, and never assume "CI will catch it".
 
 ### Canonical commands — copy VERBATIM (do not modify)
 
-| Purpose                                                                | Command                                                                      |
-|------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| Compile only                                                           | `mvn -q clean compile`                                                       |
-| Fast test loop (skips the Snyk scan)                                   | `mvn -q test -Dsnyk.skip`                                                    |
-| One test class                                                         | `mvn -q test -Dsnyk.skip -Dtest=WebPipelineTest`                             |
-| Several classes                                                        | `mvn -q test -Dsnyk.skip -Dtest=ClassA,ClassB`                               |
-| A package                                                              | `mvn -q test -Dsnyk.skip -Dtest="be.dnsbelgium.mercator.pipeline.dns.*Test"` |
-| Full build incl. Snyk vuln scan                                        | `mvn -q test`                                                                |
+| Purpose                              | Command                                                                      |
+|--------------------------------------|------------------------------------------------------------------------------|
+| Compile only                         | `mvn -q clean compile`                                                       |
+| Fast test loop (skips the Snyk scan) | `mvn -q test -Dsnyk.skip`                                                    |
+| One test class                       | `mvn -q test -Dsnyk.skip -Dtest=WebPipelineTest`                             |
+| Several classes                      | `mvn -q test -Dsnyk.skip -Dtest=ClassA,ClassB`                               |
+| A package                            | `mvn -q test -Dsnyk.skip -Dtest="be.dnsbelgium.mercator.pipeline.dns.*Test"` |
+| Full build incl. Snyk vuln scan      | `mvn -q test`                                                                |
+| Check dependency updates             | `mvn versions:display-dependency-updates -DprocessDependencyManagement=true` |
+| Check managed-property updates       | `mvn versions:display-property-updates`                                      |
+| Check build-plugin updates           | `mvn versions:display-plugin-updates`                                        |
 
 Running all tests needs Docker for Testcontainers Postgres; DuckDB runs in-memory.
 

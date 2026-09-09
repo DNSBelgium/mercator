@@ -30,19 +30,28 @@
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
-        <netty.version>4.1.137.Final</netty.version>
-        <testcontainers.version>2.0.5</testcontainers.version>
-
+        <!-- Override Spring Boot 4.1.1 managed versions (Boot default shown in comments). -->
+        <netty.version>4.2.17.Final</netty.version>   <!-- Boot: 4.2.17.Final -->
+        <tomcat.version>11.0.25</tomcat.version>       <!-- Boot: 11.0.24 -->
+        <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Pin transitive jackson-databind to patched versions (Snyk gate).
+                 Jackson 2.x (com.fasterxml) is pulled in transitively by geoip2;
+                 Jackson 3.x (tools.jackson) is managed by the Spring Boot 4.1.1 parent.
+                 Both are same-minor patch bumps that close the reported deserialization/
+                 unsafe-reflection advisories. -->
             <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers-bom</artifactId>
-                <version>${testcontainers.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.21.6</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>3.1.6</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -85,14 +94,11 @@
             <scope>test</scope>
         </dependency>
 
-
-
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -121,19 +127,17 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.5.36</version>
         </dependency>
         
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.36</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
-            <version>2.15.0</version>
+            <version>2.15.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -147,7 +151,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.85</version>
+            <version>1.85.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
@@ -178,13 +182,12 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.17.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.seancfoley</groupId>
             <artifactId>ipaddress</artifactId>
-            <version>5.4.1</version>
+            <version>5.6.2</version>
         </dependency>
 
         <dependency>
@@ -208,19 +211,18 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.26.2</version>
+            <version>1.28.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.19.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.2.1-jre</version>
+            <version>33.7.1-jre</version>
         </dependency>
 
 
@@ -228,7 +230,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.6.0</version>
         </dependency>
 
         <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
@@ -242,26 +244,25 @@
         <dependency>
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
-            <version>1.3.2.0</version>
+            <version>1.4.5.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>com.github.f4b6a3</groupId>
             <artifactId>ulid-creator</artifactId>
-            <version>5.2.3</version>
+            <version>5.2.4</version>
         </dependency>
 
         <!--        used in GeoIPServiceImpl-->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.6.4</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents.core5</groupId>
             <artifactId>httpcore5-h2</artifactId>
-            <version>5.4.3</version>
         </dependency>
 
         <dependency>
@@ -330,7 +331,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.6.0</version>
+            <version>3.6.5</version>
         </dependency>
 
         <dependency>
@@ -347,7 +348,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <!--suppress KotlinMavenPluginPhase -->
             <artifactId>kotlin-stdlib</artifactId>
-            <version>2.1.10</version>
         </dependency>
 
 
@@ -366,25 +366,21 @@
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.2.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.22.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.9.22.1</version>
         </dependency>
 
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-            <version>1.16.7</version>
         </dependency>
 
         <dependency>
@@ -395,7 +391,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.46</version>
             <scope>provided</scope>
         </dependency>
 
@@ -427,18 +422,18 @@
 
         <!-- https://osv.dev/vulnerability/GHSA-chfm-68vv-pvw5-->
         <!-- https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core -->
+        <!-- Version overridden via <xmlunit2.version> (Boot default 2.11.0 is vulnerable). -->
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
-            <version>2.10.2</version>
             <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers -->
+        <!-- Version is managed by Spring Boot 4.1.1 (testcontainers-bom 2.0.5). -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.21.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -448,25 +443,24 @@
             </exclusions>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers-junit-jupiter -->
+        <!-- Testcontainers 2.0 renamed this module from 'junit-jupiter' to 'testcontainers-junit-jupiter'. -->
+        <!-- Version is managed by Spring Boot 4.1.1 (testcontainers-bom 2.0.5). -->
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>1.20.6</version>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>11.0.25</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-websocket</artifactId>
-            <version>11.0.25</version>
             <scope>compile</scope>
         </dependency>
 
