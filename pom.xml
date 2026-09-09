@@ -267,7 +267,10 @@
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
+            <!-- okhttp 5 is a Kotlin-Multiplatform build: the plain `okhttp` artifact is an empty
+                 aggregator resolved via Gradle module metadata (which Maven ignores). Depend on the
+                 JVM variant `okhttp-jvm` so the okhttp3.* classes are on the compile classpath. -->
+            <artifactId>okhttp-jvm</artifactId>
             <version>5.5.0</version>
         </dependency>
 
