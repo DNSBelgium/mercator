@@ -79,6 +79,23 @@ Running all tests needs Docker for Testcontainers Postgres; DuckDB runs in-memor
   `target/surefire-reports/<fully.qualified.ClassName>.txt`.
   Maven overwrites these each run — never delete them first.
 
+### Fetching web docs (lynx)
+When a warning/error points to a documentation URL, or you need to check upstream docs
+(Lombok, Jackson, Spring, etc.), **read the page instead of guessing** — `lynx` is installed
+and this machine has outbound network access.
+
+- Dump a page as readable text:
+  ```
+  lynx -dump -nolist <url>
+  ```
+- Jump to the relevant part with grep (this is docs, not the build loop, so pipes/grep are fine
+  here — the no-pipe rule below only applies to the canonical `mvn` commands):
+  ```
+  lynx -dump -nolist <url> | grep -iA3 "<keyword>"
+  ```
+- Prefer this over inventing config keys / flags from memory. If the authoritative source is a
+  local artifact instead (e.g. a jar), grep the jar — never guess and present it as fact.
+
 ### Agent Command Conventions — READ THIS (avoids repeated "Allow once" prompts)
 
 The terminal approval remembers a command **only by its exact string**; any variation forces a

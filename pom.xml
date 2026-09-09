@@ -481,8 +481,13 @@
                     <!-- The issue is Closed but not really fixed ...  -->
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J--enable-native-access=ALL-UNNAMED,io.netty.common
-                        </arg>
+                        <arg>-J--enable-native-access=ALL-UNNAMED</arg>
+                        <!-- Lombok's annotation processor computes a field offset via
+                             sun.misc.Unsafe#objectFieldOffset, which on JDK 25 is terminally
+                             deprecated (JEP 471) and prints a warning by default. Allow the
+                             legacy access on the forked javac so the build stays warning-free.
+                             (Same flag already used for the runtime container in the jib plugin.) -->
+                        <arg>-J--sun-misc-unsafe-memory-access=allow</arg>
                     </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

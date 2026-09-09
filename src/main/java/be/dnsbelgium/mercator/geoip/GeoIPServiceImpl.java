@@ -233,7 +233,7 @@ public class GeoIPServiceImpl implements GeoIPService {
   @Override
   public Optional<String> lookupCountry(InetAddress ip) {
     try {
-      return Optional.ofNullable(geoReader.country(ip).getCountry().getIsoCode());
+      return Optional.ofNullable(geoReader.country(ip).country().isoCode());
     } catch (AddressNotFoundException e) {
       logNotFound(ip);
     } catch (Exception e) {
@@ -250,11 +250,11 @@ public class GeoIPServiceImpl implements GeoIPService {
       if (config.isUsePaidVersion()) {
         // paid version returns IspResponse
         IspResponse r = asnReader.isp(ip);
-        return asn(r.getAutonomousSystemNumber(), r.getAutonomousSystemOrganization(), ip);
+        return asn(r.autonomousSystemNumber(), r.autonomousSystemOrganization(), ip);
       }
       // use free version
       AsnResponse r = asnReader.asn(ip);
-      return asn(r.getAutonomousSystemNumber(), r.getAutonomousSystemOrganization(), ip);
+      return asn(r.autonomousSystemNumber(), r.autonomousSystemOrganization(), ip);
     } catch (AddressNotFoundException e) {
       logNotFound(ip);
     } catch (Exception e) {
