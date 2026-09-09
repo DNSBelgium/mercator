@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.pipeline.simulation;
 
 import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A placeholder {@link ItemProcessor} that reproduces the pipeline's original
@@ -13,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SimulatedProcessor implements ItemProcessor<String, String> {
 
     @Override
-    public String processItem(String item) {
+    public String processItem(@NonNull String item) {
         simulateWork();
         return Thread.currentThread().getName() + "-processed-" + item;
     }

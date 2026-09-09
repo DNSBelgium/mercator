@@ -32,7 +32,7 @@ public class WebProcessor implements ItemProcessor<VisitRequest, WebCrawlResult>
   }
 
   @Override
-  public WebCrawlResult processItem(VisitRequest item) {
+  public WebCrawlResult processItem(@NonNull VisitRequest item) {
     return process(item);
   }
 

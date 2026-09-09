@@ -6,6 +6,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.tls.domain.*;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -113,7 +114,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
 
   @Override
-  public TlsCrawlResult process(VisitRequest visitRequest) throws Exception {
+  public TlsCrawlResult process(@NonNull VisitRequest visitRequest) throws Exception {
     try {
       Threads.TLS.incrementAndGet();
       Instant crawlStarted = Instant.now();
@@ -131,7 +132,7 @@ public class TlsCrawler implements ItemProcessor<VisitRequest, TlsCrawlResult> {
 
   @SneakyThrows
   @Override
-  public TlsCrawlResult processItem(VisitRequest item) {
+  public TlsCrawlResult processItem(@NonNull VisitRequest item) {
     return process(item);
   }
 }
