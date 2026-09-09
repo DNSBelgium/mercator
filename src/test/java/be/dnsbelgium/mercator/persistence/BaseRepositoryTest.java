@@ -1,13 +1,12 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.test.TestUtils;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import tools.jackson.databind.ObjectWriter;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
@@ -41,7 +40,7 @@ class BaseRepositoryTest {
   }
 
   @Test
-  void testAll() throws IOException {
+  void testAll() {
     BaseRepository<BaseItem> repository = new BaseRepository<>(
             TestUtils.jdbcClientFactory(), TestUtils.jsonReader(), baseLocation.toString(), BaseItem.class);
 

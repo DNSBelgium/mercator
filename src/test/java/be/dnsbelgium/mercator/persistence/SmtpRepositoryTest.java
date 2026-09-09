@@ -4,7 +4,7 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
@@ -21,6 +21,7 @@ import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@SuppressWarnings("LoggingSimilarMessage")
 class SmtpRepositoryTest {
 
   private static final Logger logger = LoggerFactory.getLogger(SmtpRepositoryTest.class);
@@ -82,7 +83,7 @@ class SmtpRepositoryTest {
     logger.info("SmtpVisitResult = {}", smtpVisitResult1);
 
     File jsonFile = tempDir.resolve("smtpVisitResult2.json").toFile();
-    logger.info("jsonFile = {}", jsonFile);
+    logger.info("smtpVisitResult2.json = {}", jsonFile);
 
     ObjectWriter jsonWriter = TestUtils.jsonWriter();
     jsonWriter.writeValue(jsonFile, List.of(smtpVisitResult1));
@@ -99,8 +100,8 @@ class SmtpRepositoryTest {
 
     logger.info("smtpVisitResults found: {}", smtpVisitResults.size());
     logger.info("smtpVisitResults = {}", smtpVisitResults);
-    logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst());
-    logger.info("smtpconversation = {}", smtpVisitResults.getFirst().getHosts().get(1).getConversations().getFirst());
+    logger.info("smtpConversation.0 = {}", smtpVisitResults.getFirst().getHosts().get(0).getConversations().getFirst());
+    logger.info("smtpConversation.1 = {}", smtpVisitResults.getFirst().getHosts().get(1).getConversations().getFirst());
 
     SearchVisitIdResultItem first = smtpIdAndTimestamp.getFirst();
     logger.info("ids and timestamp for smtp visit results: {}", first.getVisitId() + ":" + first.getTimestamp());
@@ -122,7 +123,7 @@ class SmtpRepositoryTest {
   }
 
   @Test
-  public void findShouldReturnCorrectSmtpVisitResultsWhenMultipleWithMultipleHostsArePresent() throws IOException {
+  public void findShouldReturnCorrectSmtpVisitResultsWhenMultipleWithMultipleHostsArePresent() {
     SmtpVisit smtpVisitResult1 = objectMother.smtpVisit1();
     SmtpVisit smtpVisitResult2 = objectMother.smtpVisit2();
 

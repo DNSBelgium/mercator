@@ -93,10 +93,6 @@
             <artifactId>spring-context</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-batch</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -112,24 +108,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-parameter-names -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-parameter-names</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- to enable writing java.time.Instant values to JSON files -->
-
-        <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webmvc-test -->

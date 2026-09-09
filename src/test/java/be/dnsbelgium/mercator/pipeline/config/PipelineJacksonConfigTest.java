@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.pipeline.config;
 
-import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -9,14 +8,13 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step 0 guard for the JSON→Parquet migration (see {@code agent-tasks/t2-flush-plan.MD}).
+ * Guards the JSON→Parquet contract of the pipeline's Jackson 3 mapper (see
+ * {@code agent-tasks/t2-flush-plan.MD}).
  *
  * <p>Proves that the Jackson 3 pipeline mapper produced by {@link PipelineJacksonConfig}
- * serializes objects <em>identically</em> to the legacy Jackson 2 mapper from
- * {@link JsonConfiguration} (the one the old Spring Batch writer used). This parity is what
- * lets the new writer delegate to the module {@code storeResults()} methods, whose typed
- * {@code read_json(columns={...})} schemas rely on snake_case field names and the
- * {@code yyyy-MM-dd HH:mm:ss.SSSSSS} timestamp format.
+ * serializes objects with the snake_case field names and the
+ * {@code yyyy-MM-dd HH:mm:ss.SSSSSS} timestamp format that the typed
+ * {@code read_json(columns={...})} schemas rely on, and round-trips {@link Instant}s.
  */
 class PipelineJacksonConfigTest {
 
@@ -30,10 +28,7 @@ class PipelineJacksonConfigTest {
 
     record PageVisit(String finalUrl, int statusCode, Instant crawlStarted) { }
 
-    private final com.fasterxml.jackson.databind.ObjectMapper legacyMapper = new JsonConfiguration().mapper();
     private final tools.jackson.databind.ObjectMapper pipelineMapper = new PipelineJacksonConfig().pipelineObjectMapper();
-    /** Neutral tree reader: {@code readTree} copies tokens verbatim, so naming strategy is irrelevant. */
-    private final tools.jackson.databind.ObjectMapper neutral = tools.jackson.databind.json.JsonMapper.builder().build();
 
     private static final Instant WITH_MICROS = Instant.parse("2026-09-09T12:34:56.123456Z");
     private static final Instant WITHOUT_FRACTION = Instant.parse("2026-01-02T03:04:05Z");
@@ -48,21 +43,6 @@ class PipelineJacksonConfigTest {
                 null);
     }
 
-    @Test
-    void pipelineMapper_producesSameJsonAsLegacyMapper() throws Exception {
-        Sample sample = sample();
-
-        String legacyJson = legacyMapper.writeValueAsString(sample);
-        String pipelineJson = pipelineMapper.writeValueAsString(sample);
-
-        // Compare as trees so field ordering differences between Jackson 2 and 3 don't matter.
-        tools.jackson.databind.JsonNode legacyTree = neutral.readTree(legacyJson);
-        tools.jackson.databind.JsonNode pipelineTree = neutral.readTree(pipelineJson);
-
-        assertThat(pipelineTree)
-                .as("pipeline (Jackson 3) JSON must match legacy (Jackson 2) JSON exactly")
-                .isEqualTo(legacyTree);
-    }
 
     @Test
     void pipelineMapper_usesSnakeCaseFieldNames() {

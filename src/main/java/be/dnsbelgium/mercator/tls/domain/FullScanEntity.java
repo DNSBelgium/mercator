@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.tls.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 
@@ -9,6 +10,7 @@ import java.time.Instant;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 @Builder
+@Jacksonized
 @Getter
 @ToString
 public class FullScanEntity {

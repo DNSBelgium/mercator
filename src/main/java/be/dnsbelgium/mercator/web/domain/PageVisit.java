@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.web.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,16 +48,17 @@ public class PageVisit {
   @Builder.Default
   private List<String> vatValues = new ArrayList<>();
 
+  @JsonCreator
   public PageVisit(
       String url,
       String finalUrl,
       String path,
       Instant crawlStarted,
       Instant crawlFinished,
-      int statusCode,
+      Integer statusCode,
       String responseBody,
       List<String> vatValues,
-      long contentLength,
+      Long contentLength,
       Map<String, List<String>> headers) {
     this.url  = cleanUp(url, 500);
     this.finalUrl = cleanUp(finalUrl, 500);

@@ -8,7 +8,6 @@ import be.dnsbelgium.mercator.smtp.dto.SmtpHost;
 import be.dnsbelgium.mercator.smtp.dto.SmtpVisit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
+public class SmtpCrawler {
 
   private final SmtpAnalyzer smtpAnalyzer;
   private final SmtpConversationCache cache;
@@ -34,7 +33,6 @@ public class SmtpCrawler implements ItemProcessor<VisitRequest, SmtpVisit> {
     cache.evictEntriesOlderThan(Duration.ofHours(24));
   }
 
-  @Override
   public SmtpVisit process(VisitRequest visitRequest) {
     SmtpVisit smtpVisit = smtpAnalyzer.analyze(visitRequest.getDomainName());
     smtpVisit.setVisitId(visitRequest.getVisitId());

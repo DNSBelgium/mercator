@@ -1,13 +1,15 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
@@ -20,7 +22,8 @@ public class WebRepository extends BaseRepository<WebCrawlResult> {
     private final String responseBodyLocation;
 
     @SneakyThrows
-    public WebRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper,
+    public WebRepository(JdbcClientFactory jdbcClientFactory,
+                         @Qualifier(PipelineJacksonConfig.PIPELINE_OBJECT_MAPPER) ObjectMapper objectMapper,
                          @Value("${mercator.data.location:mercator/data/}/web") String baseLocation,
                          @Value("${mercator.data.location:mercator/data/}/web_response_body") String responseBodyLocation)
     {

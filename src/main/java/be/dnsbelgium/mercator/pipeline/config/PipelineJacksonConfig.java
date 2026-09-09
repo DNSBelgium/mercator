@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.SerializationContext;
@@ -93,6 +94,9 @@ public class PipelineJacksonConfig {
         return JsonMapper.builder()
                 .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
                 .addModule(instantModule)
+                // Match the lenient behavior of the legacy Jackson 2 mapper: DuckDB emits SQL NULL for
+                // absent primitive fields (e.g. content_length), which must coerce to the default value.
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .build();
     }
 }

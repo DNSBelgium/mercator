@@ -1,7 +1,5 @@
 package be.dnsbelgium.mercator.persistence;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
@@ -10,6 +8,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -137,8 +137,8 @@ public class BaseRepository<T> {
             T result = objectMapper.readValue(json.get(), this.type);
             logger.debug("Found: \n{}", result);
             return Optional.of(result);
-          } catch (JsonMappingException e) {
-            logger.error("JsonMappingException {} for \n {}", e.getMessage(), json);
+          } catch (JacksonException e) {
+            logger.error("JSON mapping error {} for \n {}", e.getMessage(), json);
             throw e;
           }
         }

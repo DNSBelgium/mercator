@@ -1,10 +1,9 @@
 package be.dnsbelgium.mercator.test;
 
-import be.dnsbelgium.mercator.batch.JsonConfiguration;
 import be.dnsbelgium.mercator.persistence.JdbcClientFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.json.JsonMapper;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -15,12 +14,9 @@ public class TestUtils {
   // a clock that ticks only once per microsecond
   private static final Clock microsecondClock = Clock.tick(Clock.systemUTC(), Duration.ofNanos(1000));
 
-  private final static JsonMapper mapper;
-
-  static {
-    JsonConfiguration configuration = new JsonConfiguration();
-    mapper = configuration.mapper();
-  }
+  // The exact Jackson 3 mapper used by the pipeline (snake_case + custom Instant handling),
+  // so tests serialize/deserialize identically to production.
+  private final static ObjectMapper mapper = new PipelineJacksonConfig().pipelineObjectMapper();
 
   /**
    * Useful in tests because some operating systems support nanosecond precision
@@ -37,7 +33,7 @@ public class TestUtils {
   }
 
   /**
-   * The ObjectMapper used is created by the method that also produces the @Bean that is used in production code.
+   * The ObjectMapper used is created by the config that also produces the @Bean that is used in production code.
    * This construct allows us to use an ObjectWriter and ObjectMapper in Tests that do not load a Spring context
    *
    * @return an ObjectWriter to be used in tests

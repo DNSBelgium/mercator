@@ -34,6 +34,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import static be.dnsbelgium.mercator.tls.domain.certificates.CertificateReader.readTestCertificate;
 
+@SuppressWarnings("SpellCheckingInspection")
 public class ObjectMother {
 
   private final HtmlFeatureExtractor htmlFeatureExtractor = new HtmlFeatureExtractor(new SimpleMeterRegistry(), false);
@@ -133,20 +134,6 @@ public class ObjectMother {
         .build();
   }
 
-  public PageVisit pageVisitWithRobotsTxtFields() {
-    return PageVisit.builder()
-        .url("https://www.example.org/robots.txt")
-        .path("/robots.txt")
-        .statusCode(200)
-        .responseBody("# # robots.txt # # This file is to prevent the crawling and indexing of certain parts #")
-        .contentLength(128L)
-        .headers(Map.of(
-            "Content-Type", List.of("text/plain"),
-            "Content-Length", List.of("128")
-        ))
-        .build();
-  }
-
   public HtmlFeatures htmlFeatures1() {
     HtmlFeatures features = htmlFeatureExtractor
         .extractFromHtml(
@@ -218,17 +205,6 @@ public class ObjectMother {
         .build();
   }
 
-  public WebCrawlResult webCrawlResultWithPageVisitWithRobotsTxt() {
-    return WebCrawlResult.builder()
-        .crawlStarted(started.plusMillis(10))
-        .crawlFinished(started.plusSeconds(115))
-        .visitId(VISIT_ID_2)
-        .domainName("no-website.org")
-        .visitedUrls(List.of())
-        .pageVisits(List.of(pageVisitWithRobotsTxtFields()))
-        .build();
-  }
-
   public WebCrawlResult webCrawlResultWithNullValues() {
     return WebCrawlResult.builder()
         .visitId(null)
@@ -257,17 +233,6 @@ public class ObjectMother {
 
   }
 
-
-  public HtmlFeatures htmlFeaturesWithNullValues() {
-    HtmlFeatures features = htmlFeatureExtractor
-        .extractFromHtml(
-            "",
-            "https://www.no-website.be/",
-            null);
-    features.body_text_language = null;
-    features.body_text_language_2 = null;
-    return features;
-  }
 
   public PageVisit pageVisitWithNullValues() {
     return PageVisit.builder()
@@ -622,8 +587,8 @@ public class ObjectMother {
   }
 
   public DnsCrawlResult dnsCrawlResultWithMultipleResponses1(String domain, String visitId) {
-    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(12345L, "ISP Belgium"), "BE", 4, "192.168.1.1");
-    ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
+    ResponseGeoIp geoIp1 = ResponseGeoIp.of(Pair.of(12345L, "ISP Belgium"), "BE", 4, "192.168.1.1");
+    ResponseGeoIp geoIp2 = ResponseGeoIp.of(Pair.of(67890L, "ISP France"), "FR", 4, "192.168.1.1");
 
     Response response1 = Response.builder()
         .recordData("192.168.1.1")
@@ -631,8 +596,8 @@ public class ObjectMother {
         .responseGeoIps(List.of(geoIp1, geoIp2))
         .build();
 
-    ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(54321L, "ISP Netherlands"), "NL", 4, "192.168.1.2");
-    ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
+    ResponseGeoIp geoIp3 = ResponseGeoIp.of(Pair.of(54321L, "ISP Netherlands"), "NL", 4, "192.168.1.2");
+    ResponseGeoIp geoIp4 = ResponseGeoIp.of(Pair.of(98765L, "ISP Germany"), "DE", 4, "192.168.1.2");
 
     Response response2 = Response.builder()
         .recordData("192.168.1.2")
@@ -654,8 +619,8 @@ public class ObjectMother {
   }
 
   public DnsCrawlResult dnsCrawlResultWithMultipleResponses2(String domain, String visitId) {
-    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(1245L, "ISP Netherlands"), "BE", 4, "192.1681.1");
-    ResponseGeoIp geoIp2 = new ResponseGeoIp(Pair.of(6780L, "ISP Belgium"), "FR", 4, "192.168.11");
+    ResponseGeoIp geoIp1 = ResponseGeoIp.of(Pair.of(1245L, "ISP Netherlands"), "BE", 4, "192.1681.1");
+    ResponseGeoIp geoIp2 = ResponseGeoIp.of(Pair.of(6780L, "ISP Belgium"), "FR", 4, "192.168.11");
 
     Response response1 = Response.builder()
         .recordData("192.1681.1")
@@ -663,8 +628,8 @@ public class ObjectMother {
         .responseGeoIps(List.of(geoIp1, geoIp2))
         .build();
 
-    ResponseGeoIp geoIp3 = new ResponseGeoIp(Pair.of(5321L, "ISP Germany"), "NL", 4, "192.1681.2");
-    ResponseGeoIp geoIp4 = new ResponseGeoIp(Pair.of(9865L, "ISP Belgium"), "DE", 4, "192.1681.2");
+    ResponseGeoIp geoIp3 = ResponseGeoIp.of(Pair.of(5321L, "ISP Germany"), "NL", 4, "192.1681.2");
+    ResponseGeoIp geoIp4 = ResponseGeoIp.of(Pair.of(9865L, "ISP Belgium"), "DE", 4, "192.1681.2");
 
     Response response2 = Response.builder()
         .recordData("192.1681.2")
@@ -725,7 +690,7 @@ public class ObjectMother {
   }
 
   public DnsCrawlResult dnsCrawlResultWithNullGeoIp() {
-    ResponseGeoIp geoIp1 = new ResponseGeoIp(Pair.of(null, null), null, 0, null);
+    ResponseGeoIp geoIp1 = ResponseGeoIp.of(Pair.of(null, null), null, 0, null);
 
     Response response1 = Response.builder()
         .recordData(null)

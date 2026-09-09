@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.tls.domain;
 
 import be.dnsbelgium.mercator.tls.domain.certificates.Certificate;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.*;
 
 import java.time.Instant;
@@ -23,6 +24,36 @@ public class TlsVisit {
   private final Instant crawlFinished;
   private final List<String> certificateChainFingerprints;
   private final List<Certificate> certificateChain;
+
+  /**
+   * All-args constructor used exclusively by Jackson to rebuild a {@link TlsVisit} from JSON/Parquet.
+   * The regular code path creates instances through {@link #fromCache} / {@link #fromScan}. This is
+   * needed because the fields are {@code final} (no setters) and Jackson 3 no longer writes to final
+   * fields by reflection the way the legacy Jackson 2 mapper did.
+   */
+  @JsonCreator
+  public TlsVisit(
+          FullScanEntity fullScanEntity,
+          String hostName,
+          boolean hostNameMatchesCertificate,
+          boolean chainTrustedByJavaPlatform,
+          boolean certificateExpired,
+          boolean certificateTooSoon,
+          Instant crawlStarted,
+          Instant crawlFinished,
+          List<String> certificateChainFingerprints,
+          List<Certificate> certificateChain) {
+    this.fullScanEntity = fullScanEntity;
+    this.hostName = hostName;
+    this.hostNameMatchesCertificate = hostNameMatchesCertificate;
+    this.chainTrustedByJavaPlatform = chainTrustedByJavaPlatform;
+    this.certificateExpired = certificateExpired;
+    this.certificateTooSoon = certificateTooSoon;
+    this.crawlStarted = crawlStarted;
+    this.crawlFinished = crawlFinished;
+    this.certificateChainFingerprints = certificateChainFingerprints;
+    this.certificateChain = certificateChain;
+  }
 
   private TlsVisit(
           String hostName,

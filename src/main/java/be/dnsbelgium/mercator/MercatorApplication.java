@@ -1,19 +1,14 @@
 package be.dnsbelgium.mercator;
 
 import be.dnsbelgium.mercator.tls.domain.TlsScanner;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.config.MeterFilter;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.batch.autoconfigure.BatchAutoConfiguration;
-import org.springframework.boot.batch.autoconfigure.BatchJobLauncherAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -23,12 +18,7 @@ import java.sql.*;
 
 
 @ConfigurationPropertiesScan
-@SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"} ,
-exclude = {
-        BatchAutoConfiguration.class,
-        BatchJobLauncherAutoConfiguration.class
-})
-@EnableBatchProcessing
+@SpringBootApplication(scanBasePackages = {"be.dnsbelgium.mercator"})
 public class MercatorApplication {
 
   // if we do this early enough, we don't have to set a system property when starting the JVM
@@ -48,7 +38,7 @@ public class MercatorApplication {
         return;
       }
       ResultSet rs = stmt.getResultSet();
-      ObjectMapper mapper = new ObjectMapper();
+      JsonMapper mapper = JsonMapper.builder().build();
       ResultSetMetaData meta = rs.getMetaData();
       int cols = meta.getColumnCount();
 
@@ -89,15 +79,8 @@ public class MercatorApplication {
       System.exit(0);
     }
     logger.info("CWD = {}", Path.of("").toAbsolutePath());
-    workAroundBatchMetricsBug();
     SpringApplication.run(MercatorApplication.class, args);
   }
 
-  public static void workAroundBatchMetricsBug() {
-    // Spring Batch has a minor bug that generates a warning at start-up.
-    // see https://github.com/spring-projects/spring-batch/issues/4753
-    // This snippet avoids the warning.
-    Metrics.globalRegistry.config().meterFilter(MeterFilter.denyNameStartsWith("spring.batch.job.active"));
-  }
 
 }
