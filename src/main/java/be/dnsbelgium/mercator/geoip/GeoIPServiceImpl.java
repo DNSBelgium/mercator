@@ -29,15 +29,15 @@ import com.maxmind.geoip2.model.IspResponse;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class GeoIPServiceImpl implements GeoIPService {
   }
 
   private void initialize() {
-    log.info("Using Maxmind database location: {}", config.getFileLocation());
+    log.info("Using MaxMind database location: {}", config.getFileLocation());
     if (StringUtils.isBlank(config.getLicenseKey())) {
       throw new RuntimeException("No valid Maxmind license key found, provide key for either the free or paid license.");
     }
@@ -94,7 +94,7 @@ public class GeoIPServiceImpl implements GeoIPService {
     if (shouldUpdate(countryFile, url)) {
       log.info("GEOIP country database does not exist or is too old, fetch latest version");
       if (config.isUsePaidVersion()) {
-        log.info("Download paid Maxmind country database");
+        log.info("Download paid MaxMind country database");
       }
       download(countryFile, url, 30);
     }
@@ -104,7 +104,7 @@ public class GeoIPServiceImpl implements GeoIPService {
       log.info("GEOIP ASN database does not exist or is too old, fetch latest version");
 
       if (config.isUsePaidVersion()) {
-        log.info("Download paid Maxmind ISP database");
+        log.info("Download paid MaxMind ISP database");
       }
       download(asnFile, url, 30);
     }
@@ -117,7 +117,7 @@ public class GeoIPServiceImpl implements GeoIPService {
       database = new File(FileUtil.appendPath(config.getFileLocation(), asnFile));
       asnReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
     } catch (IOException e) {
-      throw new RuntimeException("Error initializing Maxmind GEO/ASN database", e);
+      throw new RuntimeException("Error initializing MaxMind GEO/ASN database", e);
     }
   }
 
@@ -167,30 +167,38 @@ public class GeoIPServiceImpl implements GeoIPService {
   private static RequestConfig createConfig(Timeout timeout) {
     return RequestConfig
             .custom()
-            // timeout for waiting during creating of connection
-            .setConnectTimeout(timeout)
+            // timeout for waiting to get a connection from the pool
             .setConnectionRequestTimeout(timeout)
             .setResponseTimeout(timeout)
-            // do not let the apache http client initiate redirects
+            // do not let the Apache http client initiate redirects
             // build it
             .build();
   }
 
   public Date lastModifiedOnline(String url, int timeoutInSeconds) {
     Timeout timeout = Timeout.ofSeconds(timeoutInSeconds);
+    ConnectionConfig connectionConfig = ConnectionConfig
+            .custom()
+            // timeout for establishing the connection
+            .setConnectTimeout(timeout)
+            .build();
+    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+    connectionManager.setDefaultConnectionConfig(connectionConfig);
     try (CloseableHttpClient client =
                  HttpClientBuilder
                          .create()
+                         .setConnectionManager(connectionManager)
                          .setDefaultRequestConfig(createConfig(timeout))
                          .build()){
 
-
-      try(CloseableHttpResponse response = client.execute(new HttpHead(url))){
-
+      String lastModified = client.execute(new HttpHead(url), response -> {
         if (response.getCode() == HttpStatus.SC_OK) {
-
-          return  DateUtils.parseDate(response.getFirstHeader("last-modified").getValue(), "EEE, dd MMM yyyy HH:mm:ss zzz");
+          return response.getFirstHeader("last-modified").getValue();
         }
+        return null;
+      });
+      if (lastModified != null) {
+        return DateUtils.parseDate(lastModified, "EEE, dd MMM yyyy HH:mm:ss zzz");
       }
     } catch (Exception e) {
         //noinspection StringConcatenationArgumentToLogCall
@@ -267,7 +275,7 @@ public class GeoIPServiceImpl implements GeoIPService {
 
   private void logNotFound(InetAddress ip) {
     if (log.isDebugEnabled()) {
-      log.debug("Maxmind error, IP not in database: {}", ip);
+      log.debug("MaxMind error, IP not in database: {}", ip);
     }
   }
 
@@ -307,7 +315,7 @@ public class GeoIPServiceImpl implements GeoIPService {
 
   public void download(String database, String url, int timeoutInSeconds) {
     // do not log api key
-    String logUrl = RegExUtils.removePattern(url, "&license_key=.+");
+    String logUrl = url.replaceAll("&license_key=.+", "");
     Optional<byte[]> data = DownloadUtil.getAsBytes(url, logUrl, timeoutInSeconds);
     if (data.isPresent()) {
       log.info("downloaded {} bytes from {}", data.get().length, logUrl);
@@ -328,7 +336,7 @@ public class GeoIPServiceImpl implements GeoIPService {
       TarArchiveEntry entry;
 
       while ((entry = tarIn.getNextEntry()) != null) {
-        if (StringUtils.endsWith(entry.getName(), database)) {
+        if (entry.getName().endsWith(database)) {
           int count;
           byte[] data = new byte[4096];
 
