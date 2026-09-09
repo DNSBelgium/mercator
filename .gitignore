@@ -36,3 +36,5 @@ build/
 ### Build logs ###
 snyk-build.log
 
+/agent-tasks/
+/pipeline.db
