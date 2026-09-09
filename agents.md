@@ -35,6 +35,26 @@ plugin, and never assume "CI will catch it".
 **not** fix or validate anything. Use it while iterating on code/tests, but run the full build
 (with Snyk) before calling a change done.
 
+#### Capturing the FULL Snyk report (learned the hard way)
+When Snyk fails, the useful part is the **list of vulnerable paths** it prints — but that report
+is long and the terminal tool routinely **truncates or drops** it, so `mvn -q test` leaves you
+guessing which dependency to bump. Do **not** reach for `| tee`, `> file`, or `| grep` (those
+break the pipe/approval rules above and still race with buffering). Instead use Maven's **native
+`-l <file>` log option**, which writes *all* output to a file with no shell redirection:
+
+```
+mvn test -l snyk-build.log
+```
+
+Notes:
+- Drop `-q` here on purpose — you *want* the full Snyk output in the log.
+- `-l` is a Maven flag (not a shell pipe), so it plays nicely with the one-command / no-pipe rule.
+- After it finishes, **read `snyk-build.log` with the file reader** to see the complete Snyk
+  report (vulnerable paths, introduced-through chains, and the fix version each CVE needs).
+- The file is overwritten each run; never delete it first. Add it to `.gitignore` if not already.
+- Use this whenever a Snyk gate fails so you can bump the *exact* offending dependency instead of
+  guessing from a truncated console dump.
+
 ### Canonical commands — copy VERBATIM (do not modify)
 
 | Purpose                              | Command                                                                      |
@@ -45,6 +65,7 @@ plugin, and never assume "CI will catch it".
 | Several classes                      | `mvn -q test -Dsnyk.skip -Dtest=ClassA,ClassB`                               |
 | A package                            | `mvn -q test -Dsnyk.skip -Dtest="be.dnsbelgium.mercator.pipeline.dns.*Test"` |
 | Full build incl. Snyk vuln scan      | `mvn -q test`                                                                |
+| Full build, capture Snyk report      | `mvn test -l snyk-build.log` (then read `snyk-build.log`)                    |
 | Check dependency updates             | `mvn versions:display-dependency-updates -DprocessDependencyManagement=true` |
 | Check managed-property updates       | `mvn versions:display-property-updates`                                      |
 | Check build-plugin updates           | `mvn versions:display-plugin-updates`                                        |
@@ -79,6 +100,7 @@ new approval. Therefore:
 Approving these exact strings covers the whole day-to-day loop:
 - `mvn -q clean compile`
 - `mvn -q test` (full build incl. Snyk)
+- `mvn test -l snyk-build.log` (full build, full Snyk report captured to a log file)
 - `mvn -q test -Dsnyk.skip` (fast test loop)
 - `mvn -q test -Dsnyk.skip -Dtest=...` (the `-Dtest=` value varies; the prefix is stable)
 
