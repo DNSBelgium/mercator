@@ -1,0 +1,276 @@
+15:11:23.992 [main] INFO be.dnsbelgium.mercator.MercatorApplication -- Initial Memory (-Xms) = 768 MB
+15:11:23.993 [main] INFO be.dnsbelgium.mercator.MercatorApplication -- Maximum Memory (-Xmx) = 12288 MB
+15:11:23.994 [main] INFO be.dnsbelgium.mercator.MercatorApplication -- Use environment variable JAVA_TOOL_OPTIONS to adjust.
+15:11:23.994 [main] INFO be.dnsbelgium.mercator.MercatorApplication -- For example:
+15:11:23.994 [main] INFO be.dnsbelgium.mercator.MercatorApplication --   docker run -e JAVA_TOOL_OPTIONS="-Xmx10G" --rm  dnsbelgium/mercator
+15:11:23.994 [main] INFO be.dnsbelgium.mercator.MercatorApplication -- CWD = /Users/maarten.bosteels/devel/datalabs/mercator
+Mercator - mercator 2.0.0-SNAPSHOT
+Powered by Spring Boot 4.1.1
+2026-09-09T15:11:24.268+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.MercatorApplication         : Starting MercatorApplication v2.0.0-SNAPSHOT using Java 25.0.4 with PID 79535 (/Users/maarten.bosteels/devel/datalabs/mercator/target/mercator-2.0.0-SNAPSHOT.jar started by maarten.bosteels in /Users/maarten.bosteels/devel/datalabs/mercator)
+2026-09-09T15:11:24.277+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.MercatorApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-09-09T15:11:24.972+02:00  INFO 79535 --- [mercator2] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8083 (http)
+2026-09-09T15:11:24.979+02:00  INFO 79535 --- [mercator2] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-09-09T15:11:24.979+02:00  INFO 79535 --- [mercator2] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.25]
+2026-09-09T15:11:24.993+02:00  INFO 79535 --- [mercator2] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 619 ms
+2026-09-09T15:11:25.144+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.dns.DnsCrawlerConfiguration        : Geo IP is disabled => using a class be.dnsbelgium.mercator.geoip.DisabledGeoIPService
+2026-09-09T15:11:25.172+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.f.extraction.HtmlFeatureExtractor  : languageDetectionEnabled=true
+2026-09-09T15:11:25.242+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.persistence.BaseRepository  : baseLocation = [/tmp/mercator-e2e/pipeline/data//dns]
+2026-09-09T15:11:25.243+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.persistence.DnsRepository   : testAccessToDataLocation = false
+2026-09-09T15:11:25.245+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.persistence.BaseRepository  : baseLocation = [/tmp/mercator-e2e/pipeline/data//smtp]
+2026-09-09T15:11:25.249+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.persistence.BaseRepository  : baseLocation = [/tmp/mercator-e2e/pipeline/data//tls]
+2026-09-09T15:11:25.252+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.persistence.BaseRepository  : baseLocation = [/tmp/mercator-e2e/pipeline/data//web]
+2026-09-09T15:11:25.256+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.config.DuckDbConfig       : creating primary DuckDB DataSource for jdbc:duckdb:/tmp/mercator-e2e/pipeline/pipeline.db
+2026-09-09T15:11:25.266+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.config.DuckDbConfig       : creating the primary (DuckDB) JdbcClient
+2026-09-09T15:11:25.300+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.SmtpCrawlerConfiguration      : SmtpCrawlerConfiguration: blockingSmtp is enabled
+2026-09-09T15:11:25.316+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.domain.crawler.MxFinder       : Initializing MxFinder with resolver.retries=2 resolver.timeOut=2500ms resolver.tcp=false
+2026-09-09T15:11:25.316+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.domain.crawler.MxFinder       : ExtendedResolver consists of 2 resolvers
+2026-09-09T15:11:25.316+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.domain.crawler.MxFinder       : ExtendedResolver uses = SimpleResolver [/10.0.4.10:53]
+2026-09-09T15:11:25.316+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.domain.crawler.MxFinder       : ExtendedResolver uses = SimpleResolver [/10.0.4.140:53]
+2026-09-09T15:11:25.318+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.smtp.domain.crawler.SmtpAnalyzer   : skipIPv4=false skipIPv6=false, maxHostsToContact=15
+2026-09-09T15:11:25.347+02:00  WARN 79535 --- [mercator2] [           main] i.m.c.i.b.cache.CaffeineCacheMetrics     : The cache 'tls.crawler.rate.limiter.cache' is not recording statistics. No meters except 'cache.size' will be registered. Call 'Caffeine#recordStats()' prior to building the cache for metrics to be recorded.
+2026-09-09T15:11:25.348+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.tls.domain.RateLimiter      : Created RateLimiter with maxCacheSize=20000, delayFactor=0.9, minDelayMs=10, maxDelayMs=500
+2026-09-09T15:11:25.349+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.tls.domain.TlsScanner       : Creating TlsScanner with connectTimeOut=PT3S, readTimeOut=PT3S
+2026-09-09T15:11:25.350+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.t.d.c.TrustAnythingTrustManager    : Somebody constructed a TrustAnythingTrustManager: be careful
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by io.netty.util.internal.PlatformDependent0$2 (jar:nested:/Users/maarten.bosteels/devel/datalabs/mercator/target/mercator-2.0.0-SNAPSHOT.jar/!BOOT-INF/lib/netty-common-4.1.137.Final.jar!/)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$2
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+2026-09-09T15:11:25.375+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.tls.domain.FullScanCache    : FullScanCache configured with minimumEntriesPerIp=10 and requiredRatio=0.9
+2026-09-09T15:11:25.426+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.web.domain.PageFetcherConfig       : cacheSize = 500 MB
+2026-09-09T15:11:25.426+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.web.domain.PageFetcherConfig       : cacheDirectory = /tmp/cache
+2026-09-09T15:11:25.427+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.web.domain.PageFetcher      : config = PageFetcherConfig[cacheDirectory=/tmp/cache, cacheSize=500MB, cacheMaxStale=PT24H, connectTimeOut=PT5S, readTimeOut=PT5S, writeTimeOut=PT5S, callTimeOut=PT5S, maxContentLength=8MB, contentLengthDetectionLimit=100MB]
+2026-09-09T15:11:25.439+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.web.domain.PageFetcher      : cache = /tmp/cache
+2026-09-09T15:11:25.439+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.web.domain.PageFetcher      : cache.maxSize = 524288000
+2026-09-09T15:11:25.450+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.web.domain.VatLinkPrioritizer      : Initializing the LinkPrioritizer, with hard-coded values for now
+2026-09-09T15:11:25.451+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.web.WebCrawlerConfiguration        : use.vat.scraper=true => Using VatScraper
+2026-09-09T15:11:25.564+02:00  INFO 79535 --- [mercator2] [           main] be.dnsbelgium.mercator.web.WebCrawler    : maxVisitsPerDomain=10
+2026-09-09T15:11:25.564+02:00  INFO 79535 --- [mercator2] [           main] be.dnsbelgium.mercator.web.WebCrawler    : persistPageVisits=false
+2026-09-09T15:11:25.564+02:00  INFO 79535 --- [mercator2] [           main] be.dnsbelgium.mercator.web.WebCrawler    : persistBodyText=false
+2026-09-09T15:11:25.564+02:00  INFO 79535 --- [mercator2] [           main] be.dnsbelgium.mercator.web.WebCrawler    : persistFirstPageVisit=false
+2026-09-09T15:11:25.573+02:00  INFO 79535 --- [mercator2] [           main] b.dnsbelgium.mercator.dns.DnsJobConfig   : DNS: executor corePoolSize=1000 maxPoolSize=1000
+2026-09-09T15:11:25.576+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.batch.JsonItemWriter        : outputDirectory = /Users/maarten.bosteels/mercator/json/dns clazz=class be.dnsbelgium.mercator.dns.dto.DnsCrawlResult
+2026-09-09T15:11:25.577+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.batch.JsonItemWriter        : outputDirectory = /Users/maarten.bosteels/mercator/json/smtp clazz=class be.dnsbelgium.mercator.smtp.dto.SmtpVisit
+2026-09-09T15:11:25.577+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.smtp.SmtpJobConfig          : SMTP: executor corePoolSize=1000 maxPoolSize=1000
+2026-09-09T15:11:25.578+02:00  INFO 79535 --- [mercator2] [           main] b.dnsbelgium.mercator.tls.TlsJobConfig   : TLS: executor corePoolSize=1000 maxPoolSize=1000
+2026-09-09T15:11:25.578+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.batch.JsonItemWriter        : outputDirectory = /Users/maarten.bosteels/mercator/json/tls clazz=class be.dnsbelgium.mercator.tls.domain.TlsCrawlResult
+2026-09-09T15:11:25.579+02:00  INFO 79535 --- [mercator2] [           main] b.dnsbelgium.mercator.web.WebJobConfig   : web executor corePoolSize=100 maxPoolSize=100
+2026-09-09T15:11:25.579+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.batch.JsonItemWriter        : outputDirectory = /Users/maarten.bosteels/mercator/json/web clazz=class be.dnsbelgium.mercator.web.domain.WebCrawlResult
+2026-09-09T15:11:25.615+02:00  INFO 79535 --- [mercator2] [           main] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page template: index
+2026-09-09T15:11:25.826+02:00  INFO 79535 --- [mercator2] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 4 endpoints beneath base path '/actuator'
+2026-09-09T15:11:25.865+02:00  INFO 79535 --- [mercator2] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8083 (http) with context path '/'
+2026-09-09T15:11:25.871+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.MercatorApplication         : Started MercatorApplication in 1.814 seconds (process running for 2.04)
+2026-09-09T15:11:25.900+02:00  INFO 79535 --- [mercator2] [           main] b.d.mercator.pipeline.PipelineRunner     : mercator.batch.enabled=false => starting the new pipeline implementation
+2026-09-09T15:11:25.900+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.PipelineApplication       : Requested modules: [web, dns, tls] (available: [dns, simulated, smtp, tls, web])
+2026-09-09T15:11:25.901+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.JsonItemWriter    : JsonItemWriter for WebCrawlResult writing to /tmp/mercator-e2e/pipeline/output/web (batchSize=500)
+2026-09-09T15:11:25.902+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.p.module.VisitRequestModule        : Starting module 'web' (input=/tmp/mercator-e2e/input-pipeline.csv, output=/tmp/mercator-e2e/pipeline/output/web)
+2026-09-09T15:11:25.903+02:00  INFO 79535 --- [mercator2] [     virtual-75] b.d.m.pipeline.service.CsvItemSource     : reading items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:25.906+02:00  INFO 79535 --- [mercator2] [     virtual-75] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.duckdb.DuckDBNative in an unnamed module (jar:nested:/Users/maarten.bosteels/devel/datalabs/mercator/target/mercator-2.0.0-SNAPSHOT.jar/!BOOT-INF/lib/duckdb_jdbc-1.3.2.0.jar!/)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2026-09-09T15:11:27.084+02:00  INFO 79535 --- [mercator2] [     virtual-75] com.zaxxer.hikari.pool.PoolBase          : HikariPool-1 - Driver does not support get/set network timeout for connections. (getNetworkTimeout)
+2026-09-09T15:11:27.088+02:00  INFO 79535 --- [mercator2] [     virtual-75] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.duckdb.DuckDBConnection@4f4ffffa
+2026-09-09T15:11:27.090+02:00  INFO 79535 --- [mercator2] [     virtual-75] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-09-09T15:11:27.100+02:00  INFO 79535 --- [mercator2] [     virtual-75] b.d.m.pipeline.service.CsvItemSource     : We have read 1 items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:27.100+02:00  INFO 79535 --- [mercator2] [     virtual-77] b.dnsbelgium.mercator.web.WebProcessor   : request = VisitRequest(visitId=v1, domainName=dnsbelgium.be)
+2026-09-09T15:11:27.159+02:00  INFO 79535 --- [mercator2] [     virtual-77] b.d.mercator.web.domain.AbstractScraper  : siteVisit.getLandingURL = https://www.dnsbelgium.be/
+2026-09-09T15:11:27.189+02:00  INFO 79535 --- [mercator2] [     virtual-77] b.d.mercator.web.domain.VatScraper       : https://www.dnsbelgium.be/en/contact => valid VAT values [BE0466158640]
+2026-09-09T15:11:27.189+02:00  INFO 79535 --- [mercator2] [     virtual-77] be.dnsbelgium.mercator.web.WebCrawler    : visitId=v1 domain=dnsbelgium.be vat=[BE0466158640]
+2026-09-09T15:11:27.191+02:00  INFO 79535 --- [mercator2] [     virtual-77] be.dnsbelgium.mercator.web.WebCrawler    : http://www.dnsbelgium.be/
+2026-09-09T15:11:29.287+02:00  INFO 79535 --- [mercator2] [     virtual-77] b.d.m.pipeline.service.PipelineService   : Consumers done. Sending result poison pill.
+2026-09-09T15:11:29.325+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.m.pipeline.service.PipelineService   : Writer received shutdown signal.
+2026-09-09T15:11:29.325+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.m.pipeline.service.JsonItemWriter    : Rolling up 1 JSON files matching /tmp/mercator-e2e/pipeline/output/web/batch-1/*.json into parquet
+2026-09-09T15:11:29.326+02:00 DEBUG 79535 --- [mercator2] [     virtual-73] b.d.mercator.persistence.WebRepository   : cteDefinitions: with typed as (
+    select *
+    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/web/*.json'),
+                   columns={
+                       visit_id: 'VARCHAR',
+                       domain_name: 'VARCHAR',
+                       matching_url: 'VARCHAR',
+                       crawl_started: 'TIMESTAMP',
+                       crawl_finished: 'TIMESTAMP',
+                       vat_values: 'VARCHAR[]',
+                       visited_urls: 'VARCHAR[]',
+                       page_visits: 'STRUCT(
+                                    crawl_started TIMESTAMP,
+                                    crawl_finished TIMESTAMP,
+                                    status_code INTEGER,
+                                    url VARCHAR,
+                                    final_url VARCHAR,
+                                    link_text VARCHAR,
+                                    path VARCHAR,
+                                    headers MAP(VARCHAR, VARCHAR[]),
+                                    content_length INTEGER,
+                                    vat_values VARCHAR[],
+                                    detected_technologies VARCHAR[],
+                                    html_features STRUCT(
+                                       nb_imgs INTEGER,
+                                       nb_links_int INTEGER,
+                                       nb_links_ext INTEGER,
+                                       nb_links_tel INTEGER,
+                                       nb_links_email INTEGER,
+                                       nb_input_txt INTEGER,
+                                       nb_button INTEGER,
+                                       nb_meta_desc INTEGER,
+                                       nb_meta_keyw INTEGER,
+                                       nb_numerical_strings INTEGER,
+                                       nb_tags INTEGER,
+                                       nb_words INTEGER,
+                                       nb_letters INTEGER,
+                                       html_length INTEGER,
+                                       nb_facebook_shallow_links INTEGER,
+                                       nb_facebook_deep_links INTEGER,
+                                       nb_linkedin_deep_links INTEGER,
+                                       nb_linkedin_shallow_links INTEGER,
+                                       nb_twitter_deep_links INTEGER,
+                                       nb_twitter_shallow_links INTEGER,
+                                       nb_youtube_deep_links INTEGER,
+                                       nb_youtube_shallow_links INTEGER,
+                                       nb_vimeo_deep_links INTEGER,
+                                       nb_vimeo_shallow_links INTEGER,
+                                       nb_currency_names INTEGER,
+                                       nb_distinct_currencies INTEGER,
+                                       distance_title_final_dn INTEGER,
+                                       distance_title_initial_dn INTEGER,
+                                       longest_subsequence_title_final_dn INTEGER,
+                                       longest_subsequence_title_initial_dn INTEGER,
+                                       fraction_words_title_final_dn DOUBLE,
+                                       fraction_words_title_initial_dn DOUBLE,
+                                       nb_distinct_words_in_title INTEGER,
+                                       body_text_language VARCHAR,
+                                       body_text_language_2 VARCHAR,
+                                       nb_distinct_hosts_in_urls INTEGER,
+                                       external_hosts VARCHAR [],
+                                       facebook_links VARCHAR [],
+                                       twitter_links VARCHAR [],
+                                       linkedin_links VARCHAR [],
+                                       youtube_links VARCHAR [],
+                                       vimeo_links VARCHAR [],
+                                       title VARCHAR,
+                                       htmlstruct VARCHAR,
+                                       body_text VARCHAR,
+                                       meta_text VARCHAR,
+                                       body_text_truncated BOOLEAN,
+                                       meta_text_truncated BOOLEAN,
+                                       title_truncated BOOLEAN
+                                     )
+                                )[]'
+                       })
+),
+added_year_month as (
+    select *, year(crawl_started) as year, month(crawl_started) as month
+    from typed
+)
+2026-09-09T15:11:29.332+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.m.persistence.JdbcClientFactory      : created dataSource with url='jdbc:duckdb:'
+2026-09-09T15:11:29.393+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.mercator.persistence.BaseRepository  : copying added_year_month as parquet to /tmp/mercator-e2e/pipeline/data//web is done
+2026-09-09T15:11:29.394+02:00 DEBUG 79535 --- [mercator2] [     virtual-73] b.d.mercator.persistence.WebRepository   : cteDefinitionsResponseBody: with typed as (
+    select *
+    from read_json(coalesce(getvariable('jsonLocation'), '~/mercator/json/web/*.json'),
+                   columns={
+                       visit_id: 'VARCHAR',
+                       domain_name: 'VARCHAR',
+                       crawl_started: 'TIMESTAMP',
+                       page_visits: 'STRUCT(
+                                    url VARCHAR,
+                                    final_url VARCHAR,
+                                    response_body VARCHAR
+                                )[]'
+                       })
+),
+unnested as (
+    select visit_id, domain_name, crawl_started, unnest(page_visits) as page_visit
+    from typed
+),
+response_body as (
+    select visit_id, domain_name, crawl_started, page_visit.*
+    from unnested
+),
+response_body_with_year_month as (
+    select *, year(crawl_started) as year, month(crawl_started) as month
+    from response_body
+)
+
+2026-09-09T15:11:29.394+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.m.persistence.JdbcClientFactory      : created dataSource with url='jdbc:duckdb:'
+2026-09-09T15:11:29.409+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.mercator.persistence.BaseRepository  : copying response_body_with_year_month as parquet to /tmp/mercator-e2e/pipeline/data/web_response_body is done
+2026-09-09T15:11:29.409+02:00  INFO 79535 --- [mercator2] [     virtual-73] b.d.m.pipeline.service.JsonItemWriter    : Rolled up 1 JSON files from /tmp/mercator-e2e/pipeline/output/web/batch-1
+2026-09-09T15:11:29.411+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.PipelineService   : Pipeline 'web' finished. Wrote 1 items.
+2026-09-09T15:11:29.411+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.PipelineApplication       : Module 'web' completed in 3511 ms (produced 1 items)
+2026-09-09T15:11:29.412+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.JsonItemWriter    : JsonItemWriter for DnsCrawlResult writing to /tmp/mercator-e2e/pipeline/output/dns (batchSize=500)
+2026-09-09T15:11:29.412+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.p.module.VisitRequestModule        : Starting module 'dns' (input=/tmp/mercator-e2e/input-pipeline.csv, output=/tmp/mercator-e2e/pipeline/output/dns)
+2026-09-09T15:11:29.412+02:00  INFO 79535 --- [mercator2] [    virtual-293] b.d.m.pipeline.service.CsvItemSource     : reading items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:29.413+02:00  INFO 79535 --- [mercator2] [    virtual-293] b.d.m.pipeline.service.CsvItemSource     : We have read 1 items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:29.428+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.mercator.dns.domain.DnsCrawlService  : retrieveDnsRecords for dnsbelgium.be
+2026-09-09T15:11:29.428+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type A for name dnsbelgium.be
+2026-09-09T15:11:29.468+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type AAAA for name dnsbelgium.be
+2026-09-09T15:11:29.496+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type MX for name dnsbelgium.be
+2026-09-09T15:11:29.525+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type SOA for name dnsbelgium.be
+2026-09-09T15:11:29.553+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type TXT for name dnsbelgium.be
+2026-09-09T15:11:29.589+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type CAA for name dnsbelgium.be
+2026-09-09T15:11:29.618+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type HTTPS for name dnsbelgium.be
+2026-09-09T15:11:29.647+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type SVCB for name dnsbelgium.be
+2026-09-09T15:11:29.675+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type NS for name dnsbelgium.be
+2026-09-09T15:11:29.703+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type DS for name dnsbelgium.be
+2026-09-09T15:11:29.731+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type DNSKEY for name dnsbelgium.be
+2026-09-09T15:11:29.763+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type CDNSKEY for name dnsbelgium.be
+2026-09-09T15:11:29.792+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type CDS for name dnsbelgium.be
+2026-09-09T15:11:29.820+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type TXT for name dnsbelgium.be
+2026-09-09T15:11:29.905+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type TXT for name dnsbelgium.be
+2026-09-09T15:11:29.934+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type TXT for name dnsbelgium.be
+2026-09-09T15:11:29.964+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type TXT for name dnsbelgium.be
+2026-09-09T15:11:30.051+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type A for name dnsbelgium.be
+2026-09-09T15:11:30.113+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.dns.domain.resolver.DnsResolver    : Resolving DNS records of type AAAA for name dnsbelgium.be
+2026-09-09T15:11:30.177+02:00  INFO 79535 --- [mercator2] [    virtual-294] b.d.m.pipeline.service.PipelineService   : Consumers done. Sending result poison pill.
+2026-09-09T15:11:30.184+02:00  INFO 79535 --- [mercator2] [    virtual-292] b.d.m.pipeline.service.PipelineService   : Writer received shutdown signal.
+2026-09-09T15:11:30.184+02:00  INFO 79535 --- [mercator2] [    virtual-292] b.d.m.pipeline.service.JsonItemWriter    : Rolling up 1 JSON files matching /tmp/mercator-e2e/pipeline/output/dns/batch-1/*.json into parquet
+2026-09-09T15:11:30.185+02:00  INFO 79535 --- [mercator2] [    virtual-292] b.d.m.persistence.JdbcClientFactory      : created dataSource with url='jdbc:duckdb:'
+2026-09-09T15:11:30.206+02:00  INFO 79535 --- [mercator2] [    virtual-292] b.d.mercator.persistence.BaseRepository  : copying added_year_month as parquet to /tmp/mercator-e2e/pipeline/data//dns is done
+2026-09-09T15:11:30.207+02:00  INFO 79535 --- [mercator2] [    virtual-292] b.d.m.pipeline.service.JsonItemWriter    : Rolled up 1 JSON files from /tmp/mercator-e2e/pipeline/output/dns/batch-1
+2026-09-09T15:11:30.207+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.PipelineService   : Pipeline 'dns' finished. Wrote 1 items.
+2026-09-09T15:11:30.207+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.PipelineApplication       : Module 'dns' completed in 796 ms (produced 1 items)
+2026-09-09T15:11:30.208+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.JsonItemWriter    : JsonItemWriter for TlsCrawlResult writing to /tmp/mercator-e2e/pipeline/output/tls (batchSize=500)
+2026-09-09T15:11:30.208+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.p.module.VisitRequestModule        : Starting module 'tls' (input=/tmp/mercator-e2e/input-pipeline.csv, output=/tmp/mercator-e2e/pipeline/output/tls)
+2026-09-09T15:11:30.208+02:00  INFO 79535 --- [mercator2] [    virtual-498] b.d.m.pipeline.service.CsvItemSource     : reading items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:30.210+02:00  INFO 79535 --- [mercator2] [    virtual-498] b.d.m.pipeline.service.CsvItemSource     : We have read 1 items from CSV file: /tmp/mercator-e2e/input-pipeline.csv
+2026-09-09T15:11:30.210+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.ports.TlsCrawler        : Crawling VisitRequest(visitId=v1, domainName=dnsbelgium.be)
+2026-09-09T15:11:31.283+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.TlsScanner       : Checking SSLv2 support on dnsbelgium.be/45.60.74.42:443
+2026-09-09T15:11:31.317+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.ssl2.SSL2Client  : Connecting to dnsbelgium.be:443
+2026-09-09T15:11:31.435+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-2-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0xcbb260da, L:/192.168.179.64:49652 - R:dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:31.438+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.ssl2.SSL2Client  : duration: 154 ms
+2026-09-09T15:11:31.438+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-2-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0xcbb260da, L:/192.168.179.64:49652 ! R:dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:31.439+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-2-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0xcbb260da, L:/192.168.179.64:49652 ! R:dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:31.441+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.FullScanCache    : Adding to cache: IP = 45.60.74.42 : fullScanEntity: connectOk=true, supportTls_1_3=true, supportTls_1_2=true, supportTls_1_1=false, supportTls_1_0=false, supportSsl_3_0=false, supportSsl_2_0=false, selectedCipherTls_1_3=TLS_AES_256_GCM_SHA384, selectedCipherTls_1_2=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, selectedCipherTls_1_1=null, selectedCipherTls_1_0=null, selectedCipherSsl_3_0=null
+2026-09-09T15:11:31.441+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.FullScanCache    : First time we see this IP: 45.60.74.42
+2026-09-09T15:11:31.441+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.ports.TlsCrawler        : Crawling VisitRequest(visitId=v1, domainName=dnsbelgium.be)
+2026-09-09T15:11:32.549+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.TlsScanner       : Checking SSLv2 support on www.dnsbelgium.be/45.60.74.42:443
+2026-09-09T15:11:32.549+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.ssl2.SSL2Client  : Connecting to www.dnsbelgium.be:443
+2026-09-09T15:11:32.622+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-3-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0x5b1515fa, L:/192.168.179.64:49658 - R:www.dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:32.623+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-3-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0x5b1515fa, L:/192.168.179.64:49658 ! R:www.dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:32.623+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.ssl2.SSL2Client  : duration: 73 ms
+2026-09-09T15:11:32.623+02:00  INFO 79535 --- [mercator2] [ntLoopGroup-3-1] b.d.m.t.domain.ssl2.ServerHelloDecoder   : decoding ServerHello coming from ctx = ChannelHandlerContext(ServerHelloDecoder#0, [id: 0x5b1515fa, L:/192.168.179.64:49658 ! R:www.dnsbelgium.be/45.60.74.42:443])
+2026-09-09T15:11:32.623+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.mercator.tls.domain.FullScanCache    : Adding to cache: IP = 45.60.74.42 : fullScanEntity: connectOk=true, supportTls_1_3=true, supportTls_1_2=true, supportTls_1_1=false, supportTls_1_0=false, supportSsl_3_0=false, supportSsl_2_0=false, selectedCipherTls_1_3=TLS_AES_256_GCM_SHA384, selectedCipherTls_1_2=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, selectedCipherTls_1_1=null, selectedCipherTls_1_0=null, selectedCipherSsl_3_0=null
+2026-09-09T15:11:32.624+02:00  INFO 79535 --- [mercator2] [    virtual-499] b.d.m.pipeline.service.PipelineService   : Consumers done. Sending result poison pill.
+2026-09-09T15:11:32.632+02:00  INFO 79535 --- [mercator2] [    virtual-497] b.d.m.pipeline.service.PipelineService   : Writer received shutdown signal.
+2026-09-09T15:11:32.632+02:00  INFO 79535 --- [mercator2] [    virtual-497] b.d.m.pipeline.service.JsonItemWriter    : Rolling up 1 JSON files matching /tmp/mercator-e2e/pipeline/output/tls/batch-1/*.json into parquet
+2026-09-09T15:11:32.632+02:00  INFO 79535 --- [mercator2] [    virtual-497] b.d.m.persistence.JdbcClientFactory      : created dataSource with url='jdbc:duckdb:'
+2026-09-09T15:11:32.659+02:00  INFO 79535 --- [mercator2] [    virtual-497] b.d.mercator.persistence.BaseRepository  : copying added_year_month as parquet to /tmp/mercator-e2e/pipeline/data//tls is done
+2026-09-09T15:11:32.659+02:00  INFO 79535 --- [mercator2] [    virtual-497] b.d.m.pipeline.service.JsonItemWriter    : Rolled up 1 JSON files from /tmp/mercator-e2e/pipeline/output/tls/batch-1
+2026-09-09T15:11:32.660+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.service.PipelineService   : Pipeline 'tls' finished. Wrote 1 items.
+2026-09-09T15:11:32.660+02:00  INFO 79535 --- [mercator2] [           main] b.d.m.pipeline.PipelineApplication       : Module 'tls' completed in 2453 ms (produced 1 items)
+2026-09-09T15:11:36.974+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-09T15:11:36.979+02:00  INFO 79535 --- [mercator2] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-09-09T15:11:36.982+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer WebCrawlResult: No items to write. (writeCount == 0)
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer WebCrawlResult closed by thread [SpringApplicationShutdownHook]
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer TlsCrawlResult: No items to write. (writeCount == 0)
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer TlsCrawlResult closed by thread [SpringApplicationShutdownHook]
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer SmtpVisit: No items to write. (writeCount == 0)
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer SmtpVisit closed by thread [SpringApplicationShutdownHook]
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer DnsCrawlResult: No items to write. (writeCount == 0)
+2026-09-09T15:11:36.983+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.batch.JsonItemWriter        : Writer DnsCrawlResult closed by thread [SpringApplicationShutdownHook]
+2026-09-09T15:11:36.984+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.web.domain.PageFetcher      : Closing the PageFetcher
+2026-09-09T15:11:36.984+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.web.domain.PageFetcher      : cache.hitCount = 6
+2026-09-09T15:11:36.984+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.web.domain.PageFetcher      : cache.networkCount = 0
+2026-09-09T15:11:36.984+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] b.d.mercator.web.domain.PageFetcher      : cache.requestCount = 6
+2026-09-09T15:11:36.986+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-09-09T15:11:36.989+02:00  INFO 79535 --- [mercator2] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

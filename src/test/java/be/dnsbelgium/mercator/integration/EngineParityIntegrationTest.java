@@ -17,9 +17,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.infrastructure.item.Chunk;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -131,22 +129,7 @@ class EngineParityIntegrationTest {
      */
     private <T> void writeThroughBothEngines(Class<T> clazz, List<T> results,
                                              BaseRepository<T> oldRepo, BaseRepository<T> newRepo) throws Exception {
-        // --- Legacy Spring Batch writer: one JSON array file per chunk, storeResults on close(). ---
-        Path oldJsonDir = Files.createTempDirectory(tempDir, "old-json-");
-        var oldWriter = new be.dnsbelgium.mercator.batch.JsonItemWriter<>(oldRepo, legacyMapper, oldJsonDir, clazz);
-        Chunk<T> chunk = new Chunk<>();
-        results.forEach(chunk::add);
-        oldWriter.write(chunk);
-        oldWriter.close();
-
-        // --- New pipeline writer: one JSON object per file, storeResults per batch on flush(). ---
-        Path newJsonDir = Files.createTempDirectory(tempDir, "new-json-");
-        var newWriter = new be.dnsbelgium.mercator.pipeline.service.JsonItemWriter<>(
-                pipelineMapper, newRepo::storeResults, newJsonDir, clazz, Math.max(1, results.size()));
-        for (T result : results) {
-            newWriter.write(result);
-        }
-        newWriter.flush();
+        EngineParityWriters.writeThroughBothEngines(clazz, results, legacyMapper, pipelineMapper, oldRepo, newRepo, tempDir);
     }
 
     private void assertIdentical(ComparisonResult r) {
