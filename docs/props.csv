@@ -5,6 +5,7 @@ mercator.shutdown-wait-seconds,Number of seconds that Mercator (in batch mode) w
 web.ui.datetime.pattern,Format used to display timestamps in the Web UI,String,yyyy-MM-dd HH:mm:ss z
 web.ui.timezone,Timezone used to display timestamps in the UI,String,Europe/Brussels
 crawler.dns.geoIP.enabled,Whether IP addresses should be enriched using MaxMind GeoIP,Boolean,false
+geo.ip.maxmind.auto-update,"Whether Mercator should check for and download MaxMind databases. When false, the configured file location must contain both database files.",Boolean,true
 web.chunkSize,The number of domains that should be processed together by the web crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25. then the work will be done by only 2 threads.,Integer,1000
 web.corePoolSize,The initial number of threads used by the web crawler. See also web.chunkSize,Integer,100
 web.maxPoolSize,The maximun number of threads used by the web crawler.,Integer,100

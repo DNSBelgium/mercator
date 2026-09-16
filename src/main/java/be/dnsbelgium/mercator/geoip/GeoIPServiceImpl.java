@@ -76,18 +76,37 @@ public class GeoIPServiceImpl implements GeoIPService {
 
   private void initialize() {
     log.info("Using Maxmind database location: {}", config.getFileLocation());
+    String countryFile = countryFile();
+    String asnFile = asnFile();
+
+    if (config.isAutoUpdate()) {
+      updateDatabases(countryFile, asnFile);
+    } else {
+      log.info("Maxmind database auto-update is disabled; using local database files only");
+      requireDatabaseFile(countryFile);
+      requireDatabaseFile(asnFile);
+    }
+
+    try {
+      // geo
+      File database = new File(FileUtil.appendPath(config.getFileLocation(), countryFile));
+      geoReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
+      // asn
+      database = new File(FileUtil.appendPath(config.getFileLocation(), asnFile));
+      asnReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
+    } catch (IOException e) {
+      throw new RuntimeException("Error initializing Maxmind GEO/ASN database", e);
+    }
+  }
+
+  private void updateDatabases(String countryFile, String asnFile) {
     if (StringUtils.isBlank(config.getLicenseKey())) {
       throw new RuntimeException("No valid Maxmind license key found, provide key for either the free or paid license.");
     }
     File loc = new File(config.getFileLocation());
-    if (!loc.exists()) {
-      if (!loc.mkdirs()) {
-        log.error("Failed to mkdirs {}", loc);
-      }
+    if (!loc.exists() && !loc.mkdirs()) {
+      log.error("Failed to mkdirs {}", loc);
     }
-
-    String countryFile = countryFile();
-    String asnFile = asnFile();
 
     String url = config.getUrlCountryDb() + config.getLicenseKey();
 
@@ -108,16 +127,14 @@ public class GeoIPServiceImpl implements GeoIPService {
       }
       download(asnFile, url, 30);
     }
+  }
 
-    try {
-      // geo
-      File database = new File(FileUtil.appendPath(config.getFileLocation(), countryFile));
-      geoReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
-      // asn
-      database = new File(FileUtil.appendPath(config.getFileLocation(), asnFile));
-      asnReader = new DatabaseReader.Builder(database).withCache(new CHMCache()).build();
-    } catch (IOException e) {
-      throw new RuntimeException("Error initializing Maxmind GEO/ASN database", e);
+  private void requireDatabaseFile(String database) {
+    File file = new File(FileUtil.appendPath(config.getFileLocation(), database));
+    if (!file.isFile()) {
+      throw new IllegalStateException(
+          "Maxmind database file " + file.getAbsolutePath()
+              + " does not exist and auto-update is disabled");
     }
   }
 
