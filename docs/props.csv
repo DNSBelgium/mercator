@@ -6,10 +6,11 @@ web.ui.datetime.pattern,Format used to display timestamps in the Web UI,String,y
 web.ui.timezone,Timezone used to display timestamps in the UI,String,Europe/Brussels
 crawler.dns.geoIP.enabled,Whether IP addresses should be enriched using MaxMind GeoIP,Boolean,false
 geo.ip.maxmind.auto-update,"Whether Mercator should check for and download MaxMind databases. When false, the configured file location must contain both database files.",Boolean,true
-web.chunkSize,The number of domains that should be processed together by the web crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25. then the work will be done by only 2 threads.,Integer,1000
+web.chunkSize,The number of domains processed concurrently by the web crawler (since Spring Batch 6 the chunk size directly controls concurrency; there is no more separate throttleLimit). Suppose you have 50 entries in the input file and chunkSize is 25: the work will be done in 2 waves of 25 concurrent items.,Integer,1000
 web.corePoolSize,The initial number of threads used by the web crawler. See also web.chunkSize,Integer,100
 web.maxPoolSize,The maximun number of threads used by the web crawler.,Integer,100
-smtp.chunkSize,The number of domains that should be processed together by the SMTP crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25,Integer,1000
+web.virtualThreads,Whether the web crawler should use virtual threads instead of a bounded thread pool (web.corePoolSize/web.maxPoolSize are ignored when enabled).,Boolean,false
+smtp.chunkSize,The number of domains processed concurrently by the SMTP crawler (since Spring Batch 6 the chunk size directly controls concurrency; there is no more separate throttleLimit). Suppose you have 50 entries in the input file and chunkSize is 25: the work will be done in 2 waves of 25 concurrent items.,Integer,1000
 smtp.corePoolSize,The initial number of threads used by the SMTP crawler. See also smtp.chunkSize,Integer,1000
 smtp.maxPoolSize,The maximun number of threads used by the SMTP crawler.,Integer,1000
 smtp.crawler.recursive.resolver.retries,The number of retries done by the SMTP crawler when resolving MX records,Integer,2
@@ -18,14 +19,14 @@ smtp.crawler.recursive.resolver.tcp.by.default,Whether the SMTP crawler should u
 smtp.crawler.skip.ipv4,Whether the SMTP crawler should skip contacting SMTP servers over IPv4,Boolean,false
 smtp.crawler.skip.ipv6,Whether the SMTP crawler should skip contacting SMTP servers over IPv6; useful when Mercator is running on a system that does not support IPv6.,Boolean,false
 smtp.crawler.max.hosts.to.contact,The maximum number of hosts that the SMTP server should try to contact per visit request (sort of denial of service mitigation),Integer,15
-dns.chunkSize,The number of domains that should be processed as one chunk (by the same thread) by the DNS crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25,Integer,1000
+dns.chunkSize,The number of domains processed concurrently by the DNS crawler (since Spring Batch 6 the chunk size directly controls concurrency; there is no more separate throttleLimit). Suppose you have 50 entries in the input file and chunkSize is 25: the work will be done in 2 waves of 25 concurrent items.,Integer,1000
 dns.corePoolSize,The initial number of threads used by the DNS crawler. See also dns.chunkSize,Integer,1000
 dns.maxPoolSize,The maximun number of threads used by the DNS crawler.,Integer,1000
-dns.throttleLimit,The maximum number of concurrent tasklet executions allowed for the DNS crawler,Integer,200
-tls.chunkSize,The number of domains that should be processed as one chunk (by the same thread) by the TLS crawler. This also impacts the number of threads that are actually used. Suppose you have 50 entries in the input file and chunksize is 25. Then the work will be done by only 2 threads.,Integer,1000
+dns.virtualThreads,Whether the DNS crawler should use virtual threads instead of a bounded thread pool (dns.corePoolSize/dns.maxPoolSize are ignored when enabled).,Boolean,false
+tls.chunkSize,The number of domains processed concurrently by the TLS crawler (since Spring Batch 6 the chunk size directly controls concurrency; there is no more separate throttleLimit). Suppose you have 50 entries in the input file and chunkSize is 25: the work will be done in 2 waves of 25 concurrent items.,Integer,1000
 tls.corePoolSize,The initial number of threads used by the TLS crawler. See also dns.chunkSize,Integer,1000
 tls.maxPoolSize,The maximun number of threads used by the TLS crawler.,Integer,1000
-tls.throttleLimit,The maximum number of concurrent tasklet executions allowed for the TLS crawler,Integer,200
+tls.virtualThreads,Whether the TLS crawler should use virtual threads instead of a bounded thread pool (tls.corePoolSize/tls.maxPoolSize are ignored when enabled).,Boolean,false
 full.scan.cache.enabled,Whether the TLS crawler should cache results per IP address.,Boolean,true
 full.scan.cache.minimum.entries.per.ip,The minimum number of actual TLS scans to do per IP before using a cache entry instead of another scan.,Integer,10
 full.scan.cache.required.ratio,Some IP addresses host many websites and often these websites have identical TLS configuration. We cache the crawled TLS config per IP to reduce the number of needed TLS handshakes. The TLS crawler will only use a cached result when the ratio of domain names (on a given IP address) having identical TLS config is equal or higher than this setting.,Double,0.9

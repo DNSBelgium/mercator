@@ -24,6 +24,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.nio.file.Path;
@@ -44,15 +46,24 @@ public class WebJobConfig {
   @Value("${web.chunkSize:1000}")
   private int chunkSize;
 
+  @Value("${web.virtualThreads:false}")
+  private boolean virtualThreads;
+
   @Bean
   @Qualifier(JOB_NAME)
-  public ThreadPoolTaskExecutor webTaskExecutor() {
+  public AsyncTaskExecutor webTaskExecutor() {
+    // Since Spring Batch 6, chunkSize (not throttleLimit, which was removed) determines how many
+    // items are processed concurrently per chunk. See https://github.com/DNSBelgium/mercator/issues/40
+    if (virtualThreads) {
+      logger.info("{}: using a VirtualThreadTaskExecutor, chunkSize={}", JOB_NAME, chunkSize);
+      return new VirtualThreadTaskExecutor(JOB_NAME + "-virtual-");
+    }
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
     executor.setThreadNamePrefix(JOB_NAME + "-");
-    logger.info("{} executor corePoolSize={} maxPoolSize={}", JOB_NAME, corePoolSize, maxPoolSize);
+    logger.info("{} executor corePoolSize={} maxPoolSize={} chunkSize={}", JOB_NAME, corePoolSize, maxPoolSize, chunkSize);
     return executor;
   }
 
@@ -83,7 +94,7 @@ public class WebJobConfig {
                     ItemReader<VisitRequest> itemReader,
                     WebProcessor processor,
                     JsonItemWriter<WebCrawlResult> webItemWriter,
-                    @Qualifier(JOB_NAME) ThreadPoolTaskExecutor taskExecutor
+                    @Qualifier(JOB_NAME) AsyncTaskExecutor taskExecutor
   ) {
 
     var itemProcessor = new DelegatingItemProcessor<>(processor);

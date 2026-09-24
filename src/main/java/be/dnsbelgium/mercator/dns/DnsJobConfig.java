@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.nio.file.Path;
@@ -46,15 +47,24 @@ public class DnsJobConfig {
   @Value("${dns.maxPoolSize:1000}")
   private int maxPoolSize;
 
+  @Value("${dns.virtualThreads:false}")
+  private boolean virtualThreads;
+
   @Bean
   @Qualifier(JOB_NAME)
   public AsyncTaskExecutor dnsTaskExecutor() {
+    // Since Spring Batch 6, chunkSize (not throttleLimit, which was removed) determines how many
+    // items are processed concurrently per chunk. See https://github.com/DNSBelgium/mercator/issues/40
+    if (virtualThreads) {
+      logger.info("DNS: using a VirtualThreadTaskExecutor, chunkSize={}", chunkSize);
+      return new VirtualThreadTaskExecutor(JOB_NAME + "-virtual-");
+    }
     var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(corePoolSize);
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
     executor.setThreadNamePrefix(JOB_NAME);
-    logger.info("DNS: executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    logger.info("DNS: executor corePoolSize={} maxPoolSize={} chunkSize={}", corePoolSize, maxPoolSize, chunkSize);
     return executor;
   }
 
@@ -91,12 +101,10 @@ public class DnsJobConfig {
 
     DelegatingItemProcessor<DnsCrawlResult> itemProcessor = new DelegatingItemProcessor<>(dnsCrawler);
 
-    // throttleLimit method is deprecated but alternative is not well documented
     Step step = new StepBuilder(JOB_NAME, jobRepository)
             .<VisitRequest, DnsCrawlResult>chunk(chunkSize)
             .reader(dnsItemReader)
             .taskExecutor(dnsTaskExecutor)
-            //.throttleLimit(throttleLimit)  method was removed. See https://github.com/spring-projects/spring-batch/wiki/Spring-Batch-6.0-Migration-Guide
             .processor(itemProcessor)
             .writer(itemWriter)
             .build();

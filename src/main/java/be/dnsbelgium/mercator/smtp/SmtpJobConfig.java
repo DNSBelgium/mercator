@@ -78,7 +78,7 @@ public class SmtpJobConfig {
     executor.setMaxPoolSize(maxPoolSize);
     executor.setQueueCapacity(-1);
     executor.setThreadNamePrefix(JOB_NAME);
-    logger.info("SMTP: executor corePoolSize={} maxPoolSize={}", corePoolSize, maxPoolSize);
+    logger.info("SMTP: executor corePoolSize={} maxPoolSize={} chunkSize={}", corePoolSize, maxPoolSize, chunkSize);
     return executor;
   }
 
