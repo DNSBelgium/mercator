@@ -60,8 +60,57 @@ public class PipelineProperties {
     /** Base output directory; each module writes to a {@code <outputDirectory>/<module>} subdir. */
     private String outputDirectory = "output";
 
+    /** Close the application context after a stateless run, allowing batch containers to exit. */
+    private boolean exitOnCompletion = true;
+
+    /** Optional per-module concurrency overrides. */
+    private final Modules moduleSettings = new Modules();
+
     /** Stateful Postgres work-queue settings (only used under the {@code postgres-queue} profile). */
     private final Queue queue = new Queue();
+
+    public int numConsumers(String module) {
+        ModuleSettings settings = moduleSettings.forName(module);
+        return settings != null && settings.getNumConsumers() != null
+                ? settings.getNumConsumers()
+                : numConsumers;
+    }
+
+    public int maxConcurrentRequests(String module) {
+        ModuleSettings settings = moduleSettings.forName(module);
+        return settings != null && settings.getMaxConcurrentRequests() != null
+                ? settings.getMaxConcurrentRequests()
+                : maxConcurrentRequests;
+    }
+
+    @Getter
+    @Setter
+    @ToString
+    public static class ModuleSettings {
+        private Integer numConsumers;
+        private Integer maxConcurrentRequests;
+    }
+
+    @Getter
+    @ToString
+    public static class Modules {
+        private final ModuleSettings web = new ModuleSettings();
+        private final ModuleSettings dns = new ModuleSettings();
+        private final ModuleSettings smtp = new ModuleSettings();
+        private final ModuleSettings tls = new ModuleSettings();
+        private final ModuleSettings simulated = new ModuleSettings();
+
+        private ModuleSettings forName(String module) {
+            return switch (module) {
+                case "web" -> web;
+                case "dns" -> dns;
+                case "smtp" -> smtp;
+                case "tls" -> tls;
+                case "simulated" -> simulated;
+                default -> null;
+            };
+        }
+    }
 
     /**
      * Settings for the stateful Postgres-backed work queue: fan-out ({@code dispatch()}),
@@ -123,4 +172,3 @@ public class PipelineProperties {
         }
     }
 }
-

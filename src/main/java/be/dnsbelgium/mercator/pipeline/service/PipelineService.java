@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Generic, reusable producer → processor → writer pipeline.
@@ -51,6 +52,7 @@ public class PipelineService<InputType, OutputType> {
 
     /** Items the producer read from the source and enqueued during the current run. */
     private final AtomicLong producedCount = new AtomicLong();
+    private final AtomicReference<RuntimeException> producerFailure = new AtomicReference<>();
 
     public PipelineService(String name,
                            ItemSource<InputType> source,
@@ -58,7 +60,8 @@ public class PipelineService<InputType, OutputType> {
                            ItemWriter<OutputType> writer,
                            PipelineExecutors executors,
                            PipelineProperties properties,
-                           MeterRegistry meterRegistry) {
+                           MeterRegistry meterRegistry,
+                           int maxConcurrentRequests) {
         this.name = name;
         this.source = source;
         this.processor = processor;
@@ -67,7 +70,7 @@ public class PipelineService<InputType, OutputType> {
         this.cpuPool = executors.cpuPool();
         this.watchdog = executors.watchdog();
         // Per-pipeline backpressure so modules running concurrently don't share permits.
-        this.crawlSemaphore = executors.newSemaphore(properties.getMaxConcurrentRequests());
+        this.crawlSemaphore = executors.newSemaphore(maxConcurrentRequests);
         this.inputQueue = new ArrayBlockingQueue<>(properties.getInputQueueCapacity());
         this.resultQueue = new ArrayBlockingQueue<>(properties.getResultQueueCapacity());
 
@@ -121,6 +124,10 @@ public class PipelineService<InputType, OutputType> {
         // consumer has drained the input (including the producer's poison pill).
         writerFuture.join();
         producerFuture.join();
+        RuntimeException failure = producerFailure.get();
+        if (failure != null) {
+            throw new IllegalStateException("Producer for pipeline '" + name + "' failed", failure);
+        }
         log.info("Pipeline '{}' finished. Wrote {} items.", name, writer.writtenItems());
         return producedCount.get();
     }
@@ -154,6 +161,7 @@ public class PipelineService<InputType, OutputType> {
         } catch (RuntimeException e) {
             // e.g. the source could not read its input (missing/invalid input.csv). Log and fall
             // through to the finally block so consumers still receive the poison pill and stop.
+            producerFailure.compareAndSet(null, e);
             log.error("Producer for pipeline '{}' failed while reading from source; "
                     + "signalling consumers to stop.", name, e);
         } finally {

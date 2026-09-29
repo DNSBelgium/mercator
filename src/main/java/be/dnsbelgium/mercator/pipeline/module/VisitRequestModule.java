@@ -77,10 +77,14 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
                 new JsonItemWriter<>(objectMapper, repository::storeResults, outputDir, outputType(), properties.getBatchSize());
 
         PipelineService<VisitRequest, O> pipeline =
-                new PipelineService<>(name(), source, processor(), writer, executors, properties, meterRegistry);
+                new PipelineService<>(name(), source, processor(), writer, executors, properties, meterRegistry,
+                        properties.maxConcurrentRequests(name()));
 
-        log.info("Starting module '{}' (input={}, output={})", name(), properties.getInputCsv(), outputDir);
-        return pipeline.runPipeline(properties.getNumConsumers());
+        int numConsumers = properties.numConsumers(name());
+        log.info("Starting module '{}' (input={}, output={}, consumers={}, maxConcurrentRequests={})",
+                name(), properties.getInputCsv(), outputDir, numConsumers,
+                properties.maxConcurrentRequests(name()));
+        return pipeline.runPipeline(numConsumers);
     }
 
 }

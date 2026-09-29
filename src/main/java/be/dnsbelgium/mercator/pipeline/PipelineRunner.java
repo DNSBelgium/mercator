@@ -1,7 +1,9 @@
 package be.dnsbelgium.mercator.pipeline;
 
+import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -19,15 +21,24 @@ import org.springframework.stereotype.Component;
 public class PipelineRunner {
 
     private final PipelineApplication pipelineApplication;
+    private final PipelineProperties properties;
+    private final ConfigurableApplicationContext applicationContext;
 
-    public PipelineRunner(PipelineApplication pipelineApplication) {
+    public PipelineRunner(PipelineApplication pipelineApplication,
+                          PipelineProperties properties,
+                          ConfigurableApplicationContext applicationContext) {
         this.pipelineApplication = pipelineApplication;
+        this.properties = properties;
+        this.applicationContext = applicationContext;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         log.info("Application ready => starting the pipeline implementation");
-        pipelineApplication.run();
+        boolean completed = pipelineApplication.run();
+        if (completed && properties.isExitOnCompletion()) {
+            log.info("Pipeline completed => closing application context");
+            applicationContext.close();
+        }
     }
 }
-

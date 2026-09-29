@@ -47,8 +47,8 @@ public class SimulatedPipeline implements PipelineModule {
                 new FileWriterService(Path.of(properties.getOutputDirectory(), name()), properties.getBatchSize());
 
         PipelineService<String, String> pipeline =
-                new PipelineService<>(name(), source, processor, writer, executors, properties, meterRegistry);
-        return pipeline.runPipeline(properties.getNumConsumers());
+                new PipelineService<>(name(), source, processor, writer, executors, properties, meterRegistry,
+                        properties.maxConcurrentRequests(name()));
+        return pipeline.runPipeline(properties.numConsumers(name()));
     }
 }
-

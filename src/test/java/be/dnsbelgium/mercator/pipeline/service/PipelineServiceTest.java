@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 class PipelineServiceTest {
@@ -83,7 +84,8 @@ class PipelineServiceTest {
         PipelineExecutors executors = new PipelineExecutors(ioExecutor, cpuPool, watchdog);
 
         PipelineService<String, String> pipeline = new PipelineService<>(
-                "test", source, processor, writer, executors, properties, new SimpleMeterRegistry());
+                "test", source, processor, writer, executors, properties, new SimpleMeterRegistry(),
+                properties.maxConcurrentRequests("test"));
 
         try {
             pipeline.runPipeline(properties.getNumConsumers());
@@ -106,7 +108,7 @@ class PipelineServiceTest {
     }
 
     @Test
-    void terminatesWhenProducerSourceFails_insteadOfHangingForever() {
+    void failsPromptlyWhenProducerSourceFails_insteadOfHangingForever() {
         CollectingWriter writer = new CollectingWriter();
         ItemSource<String> source = new FailingItemSource();
         ItemProcessor<String, String> processor = new SimulatedProcessor();
@@ -123,14 +125,17 @@ class PipelineServiceTest {
         PipelineExecutors executors = new PipelineExecutors(ioExecutor, cpuPool, watchdog);
 
         PipelineService<String, String> pipeline = new PipelineService<>(
-                "failing", source, processor, writer, executors, properties, new SimpleMeterRegistry());
+                "failing", source, processor, writer, executors, properties, new SimpleMeterRegistry(),
+                properties.maxConcurrentRequests("failing"));
 
         try {
-            // Before the fix, a failing source left processors and the writer blocked on their
-            // queues forever. runPipeline must now return promptly with zero produced items.
-            long produced = assertTimeoutPreemptively(Duration.ofSeconds(10),
-                    () -> pipeline.runPipeline(properties.getNumConsumers()));
-            assertThat(produced).isZero();
+            // A failing source must stop the consumers/writer and propagate the failure so a
+            // batch entrypoint cannot mark unread input as successfully processed.
+            assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
+                    assertThatThrownBy(() -> pipeline.runPipeline(properties.getNumConsumers()))
+                            .isInstanceOf(IllegalStateException.class)
+                            .hasMessageContaining("Producer for pipeline 'failing' failed")
+                            .hasRootCauseMessage("simulated failure: input.csv not found"));
             assertThat(writer.writtenItems()).isZero();
         } finally {
             ioExecutor.shutdownNow();
@@ -139,4 +144,3 @@ class PipelineServiceTest {
         }
     }
 }
-

@@ -38,7 +38,13 @@ public class PipelineApplication {
     }
 
     //@EventListener(ApplicationReadyEvent.class)
-    public void run() {
+    /**
+     * Starts the configured modules.
+     *
+     * @return {@code true} when a stateless run completed synchronously, or {@code false} when
+     *         the continuous queue runner was started in the background
+     */
+    public boolean run() {
         List<String> requested = properties.getModules();
         log.info("Requested modules: {} (available: {})", requested, modulesByName.keySet());
 
@@ -49,7 +55,7 @@ public class PipelineApplication {
             // Stateful (postgres-queue) mode: run bounded passes round-robin, forever.
             log.info("postgres-queue profile active: launching continuous module runner");
             runner.start(resolved);
-            return;
+            return false;
         }
 
         // Stateless mode: run each requested module once, to completion.
@@ -59,6 +65,7 @@ public class PipelineApplication {
             log.info("Module '{}' completed in {} ms (produced {} items)",
                     module.name(), System.currentTimeMillis() - start, produced);
         }
+        return true;
     }
 
     /** Resolves the requested module names to beans in order, logging and skipping unknowns. */
