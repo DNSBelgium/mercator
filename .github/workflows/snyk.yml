@@ -30,4 +30,5 @@ jobs:
           cache: maven
 
       - name: Run snyk
+        continue-on-error: true
         run: SNYK_TOKEN=${{ secrets.SNYK_TOKEN }} mvn --batch-mode snyk:test

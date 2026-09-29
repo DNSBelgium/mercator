@@ -21,9 +21,10 @@ import java.util.Objects;
  *  geo.ip.maxmind.url-asn-db=http://localhost/asn-db
  *  geo.ip.maxmind.url-country-db=http://localhost/country-db
  *  geo.ip.maxmind.use-paid-version=false
+ *  geo.ip.maxmind.auto-update=true
  *  geo.ip.maxmind.file-location=
  * <p>
- * The only property that has no sensible default value is geo.ip.maxmind.license-key
+ * The license key is required when auto-update is enabled.
  */
 @SuppressWarnings("JavadocLinkAsPlainText")
 @ConfigurationProperties("geo.ip.maxmind")
@@ -42,6 +43,7 @@ public class MaxMindConfig {
   private final String licenseKey;
   private final String fileLocation;
   private final boolean usePaidVersion;
+  private final boolean autoUpdate;
 
   @DurationUnit(ChronoUnit.DAYS)
   private final Duration maxFileAge;
@@ -52,6 +54,7 @@ public class MaxMindConfig {
       @DefaultValue(DEFAULT_URL_FREE_ASN_DB)      String urlAsnDb,
       @DefaultValue(DEFAULT_URL_FREE_COUNTRY_DB)  String urlCountryDb,
       @DefaultValue("false")                      boolean usePaidVersion,
+      @DefaultValue("true")                       boolean autoUpdate,
       String licenseKey,
       String fileLocation
   ) {
@@ -59,8 +62,20 @@ public class MaxMindConfig {
     this.urlCountryDb = urlCountryDb;
     this.urlAsnDb = urlAsnDb;
     this.usePaidVersion = usePaidVersion;
+    this.autoUpdate = autoUpdate;
     this.licenseKey = licenseKey;
     this.fileLocation = Objects.requireNonNullElse(fileLocation, getTempDir());
+  }
+
+  public MaxMindConfig(
+      Duration maxFileAge,
+      String urlAsnDb,
+      String urlCountryDb,
+      boolean usePaidVersion,
+      String licenseKey,
+      String fileLocation
+  ) {
+    this(maxFileAge, urlAsnDb, urlCountryDb, usePaidVersion, true, licenseKey, fileLocation);
   }
 
   private String getTempDir() {
