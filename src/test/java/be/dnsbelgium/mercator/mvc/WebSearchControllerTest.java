@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.batch.BatchBeans;
 import be.dnsbelgium.mercator.common.DateTimeFormatterUtil;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.persistence.SearchVisitIdResultItem;
@@ -25,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(WebSearchController.class)
-@Import({BatchBeans.class, DateTimeFormatterUtil.class})
+@Import(DateTimeFormatterUtil.class)
 public class WebSearchControllerTest {
 
     @MockitoBean

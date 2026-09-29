@@ -1,11 +1,13 @@
 package be.dnsbelgium.mercator.web.wappalyzer.jappalyzer;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +17,7 @@ import java.util.*;
 
 public class DataLoader {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
     private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
     private final MeterRegistry meterRegistry;
 
@@ -42,10 +44,10 @@ public class DataLoader {
 
     private Map<Integer, Group> createGroupsMap(JsonNode groupsJSON) {
         Map<Integer, Group> idGroupMap = new HashMap<>();
-        groupsJSON.fields().forEachRemaining(entry -> {
+        groupsJSON.properties().forEach(entry -> {
             int id = Integer.parseInt(entry.getKey());
             JsonNode groupObject = entry.getValue();
-            idGroupMap.put(id, new Group(id, groupObject.get("name").asText()));
+            idGroupMap.put(id, new Group(id, groupObject.get("name").asString()));
         });
         return idGroupMap;
 
@@ -57,7 +59,7 @@ public class DataLoader {
         List<Integer> groupsIds = readGroupIds(categoryJSON);
         List<Group> groups = convertIdsToGroups(idGroupMap, groupsIds);
         Category category = new Category(
-                Integer.parseInt(key), categoryJSON.get("name").asText(), categoryJSON.get("priority").asInt());
+                Integer.parseInt(key), categoryJSON.get("name").asString(), categoryJSON.get("priority").asInt());
         category.setGroups(groups);
         return category;
     }
@@ -69,7 +71,7 @@ public class DataLoader {
         try {
             String categoriesContent = readFileContentFromResource("categories.json");
             JsonNode categoriesJSON = objectMapper.readTree(categoriesContent);
-            categoriesJSON.fields().forEachRemaining(entry -> {
+            categoriesJSON.properties().forEach(entry -> {
                 JsonNode categoryJson = entry.getValue();
                 categories.add(extractCategory(categoryJson, entry.getKey(), idGroupMap));
             });
@@ -137,12 +139,12 @@ public class DataLoader {
         JsonNode fileJSON;
         try {
             fileJSON = objectMapper.readTree(technologiesString);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             logger.error("Failed to load '{}': {}", technologiesString, e.getMessage());
             return technologies;
         }
         TechnologyBuilder technologyBuilder = new TechnologyBuilder(categories, meterRegistry);
-        fileJSON.fields().forEachRemaining(entry -> {
+        fileJSON.properties().forEach(entry -> {
             JsonNode object = entry.getValue();
             try {
                 Technology technology = technologyBuilder.fromJSON(entry.getKey(), object);

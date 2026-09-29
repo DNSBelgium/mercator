@@ -1,13 +1,14 @@
 package be.dnsbelgium.mercator.persistence;
 
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import be.dnsbelgium.mercator.pipeline.config.PipelineJacksonConfig;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class DnsRepository extends BaseRepository<DnsCrawlResult> {
@@ -17,7 +18,8 @@ public class DnsRepository extends BaseRepository<DnsCrawlResult> {
     private final String baseLocation;
 
     @SneakyThrows
-    public DnsRepository(JdbcClientFactory jdbcClientFactory, ObjectMapper objectMapper,
+    public DnsRepository(JdbcClientFactory jdbcClientFactory,
+                         @Qualifier(PipelineJacksonConfig.PIPELINE_OBJECT_MAPPER) ObjectMapper objectMapper,
                          @Value("${mercator.data.location:mercator/data/}/dns") String baseLocation,
                          @Value("${test.access.to.data.location:false}") boolean testAccessToDataLocation) {
         super(jdbcClientFactory, objectMapper, baseLocation, DnsCrawlResult.class);

@@ -3,7 +3,7 @@ package be.dnsbelgium.mercator.persistence;
 import be.dnsbelgium.mercator.test.ObjectMother;
 import be.dnsbelgium.mercator.test.TestUtils;
 import be.dnsbelgium.mercator.web.domain.WebCrawlResult;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.CleanupMode;

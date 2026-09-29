@@ -30,7 +30,7 @@ public class EnabledGeoIpEnricher implements GeoIpEnricher {
     Pair<Long, String> asn = geoIPService.lookupASN(ip).orElse(null);
 
     if (country != null || asn != null) {
-      return new ResponseGeoIp(asn, country, ipVersion, ip.getHostAddress());
+      return ResponseGeoIp.of(asn, country, ipVersion, ip.getHostAddress());
     }
     return null;
   }

@@ -1,6 +1,6 @@
 package be.dnsbelgium.mercator.geoip;
 
-import okhttp3.mockwebserver.MockWebServer;
+import mockwebserver3.MockWebServer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -56,7 +56,7 @@ class GeoIPServiceLocalDatabaseTest {
 
       assertThatThrownBy(() -> new GeoIPServiceImpl(localConfig(server.url("/").toString())))
           .isInstanceOf(RuntimeException.class)
-          .hasMessageContaining("Error initializing Maxmind GEO/ASN database");
+          .hasMessageContaining("Error initializing MaxMind GEO/ASN database");
       assertThat(server.getRequestCount()).isZero();
     }
   }

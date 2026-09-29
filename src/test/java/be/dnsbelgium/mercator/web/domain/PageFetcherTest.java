@@ -7,8 +7,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -179,8 +179,9 @@ class PageFetcherTest {
     HttpUrl baseUrl;
     String BIG_BODY = StringUtils.repeat("ab", 100_000);
     try (MockWebServer mockWebServer = new MockWebServer()) {
-      MockResponse response = new MockResponse()
-        .setChunkedBody(BIG_BODY, 100);
+      MockResponse response = new MockResponse.Builder()
+        .chunkedBody(BIG_BODY, 100)
+        .build();
       PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
       testFetcher.clearCache();
       mockWebServer.enqueue(response);

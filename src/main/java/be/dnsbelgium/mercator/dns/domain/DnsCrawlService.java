@@ -7,12 +7,13 @@ import be.dnsbelgium.mercator.idn.IdnException;
 import be.dnsbelgium.mercator.dns.DnsCrawlerConfigurationProperties;
 import be.dnsbelgium.mercator.dns.domain.resolver.DnsResolver;
 import be.dnsbelgium.mercator.metrics.Threads;
+import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import io.micrometer.core.instrument.MeterRegistry;
 
+import lombok.SneakyThrows;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.infrastructure.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.Name;
@@ -27,7 +28,10 @@ import java.util.Set;
 import static be.dnsbelgium.mercator.dns.dto.RecordType.A;
 
 @Component
-public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResult> {
+public class DnsCrawlService implements
+        ItemProcessor <VisitRequest, DnsCrawlResult>
+
+{
 
   private static final Logger logger = LoggerFactory.getLogger(DnsCrawlService.class);
   private final DnsResolver resolver;
@@ -156,4 +160,9 @@ public class DnsCrawlService implements ItemProcessor<VisitRequest, DnsCrawlResu
     }
   }
 
+  @SneakyThrows
+  @Override
+  public DnsCrawlResult processItem(@NonNull VisitRequest visitRequest) {
+    return process(visitRequest);
+  }
 }

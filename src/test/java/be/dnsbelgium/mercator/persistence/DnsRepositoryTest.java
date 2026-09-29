@@ -8,7 +8,7 @@ import be.dnsbelgium.mercator.test.TestUtils;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-import com.fasterxml.jackson.databind.*;
+import tools.jackson.databind.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

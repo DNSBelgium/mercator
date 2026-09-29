@@ -15,16 +15,23 @@ public class ResponseGeoIp {
     private String asnOrganisation;
     private int ipVersion;
 
-    public ResponseGeoIp(Pair<Long, String> asn, String country, int ipVersion, String ip) {
+    /**
+     * Builds a {@link ResponseGeoIp} from a GeoIP lookup result. Kept as a static factory (rather
+     * than a constructor) so it is not mistaken for a Jackson creator: the JSON round-trip relies on
+     * the no-arg constructor plus setters, exactly like it did under the legacy Jackson 2 mapper.
+     */
+    public static ResponseGeoIp of(Pair<Long, String> asn, String country, int ipVersion, String ip) {
+        ResponseGeoIp result = new ResponseGeoIp();
         if (asn != null) {
-            this.asn = String.valueOf(asn.getLeft());
-            this.asnOrganisation = StringUtils.abbreviate(asn.getRight(), 128);
+            result.asn = String.valueOf(asn.getLeft());
+            result.asnOrganisation = StringUtils.abbreviate(asn.getRight(), 128);
         }
         if (country != null) {
-            this.country = StringUtils.abbreviate(country, 255);
+            result.country = StringUtils.abbreviate(country, 255);
         }
-        this.ip = ip;
-        this.ipVersion = ipVersion;
+        result.ip = ip;
+        result.ipVersion = ipVersion;
+        return result;
     }
 
 }

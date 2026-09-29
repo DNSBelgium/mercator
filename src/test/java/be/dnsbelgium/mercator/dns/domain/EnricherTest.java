@@ -53,8 +53,8 @@ class EnricherTest {
   @DisabledIf(value = "avoidInternet", disabledReason="We don't want to rely on the internet during testing")
   @Test
   public void enrich() {
-    ResponseGeoIp enriched1 = new ResponseGeoIp(Pair.of(20400L, "Google ASN"), "BE", 4, "1.2.3.4");
-    ResponseGeoIp enriched2 = new ResponseGeoIp(Pair.of(20500L, "Google ASN"), "FR", 4, "10.20.30.40");
+    ResponseGeoIp enriched1 = ResponseGeoIp.of(Pair.of(20400L, "Google ASN"), "BE", 4, "1.2.3.4");
+    ResponseGeoIp enriched2 = ResponseGeoIp.of(Pair.of(20500L, "Google ASN"), "FR", 4, "10.20.30.40");
     when(geoIpEnricher.enrich(any(InetAddress.class)))
             .thenReturn(enriched1)
             .thenReturn(enriched2);

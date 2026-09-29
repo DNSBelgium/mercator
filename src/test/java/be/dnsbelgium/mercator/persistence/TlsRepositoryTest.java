@@ -8,11 +8,11 @@ import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -84,7 +84,7 @@ class TlsRepositoryTest {
   private String saveToJson(List<TlsCrawlResult> crawlResults, String fileName) throws IOException {
     File jsonFile = tempDir.resolve(fileName).toFile();
     TestUtils.jsonWriter().writeValue(jsonFile, crawlResults);
-    String json = FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+    String json = Files.readString(jsonFile.toPath(), StandardCharsets.UTF_8);
     logger.info("json = \n {}", json);
     String jsonLocation = jsonFile.getAbsolutePath();
     logger.info("jsonLocation = {}", jsonLocation);

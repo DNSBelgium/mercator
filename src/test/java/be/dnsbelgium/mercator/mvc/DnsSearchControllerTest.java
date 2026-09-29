@@ -1,6 +1,5 @@
 package be.dnsbelgium.mercator.mvc;
 
-import be.dnsbelgium.mercator.batch.BatchBeans;
 import be.dnsbelgium.mercator.common.DateTimeFormatterUtil;
 import be.dnsbelgium.mercator.common.VisitIdGenerator;
 import be.dnsbelgium.mercator.dns.dto.DnsCrawlResult;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DnsSearchController.class)
-@Import({BatchBeans.class, DateTimeFormatterUtil.class})
+@Import(DateTimeFormatterUtil.class)
 public class DnsSearchControllerTest {
 
     @MockitoBean

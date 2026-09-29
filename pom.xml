@@ -26,12 +26,35 @@
         </license>
     </licenses>
     <properties>
-        <java.version>23</java.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <java.version>25</java.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
-        <netty.version>4.1.137.Final</netty.version>
+        <!-- Override Spring Boot 4.1.1 managed versions (Boot default shown in comments). -->
+        <netty.version>4.2.17.Final</netty.version>   <!-- Boot: 4.2.17.Final -->
+        <tomcat.version>11.0.25</tomcat.version>       <!-- Boot: 11.0.24 -->
+        <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Pin transitive jackson-databind to patched versions (Snyk gate).
+                 Jackson 2.x (com.fasterxml) is pulled in transitively by geoip2;
+                 Jackson 3.x (tools.jackson) is managed by the Spring Boot 4.1.1 parent.
+                 Both are same-minor patch bumps that close the reported deserialization/
+                 unsafe-reflection advisories. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.21.6</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>3.1.6</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -51,15 +74,30 @@
             <artifactId>spring-jdbc</artifactId>
         </dependency>
 
+        <!-- This will automagically find the DuckDB JDBC driver in the classpath and register it with the DriverManager. -->
+        <!-- No need to create a DuckDataSource class ... -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- Postgres driver for the stateful work queue (postgres-queue profile) and tests -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-batch</artifactId>
         </dependency>
 
         <dependency>
@@ -78,40 +116,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>tools.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>3.2.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-parameter-names -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-parameter-names</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Force patched jackson-databind version used by jackson-module-parameter-names -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- to enable writing java.time.Instant values to JSON files -->
-
-        <!-- Source: https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jdk8 -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>2.22.2</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-webmvc-test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,19 +127,17 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.5.36</version>
         </dependency>
         
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.36</version>
         </dependency>
         
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
-            <version>2.15.0</version>
+            <version>2.15.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -149,7 +151,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.85</version>
+            <version>1.85.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
@@ -169,7 +171,7 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>9.37.4</version>
+            <version>10.9.1</version>
         </dependency>
 
         <dependency>
@@ -178,35 +180,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>webjars-locator</artifactId>
-            <version>0.52</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.webjars.npm</groupId>
-            <artifactId>htmx.org</artifactId>
-            <version>2.0.10</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.github.wimdeblauwe/htmx-spring-boot -->
-        <!-- https://github.com/wimdeblauwe/htmx-spring-boot?tab=readme-ov-file#spring-boot-compatibility -->
-        <dependency>
-            <groupId>io.github.wimdeblauwe</groupId>
-            <artifactId>htmx-spring-boot-thymeleaf</artifactId>
-            <version>5.1.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.17.1</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.seancfoley</groupId>
             <artifactId>ipaddress</artifactId>
-            <version>5.4.1</version>
+            <version>5.6.2</version>
         </dependency>
 
         <dependency>
@@ -215,10 +196,12 @@
             <version>1.23.2</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/com.maxmind.geoip2/geoip2 -->
         <dependency>
             <groupId>com.maxmind.geoip2</groupId>
             <artifactId>geoip2</artifactId>
-            <version>4.2.0</version>
+            <version>5.2.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Used in GeoIPServiceImpl  -->
@@ -228,19 +211,18 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.26.2</version>
+            <version>1.28.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.19.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.2.1-jre</version>
+            <version>33.7.1-jre</version>
         </dependency>
 
 
@@ -248,46 +230,48 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.6.0</version>
         </dependency>
 
         <!-- used in be.dnsbelgium.mercator.feature.extraction.Similarities-->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
+            <version>1.15.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.duckdb/duckdb_jdbc -->
         <dependency>
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
-            <version>1.3.2.0</version>
+            <version>1.4.5.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>com.github.f4b6a3</groupId>
             <artifactId>ulid-creator</artifactId>
-            <version>5.2.3</version>
+            <version>5.2.4</version>
         </dependency>
 
         <!--        used in GeoIPServiceImpl-->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.6.4</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents.core5</groupId>
             <artifactId>httpcore5-h2</artifactId>
-            <version>5.4.3</version>
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <!-- okhttp 5 is a Kotlin-Multiplatform build: the plain `okhttp` artifact is an empty
+                 aggregator resolved via Gradle module metadata (which Maven ignores). Depend on the
+                 JVM variant `okhttp-jvm` so the okhttp3.* classes are on the compile classpath. -->
+            <artifactId>okhttp-jvm</artifactId>
+            <version>5.5.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-transport -->
@@ -344,13 +328,13 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>75.1</version>
+            <version>78.3</version>
         </dependency>
 
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>3.6.0</version>
+            <version>3.6.5</version>
         </dependency>
 
         <dependency>
@@ -367,7 +351,6 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <!--suppress KotlinMavenPluginPhase -->
             <artifactId>kotlin-stdlib</artifactId>
-            <version>2.1.10</version>
         </dependency>
 
 
@@ -379,32 +362,28 @@
         <dependency>
             <groupId>com.squareup.okio</groupId>
             <artifactId>okio</artifactId>
-            <version>3.4.0</version>
+            <version>3.18.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine -->
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
-            <version>3.2.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.22.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.9.22.1</version>
         </dependency>
 
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-core</artifactId>
-            <version>1.16.7</version>
         </dependency>
 
         <dependency>
@@ -415,7 +394,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
 
@@ -423,11 +401,11 @@
         <!-- TEST dependencies  -->
         <!-- ================== -->
 
-        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
+        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver3 -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>mockwebserver</artifactId>
-            <version>4.12.0</version>
+            <artifactId>mockwebserver3</artifactId>
+            <version>5.5.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -447,18 +425,18 @@
 
         <!-- https://osv.dev/vulnerability/GHSA-chfm-68vv-pvw5-->
         <!-- https://mvnrepository.com/artifact/org.xmlunit/xmlunit-core -->
+        <!-- Version overridden via <xmlunit2.version> (Boot default 2.11.0 is vulnerable). -->
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
-            <version>2.10.2</version>
             <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers -->
+        <!-- Version is managed by Spring Boot 4.1.1 (testcontainers-bom 2.0.5). -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.21.4</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -468,25 +446,24 @@
             </exclusions>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
+        <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers-junit-jupiter -->
+        <!-- Testcontainers 2.0 renamed this module from 'junit-jupiter' to 'testcontainers-junit-jupiter'. -->
+        <!-- Version is managed by Spring Boot 4.1.1 (testcontainers-bom 2.0.5). -->
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>1.20.6</version>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>11.0.25</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-websocket</artifactId>
-            <version>11.0.25</version>
             <scope>compile</scope>
         </dependency>
 
@@ -500,6 +477,18 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
+                    <!-- See htttps://github.com/projectlombok/lombok/issues/3852 -->
+                    <!-- The issue is Closed but not really fixed ...  -->
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-J--enable-native-access=ALL-UNNAMED</arg>
+                        <!-- Lombok's annotation processor computes a field offset via
+                             sun.misc.Unsafe#objectFieldOffset, which on JDK 25 is terminally
+                             deprecated (JEP 471) and prints a warning by default. Allow the
+                             legacy access on the forked javac so the build stays warning-free.
+                             (Same flag already used for the runtime container in the jib plugin.) -->
+                        <arg>-J--sun-misc-unsafe-memory-access=allow</arg>
+                    </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
@@ -534,14 +523,15 @@
                     <!-- To hide ugly warning about a dynamically loaded java agent -->
                     <!-- See https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html -->
                     <!--suppress MavenModelInspection -->
-                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar}</argLine>
+                    <!--Enable native access for the test JVM so DuckDB's JNI load doesn't warn.  -->
+                    <argLine>@{argLine} -javaagent:${org.mockito:mockito-core:jar} --enable-native-access=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
 
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>3.4.4</version>
+                <version>3.5.2</version>
                 <configuration>
                     <to>
                         <!-- use `mvn -D jib.to.image=dnsbelgium/mercator  jib:dockerBuild` to publish to local docker daemon -->
@@ -593,7 +583,7 @@
             <plugin>
                 <groupId>io.snyk</groupId>
                 <artifactId>snyk-maven-plugin</artifactId>
-                <version>2.2.0</version>
+                <version>2.3.0</version>
                 <inherited>false</inherited>
                 <executions>
                     <execution>

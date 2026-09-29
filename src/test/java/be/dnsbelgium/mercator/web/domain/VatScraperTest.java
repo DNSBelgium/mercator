@@ -1,14 +1,15 @@
 package be.dnsbelgium.mercator.web.domain;
 
 import be.dnsbelgium.mercator.web.metrics.MetricName;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import okhttp3.HttpUrl;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
+import mockwebserver3.MockResponse;
+import mockwebserver3.MockWebServer;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class VatScraperTest {
   private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
   private static final Logger logger = getLogger(VatScraperTest.class);
 
-  public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+  public WireMockServer wireMockRule = new WireMockServer(options().dynamicPort());
 
   @BeforeEach
   public void init() throws IOException {
@@ -59,6 +60,11 @@ class VatScraperTest {
     VatLinkPrioritizer linkPrioritizer = new VatLinkPrioritizer();
     VatFinder vatFinder = new VatFinder();
     vatScraper = new VatScraper(meterRegistry, pageFetcher, vatFinder, linkPrioritizer);
+  }
+
+  @AfterEach
+  public void tearDown() {
+    wireMockRule.stop();
   }
 
   @Test
@@ -164,13 +170,14 @@ class VatScraperTest {
     HttpUrl baseUrl;
     String BIG_BODY = StringUtils.repeat("abcdefghjiklmnopqrst", 10_000_000);
     try (MockWebServer mockWebServer = new MockWebServer()) {
-      MockResponse response = new MockResponse()
-        .setChunkedBody(BIG_BODY, 100);
+      MockResponse response = new MockResponse.Builder()
+        .chunkedBody(BIG_BODY, 100)
+        .build();
       PageFetcher testFetcher = new PageFetcher(meterRegistry, TestPageFetcherConfig.testConfig());
       testFetcher.clearCache();
       VatScraper testVatScraper = new VatScraper(meterRegistry, testFetcher, new VatFinder(), new VatLinkPrioritizer());
       mockWebServer.enqueue(response);
-      mockWebServer.enqueue(new MockResponse().setBody("test"));
+      mockWebServer.enqueue(new MockResponse.Builder().body("test").build());
       mockWebServer.start();
       baseUrl = mockWebServer.url("/");
       Page page1 = testVatScraper.fetchAndParse(baseUrl);

@@ -1,7 +1,7 @@
 // copied from jappalyzer library
 package be.dnsbelgium.mercator.web.wappalyzer.jappalyzer;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
