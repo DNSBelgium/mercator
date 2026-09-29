@@ -12,14 +12,14 @@ import static org.mockito.Mockito.when;
 class PipelineRunnerTest {
 
     @Test
-    void closesContextByDefaultAfterStatelessCompletion() {
+    void keepsContextOpenByDefaultAfterStatelessCompletion() {
         PipelineApplication application = mock(PipelineApplication.class);
         when(application.run()).thenReturn(true);
         ConfigurableApplicationContext context = mock(ConfigurableApplicationContext.class);
 
         new PipelineRunner(application, new PipelineProperties(), context).onApplicationReady();
 
-        verify(context).close();
+        verify(context, never()).close();
     }
 
     @Test
@@ -34,15 +34,15 @@ class PipelineRunnerTest {
     }
 
     @Test
-    void allowsStatelessContextToRemainOpenWhenConfigured() {
+    void closesContextAfterStatelessCompletionWhenConfigured() {
         PipelineApplication application = mock(PipelineApplication.class);
         when(application.run()).thenReturn(true);
         PipelineProperties properties = new PipelineProperties();
-        properties.setExitOnCompletion(false);
+        properties.setExitOnCompletion(true);
         ConfigurableApplicationContext context = mock(ConfigurableApplicationContext.class);
 
         new PipelineRunner(application, properties, context).onApplicationReady();
 
-        verify(context, never()).close();
+        verify(context).close();
     }
 }

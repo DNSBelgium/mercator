@@ -61,7 +61,7 @@ public class PipelineProperties {
     private String outputDirectory = "output";
 
     /** Close the application context after a stateless run, allowing batch containers to exit. */
-    private boolean exitOnCompletion = true;
+    private boolean exitOnCompletion = false;
 
     /** Optional per-module concurrency overrides. */
     private final Modules moduleSettings = new Modules();

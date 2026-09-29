@@ -11,8 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PipelinePropertiesTest {
 
     @Test
-    void exitsOnCompletionByDefault() {
-        assertThat(new PipelineProperties().isExitOnCompletion()).isTrue();
+    void keepsApplicationRunningByDefault() {
+        assertThat(new PipelineProperties().isExitOnCompletion()).isFalse();
     }
 
     @Test
