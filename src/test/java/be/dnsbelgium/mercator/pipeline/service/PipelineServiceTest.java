@@ -143,4 +143,42 @@ class PipelineServiceTest {
             watchdog.shutdownNow();
         }
     }
+
+    @Test
+    void failsAfterShutdownWhenProcessorFails() {
+        CollectingWriter writer = new CollectingWriter();
+        ItemSource<String> source = new GeneratingItemSource(0, 3);
+        ItemProcessor<String, String> processor = item -> {
+            if (item.endsWith("1")) {
+                throw new IllegalStateException("simulated processor failure");
+            }
+            return item;
+        };
+
+        PipelineProperties properties = new PipelineProperties();
+        properties.setNumConsumers(2);
+        properties.setMaxConcurrentRequests(2);
+        properties.setInputQueueCapacity(4);
+        properties.setResultQueueCapacity(4);
+
+        ExecutorService ioExecutor = Executors.newVirtualThreadPerTaskExecutor();
+        ExecutorService cpuPool = Executors.newFixedThreadPool(1);
+        ScheduledExecutorService watchdog = Executors.newScheduledThreadPool(1);
+        PipelineExecutors executors = new PipelineExecutors(ioExecutor, cpuPool, watchdog);
+        PipelineService<String, String> pipeline = new PipelineService<>(
+                "failing", source, processor, writer, executors, properties, new SimpleMeterRegistry(),
+                properties.maxConcurrentRequests("failing"));
+
+        try {
+            assertThatThrownBy(() -> pipeline.runPipeline(properties.getNumConsumers()))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Processor for pipeline 'failing' failed")
+                    .hasRootCauseMessage("simulated processor failure");
+            assertThat(writer.items()).containsExactlyInAnyOrder("P0-Item-0", "P0-Item-2");
+        } finally {
+            ioExecutor.shutdownNow();
+            cpuPool.shutdownNow();
+            watchdog.shutdownNow();
+        }
+    }
 }

@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 class JsonItemWriterTest {
@@ -135,11 +136,10 @@ class JsonItemWriterTest {
     }
 
     @Test
-    void failedRollUp_leavesJsonForInspection_andWriterContinues(@TempDir Path dir) throws IOException {
+    void failedRollUp_leavesJsonForInspection_andFailsOnFlush(@TempDir Path dir) throws IOException {
         FailingConverter converter = new FailingConverter();
         JsonItemWriter<Person> writer = new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 2);
 
-        // First batch fails: its JSON files are kept for inspection under batch-1.
         writer.write(new Person("a", 1));
         writer.write(new Person("b", 2));
 
@@ -147,13 +147,15 @@ class JsonItemWriterTest {
         assertThat(dir.resolve("batch-1")).exists();
         assertThat(jsonFilesRecursively(dir.resolve("batch-1"))).hasSize(2);
 
-        // The writer advances to a fresh batch directory and keeps working.
         writer.write(new Person("c", 3));
-        writer.write(new Person("d", 4));
+        assertThatThrownBy(writer::flush)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("could not be converted to Parquet")
+                .hasRootCauseMessage("boom");
 
         assertThat(converter.globs).hasSize(2);
         assertThat(dir.resolve("batch-2")).exists();
-        assertThat(writer.writtenItems()).isEqualTo(4);
+        assertThat(jsonFilesRecursively(dir.resolve("batch-2"))).hasSize(1);
+        assertThat(writer.writtenItems()).isEqualTo(3);
     }
 }
-
