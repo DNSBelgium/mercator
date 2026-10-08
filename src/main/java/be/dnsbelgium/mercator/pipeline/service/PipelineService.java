@@ -53,6 +53,7 @@ public class PipelineService<InputType, OutputType> {
     /** Items the producer read from the source and enqueued during the current run. */
     private final AtomicLong producedCount = new AtomicLong();
     private final AtomicReference<RuntimeException> producerFailure = new AtomicReference<>();
+    private final AtomicReference<RuntimeException> processorFailure = new AtomicReference<>();
 
     public PipelineService(String name,
                            ItemSource<InputType> source,
@@ -127,6 +128,10 @@ public class PipelineService<InputType, OutputType> {
         RuntimeException failure = producerFailure.get();
         if (failure != null) {
             throw new IllegalStateException("Producer for pipeline '" + name + "' failed", failure);
+        }
+        failure = processorFailure.get();
+        if (failure != null) {
+            throw new IllegalStateException("Processor for pipeline '" + name + "' failed", failure);
         }
         log.info("Pipeline '{}' finished. Wrote {} items.", name, writer.writtenItems());
         return producedCount.get();
@@ -222,14 +227,16 @@ public class PipelineService<InputType, OutputType> {
      * flight. CPU-heavy sub-steps inside a processor can be offloaded via
      * {@link #runWithTimeout(Callable, Duration)}.
      *
-     * <p>A failure is logged and the item is skipped (returns {@code null}) so one bad item
-     * never takes down a processor thread.
+     * <p>A failure is recorded and the item is skipped (returns {@code null}) so the processor
+     * threads can drain the queues cleanly. The recorded failure is propagated after shutdown,
+     * preventing the run from being reported as successful.
      */
     private OutputType processOne(InputType item) throws InterruptedException {
         crawlSemaphore.acquire();
         try {
             return processor.processItem(item);
         } catch (RuntimeException e) {
+            processorFailure.compareAndSet(null, e);
             log.error("Processing failed for item {}", item, e);
             return null;
         } finally {

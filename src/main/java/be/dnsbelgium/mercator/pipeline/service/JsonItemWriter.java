@@ -28,8 +28,8 @@ import java.util.UUID;
  * read safely from another thread (e.g. a metrics gauge).
  *
  * <p>If a roll-up fails, the JSON files of that batch are intentionally left on disk for
- * manual inspection (recovery is handled out of band); the writer clears its in-memory batch,
- * moves on to a fresh batch directory and continues.
+ * manual inspection. The writer remembers the first failure, continues draining the result
+ * queue, and propagates it from {@link #flush()} so the batch run cannot report success.
  *
  * @param <T> the item type serialized to JSON and Parquet
  */
@@ -46,6 +46,7 @@ public class JsonItemWriter<T> implements ItemWriter<T> {
     private Path currentBatchDir;
     private int batchCounter = 1;
     private volatile int writeCount = 0;
+    private RuntimeException rollUpFailure;
 
     public JsonItemWriter(ObjectMapper objectMapper,
                           ParquetConverter converter,
@@ -95,6 +96,10 @@ public class JsonItemWriter<T> implements ItemWriter<T> {
             if (!currentBatch.isEmpty()) {
                 rollUpToParquet();
             }
+            if (rollUpFailure != null) {
+                throw new IllegalStateException("One or more JSON batches could not be converted to Parquet",
+                        rollUpFailure);
+            }
         } finally {
             resetMDC();
         }
@@ -118,7 +123,7 @@ public class JsonItemWriter<T> implements ItemWriter<T> {
      * Converts the JSON files accumulated in the current batch into Parquet by delegating to
      * the {@link ParquetConverter}, then deletes those JSON files and their (now empty) batch
      * directory. On failure, the JSON files are left in place for manual inspection and the
-     * writer advances to a fresh batch directory so it can continue.
+     * first conversion failure is retained for propagation from {@link #flush()}.
      */
     private void rollUpToParquet() {
         String glob = currentBatchDir.toAbsolutePath() + "/*.json";
@@ -131,6 +136,9 @@ public class JsonItemWriter<T> implements ItemWriter<T> {
         } catch (RuntimeException e) {
             log.error("Failed to roll up {} JSON files from {}; leaving JSON files for inspection",
                     currentBatch.size(), currentBatchDir, e);
+            if (rollUpFailure == null) {
+                rollUpFailure = e;
+            }
         } finally {
             // On success the files are already deleted; on failure they are left in place.
             // Either way, advance to a fresh batch directory so we don't retry the same files.

@@ -34,24 +34,34 @@
         <netty.version>4.2.17.Final</netty.version>   <!-- Boot: 4.2.17.Final -->
         <tomcat.version>11.0.25</tomcat.version>       <!-- Boot: 11.0.24 -->
         <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
+        <logback.version>1.6.3</logback.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Pin transitive jackson-databind to patched versions (Snyk gate).
+            <!-- Pin transitive Jackson dependencies to patched versions (Snyk gate).
                  Jackson 2.x (com.fasterxml) is pulled in transitively by geoip2;
                  Jackson 3.x (tools.jackson) is managed by the Spring Boot 4.1.1 parent.
-                 Both are same-minor patch bumps that close the reported deserialization/
-                 unsafe-reflection advisories. -->
+                 Both are same-minor patch bumps. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.21.7</version>
+            </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.21.6</version>
+                <version>2.21.7</version>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>3.1.7</version>
             </dependency>
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>3.1.6</version>
+                <version>3.1.7</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -151,21 +161,21 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.85.2</version>
+            <version>1.86</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcutil-jdk18on -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcutil-jdk18on</artifactId>
-            <version>1.85</version>
+            <version>1.86</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>
-            <version>1.85</version>
+            <version>1.86</version>
         </dependency>
 
         <dependency>
