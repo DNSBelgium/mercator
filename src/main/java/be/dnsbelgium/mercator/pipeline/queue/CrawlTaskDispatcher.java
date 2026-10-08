@@ -1,6 +1,7 @@
 package be.dnsbelgium.mercator.pipeline.queue;
 
 import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -57,6 +58,32 @@ public class CrawlTaskDispatcher {
         log.info("CrawlTaskDispatcher fans out to modules {}", modules);
     }
 
+    @PostConstruct
+    public void init() {
+        jdbcClient.sql("""
+            create table if not exists visit_requests (
+                visit_id       varchar,
+                domain_name    varchar(255) not null,
+                dispatch_id    varchar(36),
+                dispatched_at  timestamp
+            )
+        """).update();
+
+        jdbcClient.sql("""
+            create table if not exists crawl_tasks (
+                visit_id            varchar not null,
+                domain_name         varchar(255) not null,
+                crawler_module      varchar(100) not null,
+                reservation_id      varchar(100),
+                reserved_by         varchar(100),
+                reserved_timestamp  timestamp,
+                status              varchar(100),
+                attempts            int default 0
+            )
+        """).update();
+        log.info("Queue tables verified");
+    }
+
     /**
      * Runs the fan-out. Scheduled at {@code pipeline.queue.dispatch-interval}; also callable
      * directly (e.g. in tests). No-op when there are no undispatched visits.
@@ -84,8 +111,8 @@ public class CrawlTaskDispatcher {
                 .map(m -> "('" + m + "')")
                 .collect(Collectors.joining(", "));
         return """
-                insert into crawl_tasks (visit_id, domain_name, crawler_module)
-                select vr.visit_id, vr.domain_name, m.module
+                insert into crawl_tasks (visit_id, domain_name, crawler_module, status)
+                select vr.visit_id, vr.domain_name, m.module, 'PENDING'
                 from   visit_requests vr
                 cross join (values %s) as m(module)
                 where  vr.dispatch_id = :token

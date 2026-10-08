@@ -101,17 +101,20 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
                 """;
         log.info("DatabaseItemSource for module '{}' (fetchSize={}, maxItemsPerPass={}, instanceId={})",
                 crawlerModule, fetchSize, maxItemsPerPass, instanceId);
+        log.debug("claimSql:\n {}", claimSqlTemplate);
     }
 
     @Override
     public List<VisitRequest> getItems() {
         // Clamp this poll's LIMIT so the pass never leases more than maxItemsPerPass rows.
         int limit = Math.min(fetchSize, maxItemsPerPass - produced);
+        log.debug("getItems() with limit={}", limit);
         if (limit <= 0) {
             return List.of();
         }
         String token = UUID.randomUUID().toString();
         int claimed = claimBatch(token, limit);
+        log.info("getItems() claimed={} items", claimed);
         if (claimed == 0) {
             drained = true;
             return List.of();
