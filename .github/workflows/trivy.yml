@@ -1,4 +1,4 @@
-name: trivy vulnerability scan
+name: Check vulnerabilities (trivy)
 on:
   push:
     branches:

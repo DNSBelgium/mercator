@@ -1,4 +1,4 @@
-name: Check vulnerabilities
+name: Check vulnerabilities (snyk)
 
 on:
   push:
