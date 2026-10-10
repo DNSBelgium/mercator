@@ -7,12 +7,10 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,31 +25,22 @@ class JsonItemWriterTest {
     private final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     /**
-     * A {@link ParquetConverter} that records every glob it is asked to convert and turns the
-     * matched JSON into a Parquet file (via {@code read_json_auto}) so tests can count rows.
+     * A {@link ParquetConverter} that records every glob it is asked to convert and delegates to the
+     * shared {@link be.dnsbelgium.mercator.pipeline.testsupport.TestSupport#jsonToParquetConverter}
+     * so tests can count the resulting Parquet rows.
      */
     private static final class RecordingConverter implements ParquetConverter {
-        private final JdbcClient client;
-        private final Path parquetDir;
+        private final ParquetConverter delegate;
         final List<String> globs = new ArrayList<>();
 
         RecordingConverter(JdbcClient client, Path parquetDir) {
-            this.client = client;
-            this.parquetDir = parquetDir;
-            try {
-                Files.createDirectories(parquetDir);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            this.delegate = jsonToParquetConverter(client, parquetDir);
         }
 
         @Override
         public void convert(String jsonGlob) {
             globs.add(jsonGlob);
-            Path parquet = parquetDir.resolve(UUID.randomUUID() + ".parquet");
-            //noinspection SqlSourceToSinkFlow
-            client.sql("COPY (SELECT * FROM read_json_auto('" + jsonGlob + "')) "
-                    + "TO '" + parquet.toAbsolutePath() + "' (FORMAT PARQUET)").update();
+            delegate.convert(jsonGlob);
         }
     }
 
@@ -157,5 +146,134 @@ class JsonItemWriterTest {
         assertThat(dir.resolve("batch-2")).exists();
         assertThat(jsonFilesRecursively(dir.resolve("batch-2"))).hasSize(1);
         assertThat(writer.writtenItems()).isEqualTo(3);
+    }
+
+    @Test
+    void commitListener_receivesIdsOfEachBatch_afterConversion(@TempDir Path dir) {
+        JdbcClient client = duckDbClient();
+        RecordingConverter delegate = new RecordingConverter(client, dir.resolve("parquet"));
+        // One shared event log proves the ordering: a batch is converted BEFORE it is reported.
+        List<String> events = new ArrayList<>();
+        ParquetConverter converter = glob -> {
+            events.add("convert");
+            delegate.convert(glob);
+        };
+        BatchCommitListener listener = ids -> events.add("commit " + ids);
+        JsonItemWriter<Person> writer =
+                new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 2, Person::name, listener);
+
+        for (int i = 0; i < 5; i++) {
+            writer.write(new Person("p" + i, i));
+        }
+        writer.flush();
+
+        assertThat(events).containsExactly(
+                "convert", "commit [p0, p1]",
+                "convert", "commit [p2, p3]",
+                "convert", "commit [p4]");
+    }
+
+    @Test
+    void commitListener_notCalledWhenRollUpFails(@TempDir Path dir) throws IOException {
+        FailingConverter converter = new FailingConverter();
+        List<List<String>> committed = new ArrayList<>();
+        JsonItemWriter<Person> writer = new JsonItemWriter<>(
+                objectMapper, converter, dir, Person.class, 2, Person::name, committed::add);
+
+        writer.write(new Person("a", 1));
+        writer.write(new Person("b", 2));
+        writer.write(new Person("c", 3));
+
+        assertThatThrownBy(writer::flush)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("could not be converted to Parquet")
+                .hasRootCauseMessage("boom");
+
+        // The rows must stay open: nothing was reported, and the JSON is still there for inspection.
+        assertThat(committed).isEmpty();
+        assertThat(jsonFilesRecursively(dir)).hasSize(3);
+    }
+
+    @Test
+    void commitListener_failure_doesNotAffectParquetOrJsonCleanup(@TempDir Path dir) throws IOException {
+        JdbcClient client = duckDbClient();
+        Path parquetDir = dir.resolve("parquet");
+        RecordingConverter converter = new RecordingConverter(client, parquetDir);
+        List<List<String>> received = new ArrayList<>();
+        BatchCommitListener listener = ids -> {
+            received.add(ids);
+            if (received.size() == 1) {
+                throw new IllegalStateException("ack failed");
+            }
+        };
+        JsonItemWriter<Person> writer =
+                new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 2, Person::name, listener);
+
+        // A failing listener must not make write() throw nor stop later batches from being reported.
+        for (int i = 0; i < 4; i++) {
+            writer.write(new Person("p" + i, i));
+        }
+
+        assertThat(received).containsExactly(List.of("p0", "p1"), List.of("p2", "p3"));
+        assertThat(parquetRowCountInDir(client, parquetDir)).isEqualTo(4);
+        assertThat(jsonFilesRecursively(dir)).isEmpty();
+        assertThatThrownBy(writer::flush)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("could not be marked done")
+                .hasRootCauseMessage("ack failed");
+    }
+
+    @Test
+    void bothFailures_rollUpFailureIsThrown_andCommitFailureIsSuppressed(@TempDir Path dir) {
+        JdbcClient client = duckDbClient();
+        RecordingConverter delegate = new RecordingConverter(client, dir.resolve("parquet"));
+        AtomicInteger conversions = new AtomicInteger();
+        ParquetConverter converter = glob -> {
+            if (conversions.incrementAndGet() == 1) {
+                throw new IllegalStateException("boom");
+            }
+            delegate.convert(glob);
+        };
+        BatchCommitListener listener = ids -> {
+            throw new IllegalStateException("ack failed");
+        };
+        JsonItemWriter<Person> writer =
+                new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 2, Person::name, listener);
+
+        for (int i = 0; i < 4; i++) {
+            writer.write(new Person("p" + i, i));
+        }
+
+        assertThatThrownBy(writer::flush)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("could not be converted to Parquet")
+                .hasRootCauseMessage("boom")
+                .hasSuppressedException(new IllegalStateException("ack failed"));
+    }
+
+    @Test
+    void nullIds_areSkipped(@TempDir Path dir) {
+        JdbcClient client = duckDbClient();
+        RecordingConverter converter = new RecordingConverter(client, dir.resolve("parquet"));
+        List<List<String>> committed = new ArrayList<>();
+        JsonItemWriter<Person> writer = new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 3,
+                person -> person.age() == 2 ? null : person.name(), committed::add);
+
+        writer.write(new Person("a", 1));
+        writer.write(new Person("b", 2));
+        writer.write(new Person("c", 3));
+
+        assertThat(committed).containsExactly(List.of("a", "c"));
+        assertThat(writer.writtenItems()).isEqualTo(3);
+    }
+
+    @Test
+    void idExtractorAndCommitListener_mustBeSetTogether(@TempDir Path dir) {
+        assertThatThrownBy(() -> new JsonItemWriter<>(
+                objectMapper, new FailingConverter(), dir, Person.class, 2, Person::name, null))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new JsonItemWriter<>(
+                objectMapper, new FailingConverter(), dir, Person.class, 2, null, ids -> { }))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

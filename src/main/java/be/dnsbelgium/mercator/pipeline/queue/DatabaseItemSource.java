@@ -7,9 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.IntSupplier;
 
 /**
  * Stateful, module-scoped {@link ItemSource} backed by the Postgres {@code crawl_tasks}
@@ -29,6 +32,34 @@ import java.util.concurrent.ThreadLocalRandom;
  * <p><b>Recovery is out-of-band:</b> this source never reasons about expired {@code RESERVED}
  * rows — a separate scheduled lease reaper recycles them back to {@code PENDING}.
  * A crash after leasing but before the Parquet roll-up simply leaves the lease to expire.
+ *
+ * <p><b>Task lifecycle:</b>
+ * <pre>
+ *            claim (getItems)                     ack (acknowledge, after the Parquet roll-up)
+ *  PENDING ───────────────────▶ RESERVED ─────────────────────────────────────▶ DONE
+ *     ▲                            │            (finished_timestamp = now())
+ *     └─ reaper: lease expired, ───┤
+ *        attempts &lt; max           └─ reaper: lease expired, attempts &gt;= max ──▶ FAILED
+ * </pre>
+ *
+ * <p><b>Ack.</b> Once a batch of results is durably in Parquet, the writer calls
+ * {@link #acknowledge(Collection)}, which sets {@code status = 'DONE'} and
+ * {@code finished_timestamp = now()} for exactly those {@code visit_id}s (scoped to this
+ * module). Only results that reached Parquet are acked: rows whose processor returned
+ * {@code null}/threw, or whose roll-up failed, stay {@code RESERVED} and are left to the
+ * reaper. The ack is guarded by {@code status <> 'DONE'} rather than
+ * {@code status = 'RESERVED'}: Parquet is the source of truth, so a late ack still wins over
+ * a lease race (row recycled, re-leased or dead-lettered meanwhile) instead of causing a
+ * pointless re-crawl. The reservation columns are left untouched as an audit trail, so
+ * {@code finished_timestamp - reserved_timestamp} is the per-task latency. The ack touches no
+ * polling state, so it is safe on the writer thread and after {@link #close()}.
+ *
+ * <p><b>At-least-once.</b> Parquet and Postgres cannot share a transaction: a crash between
+ * "Parquet written" and "ack committed" leaves the row {@code RESERVED}; after the lease
+ * expires it is crawled again and a second Parquet row with the same {@code visit_id}
+ * appears. Consumers can de-duplicate on {@code visit_id}. Also, a result is acked only when
+ * its batch ({@code pipeline.batch-size}) is complete or the pass is flushed, so the
+ * {@code lease-duration} must exceed the worst-case time from lease to ack.
  *
  * <p><b>Bounded pass.</b> Rather than polling forever, a source runs a
  * <em>bounded pass</em>: {@link #getItems()} leases in {@code fetchSize} chunks until it has
@@ -53,8 +84,25 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
               and  status = 'RESERVED'
             """;
 
-    /** Attempts at the claim UPDATE before giving up (covers DuckDB/GizmoSQL MVCC conflicts). */
+    /**
+     * Closes tasks whose result is durably stored. {@code status <> 'DONE'} (instead of
+     * {@code = 'RESERVED'}) keeps the first {@code finished_timestamp} on retries/duplicates and
+     * still closes rows a lease race recycled or dead-lettered in the meantime.
+     */
+    private static final String ACK_SQL = """
+            update crawl_tasks
+            set    status             = 'DONE',
+                   finished_timestamp = now()
+            where  crawler_module = :module
+              and  status <> 'DONE'
+              and  visit_id in (:visitIds)
+            """;
+
+    /** Attempts at the claim/ack UPDATE before giving up (covers DuckDB/GizmoSQL MVCC conflicts). */
     private static final int MAX_CLAIM_RETRIES = 5;
+
+    /** Max ids per ack UPDATE: far below Postgres' 32 767 bind-parameter limit, even for a big batch-size. */
+    private static final int ACK_CHUNK_SIZE = 1000;
 
     private final String crawlerModule;
     private final JdbcClient jdbcClient;
@@ -127,6 +175,38 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
     }
 
     /**
+     * Marks the given tasks {@code DONE} (see the class Javadoc). Runs in chunks of
+     * {@value #ACK_CHUNK_SIZE} ids, each with the same retry/backoff as the claim. The update
+     * count is advisory: a WARN is logged when it is lower than the number of ids sent.
+     *
+     * <p>Touches no instance state, so it is safe on the writer thread and after {@link #close()}.
+     *
+     * @return the number of rows that were actually updated
+     */
+    @Override
+    public int acknowledge(Collection<String> visitIds) {
+        if (visitIds == null || visitIds.isEmpty()) {
+            return 0;
+        }
+        List<String> ids = new ArrayList<>(visitIds);
+        int updated = 0;
+        for (int from = 0; from < ids.size(); from += ACK_CHUNK_SIZE) {
+            List<String> chunk = ids.subList(from, Math.min(from + ACK_CHUNK_SIZE, ids.size()));
+            updated += withRetries("ack", () -> jdbcClient.sql(ACK_SQL)
+                    .param("module", crawlerModule)
+                    .param("visitIds", chunk)
+                    .update());
+        }
+        if (updated < ids.size()) {
+            log.warn("[{}] acknowledged only {}/{} task(s) as DONE (the others were unknown or already DONE)",
+                    crawlerModule, updated, ids.size());
+        } else {
+            log.info("[{}] acknowledged {}/{} task(s) as DONE", crawlerModule, updated, ids.size());
+        }
+        return updated;
+    }
+
+    /**
      * Runs the claim UPDATE, retrying a few times on {@link DataAccessException}. On
      * DuckDB/GizmoSQL two workers claiming concurrently can hit an optimistic-MVCC
      * write-write conflict (thrown); on Postgres the second claimer blocks instead, so the
@@ -137,21 +217,31 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
      */
     private int claimBatch(String token, int limit) {
         String claimSql = claimSqlTemplate.formatted(limit);
+        return withRetries("claim", () -> jdbcClient.sql(claimSql)
+                .param("module", crawlerModule)
+                .param("token", token)
+                .param("instanceId", instanceId)
+                .update());
+    }
+
+    /**
+     * Runs {@code action} (an UPDATE returning its row count), retrying up to
+     * {@value #MAX_CLAIM_RETRIES} attempts on {@link DataAccessException} with a short jittered backoff.
+     *
+     * @param operation short name used in the log lines ({@code claim}, {@code ack})
+     */
+    private int withRetries(String operation, IntSupplier action) {
         int attempt = 0;
         while (true) {
             try {
-                return jdbcClient.sql(claimSql)
-                        .param("module", crawlerModule)
-                        .param("token", token)
-                        .param("instanceId", instanceId)
-                        .update();
+                return action.getAsInt();
             } catch (DataAccessException e) {
                 attempt++;
                 if (attempt >= MAX_CLAIM_RETRIES) {
-                    log.error("[{}] claim failed after {} attempts", crawlerModule, attempt, e);
+                    log.error("[{}] {} failed after {} attempts", crawlerModule, operation, attempt, e);
                     throw e;
                 }
-                log.warn("[{}] claim attempt {} conflicted ({}); retrying", crawlerModule, attempt, e.getMessage());
+                log.warn("[{}] {} attempt {} conflicted ({}); retrying", crawlerModule, operation, attempt, e.getMessage());
                 backoff(attempt);
             }
         }
@@ -170,14 +260,14 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
                 .list();
     }
 
-    /** Short jittered backoff between claim retries. */
+    /** Short jittered backoff between claim/ack retries. */
     private void backoff(int attempt) {
         long millis = 25L * attempt + ThreadLocalRandom.current().nextLong(25);
         try {
             Thread.sleep(millis);
         } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted during claim backoff", ie);
+            throw new IllegalStateException("Interrupted during retry backoff", ie);
         }
     }
 

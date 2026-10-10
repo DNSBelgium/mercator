@@ -5,15 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.List;
 
+import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.CRAWL_TASKS_DDL;
+import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.postgresJdbcClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -34,7 +34,7 @@ class CrawlTaskDispatcherTest {
 
     @BeforeAll
     static void createSchema() {
-        JdbcClient client = newJdbcClient();
+        JdbcClient client = postgresJdbcClient(POSTGRES);
         client.sql("""
                 create table visit_requests (
                     visit_id      text        not null,
@@ -44,24 +44,12 @@ class CrawlTaskDispatcherTest {
                     dispatch_id   text
                 )
                 """).update();
-        client.sql("""
-                create table crawl_tasks (
-                    visit_id           text        not null,
-                    domain_name        text        not null,
-                    crawler_module     text        not null,
-                    status             text        not null default 'PENDING',
-                    reserved_timestamp timestamptz,
-                    reserved_by        text,
-                    reservation_id     text,
-                    attempts           int         not null default 0,
-                    completed_at       timestamptz
-                )
-                """).update();
+        client.sql(CRAWL_TASKS_DDL).update();
     }
 
     @BeforeEach
     void setUp() {
-        this.jdbcClient = newJdbcClient();
+        this.jdbcClient = postgresJdbcClient(POSTGRES);
         jdbcClient.sql("truncate table visit_requests").update();
         jdbcClient.sql("truncate table crawl_tasks").update();
     }
@@ -135,12 +123,5 @@ class CrawlTaskDispatcherTest {
 
     private long count(String fromWhere) {
         return jdbcClient.sql("select count(*) from " + fromWhere).query(Long.class).single();
-    }
-
-    private static JdbcClient newJdbcClient() {
-        DriverManagerDataSource ds = new DriverManagerDataSource(
-                POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
-        ds.setDriverClassName("org.postgresql.Driver");
-        return JdbcClient.create(new JdbcTemplate(ds));
     }
 }

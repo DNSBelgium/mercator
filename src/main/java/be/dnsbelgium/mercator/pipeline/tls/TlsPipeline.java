@@ -48,6 +48,11 @@ public class TlsPipeline extends VisitRequestModule<TlsCrawlResult> {
     }
 
     @Override
+    protected String visitIdOf(TlsCrawlResult result) {
+        return result.getVisitId();
+    }
+
+    @Override
     public String name() {
         return "tls";
     }

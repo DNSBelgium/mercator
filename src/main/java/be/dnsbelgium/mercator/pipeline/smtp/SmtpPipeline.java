@@ -49,4 +49,9 @@ public class SmtpPipeline extends VisitRequestModule<SmtpVisit> {
     protected Class<SmtpVisit> outputType() {
         return SmtpVisit.class;
     }
+
+    @Override
+    protected String visitIdOf(SmtpVisit result) {
+        return result.getVisitId();
+    }
 }

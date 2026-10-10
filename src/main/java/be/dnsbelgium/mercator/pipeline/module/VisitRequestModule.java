@@ -16,7 +16,8 @@ import java.nio.file.Path;
  * Shared base for modules that read {@link VisitRequest}s from a source (CSV by default,
  * or the Postgres work queue under the {@code postgres-queue} profile) and write their
  * results as JSON-then-Parquet. A concrete module only needs to supply its
- * {@link #name()}, its {@link #processor()} and its {@link #outputType()} — everything
+ * {@link #name()}, its {@link #processor()}, its {@link #outputType()} and how to read the
+ * visit id off a result ({@link #visitIdOf}) — everything
  * else (source, writer, engine wiring, graceful shutdown) is inherited, demonstrating how
  * little per-module code the generic engine requires.
  *
@@ -67,14 +68,22 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
     /** The result class, needed by the JSON writer for typing/diagnostics. */
     protected abstract Class<O> outputType();
 
+    /**
+     * The id of the {@link VisitRequest} a result was produced for (its {@code visitId}). Once the
+     * result is in Parquet, the writer reports this id to {@link ItemSource#acknowledge} so a
+     * stateful source (the Postgres work queue) can close the corresponding task.
+     */
+    protected abstract String visitIdOf(O result);
+
     @Override
     public long run() {
         ItemSource<VisitRequest> source = itemSourceFactory.create(name());
         Path outputDir = Path.of(properties.getOutputDirectory(), name());
         // Delegate the JSON -> Parquet conversion to the module's repository.storeResults,
         // reproducing the legacy batch writer's typed schema / partitioning / destination.
-        ItemWriter<O> writer =
-                new JsonItemWriter<>(objectMapper, repository::storeResults, outputDir, outputType(), properties.getBatchSize());
+        // After each batch is in Parquet, the source is told which visits are done (ack).
+        ItemWriter<O> writer = new JsonItemWriter<>(objectMapper, repository::storeResults, outputDir,
+                outputType(), properties.getBatchSize(), this::visitIdOf, source::acknowledge);
 
         PipelineService<VisitRequest, O> pipeline =
                 new PipelineService<>(name(), source, processor(), writer, executors, properties, meterRegistry,
