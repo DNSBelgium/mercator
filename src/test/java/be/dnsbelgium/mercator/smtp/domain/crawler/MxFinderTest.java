@@ -67,7 +67,7 @@ class MxFinderTest {
             ResolverConfig.refresh();
             MxFinder mxFinder = new MxFinder(2, 500, true);
             MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
-            logger.info("result = {}", result);
+            logger.info("servfail: result = {}", result);
             assertThat(result).isNotNull();
             assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.QUERY_FAILED);
             assertThat(result.getMxRecords()).isNotNull();
@@ -79,6 +79,8 @@ class MxFinderTest {
                 System.setProperty("dns.server", propBefore);
             }
             ResolverConfig.refresh();
+            String dnsServer = System.getProperty("dns.server");
+            logger.info("servfail: We have reset system property: dns.server = {}", dnsServer);
         }
     }
 
@@ -106,14 +108,13 @@ class MxFinderTest {
     @Test
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void noMxRecords() {
-        MxLookupResult result = mxFinder.findMxRecordsFor("dc3.be");
-        logger.info("result = {}", result);
+        MxLookupResult result = mxFinder.findMxRecordsFor("no-mx-records-here.dc3.be");
+        logger.info("noMxRecords: result = {}", result);
+        logger.info("noMxRecords: result.getMxRecords = {}", result.getMxRecords());
         assertThat(result).isNotNull();
-        // Strangely enough this test is flaky and sometimes status is OK instead of NO_MX_RECORDS_FOUND
-        // Let's see if test is stable when we remove this one assert.
-        //assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.NO_MX_RECORDS_FOUND);
         assertThat(result.getMxRecords()).isNotNull();
         assertThat(result.getMxRecords().size()).isEqualTo(0);
+        assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.NO_MX_RECORDS_FOUND);
     }
 
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
