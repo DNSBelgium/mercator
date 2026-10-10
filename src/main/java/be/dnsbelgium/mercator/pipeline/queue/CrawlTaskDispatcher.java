@@ -77,10 +77,21 @@ public class CrawlTaskDispatcher {
                 reservation_id      varchar(100),
                 reserved_by         varchar(100),
                 reserved_timestamp  timestamp,
+                finished_timestamp  timestamp,
                 status              varchar(100),
                 attempts            int default 0
             )
         """).update();
+
+        // Migration for databases created before finished_timestamp existed (the
+        // "create table if not exists" above is a no-op there). Nullable, no default:
+        // a metadata-only change in Postgres, idempotent, safe on every start.
+        jdbcClient.sql("alter table crawl_tasks add column if not exists finished_timestamp timestamp").update();
+
+        // DatabaseItemSource.acknowledge() looks rows up by exactly this key (up to batch-size ids
+        // per call); without an index every ack would scan the whole table. Safe to drop on its own.
+        jdbcClient.sql("create index if not exists idx_crawl_tasks_module_visit "
+                + "on crawl_tasks (crawler_module, visit_id)").update();
         log.info("Queue tables verified");
     }
 

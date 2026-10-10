@@ -55,5 +55,10 @@ public class WebPipeline extends VisitRequestModule<WebCrawlResult> {
         return be.dnsbelgium.mercator.web.domain.WebCrawlResult.class;
     }
 
+    @Override
+    protected String visitIdOf(WebCrawlResult result) {
+        return result.getVisitId();
+    }
+
 
 }

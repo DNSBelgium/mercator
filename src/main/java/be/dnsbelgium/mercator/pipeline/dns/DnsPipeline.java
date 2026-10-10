@@ -49,4 +49,9 @@ public class DnsPipeline extends VisitRequestModule<DnsCrawlResult> {
     protected Class<DnsCrawlResult> outputType() {
         return DnsCrawlResult.class;
     }
+
+    @Override
+    protected String visitIdOf(DnsCrawlResult result) {
+        return result.getVisitId();
+    }
 }

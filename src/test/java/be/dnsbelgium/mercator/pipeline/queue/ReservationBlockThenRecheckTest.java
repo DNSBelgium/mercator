@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.CRAWL_TASKS_DDL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -66,19 +67,7 @@ class ReservationBlockThenRecheckTest {
     @BeforeAll
     static void createSchema() throws Exception {
         try (Connection c = newConnection(); Statement s = c.createStatement()) {
-            s.execute("""
-                    create table crawl_tasks (
-                        visit_id           text        not null,
-                        domain_name        text        not null,
-                        crawler_module     text        not null,
-                        status             text        not null default 'PENDING',
-                        reserved_timestamp timestamptz,
-                        reserved_by        text,
-                        reservation_id     text,
-                        attempts           int         not null default 0,
-                        completed_at       timestamptz
-                    )
-                    """);
+            s.execute(CRAWL_TASKS_DDL);
         }
     }
 
@@ -180,6 +169,27 @@ class ReservationBlockThenRecheckTest {
         }
     }
 
+    @Test
+    void reaper_leavesDoneRowsUntouched() throws Exception {
+        // Contract for the production reaper: it only handles status = 'RESERVED'. A task that was
+        // acked (DONE) must never be recycled or dead-lettered, however old its lease looks.
+        seedRow("DONE", /* ageSeconds */ LEASE_SECONDS * 2, /* attempts */ MAX_ATTEMPTS);
+
+        runReaper();
+
+        try (Connection c = newConnection();
+             Statement s = c.createStatement();
+             ResultSet rs = s.executeQuery(
+                     "select status, reservation_id, reserved_by, reserved_timestamp, attempts from crawl_tasks")) {
+            assertThat(rs.next()).isTrue();
+            assertThat(rs.getString("status")).isEqualTo("DONE");
+            assertThat(rs.getString("reservation_id")).isEqualTo("OLD-TOKEN");
+            assertThat(rs.getString("reserved_by")).isEqualTo("host-DEAD");
+            assertThat(rs.getTimestamp("reserved_timestamp")).isNotNull();
+            assertThat(rs.getInt("attempts")).isEqualTo(MAX_ATTEMPTS);
+        }
+    }
+
     private int runConcurrentClaim(boolean repeatStatusInOuterWhere) throws Exception {
         return runRace(
                 claimSql(repeatStatusInOuterWhere, "host-A", "TOKEN-1"),
@@ -271,11 +281,16 @@ class ReservationBlockThenRecheckTest {
 
     /** Truncates and inserts a single {@code RESERVED} row with the given lease age and attempt count. */
     private void seedReservedRow(long ageSeconds, int attempts) throws Exception {
+        seedRow("RESERVED", ageSeconds, attempts);
+    }
+
+    /** Truncates and inserts a single row with the given status, lease age and attempt count. */
+    private void seedRow(String status, long ageSeconds, int attempts) throws Exception {
         try (Connection c = newConnection(); Statement s = c.createStatement()) {
             s.execute("truncate table crawl_tasks");
             s.execute("insert into crawl_tasks " +
                     "(visit_id, domain_name, crawler_module, status, reserved_by, reservation_id, reserved_timestamp, attempts) " +
-                    "values ('1', 'd1.example', 'web', 'RESERVED', 'host-DEAD', 'OLD-TOKEN', " +
+                    "values ('1', 'd1.example', 'web', '" + status + "', 'host-DEAD', 'OLD-TOKEN', " +
                     "now() - interval '" + ageSeconds + " seconds', " + attempts + ")");
         }
     }
