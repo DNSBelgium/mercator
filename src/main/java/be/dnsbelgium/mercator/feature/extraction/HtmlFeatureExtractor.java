@@ -110,7 +110,7 @@ public class HtmlFeatureExtractor {
    *
    * @param inputStream the stream to read from. Will be closed at the end of this method.
    * @param url The URL where the HTML was retrieved from, to resolve relative links against.
-   * @return the extracted html features
+   * @return the extracted HTML features
    */
   public HtmlFeatures extractFromHtml(InputStream inputStream, String url, String domainName) {
     return extractFromHtml(inputStream, null, url, domainName);
@@ -214,6 +214,7 @@ public class HtmlFeatureExtractor {
     computeSimilarities(features, document, url, domainName);
 
     processBodyText(features, bodyText);
+    features.cleanUp();
     return features;
   }
 

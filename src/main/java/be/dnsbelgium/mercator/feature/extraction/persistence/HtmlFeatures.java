@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
+import static be.dnsbelgium.mercator.common.SurrogateCodePoints.removeIncompleteSurrogates;
+
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode
@@ -83,6 +85,30 @@ public class HtmlFeatures {
   public boolean body_text_truncated;
   public boolean meta_text_truncated;
   public boolean title_truncated;
+
+  public void cleanUp() {
+    this.title = cleanUp(title);
+    this.body_text = cleanUp(body_text);
+    this.meta_text = cleanUp(meta_text);
+    external_hosts = external_hosts.stream().map(this::cleanUp).toList();
+    facebook_links = facebook_links.stream().map(this::cleanUp).toList();
+    twitter_links = twitter_links.stream().map(this::cleanUp).toList();
+    linkedin_links = linkedin_links.stream().map(this::cleanUp).toList();
+    youtube_links = youtube_links.stream().map(this::cleanUp).toList();
+    vimeo_links = vimeo_links.stream().map(this::cleanUp).toList();
+  }
+
+  private String cleanUp(String input) {
+    if (input == null) {
+      return null;
+    }
+    if (input.contains("\u0000")) {
+      return null;
+    }
+    // we need to remove incomplete surrogate code points to avoid JSON files that duckdb (and jq) cannot read
+    return removeIncompleteSurrogates(input);
+  }
+
 
   @Override
   public String toString() {
