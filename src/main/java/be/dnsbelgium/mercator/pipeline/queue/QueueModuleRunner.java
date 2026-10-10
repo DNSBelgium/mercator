@@ -39,7 +39,7 @@ public class QueueModuleRunner {
     private static final Duration IDLE_SLEEP_STEP = Duration.ofMillis(200);
 
     /** Bounded wait for the loop thread to finish its current pass on shutdown. */
-    private static final Duration SHUTDOWN_JOIN_TIMEOUT = Duration.ofSeconds(60);
+    private static final Duration SHUTDOWN_JOIN_TIMEOUT = Duration.ofSeconds(300);
 
     private final Duration pollInterval;
 
@@ -70,8 +70,10 @@ public class QueueModuleRunner {
             long producedThisCycle = 0;
             for (PipelineModule module : modules) {
                 if (!running) {
+                    log.info("We were asked to stop");
                     break;
                 }
+                log.info("running=true => starting {}", module.name());
                 long start = System.currentTimeMillis();
                 try {
                     long produced = module.run();
@@ -109,12 +111,16 @@ public class QueueModuleRunner {
 
     @PreDestroy
     public void stop() {
+        log.error("Stopping continuous queue runner (letting the current pass finish)");
         log.info("Stopping continuous queue runner (letting the current pass finish)");
         running = false;
         if (executor != null) {
             executor.shutdown();
+            log.info("");
             try {
-                if (!executor.awaitTermination(SHUTDOWN_JOIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)) {
+                if (executor.awaitTermination(SHUTDOWN_JOIN_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)) {
+                    log.info("Queue runner stopped cleanly");
+                } else {
                     log.warn("Queue runner did not stop within {}; proceeding with shutdown", SHUTDOWN_JOIN_TIMEOUT);
                 }
             } catch (InterruptedException e) {

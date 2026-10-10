@@ -225,7 +225,7 @@ public class BaseRepository<T> {
           year("%s"::timestamp) as year,
           month("%s"::timestamp) as month
         from read_json('%s')
-      ) to '%s' (format parquet, partition_by (year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
+      ) to '%s' (format parquet, partition_by (tld, year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
               timestampField(), timestampField(), jsonResultsLocation, baseLocation)
       ).update();
   }
@@ -246,7 +246,7 @@ public class BaseRepository<T> {
                     ${cteDefinitions}
                     select * from ${cte}
                 ) TO '${destination}'
-                  (FORMAT parquet, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
+                  (FORMAT parquet, PARTITION_BY (tld, year, month), OVERWRITE_OR_IGNORE, FILENAME_PATTERN '{uuid}')
                 """, Map.of(
                     "cteDefinitions", cteDefinitions,
                     "cte", cte,

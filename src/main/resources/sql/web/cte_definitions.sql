@@ -76,6 +76,10 @@ with typed as (
                        })
 ),
 added_year_month as (
-    select *, year(crawl_started) as year, month(crawl_started) as month
+    select
+        *,
+        string_to_array(domain_name, '.')[-1] as tld,
+        year(crawl_started) as year,
+        month(crawl_started) as month
     from typed
 )

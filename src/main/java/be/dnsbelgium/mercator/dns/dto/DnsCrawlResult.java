@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.dns.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @ToString
 @Getter
+@JsonIgnoreProperties(value = { "tld" })
 public class DnsCrawlResult {
 
     private final CrawlStatus status;
