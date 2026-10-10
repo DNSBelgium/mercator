@@ -32,7 +32,8 @@
         <argLine/>
         <!-- Override Spring Boot 4.1.1 managed versions (Boot default shown in comments). -->
         <netty.version>4.2.17.Final</netty.version>   <!-- Boot: 4.2.17.Final -->
-        <tomcat.version>11.0.25</tomcat.version>       <!-- Boot: 11.0.24 -->
+        <tomcat.version>11.0.26</tomcat.version>       <!-- Boot: 11.0.24 (Snyk: 11.0.25 has a critical auth-bypass advisory) -->
+        <postgresql.version>42.7.14</postgresql.version> <!-- Snyk: 42.7.13 has 2 open advisories (medium + high) -->
         <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
         <logback.version>1.6.3</logback.version>
     </properties>
