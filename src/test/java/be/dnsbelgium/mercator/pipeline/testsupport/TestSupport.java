@@ -29,11 +29,11 @@ public final class TestSupport {
                 domain_name        text        not null,
                 crawler_module     text        not null,
                 status             text        not null default 'PENDING',
-                reserved_timestamp timestamptz,
+                reserved_at        timestamptz,
                 reserved_by        text,
                 reservation_id     text,
                 attempts           int         not null default 0,
-                finished_timestamp timestamptz
+                finished_at        timestamptz
             )
             """;
 

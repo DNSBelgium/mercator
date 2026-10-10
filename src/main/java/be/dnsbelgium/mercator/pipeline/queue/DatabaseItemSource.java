@@ -37,21 +37,21 @@ import java.util.function.IntSupplier;
  * <pre>
  *            claim (getItems)                     ack (acknowledge, after the Parquet roll-up)
  *  PENDING ───────────────────▶ RESERVED ─────────────────────────────────────▶ DONE
- *     ▲                            │            (finished_timestamp = now())
+ *     ▲                            │            (finished_at = now())
  *     └─ reaper: lease expired, ───┤
  *        attempts &lt; max           └─ reaper: lease expired, attempts &gt;= max ──▶ FAILED
  * </pre>
  *
  * <p><b>Ack.</b> Once a batch of results is durably in Parquet, the writer calls
  * {@link #acknowledge(Collection)}, which sets {@code status = 'DONE'} and
- * {@code finished_timestamp = now()} for exactly those {@code visit_id}s (scoped to this
+ * {@code finished_at = now()} for exactly those {@code visit_id}s (scoped to this
  * module). Only results that reached Parquet are acked: rows whose processor returned
  * {@code null}/threw, or whose roll-up failed, stay {@code RESERVED} and are left to the
  * reaper. The ack is guarded by {@code status <> 'DONE'} rather than
  * {@code status = 'RESERVED'}: Parquet is the source of truth, so a late ack still wins over
  * a lease race (row recycled, re-leased or dead-lettered meanwhile) instead of causing a
  * pointless re-crawl. The reservation columns are left untouched as an audit trail, so
- * {@code finished_timestamp - reserved_timestamp} is the per-task latency. The ack touches no
+ * {@code finished_at - reserved_at} is the per-task latency. The ack touches no
  * polling state, so it is safe on the writer thread and after {@link #close()}.
  *
  * <p><b>At-least-once.</b> Parquet and Postgres cannot share a transaction: a crash between
@@ -86,13 +86,13 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
 
     /**
      * Closes tasks whose result is durably stored. {@code status <> 'DONE'} (instead of
-     * {@code = 'RESERVED'}) keeps the first {@code finished_timestamp} on retries/duplicates and
+     * {@code = 'RESERVED'}) keeps the first {@code finished_at} on retries/duplicates and
      * still closes rows a lease race recycled or dead-lettered in the meantime.
      */
     private static final String ACK_SQL = """
             update crawl_tasks
-            set    status             = 'DONE',
-                   finished_timestamp = now()
+            set    status        = 'DONE',
+                   finished_at   = now()
             where  crawler_module = :module
               and  status <> 'DONE'
               and  visit_id in (:visitIds)
@@ -134,7 +134,7 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
                 set    status             = 'RESERVED',
                        reserved_by        = :instanceId,
                        reservation_id     = :token,
-                       reserved_timestamp = now(),
+                       reserved_at        = now(),
                        attempts           = attempts + 1
                 where  crawler_module = :module
                   and  status = 'PENDING'

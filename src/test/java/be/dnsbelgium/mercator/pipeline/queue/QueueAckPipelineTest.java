@@ -82,7 +82,7 @@ class QueueAckPipelineTest {
 
         // 7 tasks with batchSize 3 -> batches of 3, 3 and a flushed remainder of 1: all are DONE.
         assertThat(produced).isEqualTo(7);
-        assertThat(count("status = 'DONE' and finished_timestamp is not null")).isEqualTo(7);
+        assertThat(count("status = 'DONE' and finished_at is not null")).isEqualTo(7);
         assertThat(count("status <> 'DONE'")).isZero();
         assertThat(parquetRowCountInDir(duckDb, parquetDir())).isEqualTo(7);
         assertThat(jsonFilesRecursively(jsonDir())).isEmpty();
@@ -97,7 +97,7 @@ class QueueAckPipelineTest {
         runPass(skipsOne, parquetConverter(), 2);
 
         assertThat(count("status = 'DONE'")).isEqualTo(4);
-        assertThat(count("visit_id = 'web-3' and status = 'RESERVED' and finished_timestamp is null")).isEqualTo(1);
+        assertThat(count("visit_id = 'web-3' and status = 'RESERVED' and finished_at is null")).isEqualTo(1);
         assertThat(parquetRowCountInDir(duckDb, parquetDir())).isEqualTo(4);
     }
 
@@ -118,7 +118,7 @@ class QueueAckPipelineTest {
                 .hasRootCauseMessage("boom");
 
         assertThat(count("status = 'DONE'")).isEqualTo(4);
-        assertThat(count("status = 'RESERVED' and finished_timestamp is null")).isEqualTo(3);
+        assertThat(count("status = 'RESERVED' and finished_at is null")).isEqualTo(3);
         assertThat(parquetRowCountInDir(duckDb, parquetDir())).isEqualTo(4);
         // The failed batch's JSON is kept for inspection (existing policy).
         assertThat(jsonFilesRecursively(jsonDir())).hasSize(3);
@@ -132,7 +132,7 @@ class QueueAckPipelineTest {
         runPass(toResult(), parquetConverter(), 2);
 
         assertThat(count("crawler_module = 'web' and status = 'DONE'")).isEqualTo(3);
-        assertThat(count("crawler_module = 'dns' and status = 'PENDING' and finished_timestamp is null"))
+        assertThat(count("crawler_module = 'dns' and status = 'PENDING' and finished_at is null"))
                 .isEqualTo(3);
     }
 

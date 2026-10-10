@@ -150,7 +150,7 @@ Use this checklist when creating or changing code in this repository.
   `agent-tasks/` and proven by the Testcontainers (`postgres:17`) tests `ReservationBlockThenRecheckTest`,
   `DatabaseItemSourceTest` and `CrawlTaskDispatcherTest`. After a batch is rolled up to Parquet,
   `JsonItemWriter` calls back `ItemSource.acknowledge`, which sets `status='DONE'` and
-  `finished_timestamp` on exactly those `crawl_tasks` rows (at-least-once: de-duplicate on `visit_id`).
+  `finished_at` on exactly those `crawl_tasks` rows (at-least-once: de-duplicate on `visit_id`).
 - Virtual-thread rules: never pool virtual threads (`newVirtualThreadPerTaskExecutor()`); bound
   outbound concurrency with the per-module `Semaphore` (`maxConcurrentRequests`); offload CPU-bound
   parsing to the bounded `cpuPool`. See the full caveats in `README.MD`.

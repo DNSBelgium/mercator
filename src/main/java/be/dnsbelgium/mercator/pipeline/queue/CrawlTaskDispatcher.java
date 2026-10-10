@@ -65,7 +65,7 @@ public class CrawlTaskDispatcher {
                 visit_id       varchar,
                 domain_name    varchar(255) not null,
                 dispatch_id    varchar(36),
-                dispatched_at  timestamp
+                dispatched_at  timestamptz
             )
         """).update();
 
@@ -76,17 +76,17 @@ public class CrawlTaskDispatcher {
                 crawler_module      varchar(100) not null,
                 reservation_id      varchar(100),
                 reserved_by         varchar(100),
-                reserved_timestamp  timestamp,
-                finished_timestamp  timestamp,
+                reserved_at         timestamptz,
+                finished_at         timestamptz,
                 status              varchar(100),
                 attempts            int default 0
             )
         """).update();
 
-        // Migration for databases created before finished_timestamp existed (the
+        // Migration for databases created before finished_atp existed (the
         // "create table if not exists" above is a no-op there). Nullable, no default:
         // a metadata-only change in Postgres, idempotent, safe on every start.
-        jdbcClient.sql("alter table crawl_tasks add column if not exists finished_timestamp timestamp").update();
+        jdbcClient.sql("alter table crawl_tasks add column if not exists finished_at timestamptz").update();
 
         // DatabaseItemSource.acknowledge() looks rows up by exactly this key (up to batch-size ids
         // per call); without an index every ack would scan the whole table. Safe to drop on its own.

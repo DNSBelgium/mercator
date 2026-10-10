@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 /**
  * Tests for the schema bootstrap in {@link CrawlTaskDispatcher#init()}: a fresh database gets the
- * {@code finished_timestamp} column, and a database created before that column existed is migrated
+ * {@code finished_at} column, and a database created before that column existed is migrated
  * in place (idempotently). Uses its own container because every test drops and recreates the tables.
  */
 @SuppressWarnings("SqlResolve")
@@ -30,7 +30,7 @@ class CrawlTaskSchemaTest {
                 crawler_module      varchar(100) not null,
                 reservation_id      varchar(100),
                 reserved_by         varchar(100),
-                reserved_timestamp  timestamp,
+                reserved_at         timestamptz,
                 status              varchar(100),
                 attempts            int default 0
             )
@@ -71,7 +71,7 @@ class CrawlTaskSchemaTest {
 
         assertThat(finishedTimestampType()).contains("timestamp without time zone");
         assertThat(jdbcClient.sql("select count(*) from crawl_tasks where status = 'RESERVED' "
-                + "and finished_timestamp is null").query(Long.class).single()).isEqualTo(1);
+                + "and finished_at is null").query(Long.class).single()).isEqualTo(1);
     }
 
     @Test
@@ -80,7 +80,7 @@ class CrawlTaskSchemaTest {
 
         assertThatCode(() -> dispatcher().init()).doesNotThrowAnyException();
 
-        assertThat(finishedTimestampType()).contains("timestamp without time zone");
+        assertThat(finishedTimestampType()).contains("timestamp wit time zone");
     }
 
     // --- helpers -------------------------------------------------------------------------
@@ -91,7 +91,7 @@ class CrawlTaskSchemaTest {
                         from   information_schema.columns
                         where  table_schema = current_schema()
                           and  table_name = 'crawl_tasks'
-                          and  column_name = 'finished_timestamp'
+                          and  column_name = 'finished_at'
                         """)
                 .query(String.class)
                 .optional();

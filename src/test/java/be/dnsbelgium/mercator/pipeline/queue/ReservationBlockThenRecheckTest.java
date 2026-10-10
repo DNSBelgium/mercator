@@ -122,12 +122,12 @@ class ReservationBlockThenRecheckTest {
         try (Connection c = newConnection();
              Statement s = c.createStatement();
              ResultSet rs = s.executeQuery(
-                     "select status, reservation_id, reserved_by, reserved_timestamp, attempts from crawl_tasks")) {
+                     "select status, reservation_id, reserved_by, reserved_at, attempts from crawl_tasks")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getString("status")).isEqualTo("PENDING");
             assertThat(rs.getString("reservation_id")).isNull();
             assertThat(rs.getString("reserved_by")).isNull();
-            assertThat(rs.getTimestamp("reserved_timestamp")).isNull();
+            assertThat(rs.getTimestamp("reserved_at")).isNull();
             assertThat(rs.getInt("attempts")).as("attempts preserved across recycle").isEqualTo(1);
         }
 
@@ -180,12 +180,12 @@ class ReservationBlockThenRecheckTest {
         try (Connection c = newConnection();
              Statement s = c.createStatement();
              ResultSet rs = s.executeQuery(
-                     "select status, reservation_id, reserved_by, reserved_timestamp, attempts from crawl_tasks")) {
+                     "select status, reservation_id, reserved_by, reserved_at, attempts from crawl_tasks")) {
             assertThat(rs.next()).isTrue();
             assertThat(rs.getString("status")).isEqualTo("DONE");
             assertThat(rs.getString("reservation_id")).isEqualTo("OLD-TOKEN");
             assertThat(rs.getString("reserved_by")).isEqualTo("host-DEAD");
-            assertThat(rs.getTimestamp("reserved_timestamp")).isNotNull();
+            assertThat(rs.getTimestamp("reserved_at")).isNotNull();
             assertThat(rs.getInt("attempts")).isEqualTo(MAX_ATTEMPTS);
         }
     }
@@ -248,7 +248,7 @@ class ReservationBlockThenRecheckTest {
                 set    status = 'RESERVED',
                        reserved_by = '%s',
                        reservation_id = '%s',
-                       reserved_timestamp = now(),
+                       reserved_at = now(),
                        attempts = attempts + 1
                 where  crawler_module = 'web'
                 %s  and visit_id in (
@@ -264,11 +264,11 @@ class ReservationBlockThenRecheckTest {
 
     /** Runs the lease reaper (plan §4.2): recycle expired leases, dead-letter exhausted ones. */
     private void runReaper() throws Exception {
-        String cutoff = "reserved_timestamp < now() - interval '" + LEASE_SECONDS + " seconds'";
+        String cutoff = "reserved_at < now() - interval '" + LEASE_SECONDS + " seconds'";
         try (Connection c = newConnection(); Statement s = c.createStatement()) {
             s.executeUpdate("""
                     update crawl_tasks
-                    set    status = 'PENDING', reservation_id = null, reserved_by = null, reserved_timestamp = null
+                    set    status = 'PENDING', reservation_id = null, reserved_by = null, reserved_at = null
                     where  status = 'RESERVED' and %s and attempts < %d
                     """.formatted(cutoff, MAX_ATTEMPTS));
             s.executeUpdate("""
@@ -289,7 +289,7 @@ class ReservationBlockThenRecheckTest {
         try (Connection c = newConnection(); Statement s = c.createStatement()) {
             s.execute("truncate table crawl_tasks");
             s.execute("insert into crawl_tasks " +
-                    "(visit_id, domain_name, crawler_module, status, reserved_by, reservation_id, reserved_timestamp, attempts) " +
+                    "(visit_id, domain_name, crawler_module, status, reserved_by, reservation_id, reserved_at, attempts) " +
                     "values ('1', 'd1.example', 'web', '" + status + "', 'host-DEAD', 'OLD-TOKEN', " +
                     "now() - interval '" + ageSeconds + " seconds', " + attempts + ")");
         }

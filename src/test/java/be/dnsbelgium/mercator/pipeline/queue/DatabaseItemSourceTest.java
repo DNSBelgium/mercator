@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * rows for <b>its own module only</b>, atomically (no double-claim under concurrency), and
  * stamps the reservation columns / increments {@code attempts} on a fresh claim. After a
  * result is durably stored, {@link DatabaseItemSource#acknowledge} closes the task
- * ({@code DONE} + {@code finished_timestamp}).
+ * ({@code DONE} + {@code finished_at}).
  *
  * <p>Expired-lease recovery is <em>not</em> covered here — that belongs to the lease reaper;
  * this source only ever claims {@code PENDING} rows.
@@ -91,7 +91,7 @@ class DatabaseItemSourceTest {
         // The 5 claimed rows are RESERVED with attempts=1 and our reservation stamped;
         // the remaining 3 stay PENDING and untouched.
         assertThat(countWhere("status = 'RESERVED' and attempts = 1 and reserved_by = '" + INSTANCE_ID
-                + "' and reservation_id is not null and reserved_timestamp is not null")).isEqualTo(5);
+                + "' and reservation_id is not null and reserved_at is not null")).isEqualTo(5);
         assertThat(countWhere("status = 'PENDING' and attempts = 0")).isEqualTo(3);
     }
 
@@ -193,11 +193,11 @@ class DatabaseItemSourceTest {
 
         Instant after = databaseNow();
         assertThat(updated).isEqualTo(3);
-        // Exactly the acked rows are DONE, with a finished_timestamp taken from the DB clock.
-        assertThat(countWhere("status = 'DONE' and finished_timestamp is not null")).isEqualTo(3);
+        // Exactly the acked rows are DONE, with a finished_at taken from the DB clock.
+        assertThat(countWhere("status = 'DONE' and finished_at is not null")).isEqualTo(3);
         assertThat(finishedTimestamps(acked)).hasSize(3).allSatisfy(ts -> assertThat(ts).isBetween(before, after));
         // The other two leased rows stay RESERVED and open.
-        assertThat(countWhere("status = 'RESERVED' and finished_timestamp is null")).isEqualTo(2);
+        assertThat(countWhere("status = 'RESERVED' and finished_at is null")).isEqualTo(2);
         // The reservation columns are an audit trail and are left untouched.
         assertThat(reservationColumns(acked)).isEqualTo(reservationBefore);
     }
@@ -210,7 +210,7 @@ class DatabaseItemSourceTest {
         assertThat(source(5).acknowledge(List.of("v1"))).isEqualTo(1);
 
         assertThat(countWhere("crawler_module = 'web' and status = 'DONE'")).isEqualTo(1);
-        assertThat(countWhere("crawler_module = 'dns' and status = 'RESERVED' and finished_timestamp is null"))
+        assertThat(countWhere("crawler_module = 'dns' and status = 'RESERVED' and finished_at is null"))
                 .isEqualTo(1);
     }
 
@@ -237,7 +237,7 @@ class DatabaseItemSourceTest {
         assertThat(source.acknowledge(List.of())).isZero();
         assertThat(source.acknowledge(null)).isZero();
 
-        assertThat(countWhere("status = 'RESERVED' and finished_timestamp is null")).isEqualTo(1);
+        assertThat(countWhere("status = 'RESERVED' and finished_at is null")).isEqualTo(1);
     }
 
     @Test
@@ -249,7 +249,7 @@ class DatabaseItemSourceTest {
 
         assertThat(source(5).acknowledge(List.of("recycled", "failed", "reserved"))).isEqualTo(3);
 
-        assertThat(countWhere("status = 'DONE' and finished_timestamp is not null")).isEqualTo(3);
+        assertThat(countWhere("status = 'DONE' and finished_at is not null")).isEqualTo(3);
     }
 
     @Test
@@ -320,7 +320,7 @@ class DatabaseItemSourceTest {
     }
 
     private List<Instant> finishedTimestamps(List<String> visitIds) {
-        return jdbcClient.sql("select finished_timestamp from crawl_tasks where visit_id in (:ids) order by visit_id")
+        return jdbcClient.sql("select finished_at from crawl_tasks where visit_id in (:ids) order by visit_id")
                 .param("ids", visitIds)
                 .query(Timestamp.class)
                 .list()
@@ -331,7 +331,7 @@ class DatabaseItemSourceTest {
 
     private List<Map<String, Object>> reservationColumns(List<String> visitIds) {
         return jdbcClient.sql("""
-                        select visit_id, reserved_by, reservation_id, reserved_timestamp, attempts
+                        select visit_id, reserved_by, reservation_id, reserved_at, attempts
                         from   crawl_tasks
                         where  visit_id in (:ids)
                         order by visit_id
