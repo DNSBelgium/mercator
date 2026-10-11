@@ -223,7 +223,8 @@ public class BaseRepository<T> {
         select
           *,
           year("%s"::timestamp) as year,
-          month("%s"::timestamp) as month
+          month("%s"::timestamp) as month,
+          string_to_array(domain_name, '.')[-1] as tld,
         from read_json('%s')
       ) to '%s' (format parquet, partition_by (tld, year, month), OVERWRITE_OR_IGNORE, filename_pattern 'data_{uuid}')""",
               timestampField(), timestampField(), jsonResultsLocation, baseLocation)

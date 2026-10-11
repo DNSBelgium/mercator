@@ -7,6 +7,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.JsonItemWriter;
 import be.dnsbelgium.mercator.pipeline.service.ParquetConverter;
 import be.dnsbelgium.mercator.pipeline.service.PipelineService;
+import be.dnsbelgium.mercator.pipeline.service.StopSignal;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +22,16 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.CRAWL_TASKS_DDL;
+import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.awaitUninterruptibly;
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.countCrawlTasks;
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.duckDbClient;
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.jsonFilesRecursively;
@@ -136,7 +141,78 @@ class QueueAckPipelineTest {
                 .isEqualTo(3);
     }
 
+    // --- graceful stop ---------------------------------------------------------------------
+
+    /**
+     * A stop in the middle of a pass: the items already in flight are processed, rolled up to Parquet
+     * and acked; everything leased-but-not-started is skipped and stays {@code RESERVED} (nothing is
+     * handed back, nothing is lost). Once their lease expired the {@link LeaseReaper} recycles them and
+     * the next pass finishes the job without duplicates.
+     */
+    @Test
+    void gracefulStop_midPass_acksTheInFlightItems_leavesTheRestReserved_reaperRecyclesThem() throws Exception {
+        int tasks = 20;
+        seedPendingTasks(queueDb, MODULE, tasks);
+        StopSignal stop = new StopSignal();
+        CountDownLatch allConsumersBusy = new CountDownLatch(NUM_CONSUMERS);
+        CountDownLatch release = new CountDownLatch(1);
+        ItemProcessor<VisitRequest, Result> blocking = item -> {
+            allConsumersBusy.countDown();
+            awaitUninterruptibly(release);
+            return toResult().processItem(item);
+        };
+
+        CompletableFuture<Long> pass = CompletableFuture.supplyAsync(
+                () -> runPass(blocking, parquetConverter(), 3, stop));
+        assertThat(allConsumersBusy.await(10, TimeUnit.SECONDS)).isTrue();
+        // The producer leases the whole (small) queue within moments; wait for it so "the rest" is deterministic.
+        awaitCount("status = 'PENDING'", 0);
+        stop.requestStop();
+        release.countDown();
+        pass.get(30, TimeUnit.SECONDS);
+
+        // Only the in-flight items went through roll-up + ack.
+        assertThat(count("status = 'DONE' and finished_at is not null")).isEqualTo(NUM_CONSUMERS);
+        assertThat(parquetRowCountInDir(duckDb, parquetDir())).isEqualTo(NUM_CONSUMERS);
+        assertThat(jsonFilesRecursively(jsonDir())).isEmpty();
+        // Everything else was leased, skipped and stays RESERVED: nothing lost, nothing acked without Parquet.
+        assertThat(count("status = 'RESERVED' and finished_at is null and attempts = 1"))
+                .isEqualTo(tasks - NUM_CONSUMERS);
+        assertThat(count("status = 'PENDING'")).isZero();
+
+        // The lease expires → the reaper recycles the skipped items (attempts are kept, reservation cleared).
+        queueDb.sql("update crawl_tasks set reserved_at = now() - interval '11 minutes' where status = 'RESERVED'")
+                .update();
+        LeaseReaper.Result reaped = new LeaseReaper(queueDb, new PipelineProperties()).reap();
+        assertThat(reaped).isEqualTo(new LeaseReaper.Result(tasks - NUM_CONSUMERS, 0));
+        assertThat(count("status = 'PENDING' and attempts = 1 and reservation_id is null and reserved_at is null"))
+                .isEqualTo(tasks - NUM_CONSUMERS);
+
+        // The next pass finishes the job: every task DONE exactly once, no duplicate rows in Parquet.
+        runPass(toResult(), parquetConverter(), 3);
+        assertThat(count("status = 'DONE'")).isEqualTo(tasks);
+        assertThat(parquetRowCountInDir(duckDb, parquetDir())).isEqualTo(tasks);
+        assertThat(distinctVisitIdsInParquet()).isEqualTo(tasks);
+    }
+
     // --- helpers -------------------------------------------------------------------------
+
+    /** Polls until exactly {@code expected} rows match {@code predicate} (max 15 s). */
+    private void awaitCount(String predicate, long expected) throws InterruptedException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+        while (count(predicate) != expected && System.nanoTime() < deadline) {
+            TimeUnit.MILLISECONDS.sleep(25);
+        }
+        assertThat(count(predicate)).as("rows matching: " + predicate).isEqualTo(expected);
+    }
+
+    @SuppressWarnings("SqlSourceToSinkFlow")
+    private long distinctVisitIdsInParquet() {
+        return duckDb.sql("SELECT count(DISTINCT visitId) FROM read_parquet('"
+                        + parquetDir().toAbsolutePath() + "/*.parquet')")
+                .query(Long.class)
+                .single();
+    }
 
     private Path jsonDir() {
         return tempDir.resolve("json");
@@ -165,6 +241,12 @@ class QueueAckPipelineTest {
      * @return the number of items the producer read from the queue
      */
     private long runPass(ItemProcessor<VisitRequest, Result> processor, ParquetConverter converter, int batchSize) {
+        return runPass(processor, converter, batchSize, StopSignal.never());
+    }
+
+    /** Same, but the pass can be stopped gracefully through {@code stop}. */
+    private long runPass(ItemProcessor<VisitRequest, Result> processor, ParquetConverter converter, int batchSize,
+                         StopSignal stop) {
         PipelineProperties.Queue queueProperties = new PipelineProperties.Queue();
         queueProperties.setFetchSize(4);
         queueProperties.setInstanceId("test-host");
@@ -181,7 +263,7 @@ class QueueAckPipelineTest {
         ScheduledExecutorService watchdog = Executors.newScheduledThreadPool(1);
         PipelineExecutors executors = new PipelineExecutors(ioExecutor, cpuPool, watchdog);
         PipelineService<VisitRequest, Result> pipeline = new PipelineService<>(MODULE, source, processor, writer,
-                executors, properties, new SimpleMeterRegistry(), NUM_CONSUMERS);
+                executors, properties, new SimpleMeterRegistry(), NUM_CONSUMERS, stop);
         try {
             return pipeline.runPipeline(NUM_CONSUMERS);
         } finally {

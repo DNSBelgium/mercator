@@ -1,5 +1,6 @@
 package be.dnsbelgium.mercator.pipeline.queue;
 
+import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.CRAWL_TASKS_DDL;
+import static be.dnsbelgium.mercator.pipeline.testsupport.TestSupport.postgresJdbcClient;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -58,8 +60,10 @@ class ReservationBlockThenRecheckTest {
 
     private static final int SEED_ROWS = 5;
     private static final int FETCH_SIZE = 5;
-    private static final long LEASE_SECONDS = 600;
-    private static final int MAX_ATTEMPTS = 5;
+    /** The reaper under test runs with the production defaults; the seeded lease ages derive from them. */
+    private static final PipelineProperties PROPERTIES = new PipelineProperties();
+    private static final long LEASE_SECONDS = PROPERTIES.getQueue().getLeaseDuration().toSeconds();
+    private static final int MAX_ATTEMPTS = PROPERTIES.getQueue().getMaxAttempts();
 
     @Container
     static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17");
@@ -262,21 +266,10 @@ class ReservationBlockThenRecheckTest {
                 """.formatted(host, token, outerStatusPredicate, FETCH_SIZE);
     }
 
-    /** Runs the lease reaper (plan §4.2): recycle expired leases, dead-letter exhausted ones. */
-    private void runReaper() throws Exception {
-        String cutoff = "reserved_at < now() - interval '" + LEASE_SECONDS + " seconds'";
-        try (Connection c = newConnection(); Statement s = c.createStatement()) {
-            s.executeUpdate("""
-                    update crawl_tasks
-                    set    status = 'PENDING', reservation_id = null, reserved_by = null, reserved_at = null
-                    where  status = 'RESERVED' and %s and attempts < %d
-                    """.formatted(cutoff, MAX_ATTEMPTS));
-            s.executeUpdate("""
-                    update crawl_tasks
-                    set    status = 'FAILED'
-                    where  status = 'RESERVED' and %s and attempts >= %d
-                    """.formatted(cutoff, MAX_ATTEMPTS));
-        }
+
+    /** Runs the production {@link LeaseReaper}: recycle expired leases, dead-letter exhausted ones. */
+    private void runReaper() {
+        new LeaseReaper(postgresJdbcClient(POSTGRES), PROPERTIES).reap();
     }
 
     /** Truncates and inserts a single {@code RESERVED} row with the given lease age and attempt count. */

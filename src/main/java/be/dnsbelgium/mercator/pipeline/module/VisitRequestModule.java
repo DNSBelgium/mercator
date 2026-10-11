@@ -77,6 +77,11 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
 
     @Override
     public long run() {
+        return run(StopSignal.never());
+    }
+
+    @Override
+    public long run(StopSignal stop) {
         ItemSource<VisitRequest> source = itemSourceFactory.create(name());
         Path outputDir = Path.of(properties.getOutputDirectory(), name());
         // Delegate the JSON -> Parquet conversion to the module's repository.storeResults,
@@ -87,7 +92,7 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
 
         PipelineService<VisitRequest, O> pipeline =
                 new PipelineService<>(name(), source, processor(), writer, executors, properties, meterRegistry,
-                        properties.maxConcurrentRequests(name()));
+                        properties.maxConcurrentRequests(name()), stop);
 
         int numConsumers = properties.numConsumers(name());
         log.info("Starting module '{}' (input={}, output={}, consumers={}, maxConcurrentRequests={})",

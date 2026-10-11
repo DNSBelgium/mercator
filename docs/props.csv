@@ -17,6 +17,10 @@ pipeline.module-settings.smtp.num-consumers,Optional SMTP-specific override for 
 pipeline.module-settings.smtp.max-concurrent-requests,Optional SMTP-specific override for pipeline.max-concurrent-requests.,Integer,global value
 pipeline.module-settings.tls.num-consumers,Optional TLS-specific override for pipeline.num-consumers.,Integer,global value
 pipeline.module-settings.tls.max-concurrent-requests,Optional TLS-specific override for pipeline.max-concurrent-requests.,Integer,global value
+pipeline.queue.lease-duration,"Postgres work queue (profile postgres-queue): how long a leased (RESERVED) task may stay un-acked before the lease reaper recycles it to PENDING. Must be longer than the worst-case time from lease to ack (a whole pass), otherwise tasks that are still being processed are crawled twice.",Duration,10m
+pipeline.queue.max-attempts,"Postgres work queue (profile postgres-queue): number of attempts after which the lease reaper dead-letters an expired task to FAILED instead of recycling it.",Integer,5
+pipeline.queue.reaper-interval,"Postgres work queue (profile postgres-queue): how often the lease reaper recycles expired leases.",Duration,1m
+pipeline.queue.shutdown-timeout,"Postgres work queue (profile postgres-queue): maximum time to wait on shutdown for the items already in flight (their Parquet roll-up and ack). Leased items that were not started yet are skipped and recycled by the lease reaper after lease-duration. The container grace period (docker stop -t / terminationGracePeriodSeconds) should be at least as long as a stop realistically needs.",Duration,5m
 smtp.crawler.recursive.resolver.retries,The number of retries done by the SMTP crawler when resolving MX records,Integer,2
 smtp.crawler.recursive.resolver.timeOut.ms,The time out in milliseconds applied by the SMTP crawler when resolving MX records,Integer,2500
 smtp.crawler.recursive.resolver.tcp.by.default,Whether the SMTP crawler should use TCP by default when resolving MX records,Boolean,false

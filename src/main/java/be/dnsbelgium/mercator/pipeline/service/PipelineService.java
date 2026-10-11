@@ -31,16 +31,28 @@ import java.util.concurrent.atomic.AtomicReference;
  *   ItemSource → [inputQueue] → ItemProcessor(s) → [resultQueue] → ItemWriter
  * </pre>
  *
+ * <p><b>Graceful stop.</b> A {@link StopSignal} (default: {@link StopSignal#never()}) lets the
+ * owner stop a running pass without waiting for the whole pass: the producer stops leasing,
+ * every item that was not yet started is <em>skipped</em>, while the items already inside
+ * {@link ItemProcessor#processItem} run to completion and go through the normal writer
+ * flush → roll-up → ack. Skipped items were never started, so they cannot produce a duplicate
+ * result; they are simply dropped here (a stateful source keeps them {@code RESERVED} and a lease
+ * reaper recycles them after the lease expired).
+ *
  * @param <InputType> input item type read from the {@link ItemSource}
  * @param <OutputType> output item type produced by the {@link ItemProcessor} and persisted by the {@link ItemWriter}
  */
 @Slf4j
 public class PipelineService<InputType, OutputType> {
 
+    /** How often a blocked producer / sleeping producer re-checks the {@link StopSignal}. */
+    private static final Duration STOP_POLL_INTERVAL = Duration.ofMillis(100);
+
     private final String name;
     private final ItemSource<InputType> source;
     private final ItemProcessor<InputType, OutputType> processor;
     private final ItemWriter<OutputType> writer;
+    private final StopSignal stopSignal;
 
     private final BlockingQueue<Signal<InputType>> inputQueue;
     private final BlockingQueue<Signal<OutputType>> resultQueue;
@@ -52,6 +64,8 @@ public class PipelineService<InputType, OutputType> {
 
     /** Items the producer read from the source and enqueued during the current run. */
     private final AtomicLong producedCount = new AtomicLong();
+    /** Leased items that were deliberately not processed because a stop was requested (logging only). */
+    private final AtomicLong skipped = new AtomicLong();
     private final AtomicReference<RuntimeException> producerFailure = new AtomicReference<>();
     private final AtomicReference<RuntimeException> processorFailure = new AtomicReference<>();
 
@@ -63,10 +77,24 @@ public class PipelineService<InputType, OutputType> {
                            PipelineProperties properties,
                            MeterRegistry meterRegistry,
                            int maxConcurrentRequests) {
+        this(name, source, processor, writer, executors, properties, meterRegistry, maxConcurrentRequests,
+                StopSignal.never());
+    }
+
+    public PipelineService(String name,
+                           ItemSource<InputType> source,
+                           ItemProcessor<InputType, OutputType> processor,
+                           ItemWriter<OutputType> writer,
+                           PipelineExecutors executors,
+                           PipelineProperties properties,
+                           MeterRegistry meterRegistry,
+                           int maxConcurrentRequests,
+                           StopSignal stopSignal) {
         this.name = name;
         this.source = source;
         this.processor = processor;
         this.writer = writer;
+        this.stopSignal = stopSignal;
         this.ioExecutor = executors.ioExecutor();
         this.cpuPool = executors.cpuPool();
         this.watchdog = executors.watchdog();
@@ -88,10 +116,16 @@ public class PipelineService<InputType, OutputType> {
      * <p>Shutdown is coordinated with poison pills:
      * <ol>
      *   <li>the producer appends one {@link Signal.Poison} to {@code inputQueue} once the
-     *       source is drained; each processor re-inserts it for its siblings before exiting;</li>
+     *       source is drained <em>or a stop was requested</em>; each processor re-inserts it for
+     *       its siblings before exiting;</li>
      *   <li>when all processors have exited, one {@link Signal.Poison} is placed on
      *       {@code resultQueue} to stop the writer, which then {@link ItemWriter#flush() flushes}.</li>
      * </ol>
+     *
+     * <p><b>Stop semantics.</b> After {@link StopSignal#requestStop()} the producer stops leasing
+     * and every item that has not started yet is skipped (counted and logged, never processed);
+     * items already inside {@link ItemProcessor#processItem} finish, and their results still go
+     * through the writer's flush (roll-up) and ack before this method returns.
      *
      * @return the number of items the producer read from the source and enqueued this run
      *         (used by the sequential runner to detect an idle cycle)
@@ -125,6 +159,12 @@ public class PipelineService<InputType, OutputType> {
         // consumer has drained the input (including the producer's poison pill).
         writerFuture.join();
         producerFuture.join();
+        long skippedCount = skipped.get();
+        if (skippedCount > 0) {
+            log.info("Pipeline '{}' stopped on request: {} leased item(s) skipped, {} written. "
+                            + "Skipped items stay RESERVED and are recycled by the lease reaper after their lease expires.",
+                    name, skippedCount, writer.writtenItems());
+        }
         RuntimeException failure = producerFailure.get();
         if (failure != null) {
             throw new IllegalStateException("Producer for pipeline '" + name + "' failed", failure);
@@ -139,26 +179,35 @@ public class PipelineService<InputType, OutputType> {
 
     /**
      * Producer stage. Drains the {@link ItemSource} and enqueues each item wrapped in a
-     * {@link Signal.Payload}; appends a single {@link Signal.Poison} when the source is done.
+     * {@link Signal.Payload}; appends a single {@link Signal.Poison} when the source is done
+     * or a stop was requested.
+     *
+     * <p>Once a stop is requested the producer stops polling the source; the items of a batch
+     * that was already leased but not yet enqueued are dropped (counted as skipped). Enqueueing
+     * uses a timed {@code offer} that re-checks the stop signal, so a producer blocked on a full
+     * queue reacts within {@link #STOP_POLL_INTERVAL}.
      *
      * <p>The poison pill is enqueued from a {@code finally} block so it is delivered on
-     * <em>every</em> exit path — normal completion, an {@link ItemSource} failure (e.g. a
-     * missing/unreadable {@code input.csv}), or an interrupt. Without this, a producer that
+     * <em>every</em> exit path — normal completion, a stop request, an {@link ItemSource} failure
+     * (e.g. a missing/unreadable {@code input.csv}), or an interrupt. Without this, a producer that
      * died before signaling end-of-input would leave the processors blocked forever on
      * {@code inputQueue.take()}, which in turn keeps the writer blocked and hangs the whole
      * pipeline.
      */
     private void produceData() {
         try {
-            while (!source.isDone()) {
+            while (!stopSignal.isStopRequested() && !source.isDone()) {
                 List<InputType> items = source.getItems();
                 for (InputType item : items) {
-                    inputQueue.put(Signal.payload(item));
-                    producedCount.incrementAndGet();
+                    if (enqueue(item)) {
+                        producedCount.incrementAndGet();
+                    } else {
+                        skipped.incrementAndGet();
+                    }
                 }
                 if (items.isEmpty() && source.sleepBetweenPolls()) {
                     log.info("Producer polled no items; sleeping for 10 seconds before next poll.");
-                    Thread.sleep(Duration.ofSeconds(10));
+                    sleepUnlessStopped(Duration.ofSeconds(10));
                 }
             }
         } catch (InterruptedException e) {
@@ -173,6 +222,33 @@ public class PipelineService<InputType, OutputType> {
             // Always signal end-of-input so consumers (and transitively the writer) can stop.
             putPoison(inputQueue);
             source.close();
+        }
+    }
+
+    /**
+     * Puts the item on the input queue, waiting for space while re-checking the stop signal.
+     *
+     * @return {@code true} when the item was enqueued, {@code false} when a stop was requested
+     *         before there was room (the item is then skipped)
+     */
+    private boolean enqueue(InputType item) throws InterruptedException {
+        Signal<InputType> payload = Signal.payload(item);
+        while (!stopSignal.isStopRequested()) {
+            if (inputQueue.offer(payload, STOP_POLL_INTERVAL.toMillis(), TimeUnit.MILLISECONDS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Sleeps up to {@code duration}, waking early (within {@link #STOP_POLL_INTERVAL}) when a stop is requested. */
+    @SuppressWarnings("BusyWait")
+    private void sleepUnlessStopped(Duration duration) throws InterruptedException {
+        long remainingMillis = duration.toMillis();
+        while (remainingMillis > 0 && !stopSignal.isStopRequested()) {
+            long step = Math.min(STOP_POLL_INTERVAL.toMillis(), remainingMillis);
+            Thread.sleep(step);
+            remainingMillis -= step;
         }
     }
 
@@ -230,10 +306,20 @@ public class PipelineService<InputType, OutputType> {
      * <p>A failure is recorded and the item is skipped (returns {@code null}) so the processor
      * threads can drain the queues cleanly. The recorded failure is propagated after shutdown,
      * preventing the run from being reported as successful.
+     *
+     * <p>When a stop was requested the item is <em>not started</em>: it is counted as skipped and
+     * {@code null} is returned (no failure, nothing for the writer). The check runs after the
+     * permit was acquired, so it covers both items still sitting in the input queue and items a
+     * processor already took but that were waiting for a permit. Items already inside
+     * {@link ItemProcessor#processItem} are never interrupted.
      */
     private OutputType processOne(InputType item) throws InterruptedException {
         crawlSemaphore.acquire();
         try {
+            if (stopSignal.isStopRequested()) {
+                skipped.incrementAndGet();
+                return null;
+            }
             return processor.processItem(item);
         } catch (RuntimeException e) {
             processorFailure.compareAndSet(null, e);

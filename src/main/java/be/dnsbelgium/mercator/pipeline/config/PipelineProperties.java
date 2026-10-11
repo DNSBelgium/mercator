@@ -124,8 +124,12 @@ public class PipelineProperties {
         /** Master switch for the stateful queue (dispatcher + reaper scheduling). */
         private boolean enabled = true;
 
-        /** Lease duration; a {@code RESERVED} row whose {@code reserved_timestamp} is older is reclaimable. */
-        private Duration leaseDuration = Duration.ofMinutes(10);
+        /**
+         * Lease duration: the {@code LeaseReaper} recycles a {@code RESERVED} row whose
+         * {@code reserved_at} is older than this. Must be larger than the worst-case time from
+         * lease to ack (a whole pass), otherwise rows that are still being processed are recycled.
+         */
+        private Duration leaseDuration = Duration.ofMinutes(30);
 
         /** Rows leased per {@code getItems()} poll (bounded fetch = backpressure). */
         private int fetchSize = 500;
@@ -155,6 +159,15 @@ public class PipelineProperties {
 
         /** Cadence of the {@code @Scheduled} lease reaper (recycle expired leases / dead-letter). */
         private Duration reaperInterval = Duration.ofMinutes(1);
+
+        /**
+         * Max time {@code QueueModuleRunner.stop()} waits on shutdown for the in-flight items, their
+         * Parquet roll-up and their ack. Leased items that were not started yet are skipped and left
+         * {@code RESERVED} for the lease reaper. The container/orchestrator grace period
+         * ({@code docker stop -t}, Kubernetes {@code terminationGracePeriodSeconds}) should be at
+         * least as long as the time a stop realistically needs.
+         */
+        private Duration shutdownTimeout = Duration.ofMinutes(5);
 
         /** Stable per-worker id written to {@code reserved_by} for diagnostics. */
         private String instanceId = defaultInstanceId();

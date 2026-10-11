@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 
+import java.time.Duration;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,5 +48,23 @@ class PipelinePropertiesTest {
         assertThat(properties.maxConcurrentRequests("dns")).isEqualTo(500);
         assertThat(properties.numConsumers("tls")).isEqualTo(1000);
         assertThat(properties.maxConcurrentRequests("tls")).isEqualTo(1000);
+    }
+
+    @Test
+    void queueShutdownTimeoutDefaultsToFiveMinutes() {
+        assertThat(new PipelineProperties().getQueue().getShutdownTimeout()).isEqualTo(Duration.ofMinutes(5));
+    }
+
+    @Test
+    void bindsQueueShutdownTimeoutFromExternalConfiguration() {
+        MapConfigurationPropertySource source = new MapConfigurationPropertySource(Map.of(
+                "pipeline.queue.shutdown-timeout", "90s"
+        ));
+
+        PipelineProperties properties = new Binder(source)
+                .bind("pipeline", PipelineProperties.class)
+                .orElseThrow(() -> new AssertionError("pipeline properties were not bound"));
+
+        assertThat(properties.getQueue().getShutdownTimeout()).isEqualTo(Duration.ofSeconds(90));
     }
 }

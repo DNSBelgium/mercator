@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Small, shared helpers for tests. Each call to {@link #duckDbClient()} opens a fresh
@@ -38,6 +39,19 @@ public final class TestSupport {
             """;
 
     private TestSupport() {
+    }
+
+    /**
+     * Waits on the latch, turning an interrupt into an unchecked exception (with the interrupt flag
+     * restored) so it can be used inside lambdas such as test {@code ItemProcessor}s.
+     */
+    public static void awaitUninterruptibly(CountDownLatch latch) {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("interrupted while waiting on a latch in a test", e);
+        }
     }
 
     public static JdbcClient duckDbClient() {

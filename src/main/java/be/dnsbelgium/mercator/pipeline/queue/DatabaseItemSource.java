@@ -30,8 +30,9 @@ import java.util.function.IntSupplier;
  * </ol>
  *
  * <p><b>Recovery is out-of-band:</b> this source never reasons about expired {@code RESERVED}
- * rows — a separate scheduled lease reaper recycles them back to {@code PENDING}.
- * A crash after leasing but before the Parquet roll-up simply leaves the lease to expire.
+ * rows — the scheduled {@link LeaseReaper} recycles them back to {@code PENDING}.
+ * A crash after leasing but before the Parquet roll-up, or items skipped by a graceful stop,
+ * simply leave the lease to expire.
  *
  * <p><b>Task lifecycle:</b>
  * <pre>

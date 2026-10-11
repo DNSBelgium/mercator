@@ -4,6 +4,7 @@ import be.dnsbelgium.mercator.pipeline.service.ItemProcessor;
 import be.dnsbelgium.mercator.pipeline.service.ItemSource;
 import be.dnsbelgium.mercator.pipeline.service.ItemWriter;
 import be.dnsbelgium.mercator.pipeline.service.PipelineService;
+import be.dnsbelgium.mercator.pipeline.service.StopSignal;
 
 /**
  * A runnable crawling module (web, DNS, SMTP, …). Each module wires a
@@ -26,5 +27,17 @@ public interface PipelineModule {
      * detect an idle cycle).
      */
     long run();
+
+    /**
+     * Like {@link #run()}, but the pass can be stopped gracefully through {@code stop}: it stops
+     * leasing new work, finishes (flushes and acks) what is already in flight and returns; items
+     * that were not started are skipped (see {@link StopSignal}).
+     *
+     * <p>The default ignores the signal, so stateless/legacy modules (e.g. the simulated one)
+     * keep working unchanged; they just cannot be stopped mid-pass.
+     */
+    default long run(StopSignal stop) {
+        return run();
+    }
 }
 

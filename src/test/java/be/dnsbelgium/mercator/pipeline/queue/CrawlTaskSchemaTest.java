@@ -56,7 +56,7 @@ class CrawlTaskSchemaTest {
     void init_createsFreshTable_withFinishedTimestamp() {
         dispatcher().init();
 
-        assertThat(finishedTimestampType()).contains("timestamp without time zone");
+        assertThat(finishedTimestampType()).contains("timestamp with time zone");
         assertThat(lookupIndexExists()).isTrue();
     }
 
@@ -69,7 +69,7 @@ class CrawlTaskSchemaTest {
 
         dispatcher().init();
 
-        assertThat(finishedTimestampType()).contains("timestamp without time zone");
+        assertThat(finishedTimestampType()).contains("timestamp with time zone");
         assertThat(jdbcClient.sql("select count(*) from crawl_tasks where status = 'RESERVED' "
                 + "and finished_at is null").query(Long.class).single()).isEqualTo(1);
     }
@@ -80,7 +80,7 @@ class CrawlTaskSchemaTest {
 
         assertThatCode(() -> dispatcher().init()).doesNotThrowAnyException();
 
-        assertThat(finishedTimestampType()).contains("timestamp wit time zone");
+        assertThat(finishedTimestampType()).contains("timestamp with time zone");
     }
 
     // --- helpers -------------------------------------------------------------------------
