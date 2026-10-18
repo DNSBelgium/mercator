@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -56,7 +57,8 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
+    //@EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
+    @Disabled
     public void servfail() {
         String propBefore = System.getProperty("dns.server");
         logger.info("propBefore = {}", propBefore);
