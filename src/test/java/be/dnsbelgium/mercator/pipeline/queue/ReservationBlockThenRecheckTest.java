@@ -177,7 +177,7 @@ class ReservationBlockThenRecheckTest {
     void reaper_leavesDoneRowsUntouched() throws Exception {
         // Contract for the production reaper: it only handles status = 'RESERVED'. A task that was
         // acked (DONE) must never be recycled or dead-lettered, however old its lease looks.
-        seedRow("DONE", /* ageSeconds */ LEASE_SECONDS * 2, /* attempts */ MAX_ATTEMPTS);
+        seedRow("DONE", LEASE_SECONDS * 2, MAX_ATTEMPTS);
 
         runReaper();
 

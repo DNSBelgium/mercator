@@ -22,6 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -53,6 +54,7 @@ class QueueAckPipelineTest {
 
     private static final String MODULE = "web";
     private static final int NUM_CONSUMERS = 4;
+    private static final Duration LEASE_DURATION = Duration.ofMinutes(10);
 
     /** Minimal module output: carries the visit id that links a Parquet row back to its task. */
     private record Result(String visitId, String domainName) { }
@@ -181,9 +183,13 @@ class QueueAckPipelineTest {
         assertThat(count("status = 'PENDING'")).isZero();
 
         // The lease expires → the reaper recycles the skipped items (attempts are kept, reservation cleared).
-        queueDb.sql("update crawl_tasks set reserved_at = now() - interval '11 minutes' where status = 'RESERVED'")
+        // The lease duration is set explicitly: the default (30 min) is longer than the simulated age below.
+        PipelineProperties reaperProperties = new PipelineProperties();
+        reaperProperties.getQueue().setLeaseDuration(LEASE_DURATION);
+        queueDb.sql("update crawl_tasks set reserved_at = now() - interval '" + (LEASE_DURATION.toMinutes() + 1)
+                        + " minutes' where status = 'RESERVED'")
                 .update();
-        LeaseReaper.Result reaped = new LeaseReaper(queueDb, new PipelineProperties()).reap();
+        LeaseReaper.Result reaped = new LeaseReaper(queueDb, reaperProperties).reap();
         assertThat(reaped).isEqualTo(new LeaseReaper.Result(tasks - NUM_CONSUMERS, 0));
         assertThat(count("status = 'PENDING' and attempts = 1 and reservation_id is null and reserved_at is null"))
                 .isEqualTo(tasks - NUM_CONSUMERS);
@@ -198,6 +204,7 @@ class QueueAckPipelineTest {
     // --- helpers -------------------------------------------------------------------------
 
     /** Polls until exactly {@code expected} rows match {@code predicate} (max 15 s). */
+    @SuppressWarnings("SameParameterValue")
     private void awaitCount(String predicate, long expected) throws InterruptedException {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
         while (count(predicate) != expected && System.nanoTime() < deadline) {

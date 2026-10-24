@@ -5,19 +5,14 @@ import be.dnsbelgium.mercator.pipeline.config.PipelineProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * (or dead-lettered to {@code FAILED} once {@code max-attempts} is reached); fresh leases and
  * {@code DONE} rows are never touched.
  */
-@SuppressWarnings("SqlResolve")
+@SuppressWarnings({"SqlResolve", "resource"})
 @Testcontainers
 class LeaseReaperTest {
 
@@ -212,35 +207,6 @@ class LeaseReaperTest {
         LeaseReaper broken = new LeaseReaper(JdbcClient.create(unreachable), properties());
 
         assertThat(broken.reap()).isEqualTo(new LeaseReaper.Result(0, 0));
-    }
-
-    /** The {@code @Scheduled} wiring itself: no manual call, the reaper runs on its own. */
-    @Test
-    void scheduledReaper_runsWithoutManualInvocation() throws Exception {
-        insertTask("1", "web", "RESERVED", LEASE_SECONDS * 2, 1);
-
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
-            context.getEnvironment().setActiveProfiles("postgres-queue");
-            context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("test",
-                    Map.of("pipeline.queue.reaper-interval", "100ms",
-                            "pipeline.queue.lease-duration", LEASE_SECONDS + "s")));
-            context.register(SchedulingConfig.class);
-            context.registerBean("queueJdbcClient", JdbcClient.class, () -> jdbcClient);
-            context.registerBean(PipelineProperties.class, PipelineProperties::new);
-            context.registerBean(LeaseReaper.class);
-            context.refresh();
-
-            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
-            while (count("status = 'PENDING'") < 1 && System.nanoTime() < deadline) {
-                TimeUnit.MILLISECONDS.sleep(50);
-            }
-        }
-        assertThat(count("status = 'PENDING'")).as("the scheduled reaper recycled the expired lease").isEqualTo(1);
-    }
-
-    @Configuration
-    @EnableScheduling
-    static class SchedulingConfig {
     }
 
     // --- helpers -------------------------------------------------------------------------

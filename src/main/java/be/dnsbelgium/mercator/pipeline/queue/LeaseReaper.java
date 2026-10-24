@@ -80,7 +80,8 @@ public class LeaseReaper {
         this.deadLetterSql = """
                 update crawl_tasks
                 set    status = 'FAILED'
-                where  %s
+                where  status = 'RESERVED'
+                  and  %s
                   and  attempts >= :maxAttempts
                 """.formatted(expired);
         log.info("LeaseReaper: leaseDuration={}, maxAttempts={}, interval={}",
