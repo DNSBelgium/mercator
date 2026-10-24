@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dl
 #  schedule:
 #    - cron: '30 5 * * *'
 
@@ -51,28 +52,18 @@ jobs:
         id: vars
         run: |
           COMMIT_SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
-          TAGS="$COMMIT_SHORT_SHA"
-          echo "TAGS=$TAGS" >> $GITHUB_ENV
-          if [ "${{ github.ref_name }}" = "main" ]; then
+          # docker tags cannot contain '/', so sanitize the branch name
+          BRANCH_TAG="${GITHUB_REF_NAME//\//-}"
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            # main: mercator:latest and mercator:<sha>
             echo "DEFAULT_TAG=latest" >> $GITHUB_ENV
+            echo "TAGS=$COMMIT_SHORT_SHA" >> $GITHUB_ENV
           else
-            echo "DEFAULT_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            # other branches (e.g. dl): mercator:<branch> and mercator:<branch>-<sha>
+            echo "DEFAULT_TAG=$BRANCH_TAG" >> $GITHUB_ENV
+            echo "TAGS=$BRANCH_TAG-$COMMIT_SHORT_SHA" >> $GITHUB_ENV
           fi
 
-#      - name: Log in to the Container registry
-#        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-#        with:
-#          registry: ${{ env.REGISTRY }}
-#          username: ${{ github.actor }}
-#          password: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Publish container image to GitHub Container registry
-#        id: publish
-#        env:
-#          REGISTRY: ${{ env.REGISTRY }}
-#          DOCKER_USERNAME: ${{ github.actor }}
-#          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-#        run: mvn --batch-mode clean compile jib:build -D jib.to.tags=${{ env.TAGS }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
