@@ -1,9 +1,10 @@
-name: Run unit tests
+name: Run unit tests nightly (OUTBOUND_TEST_ENABLED)
 
 on:
 
   schedule:
     - cron: '30 5 * * *'
+  workflow_dispatch:
 
 jobs:
   build:

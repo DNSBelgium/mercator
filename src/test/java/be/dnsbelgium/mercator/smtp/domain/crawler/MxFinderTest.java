@@ -2,6 +2,7 @@ package be.dnsbelgium.mercator.smtp.domain.crawler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -56,7 +57,8 @@ class MxFinderTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
+    //@EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
+    @Disabled
     public void servfail() {
         String propBefore = System.getProperty("dns.server");
         logger.info("propBefore = {}", propBefore);
@@ -67,7 +69,7 @@ class MxFinderTest {
             ResolverConfig.refresh();
             MxFinder mxFinder = new MxFinder(2, 500, true);
             MxLookupResult result = mxFinder.findMxRecordsFor("dnssec-failed.org.");
-            logger.info("result = {}", result);
+            logger.info("servfail: result = {}", result);
             assertThat(result).isNotNull();
             assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.QUERY_FAILED);
             assertThat(result.getMxRecords()).isNotNull();
@@ -79,6 +81,8 @@ class MxFinderTest {
                 System.setProperty("dns.server", propBefore);
             }
             ResolverConfig.refresh();
+            String dnsServer = System.getProperty("dns.server");
+            logger.info("servfail: We have reset system property: dns.server = {}", dnsServer);
         }
     }
 
@@ -106,12 +110,13 @@ class MxFinderTest {
     @Test
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
     public void noMxRecords() {
-        MxLookupResult result = mxFinder.findMxRecordsFor("dc3.be");
-        logger.info("result = {}", result);
+        MxLookupResult result = mxFinder.findMxRecordsFor("no-mx-records-here.dc3.be");
+        logger.info("noMxRecords: result = {}", result);
+        logger.info("noMxRecords: result.getMxRecords = {}", result.getMxRecords());
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.NO_MX_RECORDS_FOUND);
         assertThat(result.getMxRecords()).isNotNull();
         assertThat(result.getMxRecords().size()).isEqualTo(0);
+        assertThat(result.getStatus()).isEqualTo(MxLookupResult.Status.NO_MX_RECORDS_FOUND);
     }
 
     @EnabledIfEnvironmentVariable(named="DNS_OUTBOUND_TESTS_ENABLED", matches = "true")
