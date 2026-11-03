@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.1.1</version>
+        <version>4.1.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -30,9 +30,8 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
-        <!-- Override Spring Boot 4.1.1 managed versions (Boot default shown in comments). -->
+        <!-- Override Spring Boot 4.1.2 managed versions (Boot default shown in comments). -->
         <netty.version>4.2.17.Final</netty.version>   <!-- Boot: 4.2.17.Final -->
-        <tomcat.version>11.0.26</tomcat.version>       <!-- Boot: 11.0.24 (Snyk: 11.0.25 has a critical auth-bypass advisory) -->
         <postgresql.version>42.7.14</postgresql.version> <!-- Snyk: 42.7.13 has 2 open advisories (medium + high) -->
         <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
         <logback.version>1.6.5</logback.version>
@@ -42,27 +41,34 @@
         <dependencies>
             <!-- Pin transitive Jackson dependencies to patched versions (Snyk gate).
                  Jackson 2.x (com.fasterxml) is pulled in transitively by geoip2;
-                 Jackson 3.x (tools.jackson) is managed by the Spring Boot 4.1.1 parent.
+                 Jackson 3.x (tools.jackson) is managed by the Spring Boot 4.1.2 parent.
                  Both are same-minor patch bumps. -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>2.21.7</version>
+                <version>2.21.8</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.21.7</version>
+                <version>2.21.8</version>
             </dependency>
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>3.1.7</version>
+                <version>3.1.8</version>
             </dependency>
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>3.1.7</version>
+                <version>3.1.8</version>
+            </dependency>
+            <!-- Thymeleaf 3.1.5 transitively uses OGNL 3.3.4. Remove this override
+                 once Spring Boot manages a non-vulnerable OGNL version. -->
+            <dependency>
+                <groupId>ognl</groupId>
+                <artifactId>ognl</artifactId>
+                <version>3.4.13</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
