@@ -49,7 +49,9 @@ class CrawlTaskSchemaTest {
     }
 
     private CrawlTaskDispatcher dispatcher() {
-        return new CrawlTaskDispatcher(jdbcClient, new PipelineProperties());
+        PipelineProperties props = new PipelineProperties();
+        props.getQueue().setCreateTables(true);
+        return new CrawlTaskDispatcher(jdbcClient, props);
     }
 
     @Test

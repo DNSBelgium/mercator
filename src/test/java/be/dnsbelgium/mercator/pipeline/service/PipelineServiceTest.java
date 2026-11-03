@@ -481,4 +481,43 @@ class PipelineServiceTest {
             closed = true;
         }
     }
+
+  @Test
+  void failsAfterShutdownWhenProcessorOverflows() {
+    CollectingWriter writer = new CollectingWriter();
+    ItemSource<String> source = new GeneratingItemSource(0, 3);
+    ItemProcessor<String, String> processor = item -> {
+      if (item.endsWith("1")) {
+        throw new StackOverflowError("simulated processor overflow");
+      }
+      return item;
+    };
+
+    PipelineProperties properties = new PipelineProperties();
+    properties.setNumConsumers(2);
+    properties.setMaxConcurrentRequests(2);
+    properties.setInputQueueCapacity(4);
+    properties.setResultQueueCapacity(4);
+
+    ExecutorService ioExecutor = Executors.newVirtualThreadPerTaskExecutor();
+    ExecutorService cpuPool = Executors.newFixedThreadPool(1);
+    ScheduledExecutorService watchdog = Executors.newScheduledThreadPool(1);
+    PipelineExecutors executors = new PipelineExecutors(ioExecutor, cpuPool, watchdog);
+    PipelineService<String, String> pipeline = new PipelineService<>(
+        "overflowing", source, processor, writer, executors, properties, new SimpleMeterRegistry(),
+        properties.maxConcurrentRequests("overflowing"));
+
+    try {
+      assertTimeoutPreemptively(Duration.ofSeconds(10), () ->
+          assertThatThrownBy(() -> pipeline.runPipeline(properties.getNumConsumers()))
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining("Processor for pipeline 'overflowing' failed")
+              .hasRootCauseInstanceOf(StackOverflowError.class));
+      assertThat(writer.items()).containsExactlyInAnyOrder("P0-Item-0", "P0-Item-2");
+    } finally {
+      ioExecutor.shutdownNow();
+      cpuPool.shutdownNow();
+      watchdog.shutdownNow();
+    }
+  }
 }

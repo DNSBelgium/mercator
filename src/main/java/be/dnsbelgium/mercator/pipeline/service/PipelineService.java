@@ -321,8 +321,9 @@ public class PipelineService<InputType, OutputType> {
                 return null;
             }
             return processor.processItem(item);
-        } catch (RuntimeException e) {
-            processorFailure.compareAndSet(null, e);
+        } catch (RuntimeException | StackOverflowError e) {
+            RuntimeException failure = new RuntimeException("Processing failed for item " + item, e);
+            processorFailure.compareAndSet(null, failure);
             log.error("Processing failed for item {}", item, e);
             return null;
         } finally {
