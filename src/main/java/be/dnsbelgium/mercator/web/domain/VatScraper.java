@@ -68,7 +68,14 @@ private final VatFinder vatFinder;
     String text = page.getDocument().body().text();
     logger.debug("url={} text.length={} ", page.getUrl(), text.length());
 
-    List<String> validVatValues = vatFinder.findValidVatValues(text);
+    List<String> validVatValues;
+    try {
+      validVatValues = vatFinder.findValidVatValues(text);
+    } catch (RuntimeException | StackOverflowError e) {
+      logger.error("VAT extraction failed for {}", page.getUrl(), e);
+      page.setVatValues(List.of());
+      return;
+    }
     logger.debug("{} => Found {} valid VAT values", page.getUrl(), validVatValues.size());
 
     if (!validVatValues.isEmpty()) {
@@ -82,7 +89,14 @@ private final VatFinder vatFinder;
     } else {
       logger.debug("No valid VAT values found");
       // let's show_tables log VAT values with wrong checksum
-      List<String> vatLikeValues = vatFinder.findVatValues(text);
+      List<String> vatLikeValues;
+      try {
+        vatLikeValues = vatFinder.findVatValues(text);
+      } catch (RuntimeException | StackOverflowError e) {
+        logger.error("VAT extraction failed for {}", page.getUrl(), e);
+        page.setVatValues(List.of());
+        return;
+      }
       int countVatLikeValues = vatLikeValues.size();
       if (countVatLikeValues > 0 && countVatLikeValues < 3) {
         logger.debug("{} => Found VAT-like values {}", page.getUrl(), vatLikeValues);

@@ -179,9 +179,19 @@ public class WebCrawler {
             Page page = linkPageEntry.getValue();
             PageVisit pageVisit = page.asPageVisit(visitRequest);
             pageVisit.setLinkText(linkPageEntry.getKey().getText());
-            Set<String> detectedTechnologies = technologyAnalyzer.analyze(page);
-            pageVisit.setDetectedTechnologies(detectedTechnologies);
-            pageVisit.setHtmlFeatures(findFeatures(visitRequest, page));
+            try {
+                pageVisit.setDetectedTechnologies(technologyAnalyzer.analyze(page));
+            } catch (RuntimeException | StackOverflowError e) {
+                logger.error("Technology detection failed for visitId={} url={}",
+                        visitRequest.getVisitId(), page.getUrl(), e);
+                pageVisit.setDetectedTechnologies(Set.of());
+            }
+            try {
+                pageVisit.setHtmlFeatures(findFeatures(visitRequest, page));
+            } catch (RuntimeException | StackOverflowError e) {
+                logger.error("HTML feature extraction failed for visitId={} url={}",
+                        visitRequest.getVisitId(), page.getUrl(), e);
+            }
             pageVisits.add(pageVisit);
         }
 
