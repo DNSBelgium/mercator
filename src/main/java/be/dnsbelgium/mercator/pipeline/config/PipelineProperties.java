@@ -124,6 +124,8 @@ public class PipelineProperties {
         /** Master switch for the stateful queue (dispatcher + reaper scheduling). */
         private boolean enabled = true;
 
+        private boolean createTables = false;
+
         /**
          * Lease duration: the {@code LeaseReaper} recycles a {@code RESERVED} row whose
          * {@code reserved_at} is older than this. Must be larger than the worst-case time from

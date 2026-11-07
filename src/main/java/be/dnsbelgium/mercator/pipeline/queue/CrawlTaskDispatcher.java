@@ -49,18 +49,23 @@ public class CrawlTaskDispatcher {
     private final JdbcClient jdbcClient;
     private final List<String> modules;
     private final String fanOutSql;
+    private final PipelineProperties properties;
 
-    public CrawlTaskDispatcher(@Qualifier("queueJdbcClient") JdbcClient queueJdbcClient,
+  public CrawlTaskDispatcher(@Qualifier("queueJdbcClient") JdbcClient queueJdbcClient,
                                PipelineProperties properties) {
         this.jdbcClient = queueJdbcClient;
         this.modules = List.copyOf(properties.getQueue().getCrawlerModules());
         this.fanOutSql = buildFanOutSql(this.modules);
         log.info("CrawlTaskDispatcher fans out to modules {}", modules);
-    }
+        this.properties = properties;
+  }
 
     @PostConstruct
     public void init() {
-        jdbcClient.sql("""
+        log.info("createTables={}", properties.getQueue().isCreateTables());
+        if (properties.getQueue().isCreateTables()) {
+
+            jdbcClient.sql("""
             create table if not exists visit_requests (
                 visit_id       varchar,
                 domain_name    varchar(255) not null,
@@ -69,7 +74,7 @@ public class CrawlTaskDispatcher {
             )
         """).update();
 
-        jdbcClient.sql("""
+            jdbcClient.sql("""
             create table if not exists crawl_tasks (
                 visit_id            varchar not null,
                 domain_name         varchar(255) not null,
@@ -83,16 +88,17 @@ public class CrawlTaskDispatcher {
             )
         """).update();
 
-        // Migration for databases created before finished_atp existed (the
-        // "create table if not exists" above is a no-op there). Nullable, no default:
-        // a metadata-only change in Postgres, idempotent, safe on every start.
-        jdbcClient.sql("alter table crawl_tasks add column if not exists finished_at timestamptz").update();
+            // Migration for databases created before finished_atp existed (the
+            // "create table if not exists" above is a no-op there). Nullable, no default:
+            // a metadata-only change in Postgres, idempotent, safe on every start.
+            jdbcClient.sql("alter table crawl_tasks add column if not exists finished_at timestamptz").update();
 
-        // DatabaseItemSource.acknowledge() looks rows up by exactly this key (up to batch-size ids
-        // per call); without an index every ack would scan the whole table. Safe to drop on its own.
-        jdbcClient.sql("create index if not exists idx_crawl_tasks_module_visit "
+            // DatabaseItemSource.acknowledge() looks rows up by exactly this key (up to batch-size ids
+            // per call); without an index every ack would scan the whole table. Safe to drop on its own.
+            jdbcClient.sql("create index if not exists idx_crawl_tasks_module_visit "
                 + "on crawl_tasks (crawler_module, visit_id)").update();
-        log.info("Queue tables verified");
+            log.info("Queue tables verified");
+        }
     }
 
     /**
