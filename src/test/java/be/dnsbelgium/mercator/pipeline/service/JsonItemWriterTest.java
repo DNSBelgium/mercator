@@ -149,6 +149,31 @@ class JsonItemWriterTest {
     }
 
     @Test
+    void staleBatchDirFromEarlierRun_isNeverReIngested(@TempDir Path dir) throws IOException {
+        // A previous run failed its roll-up and left batch-1 behind; every new writer counts from 1 again.
+        JsonItemWriter<Person> failedRun = new JsonItemWriter<>(objectMapper, new FailingConverter(), dir, Person.class, 2);
+        failedRun.write(new Person("stale1", 1));
+        failedRun.write(new Person("stale2", 2));
+        assertThat(jsonFilesRecursively(dir.resolve("batch-1"))).hasSize(2);
+
+        JdbcClient client = duckDbClient();
+        Path parquetDir = dir.resolve("parquet");
+        RecordingConverter converter = new RecordingConverter(client, parquetDir);
+        JsonItemWriter<Person> writer = new JsonItemWriter<>(objectMapper, converter, dir, Person.class, 2);
+        writer.write(new Person("a", 1));
+        writer.write(new Person("b", 2));
+        writer.write(new Person("c", 3));
+        writer.flush();
+
+        assertThat(converter.globs).containsExactly(
+                dir.resolve("batch-2").toAbsolutePath() + "/*.json",
+                dir.resolve("batch-3").toAbsolutePath() + "/*.json");
+        assertThat(parquetRowCountInDir(client, parquetDir)).isEqualTo(3);
+        assertThat(jsonFilesRecursively(dir)).hasSize(2);
+        assertThat(jsonFilesRecursively(dir.resolve("batch-1"))).hasSize(2);
+    }
+
+    @Test
     void commitListener_receivesIdsOfEachBatch_afterConversion(@TempDir Path dir) {
         JdbcClient client = duckDbClient();
         RecordingConverter delegate = new RecordingConverter(client, dir.resolve("parquet"));

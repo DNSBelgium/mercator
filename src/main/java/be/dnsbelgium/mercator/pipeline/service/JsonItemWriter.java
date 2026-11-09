@@ -6,6 +6,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ import java.util.function.Function;
  *
  * <p>Each batch is written into its own sub-directory ({@code <outputDirectory>/batch-<n>/})
  * so the converter receives a glob that matches exactly the files of that batch and never
- * re-ingests files left behind by a previously failed batch.
+ * re-ingests files left behind by a previously failed batch, nor by an earlier run: batch
+ * directories that already exist are skipped.
  *
  * <p><strong>Thread confinement:</strong> the pipeline drives a single writer thread, so
  * the batch bookkeeping ({@code currentBatch}, {@code currentBatchIds}, {@code currentBatchDir},
@@ -156,12 +158,25 @@ public class JsonItemWriter<T> implements ItemWriter<T> {
         return writeCount;
     }
 
+    /**
+     * Creates the directory for the next batch. A directory that already exists is left over from a
+     * failed roll-up (or an earlier run, since every run restarts counting at 1); it is skipped and
+     * never reused, otherwise its stale JSON files would be converted again with every new batch.
+     */
     private void startNewBatchDir() {
-        currentBatchDir = outputDirectory.resolve("batch-" + batchCounter);
-        try {
-            Files.createDirectories(currentBatchDir);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Could not create batch directory " + currentBatchDir, e);
+        while (true) {
+            Path candidate = outputDirectory.resolve("batch-" + batchCounter);
+            try {
+                Files.createDirectory(candidate);
+                currentBatchDir = candidate;
+                return;
+            } catch (FileAlreadyExistsException e) {
+                log.warn("Skipping existing batch directory {}: it contains JSON files that were not rolled up",
+                        candidate);
+                batchCounter++;
+            } catch (IOException e) {
+                throw new UncheckedIOException("Could not create batch directory " + candidate, e);
+            }
         }
     }
 
