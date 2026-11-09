@@ -25,6 +25,7 @@ class ThrottlingAppenderTest {
   @BeforeEach
   void beforeEach() {
     loggerContext = new LoggerContext();
+    loggerContext.setMDCAdapter(new ch.qos.logback.classic.util.LogbackMDCAdapter());
     listAppender = new ListAppender<>();
     listAppender.setName("listAppender");
     listAppender.setContext(loggerContext);
@@ -91,6 +92,40 @@ class ThrottlingAppenderTest {
     expected.add(error1);
     expected.add(error2);
     assertThat(listAppender.list).isEqualTo(expected);
+  }
+
+  @Test void wakeUpMarkerFlushesBufferAndEmitsEverythingAfterwards() {
+    throttlingAppender.setMaxMessagesToEmitAfterStartUp(0);
+    throttlingAppender.setMaxMessagesToEmitAfterWakeUp(1);
+    throttlingAppender.setBufferSize(5);
+    throttlingAppender.setMaxSleepMillis(0);
+    listAppender.start();
+    throttlingAppender.start();
+    var buffered = event(1);
+    throttlingAppender.append(buffered);
+    assertThat(listAppender.list).isEmpty();
+
+    var wake = event(2);
+    wake.addMarker(ThrottlingAppender.WAKE_UP);
+    throttlingAppender.append(wake);
+    assertThat(throttlingAppender.getStatus()).isEqualTo(AppenderStatus.AWAKE);
+    for (int i = 3; i < 20; i++) {
+      throttlingAppender.append(event(i));
+    }
+    assertThat(listAppender.list).hasSize(19);
+    assertThat(listAppender.list).startsWith(buffered, wake);
+  }
+
+  @Test void stopFlushesBuffer() {
+    throttlingAppender.setMaxMessagesToEmitAfterStartUp(0);
+    throttlingAppender.setMaxSleepMillis(0);
+    listAppender.start();
+    throttlingAppender.start();
+    var e = event(1);
+    throttlingAppender.append(e);
+    assertThat(listAppender.list).isEmpty();
+    throttlingAppender.stop();
+    assertThat(listAppender.list).containsExactly(e);
   }
 
   @Test void maxMessagesToEmitAfterWakeUpMustBeGreaterThanZero() {
@@ -209,6 +244,7 @@ class ThrottlingAppenderTest {
 
   private LoggingEvent event(long timestamp) {
     LoggingEvent event = new LoggingEvent();
+    event.setLoggerContext(loggerContext);
     event.setMessage("This is message " + timestamp);
     event.setTimeStamp(timestamp);
     event.setLevel(Level.INFO);
@@ -218,6 +254,7 @@ class ThrottlingAppenderTest {
 
   private LoggingEvent makeEvent(long timestamp, String msg, Object... args) {
     LoggingEvent event = new LoggingEvent();
+    event.setLoggerContext(loggerContext);
     event.setMessage(msg);
     event.setTimeStamp(timestamp);
     event.setLevel(Level.INFO);
@@ -227,6 +264,7 @@ class ThrottlingAppenderTest {
 
   private LoggingEvent errorEvent(long timestamp, String msg) {
     LoggingEvent event = new LoggingEvent();
+    event.setLoggerContext(loggerContext);
     event.setMessage(msg);
     event.setTimeStamp(timestamp);
     event.setLevel(Level.ERROR);

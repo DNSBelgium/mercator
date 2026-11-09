@@ -7,11 +7,19 @@ import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.helpers.CyclicBuffer;
 import ch.qos.logback.core.spi.AppenderAttachable;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 import java.util.Iterator;
 
 @SuppressWarnings({"unused", "LombokGetterMayBeUsed", "LombokSetterMayBeUsed"})
 public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements AppenderAttachable<ILoggingEvent>  {
+
+  /**
+   * Log with this marker (e.g. {@code log.info(ThrottlingAppender.WAKE_UP, "Shutting down")}) to flush the buffer
+   * and make the appender emit everything (no quota) until it is stopped.
+   */
+  public static final Marker WAKE_UP = MarkerFactory.getMarker("THROTTLING_WAKE_UP");
 
   // settings
   private int bufferSize = 512;
@@ -24,6 +32,7 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
   private long numberEventsEmittedSinceWakeUp = 0;
   private long totalEventsEmitted = 0;
   private long totalEventsReceived = 0;
+  private boolean wokenByMarker = false;
   int appenderCount = 0;
   private final AppenderAttachableImpl<ILoggingEvent> aai = new AppenderAttachableImpl<>();
 
@@ -36,12 +45,31 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
     if (!isStarted()) {
       return;
     }
+    if (isWakeUpEvent(event)) {
+      wakeUpByMarker(event);
+      this.totalEventsReceived++;
+      return;
+    }
     switch (status) {
       case STARTING -> starting(event);
       case BUFFERING -> buffering(event);
       case AWAKE -> awake(event);
     }
     this.totalEventsReceived++;
+  }
+
+  private boolean isWakeUpEvent(ILoggingEvent event) {
+    var markers = event.getMarkerList();
+    return markers != null && markers.stream().anyMatch(m -> m.contains(WAKE_UP));
+  }
+
+  private void wakeUpByMarker(ILoggingEvent event) {
+    emitBuffer();
+    if (status != AppenderStatus.AWAKE) {
+      changeState(AppenderStatus.AWAKE);
+    }
+    wokenByMarker = true;
+    emit(event);
   }
 
   private void info(String msg) {
@@ -66,7 +94,7 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
   }
 
   private void awake(ILoggingEvent event) {
-    if (numberEventsEmittedSinceWakeUp >= maxMessagesToEmitAfterWakeUp) {
+    if (!wokenByMarker && numberEventsEmittedSinceWakeUp >= maxMessagesToEmitAfterWakeUp) {
       numberEventsEmittedSinceWakeUp = 0;
       changeState(AppenderStatus.BUFFERING);
       //show_tables("emitted enough during wakeUp, start Buffering %s", event);
@@ -98,6 +126,7 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
         emit(event);
       } else {
         //show_tables("buffering %s", event);
+        event.prepareForDeferredProcessing();
         cyclicBuffer.add(event);
       }
     }
@@ -136,7 +165,7 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
       errors++;
     }
     if (maxMessagesToEmitAfterStartUp < 0) {
-      addError("maxMessagesToEmitAfterWakeUp must be greater than or equal to zero. Aborting");
+      addError("maxMessagesToEmitAfterStartUp must be greater than or equal to zero. Aborting");
       errors++;
     }
     if (appenderCount <= 0) {
@@ -147,6 +176,15 @@ public class ThrottlingAppender extends AppenderBase<ILoggingEvent> implements A
       cyclicBuffer = new CyclicBuffer<>(bufferSize);
       super.start();
     }
+  }
+
+  @Override
+  public void stop() {
+    if (isStarted()) {
+      emitBuffer();
+      aai.detachAndStopAllAppenders();
+    }
+    super.stop();
   }
 
   public void addAppender(Appender<ILoggingEvent> newAppender) {
