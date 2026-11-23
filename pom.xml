@@ -562,8 +562,9 @@
                         </auth>
                     </to>
                     <from>
+                        <!-- Temurin 25.0.5.1+2, which fixes java4shell (CVE-2026-114938) -->
                         <image>
-                            eclipse-temurin:25-jdk-ubi10-minimal@sha256:edbb6547e261f4b8a83a4ec41ab1fa007074051407f8786a992e77169cfc014e
+                            eclipse-temurin:25-jdk-ubi10-minimal@sha256:d9f1eda186c16a82fb75fb6c6c5777b4378ee3da7dca9518ac97f144de0e8c39
                         </image>
                         <platforms>
                             <platform>
