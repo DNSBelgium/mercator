@@ -22,6 +22,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           java-version: '25'
+          # skip the JDK preinstalled on the runner, so we always get the latest patch release (java4shell, CVE-2026-114938)
+          check-latest: true
           distribution: 'temurin'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
