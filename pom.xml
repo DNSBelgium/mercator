@@ -31,7 +31,7 @@
         <maven.compiler.proc>full</maven.compiler.proc>
         <argLine/>
         <!-- Override Spring Boot 4.1.3 managed versions (Boot default shown in comments). -->
-        <postgresql.version>42.7.14</postgresql.version> <!-- Snyk: 42.7.13 has 2 open advisories (medium + high) -->
+        <postgresql.version>42.7.15</postgresql.version>
         <xmlunit2.version>2.13.0</xmlunit2.version>    <!-- Boot: 2.11.0 (CVE fix) -->
         <logback.version>1.6.5</logback.version>
         <!-- Empty = plugin downloads its own CLI (x86_64 only on macOS). Override in ~/.m2/settings.xml on Apple Silicon. -->
