@@ -76,6 +76,11 @@ public abstract class VisitRequestModule<O> implements PipelineModule {
     protected abstract String visitIdOf(O result);
 
     @Override
+    public boolean hasPendingWork() {
+        return itemSourceFactory.hasPendingWork(name());
+    }
+
+    @Override
     public long run() {
         return run(StopSignal.never());
     }

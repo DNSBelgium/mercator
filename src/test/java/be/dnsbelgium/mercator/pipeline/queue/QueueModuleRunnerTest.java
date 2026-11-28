@@ -134,6 +134,51 @@ class QueueModuleRunnerTest {
     }
 
     @Test
+    void moduleWithoutPendingWork_isSkipped_andFailingCheckStillRunsThePass() throws Exception {
+        AtomicInteger skippedRuns = new AtomicInteger();
+        CountDownLatch checkedPass = new CountDownLatch(1);
+        PipelineModule noWork = new PipelineModule() {
+            @Override
+            public String name() {
+                return "no-work";
+            }
+
+            @Override
+            public boolean hasPendingWork() {
+                return false;
+            }
+
+            @Override
+            public long run() {
+                skippedRuns.incrementAndGet();
+                return 0;
+            }
+        };
+        PipelineModule brokenCheck = new PipelineModule() {
+            @Override
+            public String name() {
+                return "broken-check";
+            }
+
+            @Override
+            public boolean hasPendingWork() {
+                throw new IllegalStateException("db down");
+            }
+
+            @Override
+            public long run() {
+                checkedPass.countDown();
+                return 0;
+            }
+        };
+        QueueModuleRunner runner = runner(Duration.ofSeconds(60), Duration.ofSeconds(10));
+        runner.start(List.of(noWork, brokenCheck));
+
+        assertThat(checkedPass.await(5, TimeUnit.SECONDS)).as("pass runs when the check fails").isTrue();
+        assertThat(skippedRuns.get()).as("pass skipped when there is no pending work").isZero();
+    }
+
+    @Test
     void stopWhileIdleSleeping_returnsQuickly() throws Exception {
         CountDownLatch firstPass = new CountDownLatch(1);
         PipelineModule empty = new PipelineModule() {

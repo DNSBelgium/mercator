@@ -97,6 +97,20 @@ public class CrawlTaskDispatcher {
             // per call); without an index every ack would scan the whole table. Safe to drop on its own.
             jdbcClient.sql("create index if not exists idx_crawl_tasks_module_visit "
                 + "on crawl_tasks (crawler_module, visit_id)").update();
+
+            // Partial indexes stay tiny (only live PENDING/RESERVED rows, not the millions of DONE ones).
+            // Without the first, polling an empty queue walks every DONE row of the module (~80 s on prod).
+            // Not CONCURRENTLY here (needs autocommit); on a big live table create them by hand first.
+            jdbcClient.sql("create index if not exists idx_crawl_tasks_pending "
+                + "on crawl_tasks (crawler_module, visit_id) where status = 'PENDING'").update();
+            // Serves the LeaseReaper (expired RESERVED leases).
+            jdbcClient.sql("create index if not exists idx_crawl_tasks_reserved "
+                + "on crawl_tasks (reserved_at) where status = 'RESERVED'").update();
+
+            // The table is update-heavy (PENDING -> RESERVED -> DONE): vacuum/analyze sooner than the
+            // 20%/10% defaults so dead tuples and planner statistics don't go stale.
+            jdbcClient.sql("alter table crawl_tasks set (autovacuum_vacuum_scale_factor = 0.02, "
+                + "autovacuum_analyze_scale_factor = 0.02)").update();
             log.info("Queue tables verified");
         }
     }

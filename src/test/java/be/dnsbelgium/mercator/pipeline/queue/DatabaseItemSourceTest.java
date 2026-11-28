@@ -96,6 +96,29 @@ class DatabaseItemSourceTest {
     }
 
     @Test
+    void claim_neverOvershootsLimit_evenWithDuplicateVisitIds() {
+        seed("web", 3);
+        jdbcClient.sql("insert into crawl_tasks (visit_id, domain_name, crawler_module, status) "
+                + "select visit_id, domain_name, crawler_module, status from crawl_tasks").update();
+
+        List<VisitRequest> leased = source(4).getItems();
+
+        assertThat(leased).hasSize(4);
+        assertThat(countWhere("status = 'RESERVED'")).isEqualTo(4);
+    }
+
+    @Test
+    void hasPendingWork_isModuleScoped() {
+        seed("web", 1);
+        jdbcClient.sql("update crawl_tasks set status = 'DONE'").update();
+        seed("dns", 1);
+        DatabaseItemSourceFactory factory = new DatabaseItemSourceFactory(jdbcClient, new PipelineProperties());
+
+        assertThat(factory.hasPendingWork("dns")).isTrue();
+        assertThat(factory.hasPendingWork("web")).isFalse();
+    }
+
+    @Test
     void claim_isModuleScoped() {
         seed("web", 3);
         seed("dns", 3);

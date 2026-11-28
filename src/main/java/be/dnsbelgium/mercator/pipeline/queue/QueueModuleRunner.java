@@ -93,6 +93,10 @@ public class QueueModuleRunner {
                     log.info("We were asked to stop");
                     break;
                 }
+                if (!hasPendingWork(module)) {
+                    log.debug("module '{}' has no pending tasks; skipping its pass", module.name());
+                    continue;
+                }
                 log.info("starting a pass of module '{}'", module.name());
                 long start = System.currentTimeMillis();
                 try {
@@ -110,6 +114,16 @@ public class QueueModuleRunner {
             }
         }
         log.info("Continuous queue runner stopped");
+    }
+
+    /** Falls back to running the pass when the check itself fails, so a broken check can never starve a module. */
+    private static boolean hasPendingWork(PipelineModule module) {
+        try {
+            return module.hasPendingWork();
+        } catch (RuntimeException e) {
+            log.warn("Pending-work check for module '{}' failed; running its pass anyway", module.name(), e);
+            return true;
+        }
     }
 
     /** Sleeps up to {@link #pollInterval}, waking early (within {@link #IDLE_SLEEP_STEP}) if stopped. */

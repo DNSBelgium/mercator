@@ -29,6 +29,14 @@ public interface PipelineModule {
     long run();
 
     /**
+     * Cheap pre-check used by the queue runner to skip a pass that would find no work.
+     * The default ({@code true}) always runs the pass.
+     */
+    default boolean hasPendingWork() {
+        return true;
+    }
+
+    /**
      * Like {@link #run()}, but the pass can be stopped gracefully through {@code stop}: it stops
      * leasing new work, finishes (flushes and acks) what is already in flight and returns; items
      * that were not started are skipped (see {@link StopSignal}).

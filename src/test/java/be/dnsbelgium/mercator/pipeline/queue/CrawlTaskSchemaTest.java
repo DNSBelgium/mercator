@@ -60,6 +60,8 @@ class CrawlTaskSchemaTest {
 
         assertThat(finishedTimestampType()).contains("timestamp with time zone");
         assertThat(lookupIndexExists()).isTrue();
+        assertThat(indexDefinition("idx_crawl_tasks_pending")).contains("WHERE ((status)::text = 'PENDING'::text)");
+        assertThat(indexDefinition("idx_crawl_tasks_reserved")).contains("WHERE ((status)::text = 'RESERVED'::text)");
     }
 
     @Test
@@ -97,6 +99,13 @@ class CrawlTaskSchemaTest {
                         """)
                 .query(String.class)
                 .optional();
+    }
+
+    private String indexDefinition(String indexName) {
+        return jdbcClient.sql("select indexdef from pg_indexes where tablename = 'crawl_tasks' and indexname = :name")
+                .param("name", indexName)
+                .query(String.class)
+                .single();
     }
 
     private boolean lookupIndexExists() {

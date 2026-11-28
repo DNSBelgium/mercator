@@ -40,4 +40,16 @@ public class DatabaseItemSourceFactory implements ItemSourceFactory<ItemSource<V
         log.info("Creating DatabaseItemSource for module '{}'", crawlerModule);
         return new DatabaseItemSource(crawlerModule, queueJdbcClient, properties.getQueue());
     }
+
+    /** Served by the partial index {@code idx_crawl_tasks_pending}: milliseconds even with millions of DONE rows. */
+    @Override
+    public boolean hasPendingWork(String crawlerModule) {
+        return queueJdbcClient.sql("""
+                        select exists (select 1 from crawl_tasks
+                                       where crawler_module = :module and status = 'PENDING')
+                        """)
+                .param("module", crawlerModule)
+                .query(Boolean.class)
+                .single();
+    }
 }

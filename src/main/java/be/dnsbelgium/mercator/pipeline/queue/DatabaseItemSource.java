@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 /**
  * Stateful, module-scoped {@link ItemSource} backed by the Postgres {@code crawl_tasks}
@@ -20,14 +20,18 @@ import java.util.function.IntSupplier;
  * sees rows whose {@code crawler_module} matches {@link #crawlerModule}.
  *
  * <p>Each {@link #getItems()} poll atomically <b>leases</b> a bounded batch of
- * {@code PENDING} rows using the portable "claim-token" pattern (no {@code FOR UPDATE SKIP
- * LOCKED}, no {@code UPDATE … RETURNING}), proven correct by {@code ReservationBlockThenRecheckTest}:
+ * {@code PENDING} rows with a single {@code UPDATE … RETURNING} statement:
  * <ol>
- *   <li>an {@code UPDATE} stamps a fresh per-poll {@code reservation_id} (UUID) onto up to
- *       {@code fetchSize} {@code PENDING} rows, flipping them to {@code RESERVED} and
- *       incrementing {@code attempts};</li>
- *   <li>a follow-up {@code SELECT} reads back exactly the rows carrying that token.</li>
+ *   <li>a sub-select picks up to {@code fetchSize} {@code PENDING} rows by {@code ctid}
+ *       using {@code FOR UPDATE SKIP LOCKED}, so concurrent claimers never block on, or double-lease,
+ *       the same rows (and duplicate {@code visit_id}s cannot make a claim overshoot its LIMIT);</li>
+ *   <li>the {@code UPDATE} stamps a fresh per-poll {@code reservation_id} (UUID, kept as an audit trail),
+ *       flips the rows to {@code RESERVED}, increments {@code attempts} and returns the leased rows —
+ *       no separate read-back round trip.</li>
  * </ol>
+ * The lookup is served by the partial index {@code idx_crawl_tasks_pending}
+ * ({@code WHERE status = 'PENDING'}), so an empty queue is answered in milliseconds regardless of
+ * how many {@code DONE} rows the table holds.
  *
  * <p><b>Recovery is out-of-band:</b> this source never reasons about expired {@code RESERVED}
  * rows — the scheduled {@link LeaseReaper} recycles them back to {@code PENDING}.
@@ -76,15 +80,6 @@ import java.util.function.IntSupplier;
 @Slf4j
 public class DatabaseItemSource implements ItemSource<VisitRequest> {
 
-    /** Read-back of the batch we just stamped with our claim token. */
-    private static final String READ_BACK_SQL = """
-            select visit_id, domain_name
-            from   crawl_tasks
-            where  reservation_id = :token
-              and  crawler_module = :module
-              and  status = 'RESERVED'
-            """;
-
     /**
      * Closes tasks whose result is durably stored. {@code status <> 'DONE'} (instead of
      * {@code = 'RESERVED'}) keeps the first {@code finished_at} on retries/duplicates and
@@ -99,7 +94,7 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
               and  visit_id in (:visitIds)
             """;
 
-    /** Attempts at the claim/ack UPDATE before giving up (covers DuckDB/GizmoSQL MVCC conflicts). */
+    /** Attempts at the claim/ack UPDATE before giving up (covers transient serialization/deadlock errors). */
     private static final int MAX_CLAIM_RETRIES = 5;
 
     /** Max ids per ack UPDATE: far below Postgres' 32 767 bind-parameter limit, even for a big batch-size. */
@@ -137,16 +132,16 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
                        reservation_id     = :token,
                        reserved_at        = now(),
                        attempts           = attempts + 1
-                where  crawler_module = :module
-                  and  status = 'PENDING'
-                  and  visit_id in (
-                        select visit_id
+                where  ctid in (
+                        select ctid
                         from   crawl_tasks
                         where  crawler_module = :module
                           and  status = 'PENDING'
                         order by visit_id
                         limit %d
+                        for update skip locked
                      )
+                returning visit_id, domain_name
                 """;
         log.info("DatabaseItemSource for module '{}' (fetchSize={}, maxItemsPerPass={}, instanceId={})",
                 crawlerModule, fetchSize, maxItemsPerPass, instanceId);
@@ -162,13 +157,12 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
             return List.of();
         }
         String token = UUID.randomUUID().toString();
-        int claimed = claimBatch(token, limit);
-        log.info("getItems() claimed={} items", claimed);
-        if (claimed == 0) {
+        List<VisitRequest> items = claimBatch(token, limit);
+        log.info("getItems() claimed={} items", items.size());
+        if (items.isEmpty()) {
             drained = true;
-            return List.of();
+            return items;
         }
-        List<VisitRequest> items = readClaimedBatch(token);
         produced += items.size();
         log.info("[{}] leased {} rows (reservation_id={}, produced={}/{})",
                 crawlerModule, items.size(), token, produced, maxItemsPerPass);
@@ -196,7 +190,7 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
             updated += withRetries("ack", () -> jdbcClient.sql(ACK_SQL)
                     .param("module", crawlerModule)
                     .param("visitIds", chunk)
-                    .update());
+                    .update()).intValue();
         }
         if (updated < ids.size()) {
             log.warn("[{}] acknowledged only {}/{} task(s) as DONE (the others were unknown or already DONE)",
@@ -208,57 +202,48 @@ public class DatabaseItemSource implements ItemSource<VisitRequest> {
     }
 
     /**
-     * Runs the claim UPDATE, retrying a few times on {@link DataAccessException}. On
-     * DuckDB/GizmoSQL two workers claiming concurrently can hit an optimistic-MVCC
-     * write-write conflict (thrown); on Postgres the second claimer blocks instead, so the
-     * loop is effectively a no-op there.
+     * Runs the claim {@code UPDATE … RETURNING}, retrying a few times on {@link DataAccessException}
+     * (e.g. a transient deadlock or serialization failure).
      *
      * @param limit this poll's clamped {@code LIMIT} (a computed int, so safe to inline)
-     * @return the number of rows reserved by this poll
+     * @return the rows leased by this poll
      */
-    private int claimBatch(String token, int limit) {
+    private List<VisitRequest> claimBatch(String token, int limit) {
         String claimSql = claimSqlTemplate.formatted(limit);
         return withRetries("claim", () -> jdbcClient.sql(claimSql)
                 .param("module", crawlerModule)
                 .param("token", token)
                 .param("instanceId", instanceId)
-                .update());
-    }
-
-    /**
-     * Runs {@code action} (an UPDATE returning its row count), retrying up to
-     * {@value #MAX_CLAIM_RETRIES} attempts on {@link DataAccessException} with a short jittered backoff.
-     *
-     * @param operation short name used in the log lines ({@code claim}, {@code ack})
-     */
-    private int withRetries(String operation, IntSupplier action) {
-        int attempt = 0;
-        while (true) {
-            try {
-                return action.getAsInt();
-            } catch (DataAccessException e) {
-                attempt++;
-                if (attempt >= MAX_CLAIM_RETRIES) {
-                    log.error("[{}] {} failed after {} attempts", crawlerModule, operation, attempt, e);
-                    throw e;
-                }
-                log.warn("[{}] {} attempt {} conflicted ({}); retrying", crawlerModule, operation, attempt, e.getMessage());
-                backoff(attempt);
-            }
-        }
-    }
-
-    private List<VisitRequest> readClaimedBatch(String token) {
-        return jdbcClient.sql(READ_BACK_SQL)
-                .param("token", token)
-                .param("module", crawlerModule)
                 .query((row, _) -> {
                     VisitRequest visitRequest = new VisitRequest();
                     visitRequest.setVisitId(row.getString("visit_id"));
                     visitRequest.setDomainName(row.getString("domain_name"));
                     return visitRequest;
                 })
-                .list();
+                .list());
+    }
+
+    /**
+     * Runs {@code action}, retrying up to {@value #MAX_CLAIM_RETRIES} attempts on
+     * {@link DataAccessException} with a short jittered backoff.
+     *
+     * @param operation short name used in the log lines ({@code claim}, {@code ack})
+     */
+    private <T> T withRetries(String operation, Supplier<T> action) {
+        int attempt = 0;
+        while (true) {
+            try {
+                return action.get();
+            } catch (DataAccessException e) {
+                attempt++;
+                if (attempt >= MAX_CLAIM_RETRIES) {
+                    log.error("[{}] {} failed after {} attempts", crawlerModule, operation, attempt, e);
+                    throw e;
+                }
+                log.warn("[{}] {} attempt {} failed ({}); retrying", crawlerModule, operation, attempt, e.getMessage());
+                backoff(attempt);
+            }
+        }
     }
 
     /** Short jittered backoff between claim/ack retries. */
